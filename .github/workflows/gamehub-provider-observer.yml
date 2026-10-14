@@ -1,5 +1,7 @@
 name: Ultra Sentinel — GameHub provider observer (read-only)
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       pr_number:
