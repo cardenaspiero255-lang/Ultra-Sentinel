@@ -136,7 +136,7 @@ async function main(){
   await selectOpenGameHubPr({token:process.env.GITHUB_TOKEN}):Number(raw);
  if(selected===null){
   process.stdout.write(JSON.stringify({schema:'ultra-sentinel-provider-observer/v1',
-   status:'IDLE_NO_OPEN_PR',autoMergeAllowed:false,autoCommitAllowed:false})+'\\n');
+   status:'IDLE_NO_OPEN_PR',autoMergeAllowed:false,autoCommitAllowed:false})+'\n');
   return;
  }
  const report=await observeGameHubProviderEvidence(selected,{
