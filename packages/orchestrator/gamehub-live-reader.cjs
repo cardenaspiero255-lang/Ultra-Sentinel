@@ -36,8 +36,8 @@ function checkPatch(item){
  let plus=0,minus=0,hunks=0,inside=false;
  for(const line of item.patch.split('\n')){
   if(/^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@/.test(line)){hunks++;inside=true;}
-  else if(inside&&line.startsWith('+')&&!line.startsWith('+++'))plus++;
-  else if(inside&&line.startsWith('-')&&!line.startsWith('---'))minus++;
+  else if(inside&&line.startsWith('+'))plus++;
+  else if(inside&&line.startsWith('-'))minus++;
  }
  if(!hunks||plus!==item.additions||minus!==item.deletions)
   fail('INCOMPLETE_PR_DIFF');
