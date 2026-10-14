@@ -40,7 +40,7 @@ class PersistentNonceStore{
   try{
    const existing=fs.readFileSync(fd,'utf8');
    if(existing.split('\n').includes(hash))return false;
-   fs.writeSync(fd,hash+'\n',null,'utf8');
+   fs.writeSync(fd,hash+'\n',fs.fstatSync(fd).size,'utf8');
    fs.fsyncSync(fd);
    return true;
   }finally{fs.closeSync(fd);}
