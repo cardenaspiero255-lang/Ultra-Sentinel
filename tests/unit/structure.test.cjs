@@ -175,3 +175,23 @@ test('repair authorization v1 includes a closed finite repair budget',()=>{
  assert.ok(budget.properties.maxFilesChanged.maximum<=30);
  assert.ok(budget.properties.maxPatchBytes.maximum<=200000);
 });
+
+test('CLEAR requires VERIFIED evidence in the versioned review contract',()=>{
+ const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas/review-result.v1.schema.json'),'utf8'));
+ assert.ok(Array.isArray(s.allOf)&&s.allOf.some(rule=>rule.if?.properties?.verdict?.const==='CLEAR'&&rule.then?.properties?.evidenceState?.const==='VERIFIED'));
+});
+test('repair scopes cannot be empty or whitespace-only',()=>{
+ const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas/repair-authorization.v1.schema.json'),'utf8'));
+ assert.ok(s.properties.scope.items.minLength>=1);
+ assert.ok(s.properties.scope.items.pattern);
+ assert.equal(new RegExp(s.properties.scope.items.pattern).test(''),false);
+ assert.equal(new RegExp(s.properties.scope.items.pattern).test('   '),false);
+});
+test('repair expiry requires enforceable RFC3339 syntax beyond format annotation',()=>{
+ const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas/repair-authorization.v1.schema.json'),'utf8'));
+ const expiry=s.properties.expiresAt;
+ assert.equal(expiry.format,'date-time');
+ assert.ok(expiry.pattern,'date-time format alone is annotation under JSON Schema 2020-12');
+ assert.equal(new RegExp(expiry.pattern).test('never'),false);
+ assert.equal(new RegExp(expiry.pattern).test('2026-10-14T14:57:22Z'),true);
+});
