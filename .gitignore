@@ -1,0 +1,21 @@
+# Credentials, local settings and reports
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+!.gitkeep
+node_modules/
+coverage/
+dist/
+build/
+.tmp/
+.cache/
+*.log
+*.sarif
+reports/generated/
+.DS_Store
+.idea/
+.vscode/

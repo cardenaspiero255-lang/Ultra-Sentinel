@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultra-sentinel.invalid/contracts/review-result.v1.schema.json",
+  "title": "review-result",
+  "description": "Versioned inert wire contract; no runtime is currently deployed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "targetRepo",
+    "headSha",
+    "verdict",
+    "evidenceState"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "targetRepo": {
+      "type": "string",
+      "maxLength": 150,
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "headSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "verdict": {
+      "enum": [
+        "CLEAR",
+        "ADVISORY",
+        "BLOCKED",
+        "INCOMPLETE"
+      ]
+    },
+    "evidenceState": {
+      "enum": [
+        "VERIFIED",
+        "UNVERIFIED",
+        "INCOMPLETE"
+      ]
+    },
+    "findingCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "reportDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

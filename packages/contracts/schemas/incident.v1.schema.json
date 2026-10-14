@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultra-sentinel.invalid/contracts/incident.v1.schema.json",
+  "title": "incident",
+  "description": "Versioned inert wire contract; no runtime is currently deployed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceRepo",
+    "service",
+    "eventType",
+    "observedAt",
+    "evidenceState"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "sourceRepo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "maxLength": 150
+    },
+    "service": {
+      "enum": [
+        "gamehub",
+        "jarvis",
+        "sentinel"
+      ]
+    },
+    "eventType": {
+      "enum": [
+        "CRASH",
+        "ANR",
+        "VOICE_HEALTH",
+        "CI_FAILURE",
+        "HEARTBEAT_MISSED",
+        "NETWORK_HEALTH"
+      ]
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "headSha": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "evidenceState": {
+      "enum": [
+        "INCOMPLETE",
+        "UNVERIFIED",
+        "VERIFIED"
+      ]
+    },
+    "fingerprint": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "summaryCode": {
+      "type": "string",
+      "maxLength": 80
+    }
+  }
+}
