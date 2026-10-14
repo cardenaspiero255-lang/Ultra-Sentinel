@@ -15,7 +15,7 @@ El código **no convierte un PR en autorización**. El propietario debe configur
 
 1. Crear en el dispositivo confiable del propietario un par Ed25519. Proteger la clave privada (archivo normal de permisos 0600, ruta absoluta, fuera de Git); distribuir solo la clave pública al entorno controlado que verificará firmas.
 2. Inyectar temporalmente `ULTRA_SENTINEL_OWNER_GITHUB_TOKEN` desde un almacén de secretos, con el menor alcance posible para consultar la identidad GitHub. **No** guardar tokens en el repo, argumentos CLI, artefactos, logs ni archivos de PR.
-3. Ejecutar `node scripts/verify-github-owner.cjs` para validar la identidad real y el ID.
+3. Ejecutar `node scripts/verify-github-owner.cjs` para validar la identidad real y el ID. Ejecutar después `node scripts/verify-gamehub-readonly.cjs` para comprobar mediante GET autenticado que el repositorio GameHub es el esperado (ID de repositorio 1375408706). Esto no concede escritura.
 4. Preparar un checkout **desechable**, en `os.tmpdir()`, rama `sandbox/...`, limpio, con **cero remotos**, y ejecutar los validadores en un sandbox del sistema operativo (contenedor/máquina virtual) **sin acceso a red** ni secretos.
 5. Crear un directorio privado (0700) **fuera del árbol Git** sobre un volumen persistente y fijar ahí `nonceStorePath`. No poner el ledger dentro del checkout.
 6. Preparar un plan `REVIEW_READY_NO_EXECUTOR` con cambios permitidos, hashes blob exactos y `planDigest=digestPlan(plan, changes)` de `packages/recovery/owner-sandbox-flow.cjs`.
@@ -41,6 +41,6 @@ Si se interrumpe una transacción, **no** borrar a mano `.txn`, `.lock` ni el le
 ## Límites para la certificación de producción
 
 - Los tests automatizados comprueban adversarios, firmas, concurrencia y `SIGKILL`, pero **no** sustituyen una validación con credenciales reales autorizadas, permisos mínimos y aislamiento verificable del ejecutor.
-- La API de GitHub se consulta **solo para identidad**. La reparación actual opera sobre un sandbox local; **no** concede poderes de escritura en GameHub Ultra ni JARVIS.
+- La API de GitHub se consulta **solo para identidad y conectividad de lectura a GameHub**. La reparación actual opera sobre un sandbox local; **no** concede poderes de escritura en GameHub Ultra ni JARVIS.
 - Antes de declarar el bloque certificado, ejecutar un smoke test con token real del propietario, demostrar el aislamiento del validador con una máquina desechable y publicar evidencias de éxito/fracaso, SHA exacto y verificación independiente de los controles.
 - CI verde es necesaria pero no suficiente. Mantener el PR en borrador si cualquier gate operativo sigue pendiente.
