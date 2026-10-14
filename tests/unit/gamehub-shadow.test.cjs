@@ -32,3 +32,11 @@ test('untrusted CI statuses and duplicate baseline names fail conservatively',()
  const duplicate=summarizeShadow(review,{headSha:sha,runs:[checks.runs[0],checks.runs[0],checks.runs[1]]});
  assert.equal(duplicate.comparableByName,false);
 });
+
+test('any failing GameHub check blocks shadow approval despite healthy baseline',()=>{
+ const r=summarizeShadow(review,{headSha:sha,runs:[...checks.runs,
+  {name:'Trusted main Sentinel inspects Sentinel changes',status:'completed',conclusion:'failure'}]});
+ assert.equal(r.sourceGate,'BLOCKED_SOURCE_CI');
+ assert.equal(r.comparableByName,true);
+ assert.equal(r.semanticEquivalenceVerified,false);
+});
