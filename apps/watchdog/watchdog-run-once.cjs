@@ -22,8 +22,9 @@ function privateDirectory(filename){
  return directory;
 }
 function checkedState(filename){
- if(!fs.existsSync(filename))return null;
- const stat=fs.lstatSync(filename);
+ let stat;
+ try{stat=fs.lstatSync(filename);}
+ catch(e){if(e.code==='ENOENT')return null;throw e;}
  if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
    (stat.mode&0o077)!==0||stat.size>65536)fail('STATE_FILE_UNSAFE');
  let raw;
