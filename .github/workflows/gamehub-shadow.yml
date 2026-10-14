@@ -7,7 +7,7 @@ on:
       pr_number:
         description: "GameHub PR to observe"
         required: true
-        default: "201"
+        default: "auto"
   schedule:
     - cron: '23 */6 * * *'
 permissions:
@@ -31,5 +31,5 @@ jobs:
       - name: Compare PR evidence and existing GitHub checks (no writes)
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TARGET_PR: ${{ inputs.pr_number || '201' }}
+          TARGET_PR: ${{ inputs.pr_number || 'auto' }}
         run: node scripts/gamehub-shadow-check.cjs "$TARGET_PR"
