@@ -57,3 +57,14 @@ test('rejects remotes and unisolated branches before any write',()=>{
   assert.throws(()=>run(f),/ISOLATED_BRANCH_REQUIRED/);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
+
+test('rejects symlink patch targets even inside a disposable checkout',()=>{
+ const f=fixture();try{
+  const external=path.join(f.directory,'outside.txt');
+  fs.writeFileSync(external,'before\n');
+  fs.rmSync(path.join(f.directory,f.file));
+  fs.symlinkSync(external,path.join(f.directory,f.file));
+  assert.throws(()=>run(f),/DIRTY_WORKTREE|SYMLINK_OR_SPECIAL_FILE/);
+  assert.equal(fs.readFileSync(external,'utf8'),'before\n');
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
