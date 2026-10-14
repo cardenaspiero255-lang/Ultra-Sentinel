@@ -150,6 +150,21 @@ function recoverInterruptedSandboxRepair({directory,nonceStorePath}={}){
  if(sandboxGit(root,'status','--porcelain')!==''||
   sandboxGit(root,'rev-parse','HEAD^{tree}')!==journal.baselineTree)
   throw Error('RECOVERY_TREE_MISMATCH');
+ // A crash during nonce consumption may leave a durable lock. Only the
+ // lock owned by this verified, dead transaction can be released.
+ const nonceLock=nonceStorePath+'.lock';
+ if(fs.existsSync(nonceLock)){
+  const lockStat=fs.lstatSync(nonceLock);
+  if(!lockStat.isFile()||lockStat.isSymbolicLink()||lockStat.nlink!==1||
+   (lockStat.mode&0o077)!==0||lockStat.size>512)throw Error('NONCE_LOCK_UNSAFE');
+  let lockOwner;
+  try{lockOwner=JSON.parse(fs.readFileSync(nonceLock,'utf8'));}
+  catch{throw Error('NONCE_LOCK_UNVERIFIED');}
+  if(lockOwner.version!==1||lockOwner.pid!==journal.pid)
+   throw Error('NONCE_LOCK_OWNER_MISMATCH');
+  fs.unlinkSync(nonceLock);
+  syncParent(nonceLock);
+ }
  finishTransaction({...journal,file});
  return Object.freeze({status:'RECOVERY_VERIFIED',disposition,remoteWrites:false,mergeAllowed:false});
 }
