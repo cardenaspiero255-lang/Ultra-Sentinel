@@ -26,30 +26,45 @@ function verifyOwnerAuthorization({authorization,verifiedActor,expectedOwner,now
 }
 function assertSafeRegularFile(filename){
  const stat=fs.lstatSync(filename);
- if(!stat.isFile()||stat.isSymbolicLink()||(stat.mode&0o077)!==0)throw Error('NONCE_STORE_UNSAFE');
+ if(!stat.isFile()||stat.isSymbolicLink()||(stat.mode&0o077)!==0||stat.nlink!==1)throw Error('NONCE_STORE_UNSAFE');
+}
+function assertPrivateDirectory(dirname){
+ const resolved=path.resolve(dirname),root=path.parse(resolved).root;
+ let current=root;
+ for(const component of path.relative(root,resolved).split(path.sep).filter(Boolean)){
+  current=path.join(current,component);
+  const stat=fs.lstatSync(current);
+  if(!stat.isDirectory()||stat.isSymbolicLink())throw Error('NONCE_DIRECTORY_UNSAFE');
+  if((stat.mode&0o002)!==0&&(stat.mode&0o1000)===0)throw Error('NONCE_DIRECTORY_UNSAFE');
+ }
+ const stat=fs.statSync(resolved);
+ if((stat.mode&0o077)!==0)throw Error('NONCE_DIRECTORY_NOT_PRIVATE');
 }
 class PersistentNonceStore{
  constructor(filename){
   if(!path.isAbsolute(filename))throw Error('ABSOLUTE_STORE_PATH_REQUIRED');
   this.filename=filename;
   fs.mkdirSync(path.dirname(filename),{recursive:true,mode:0o700});
+  assertPrivateDirectory(path.dirname(filename));
   try{fs.writeFileSync(filename,'',{flag:'wx',mode:0o600});}
   catch(e){if(e.code!=='EEXIST')throw e;}
   assertSafeRegularFile(filename);
  }
  consume(nonce){
   if(typeof nonce!=='string'||nonce.length<16)return false;
+  assertPrivateDirectory(path.dirname(this.filename));
   assertSafeRegularFile(this.filename);
   const hash=crypto.createHash('sha256').update(nonce).digest('hex');
   const lock=this.filename+'.lock';
   let lockFd;
-  try{lockFd=fs.openSync(lock,'wx',0o600);}catch(e){if(e.code==='EEXIST')return false;throw e;}
+  try{lockFd=fs.openSync(lock,fs.constants.O_CREAT|fs.constants.O_EXCL|fs.constants.O_WRONLY|fs.constants.O_NOFOLLOW,0o600);}
+  catch(e){if(e.code==='EEXIST')return false;throw e;}
   let fd;
   try{
    assertSafeRegularFile(this.filename);
    fd=fs.openSync(this.filename,fs.constants.O_RDWR|fs.constants.O_NOFOLLOW);
    const stat=fs.fstatSync(fd);
-   if(!stat.isFile()||(stat.mode&0o077)!==0)throw Error('NONCE_STORE_UNSAFE');
+   if(!stat.isFile()||(stat.mode&0o077)!==0||stat.nlink!==1)throw Error('NONCE_STORE_UNSAFE');
    const existing=fs.readFileSync(fd,'utf8');
    if(existing.split('\n').includes(hash))return false;
    fs.writeSync(fd,hash+'\n',stat.size,'utf8');
