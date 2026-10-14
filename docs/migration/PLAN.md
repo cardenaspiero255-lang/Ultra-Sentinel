@@ -15,7 +15,7 @@ Repositorio origen: `cardenaspiero255-lang/gamehub-ultra`. Destino: `cardenaspie
 - Listar `.github/scripts/ultra_sentinel_*.cjs`, `.github/workflows/ultra-sentinel-*.yml`, contratos, fixtures, binarios, dependencias NPM, triggers GitHub y referencias concretas a rutas de GameHub.
 - Separar piezas **reutilizables**, adaptadores de CI de GameHub y Android/voz/UI que deben permanecer.
 - Etiquetar SHA y estado de fusión de cada origen; crear matriz: propietario, dependencias, pruebas, riesgo, criterio de extracción.
-- **No incluir #197** y no confundir los PR abiertos y apilados posteriores con código de `main`.
+- Inventariar el PR #197 ya fusionado, sin trasladar su código hasta el bloque 4; no confundir PR abiertos con `main`.
 
 ### M2 — Core portátil y contratos
 - Portar primero Core, reglas, parsers y suites de tests relevantes, con rutas relativas y sin privilegios.
@@ -30,7 +30,7 @@ Repositorio origen: `cardenaspiero255-lang/gamehub-ultra`. Destino: `cardenaspie
 
 ### M4 — Family Hunter + memoria desacoplada
 - Portar interfaz de tres modos y clasificación multiarchivo desde **bases estables**. La memoria requiere diseño, evaluación de procedencia y tests propios antes de integrarse.
-- **La exclusión de #197 continúa hasta una decisión explícita posterior** sobre una implementación revisada y fusionada; no incorporar su trabajo indirectamente mediante cherry-picks de ramas apiladas.
+- PR #197 autorizado por el propietario para el bloque 4; exigir revisión de procedencia y pruebas independientes antes de importar el lector.
 - Aislar escritor de propuestas y lógica de autorización.
 
 ### M5 — Modo sombra entre repositorios
@@ -49,4 +49,4 @@ Repositorio origen: `cardenaspiero255-lang/gamehub-ultra`. Destino: `cardenaspie
 - **Solo retirar scripts/workflows viejos al comprobar paridad, seguridad, estado de rama y observabilidad**; no borrar historial ni registros de incidencias.
 
 ## Prohibiciones
-No incluir código del PR excluido, no activar auto-merge, no usar `pull_request_target` para ejecutar PRs, no instalar tokens amplios, no marcar SSS por conteo de tests. Cada etapa exige revisión independiente y CI al último SHA.
+No importar código del PR #197 antes del bloque 4, no activar auto-merge, no usar `pull_request_target` para ejecutar PRs, no instalar tokens amplios, no marcar SSS por conteo de tests. Cada etapa exige revisión independiente y CI al último SHA.
