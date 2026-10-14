@@ -62,3 +62,19 @@ test('cannot trust an operator-supplied absent check name or malformed PR number
   token,requiredChecks:['Android build'],fetchImpl:github().get}),
  /INVALID_OPERATOR_GITHUB_ACCESS/);
 });
+
+test('required check name may originate from GitHub classic commit status instead of check-run API',async()=>{
+ const {get}=github({classic:{statuses:[{context:'coverage/patch',state:'success'}]}});
+ const r=await loadGameHubRepairPreflight(132,{
+  token,requiredChecks:['Android build','coverage/patch'],fetchImpl:get
+ });
+ assert.equal(r.classicStatusInventoryComplete,true);
+ assert.equal(r.requiredChecks.length,2);
+ assert.equal(r.remoteWrites,false);
+});
+test('failed classic required context cannot pass even when check-runs succeeded',async()=>{
+ const {get}=github({classic:{statuses:[{context:'coverage/patch',state:'failure'}]}});
+ await assert.rejects(()=>loadGameHubRepairPreflight(132,{
+  token,requiredChecks:['Android build','coverage/patch'],fetchImpl:get
+ }),/FAILED_OR_STALE_CLASSIC_STATUS/);
+});
