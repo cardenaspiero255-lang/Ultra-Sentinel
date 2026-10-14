@@ -11,7 +11,7 @@ function resolveMode(requested){
 // Core 2.0.0 searches only built-in curated playbooks (extra=[]), never a
 // user-contributed verified_fix. Match the actual curated source content to
 // prevent a copied ID or fabricated "confirmed_tests" label becoming proof.
-const {getCuratedPlaybookById}=require('./ultra_sentinel_memory.cjs');
+const {getCuratedPlaybookById}=require('../memory/ultra_sentinel_memory.cjs');
 const CORE_DOMAIN_FILES=Object.freeze({
  voice:'speech/notes.md',ai:'frontier/notes.md',
  network:'dns/notes.md',performance:'thermal/notes.md',
@@ -28,7 +28,7 @@ function validValidationPlan(plan){
  // Ask the actual pinned Core 2.0.0 producer for its canonical check list.
  // All filenames are our own inert documentation fixtures, never PR paths.
  // This avoids changing protected Core code or duplicating its rules.
- const {analyze}=require('./ultra_sentinel_core.cjs');
+ const {analyze}=require('../core/ultra_sentinel_core.cjs');
  const actual=analyze(plan.domains.map(d=>({
   filename:CORE_DOMAIN_FILES[d],status:'added',changes:0,patch:''
  })),{sha:'0'.repeat(40)}).validationPlan;
@@ -114,7 +114,7 @@ function completeShape(analysis){
  // Derive independent path tags from the actual trusted Core producer using
  // inert filename-only fixtures; never trust two fields of the same payload
  // to authenticate one another. This does not execute PR source.
- const {analyze:coreAnalyze}=require('./ultra_sentinel_core.cjs');
+ const {analyze:coreAnalyze}=require('../core/ultra_sentinel_core.cjs');
  const observedDomains=new Map();
  for(const finding of findings){
   if(finding.domains.some(d=>!plan.domains.includes(d)))return false;
