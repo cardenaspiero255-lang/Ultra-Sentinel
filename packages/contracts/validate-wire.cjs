@@ -47,6 +47,7 @@ function safeInput(value,seen=new WeakSet(),depth=0,count={value:0}){
  seen.add(value);
  if(!Array.isArray(value)&&!isPlainRecord(value))return false;
  for(const key of Reflect.ownKeys(value)){
+  if(Array.isArray(value)&&key==='length')continue; // Native array length is non-enumerable.
   if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype')return false;
   const d=Object.getOwnPropertyDescriptor(value,key);
   if(!d||!d.enumerable||!Object.hasOwn(d,'value'))return false;
