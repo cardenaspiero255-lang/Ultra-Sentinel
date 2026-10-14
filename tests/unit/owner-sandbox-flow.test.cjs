@@ -21,7 +21,7 @@ function fixture(){
  branch:'sandbox/repair',headSha:head,nonce,expiresAt:Date.now()+60000,
  planDigest:digestPlan(plan,changes)};
  const options={token:'token-with-length-12345',expectedOwner:'cardenaspiero255-lang',
- expectedOwnerId:12345,authorization,nonceStorePath:path.join(directory,'..','nonce-ledger-'+path.basename(directory)),
+ expectedOwnerId:12345,authorization,nonceStorePath:path.join(directory,'nonce-ledger'),
  directory,plan,changes,expectedHeadSha:head,
  fetchImpl:async()=>({status:200,json:async()=>({login:'cardenaspiero255-lang',id:12345})})};
  return {directory,file,options};
