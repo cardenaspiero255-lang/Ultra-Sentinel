@@ -96,3 +96,60 @@ test('layout accepts regular nested files and rejects direct file symlinks',()=>
   fs.rmSync(sandbox,{recursive:true,force:true});
  }
 });
+
+
+test('manifest paths reject control characters that could forge CI log lines',()=>{
+ for(const candidate of ['docs/bad\nlabel.md','docs/bad\rlabel.md',
+  'docs/bad\tlabel.md','docs/bad\x1b[31m.md']){
+  assert.equal(safeRelativePath(candidate),false,
+    'manifest path control characters must not appear in diagnostics');
+ }
+});
+
+test('contract v1 fields remain complete, closed and versioned',()=>{
+ const mandatory={
+  incident:['schemaVersion','sourceRepo','service','eventType','observedAt','evidenceState'],
+  'review-result':['schemaVersion','targetRepo','headSha','verdict','evidenceState'],
+  'repair-authorization':['schemaVersion','mode','repository','prNumber','headSha','actor','scope','expiresAt','nonce']
+ };
+ for(const [name,required] of Object.entries(mandatory)){
+  const schema=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas',
+   name+'.v1.schema.json'),'utf8'));
+  assert.equal(schema.$schema,'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(schema.$id,'https://ultra-sentinel.invalid/contracts/'+name+'.v1.schema.json');
+  assert.deepEqual([...schema.required].sort(),[...required].sort());
+  assert.equal(schema.properties.schemaVersion.const,1);
+  assert.equal(schema.additionalProperties,false);
+  assert.ok(schema.required.every(field=>Object.hasOwn(schema.properties,field)));
+ }
+});
+
+test('repair authorization schema limits identities, scopes, replay and timestamps',()=>{
+ const schema=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas',
+  'repair-authorization.v1.schema.json'),'utf8'));
+ const p=schema.properties;
+ assert.equal(p.mode.const,'REPAIR_COMMITS_AUTHORIZED');
+ assert.equal(p.prNumber.minimum,1);
+ assert.equal(p.headSha.pattern,'^[0-9a-f]{40}$');
+ assert.equal(p.scope.type,'array');
+ assert.equal(p.scope.uniqueItems,true);
+ assert.ok(p.scope.minItems>=1&&p.scope.maxItems<=30);
+ assert.ok(p.nonce.minLength>=16&&p.nonce.maxLength<=128);
+ assert.equal(p.expiresAt.format,'date-time');
+});
+
+test('incident and review schemas reject ambiguous verdict definitions',()=>{
+ const load=name=>JSON.parse(fs.readFileSync(path.join(ROOT,
+  'packages/contracts/schemas',name+'.v1.schema.json'),'utf8'));
+ const incident=load('incident').properties;
+ const review=load('review-result').properties;
+ assert.deepEqual(incident.evidenceState.enum.slice().sort(),
+  ['INCOMPLETE','UNVERIFIED','VERIFIED'].sort());
+ assert.equal(incident.observedAt.format,'date-time');
+ assert.equal(incident.sourceRepo.pattern,'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$');
+ assert.deepEqual(review.verdict.enum.slice().sort(),
+  ['CLEAR','ADVISORY','BLOCKED','INCOMPLETE'].sort());
+ assert.equal(review.headSha.pattern,'^[0-9a-f]{40}$');
+ assert.deepEqual(review.evidenceState.enum.slice().sort(),
+  ['INCOMPLETE','UNVERIFIED','VERIFIED'].sort());
+});
