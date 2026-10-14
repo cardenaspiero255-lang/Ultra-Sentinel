@@ -74,6 +74,10 @@ class PersistentNonceStore{
   catch(e){if(e.code==='EEXIST')return false;throw e;}
   let fd;
   try{
+   // Persist the lock owner before touching the ledger. Recovery may only
+   // release this lock after proving its transaction process has exited.
+   fs.writeSync(lockFd,JSON.stringify({version:1,pid:process.pid})+'\n');
+   fs.fsyncSync(lockFd);
    assertSafeRegularFile(this.filename);
    fd=fs.openSync(this.filename,fs.constants.O_RDWR|fs.constants.O_NOFOLLOW);
    const stat=fs.fstatSync(fd);
