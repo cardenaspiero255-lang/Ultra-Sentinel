@@ -53,9 +53,10 @@ test('reject changed target, invalid token, and untrusted source',async()=>{
 test('workflow stays read-only and executes trusted main rather than PR code',()=>{
  const fs=require('node:fs'),path=require('node:path');
  const yaml=fs.readFileSync(path.join(__dirname,'../../.github/workflows/gamehub-provider-observer.yml'),'utf8');
- assert.match(yaml,/permissions:\\n  contents: read/);
- assert.match(yaml,/ref: main/);
- assert.match(yaml,/persist-credentials: false/);
- assert.match(yaml,/branches: \\[main\\]/);
- assert.doesNotMatch(yaml,/contents: write|pull-requests: write|github\\.event\\.pull_request\\.head|codex/i);
+ const lines=yaml.split(String.fromCharCode(10));
+ assert.ok(lines.includes('  contents: read'));
+ assert.ok(lines.includes('          ref: main'));
+ assert.ok(lines.includes('          persist-credentials: false'));
+ assert.ok(lines.includes('    branches: [main]'));
+ assert.doesNotMatch(yaml,/contents: write|pull-requests: write|pull_request\.head|codex/i);
 });
