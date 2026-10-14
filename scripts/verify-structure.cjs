@@ -20,9 +20,28 @@ function checkLayout(root,manifest){
   seen.add(p);
   const full=path.resolve(base,p);
   if(!full.startsWith(base+path.sep)){errors.push('outside root: '+p);continue;}
-  if(!fs.existsSync(full)){errors.push('missing path: '+p);continue;}
-  const st=fs.lstatSync(full);
-  if(!st.isFile()||st.isSymbolicLink())errors.push('not a regular file: '+p);
+  // lstat only on the final file is unsafe: parent directory symlinks are
+  // transparently followed. Reject every symbolic link in the path, including
+  // links pointing *inside* the repository, before accepting the final file.
+  // Paths come from the bounded, normalized manifest, not from a shell.
+  const segments=p.split('/');
+  let current=base;
+  for(let i=0;i<segments.length;i++){
+   current=path.join(current,segments[i]);
+   let st;
+   try{
+    st=fs.lstatSync(current);
+   }catch(err){
+    errors.push((err&&err.code==='ENOENT'?'missing path: ':'inaccessible path: ')+p);
+    break;
+   }
+   if(st.isSymbolicLink()){errors.push('symlink path: '+p);break;}
+   if(i<segments.length-1&&!st.isDirectory()){
+    errors.push('not a directory: '+p);
+    break;
+   }
+   if(i===segments.length-1&&!st.isFile())errors.push('not a regular file: '+p);
+  }
  }
  return {checked:seen.size,errors};
 }
