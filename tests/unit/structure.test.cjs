@@ -48,3 +48,51 @@ test('project registry examples do not enable production integrations',()=>{
  assert.ok(project.projects.length>=2);
  assert.ok(project.projects.every(x=>x.enabled===false));
 });
+
+const os=require('node:os');
+
+test('layout rejects a regular file reached through an external directory symlink',()=>{
+ const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-layout-red-'));
+ const root=path.join(sandbox,'repository');
+ const outside=path.join(sandbox,'outside');
+ try{
+  fs.mkdirSync(root);
+  fs.mkdirSync(outside);
+  fs.writeFileSync(path.join(outside,'secret.txt'),'sensitive fixture');
+  fs.symlinkSync(outside,path.join(root,'docs'),'dir');
+  const result=checkLayout(root,{schemaVersion:1,paths:['docs/secret.txt']});
+  assert.ok(result.errors.some(error=>error.includes('symlink')||
+    error.includes('outside root')),'must never accept a file outside root through an intermediate symlink');
+ }finally{
+  fs.rmSync(sandbox,{recursive:true,force:true});
+ }
+});
+
+test('layout rejects an intermediate symlink even if it resolves inside the repository',()=>{
+ const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-layout-internal-'));
+ const root=path.join(sandbox,'repository');
+ try{
+  fs.mkdirSync(path.join(root,'real'),{recursive:true});
+  fs.writeFileSync(path.join(root,'real','ok.txt'),'fixture');
+  fs.symlinkSync(path.join(root,'real'),path.join(root,'alias'),'dir');
+  const result=checkLayout(root,{schemaVersion:1,paths:['alias/ok.txt']});
+  assert.ok(result.errors.some(error=>error.includes('symlink')),
+    'symlinked parents must be rejected consistently for deterministic CI');
+ }finally{
+  fs.rmSync(sandbox,{recursive:true,force:true});
+ }
+});
+
+test('layout accepts regular nested files and rejects direct file symlinks',()=>{
+ const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-layout-file-'));
+ const root=path.join(sandbox,'repository');
+ try{
+  fs.mkdirSync(path.join(root,'docs'),{recursive:true});
+  fs.writeFileSync(path.join(root,'docs','ok.md'),'fixture');
+  fs.symlinkSync('ok.md',path.join(root,'docs','alias.md'),'file');
+  assert.deepEqual(checkLayout(root,{schemaVersion:1,paths:['docs/ok.md']}).errors,[]);
+  assert.ok(checkLayout(root,{schemaVersion:1,paths:['docs/alias.md']}).errors.length>0);
+ }finally{
+  fs.rmSync(sandbox,{recursive:true,force:true});
+ }
+});
