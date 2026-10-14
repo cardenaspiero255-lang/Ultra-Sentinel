@@ -8,10 +8,15 @@
 const {checkedState,pendingDigest,acknowledgeDelivery}=
  require('./watchdog-run-once.cjs');
 const {createHash,createHmac}=require('node:crypto');
+const {isIP}=require('node:net');
 function fail(code){throw Error(code);}
 function validateEndpoint(raw){
  if(typeof raw!=='string'||raw.length>1024||raw.trim()!==raw)fail('INVALID_ALERT_DESTINATION');
  let url;try{url=new URL(raw);}catch{fail('INVALID_ALERT_DESTINATION');}
+ // Webhook endpoints must be DNS names, never numeric IPs (including
+ // cloud metadata, link-local, loopback, or IPv6 literals).
+ if(isIP(url.hostname.replace(/^\[|\]$/g,''))!==0||
+  /^\d+(?:\.\d+)+$/.test(url.hostname))fail('INVALID_ALERT_DESTINATION');
  if(url.protocol!=='https:'||url.username||url.password||url.port||url.hash||url.search||
   !/^[a-z0-9.-]+$/.test(url.hostname)||!url.hostname.includes('.')||
   url.hostname.endsWith('.local')||url.hostname.endsWith('.internal')||
@@ -22,7 +27,8 @@ function validateEndpoint(raw){
   url.pathname.length>500)fail('INVALID_ALERT_DESTINATION');
  const labels=url.hostname.split('.');
  if(labels.some(x=>!x||x.length>63||! /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(x))||
-  labels.at(-1).length<2)fail('INVALID_ALERT_DESTINATION');
+  labels.at(-1).length<2||!/^[a-z][a-z0-9-]*$/.test(labels.at(-1)))
+  fail('INVALID_ALERT_DESTINATION');
  return url.toString();
 }
 function validSecret(s){return typeof s==='string'&&s.length>=20&&s.length<=2048&&
