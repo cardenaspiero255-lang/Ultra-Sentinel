@@ -3,24 +3,36 @@ const crypto=require('node:crypto');
 const fs=require('node:fs');
 const path=require('node:path');
 const SHA=/^[a-f0-9]{40}$/;
+const DIGEST=/^[a-f0-9]{64}$/;
+const DOMAIN='Ultra-Sentinel:owner-authorization:v1\n';
 function stableAuthorization({ownerLogin,repo,branch,headSha,nonce,expiresAt,planDigest}={}){
  if(typeof ownerLogin!=='string'||!/^[A-Za-z0-9-]{1,39}$/.test(ownerLogin)||
  typeof repo!=='string'||!/^[-\w]+\/[-\w.]+$/.test(repo)||
  typeof branch!=='string'||!/^sandbox\/[a-z0-9._/-]+$/.test(branch)||
  !SHA.test(headSha||'')||typeof nonce!=='string'||nonce.length<16||
- !SHA.test(planDigest||'')||!Number.isSafeInteger(expiresAt))
+ !DIGEST.test(planDigest||'')||!Number.isSafeInteger(expiresAt))
  throw Error('INVALID_OWNER_AUTHORIZATION');
  return JSON.stringify({ownerLogin,repo,branch,headSha,nonce,expiresAt,planDigest});
 }
-function verifyOwnerAuthorization({authorization,verifiedActor,expectedOwner,now=Date.now()}={}){
+function verifyOwnerAuthorization({authorization,verifiedActor,expectedOwner,expectedOwnerId,signature,
+ trustedPublicKey,now=Date.now()}={}){
  if(!verifiedActor||verifiedActor.source!=='github-authenticated-session'||
- typeof verifiedActor.login!=='string'||verifiedActor.login!==expectedOwner)
+  typeof verifiedActor.login!=='string'||verifiedActor.login!==expectedOwner||
+  !Number.isSafeInteger(verifiedActor.userId)||
+  (expectedOwnerId!==undefined&&verifiedActor.userId!==expectedOwnerId))
   return Object.freeze({authorized:false,reason:'UNVERIFIED_OWNER'});
  try{
   const canonical=stableAuthorization(authorization);
   if(authorization.ownerLogin!==expectedOwner)return Object.freeze({authorized:false,reason:'OWNER_MISMATCH'});
   if(authorization.expiresAt<=now||authorization.expiresAt-now>900000)
    return Object.freeze({authorized:false,reason:'AUTHORIZATION_EXPIRED'});
+  // The pinned key is trusted configuration, never read from a request payload.
+  if(typeof signature!=='string'||! /^[A-Za-z0-9+/]{86}==$/.test(signature)||
+   !trustedPublicKey)return Object.freeze({authorized:false,reason:'OWNER_SIGNATURE_REQUIRED'});
+  const key=crypto.createPublicKey(trustedPublicKey);
+  if(key.asymmetricKeyType!=='ed25519'||
+   !crypto.verify(null,Buffer.from(DOMAIN+canonical,'utf8'),key,Buffer.from(signature,'base64')))
+   return Object.freeze({authorized:false,reason:'OWNER_SIGNATURE_INVALID'});
   return Object.freeze({authorized:true,canonical});
  }catch{return Object.freeze({authorized:false,reason:'INVALID_AUTHORIZATION'});}
 }
