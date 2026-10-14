@@ -7,10 +7,10 @@ const {stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore}=requir
 const {executeSandboxRepair}=require('./sandbox-executor.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 function digestPlan(plan,changes){
- return crypto.createHash('sha1').update(JSON.stringify({plan,changes})).digest('hex');
+ return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
 async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwnerId,
- authorization,nonceStorePath,directory,plan,changes,expectedHeadSha,fetchImpl,
+ authorization,authorizationSignature,trustedPublicKey,nonceStorePath,directory,plan,changes,expectedHeadSha,fetchImpl,
  verifyRepair,now=Date.now()}={}){
  if(typeof verifyRepair!=='function')throw Error('REPAIR_VERIFIER_REQUIRED');
  if(!authorization||!plan||!Array.isArray(changes)||
@@ -21,7 +21,8 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   authorization.planDigest!==digestPlan(plan,changes))
   throw Error('AUTHORIZATION_SCOPE_MISMATCH');
  const actor=await authenticateGitHubOwner({token,expectedOwner,expectedOwnerId,fetchImpl});
- const check=verifyOwnerAuthorization({authorization,verifiedActor:actor,expectedOwner,now});
+ const check=verifyOwnerAuthorization({authorization,verifiedActor:actor,expectedOwner,expectedOwnerId,signature:authorizationSignature,
+  trustedPublicKey,now});
  if(!check.authorized||check.canonical!==stableAuthorization(authorization))
   throw Error('OWNER_AUTHORIZATION_DENIED');
  const nonceStore=new PersistentNonceStore(nonceStorePath);
