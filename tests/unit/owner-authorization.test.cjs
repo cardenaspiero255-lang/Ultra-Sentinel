@@ -26,3 +26,16 @@ test('nonce replay is rejected across store instances',()=>{
   assert.equal(new PersistentNonceStore(file).consume(base.nonce),false);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('nonce ledger refuses concurrent lock rather than racing',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-lock-'));
+ try{
+  const file=path.join(dir,'ledger');
+  const store=new PersistentNonceStore(file);
+  fs.writeFileSync(file+'.lock','busy');
+  assert.equal(store.consume(base.nonce),false);
+  fs.unlinkSync(file+'.lock');
+  assert.equal(store.consume(base.nonce),true);
+  assert.equal(store.consume(base.nonce),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
