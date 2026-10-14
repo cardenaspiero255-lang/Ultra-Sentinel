@@ -1,0 +1,30 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const {analyze}=require('../../packages/core/ultra_sentinel_core.cjs');
+const {present}=require('../../packages/family-hunter/ultra_sentinel_family_hunter_modes.cjs');
+const {planRepair}=require('../../packages/recovery/supervised-repair.cjs');
+const {recommendation}=require('../../packages/reports/evidence-recommendations.cjs');
+const {parseLedger,verifiedEntries}=require('../../packages/memory/ultra_sentinel_memory_ledger.cjs');
+const sha='a'.repeat(40);
+test('end-to-end review, recommendation and repair stay non-executable',async()=>{
+ const raw=analyze([{filename:'app/src/main/java/com/example/Engine.kt',status:'added',changes:1,patch:'@@ -0,0 +1 @@\n+GlobalScope.launch { work() }\n'}],{sha});
+ const report=present(raw,'REPAIR_COMMITS_AUTHORIZED');
+ assert.equal(report.familyHunter.autoMergeAllowed,false);
+ assert.equal(report.familyHunter.autoCommitAllowed,false);
+ assert.equal(report.remediations.verified,false);
+ const rec=recommendation(raw.findings[0],raw);
+ assert.equal(rec.autoCommit,false);
+ const plan=planRepair({analysis:raw,mode:'REPAIR_COMMITS_AUTHORIZED',authorization:{kind:'EXPLICIT_HUMAN_APPROVAL',sha}});
+ assert.equal(plan.commitAllowed,false);
+ assert.equal(plan.mergeAllowed,false);
+ const ledger={schema:'ultra-sentinel-family-hunter-memory/v1',revision:0,entries:[]};
+ assert.deepEqual(parseLedger(ledger),[]);
+ assert.deepEqual(await verifiedEntries(ledger),[]);
+});
+test('malformed source and forged verification fail closed across modules',()=>{
+ const raw=analyze([{filename:'app/src/main/java/com/example/Engine.kt',status:'modified',changes:1,patch:null}],{sha});
+ assert.equal(raw.verdict,'INCOMPLETE');
+ assert.equal(present(raw).verdict,'INCOMPLETE');
+ assert.equal(planRepair({analysis:raw}).status,'BLOCKED_INCOMPLETE');
+ assert.throws(()=>recommendation({rule:'FORGED',path:'x',line:1},raw),/INCOMPLETE_EVIDENCE/);
+});
