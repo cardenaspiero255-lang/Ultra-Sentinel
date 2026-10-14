@@ -4,7 +4,7 @@
 Código de `main` de tres productos, credenciales GitHub/Sentry, identidad del propietario, autoría de checks, estado CI, permisos del micrófono/datos de voz, historial de reparaciones y capacidad de despliegue.
 
 ## Límites y actores
-- PR/forks, issues, comentarios, CodeRabbit/Qodo/Codex y outputs LLM: **origen no confiable**.
+- PR/forks, issues, comentarios, revisores automatizados externos y outputs LLM: **origen no confiable**. Ningún revisor externo está autorizado por defecto; Codex está excluido de este proyecto por política.
 - Recolector en `main` de lectura: puede **observar** fuentes GitHub autenticadas, pero no cambiar repos.
 - Auditor independiente: decide si evidencia es suficiente, no da permiso para desplegar.
 - Autorizador: identidad y consentimiento del propietario.
