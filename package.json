@@ -1,0 +1,14 @@
+{
+  "name": "ultra-sentinel",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Secure architecture bootstrap; no production auditor or recovery service deployed",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/unit/*.test.cjs",
+    "check:structure": "node scripts/verify-structure.cjs",
+    "check": "npm run check:structure && npm test"
+  }
+}
