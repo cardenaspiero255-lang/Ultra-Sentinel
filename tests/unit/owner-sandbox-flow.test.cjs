@@ -3,6 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const {runOwnerAuthorizedSandboxRepair,digestPlan}=require('../../packages/recovery/owner-sandbox-flow.cjs');
+const {stableAuthorization}=require('../../packages/recovery/owner-authorization.cjs');
 function git(cwd,...args){return execFileSync('git',args,{cwd,encoding:'utf8'}).trim();}
 function blob(data){const b=Buffer.from(data);return crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+b.length+'\0'),b])).digest('hex');}
 function fixture(){
@@ -20,7 +21,9 @@ function fixture(){
  const authorization={ownerLogin:'cardenaspiero255-lang',repo:'cardenaspiero255-lang/Ultra-Sentinel',
  branch:'sandbox/repair',headSha:head,nonce,expiresAt:Date.now()+60000,
  planDigest:digestPlan(plan,changes)};
- const options={token:'token-with-length-12345',expectedOwner:'cardenaspiero255-lang',
+ const {privateKey,publicKey}=crypto.generateKeyPairSync('ed25519');
+ const authorizationSignature=crypto.sign(null,Buffer.from('Ultra-Sentinel:owner-authorization:v1\n'+stableAuthorization(authorization)),privateKey).toString('base64');
+ const options={authorizationSignature,trustedPublicKey:publicKey,token:'token-with-length-12345',expectedOwner:'cardenaspiero255-lang',
  expectedOwnerId:12345,authorization,nonceStorePath:path.join(fs.mkdtempSync(path.join(os.tmpdir(),'ultra-flow-nonces-')),'ledger'),
  directory,plan,changes,expectedHeadSha:head,
  fetchImpl:async()=>({status:200,json:async()=>({login:'cardenaspiero255-lang',id:12345})})};
