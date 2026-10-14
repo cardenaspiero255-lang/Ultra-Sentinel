@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultra-sentinel.invalid/contracts/repair-authorization.v1.schema.json",
+  "title": "repair-authorization",
+  "description": "Versioned inert wire contract; no runtime is currently deployed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "mode",
+    "repository",
+    "prNumber",
+    "headSha",
+    "actor",
+    "scope",
+    "expiresAt",
+    "nonce",
+    "budget"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "mode": {
+      "const": "REPAIR_COMMITS_AUTHORIZED"
+    },
+    "repository": {
+      "type": "string",
+      "maxLength": 150,
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "prNumber": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "headSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "actor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 240,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9_./*:-]+$"
+      },
+      "minItems": 1,
+      "maxItems": 30,
+      "uniqueItems": true
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-([0-2]\\d|3[01])[Tt]([01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)(?:\\.\\d+)?(?:[Zz]|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)$",
+      "description": "RFC 3339 lexical shape, including :60. Calendar validity and leap-second instants MUST be asserted by strict-rfc3339.cjs at the consumer boundary."
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128
+    },
+    "attestationId": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "budget": {
+      "type": "object",
+      "description": "Explicit upper bounds for a single authorized repair session; enforcement and identity verification remain external",
+      "additionalProperties": false,
+      "required": [
+        "maxCommits",
+        "maxCiRuns",
+        "maxDurationSeconds",
+        "maxFilesChanged",
+        "maxPatchBytes"
+      ],
+      "properties": {
+        "maxCommits": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "maxCiRuns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "maxDurationSeconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 900
+        },
+        "maxFilesChanged": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "maxPatchBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 200000
+        }
+      }
+    }
+  }
+}

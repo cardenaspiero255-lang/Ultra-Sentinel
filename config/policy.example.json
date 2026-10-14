@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "defaultMode": "REVIEW_WITH_SOLUTIONS",
+  "repairCommitsEnabled": false,
+  "autoApproveEnabled": false,
+  "autoMergeEnabled": false,
+  "productionDeployEnabled": false,
+  "allowUnverifiedEvidence": false,
+  "requiredEvidence": [
+    "exact_head_sha",
+    "required_checks",
+    "independent_review",
+    "complete_file_inventory"
+  ],
+  "note": "Inactive example; a runtime must load and validate a separately approved policy"
+}
