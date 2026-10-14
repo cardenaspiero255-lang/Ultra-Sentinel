@@ -3,7 +3,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 function safeRelativePath(value){
- if(typeof value!=='string'||!value||value.includes('\\')||value.includes('\0'))return false;
+ if(typeof value!=='string'||!value||value.includes('\\')||value.includes('\0')||/[\x00-\x1f\x7f]/.test(value))return false;
  if(path.posix.isAbsolute(value)||path.win32.isAbsolute(value))return false;
  const parts=value.split('/');
  return parts.every(p=>p!==''&&p!=='.'&&p!=='..')&&path.posix.normalize(value)===value;
