@@ -16,7 +16,7 @@ function fixture(){
  const head=git(directory,'rev-parse','HEAD');
  const before=git(directory,'hash-object',file);
  const proposed='after\n';
- const crypto=require('node:crypto');const buf=Buffer.from(proposed);const after=crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+buf.length+'\\0'.replace('\\0','\0')),buf])).digest('hex');
+ const crypto=require('node:crypto');const buf=Buffer.from(proposed);const after=crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+buf.length+'\\0'),buf])).digest('hex');
  return {directory,file,head,before,after,proposed};
 }
 function run(f,nonceStore={consume:()=>true},changes=[{path:f.file,content:f.proposed}]){
