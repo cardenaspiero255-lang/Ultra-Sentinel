@@ -34,7 +34,7 @@ async function deliverPending({stateFile,endpoint,token,signingSecret,
   fail('ALERT_DELIVERY_NOT_CONFIGURED');
  // A checkpoint is needed to prove an outbox exists and was durable.
  const checkpoint=checkedState(stateFile);
- if(!checkpoint)fail('WATCHDOG_CHECKPOINT_MISSING');
+ if(!checkpoint)return Object.freeze({status:'NO_CHECKPOINT_YET',deliveryAccepted:false});
  const pending=checkpoint.pendingAlerts;
  if(pending.length===0)return Object.freeze({status:'NO_PENDING_ALERTS',deliveryAccepted:false});
  const digest=pendingDigest(pending);
