@@ -150,7 +150,8 @@ function validateWire(name,payload){
     const scope=payload.scope[i];
     if(typeof scope!=='string')continue;
     const segments=scope.split('/');
-    if(segments.some(s=>!s||s==='.'||s==='..')||scope.startsWith('/')||
+    if(segments.some(s=>!s||s==='.'||s==='..'||s.includes(':')||
+       /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\\.|$)/i.test(s))||scope.startsWith('/')||
        /^[A-Za-z]:/.test(scope)){
      errors.push('$.scope: invalid or traversing path');
     }
