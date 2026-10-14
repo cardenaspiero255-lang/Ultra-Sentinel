@@ -42,7 +42,7 @@
     "observedAt": {
       "type": "string",
       "format": "date-time",
-      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-([0-2]\\d|3[01])[Tt]([01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)(?:\\.\\d+)?(?:[Zz]|[+-](?:(?:0\\d|1[0-3]):[0-5]\\d|14:00))$",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-([0-2]\\d|3[01])[Tt]([01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)(?:\\.\\d+)?(?:[Zz]|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)$",
       "description": "RFC 3339 lexical shape, including :60. Calendar validity and leap-second instants MUST be asserted by strict-rfc3339.cjs at the consumer boundary."
     },
     "headSha": {
