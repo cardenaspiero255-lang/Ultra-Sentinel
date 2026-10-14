@@ -14,7 +14,8 @@
     "actor",
     "scope",
     "expiresAt",
-    "nonce"
+    "nonce",
+    "budget"
   ],
   "properties": {
     "schemaVersion": {
@@ -63,6 +64,45 @@
     "attestationId": {
       "type": "string",
       "maxLength": 128
+    },
+    "budget": {
+      "type": "object",
+      "description": "Explicit upper bounds for a single authorized repair session; enforcement and identity verification remain external",
+      "additionalProperties": false,
+      "required": [
+        "maxCommits",
+        "maxCiRuns",
+        "maxDurationSeconds",
+        "maxFilesChanged",
+        "maxPatchBytes"
+      ],
+      "properties": {
+        "maxCommits": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "maxCiRuns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "maxDurationSeconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 900
+        },
+        "maxFilesChanged": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        "maxPatchBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 200000
+        }
+      }
     }
   }
 }
