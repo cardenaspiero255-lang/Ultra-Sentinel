@@ -145,3 +145,12 @@ test('reject cumulative oversized wire data and unsafe contract names',()=>{
  assert.equal(validateWire(maliciousName,incident()).ok,false);
  assert.equal(coerced,0,'contract names must never be coerced');
 });
+
+test('security: scope rejects Windows alternate streams and reserved device names',()=>{
+ for(const scope of ['src/config.txt:secrets','src/CON','src/nul.txt','COM1','src/LPT9.log','src/aux','src/prn.json']){
+  const a=repair();a.scope=[scope];
+  assert.equal(validateWire('repair-authorization',a).ok,false,scope);
+ }
+ const a=repair();a.scope=['src/config.txt'];
+ assert.equal(validateWire('repair-authorization',a).ok,true);
+});
