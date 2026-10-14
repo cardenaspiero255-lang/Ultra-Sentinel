@@ -8,7 +8,7 @@ const path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {stableAuthorization,verifyOwnerAuthorization}=require('../../packages/recovery/owner-authorization.cjs');
 const {signAuthorization}=require('../../scripts/sign-owner-authorization.cjs');
-const {verifierFromTrustedEnvironment}=require('../../scripts/run-owner-sandbox-repair.cjs');
+const {verifierFromTrustedEnvironment,bubblewrapCommand}=require('../../scripts/run-owner-sandbox-repair.cjs');
 test('offline owner signing verifies against pinned key; changes invalidate signature',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-owner-sign-'));
  try{
@@ -51,7 +51,27 @@ test('untrusted validator command is blocked before running a process',()=>{
   process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON=JSON.stringify(['sh','-c','echo unsafe']);
   assert.throws(()=>verifierFromTrustedEnvironment(os.tmpdir()),/INVALID_TRUSTED_VALIDATOR/);
   process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON=JSON.stringify(['npm','test']);
-  assert.equal(typeof verifierFromTrustedEnvironment(os.tmpdir()),'function');
+  assert.throws(()=>verifierFromTrustedEnvironment(os.tmpdir()),/OS_VALIDATOR_SANDBOX_REQUIRED/);
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-isolation-'));
+  const prevIsolation=process.env.ULTRA_SENTINEL_VALIDATOR_ISOLATION;
+  try{
+   process.env.ULTRA_SENTINEL_VALIDATOR_ISOLATION='bubblewrap';
+   assert.equal(typeof verifierFromTrustedEnvironment(root),'function');
+   const sandbox=bubblewrapCommand(root,['npm','test']);
+   assert.equal(sandbox.binary,'/usr/bin/bwrap');
+   assert.ok(sandbox.args.includes('--unshare-all'));
+   assert.ok(sandbox.args.includes('--clearenv'));
+   assert.ok(sandbox.args.includes('--die-with-parent'));
+   assert.ok(sandbox.args.includes('--bind'));
+   assert.ok(sandbox.args.includes('--ro-bind'));
+   assert.ok(sandbox.args.includes('--tmpfs'));
+   assert.equal(sandbox.args.at(-2),'npm');
+   assert.equal(sandbox.args.at(-1),'test');
+  }finally{
+   fs.rmSync(root,{recursive:true,force:true});
+   if(prevIsolation===undefined)delete process.env.ULTRA_SENTINEL_VALIDATOR_ISOLATION;
+   else process.env.ULTRA_SENTINEL_VALIDATOR_ISOLATION=prevIsolation;
+  }
  }finally{
   if(previous===undefined)delete process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON;
   else process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON=previous;
