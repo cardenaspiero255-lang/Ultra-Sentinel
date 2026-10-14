@@ -83,10 +83,63 @@ async function observeGameHubProviderEvidence(prNumber,{token,fetchImpl=globalTh
   autoCommitAllowed:false,autoMergeAllowed:false,
   note:'Advisory only. Evidence never grants GitHub approval or authorization.'});
 }
+/** Select a bounded, CURRENT open GameHub PR for the scheduled probe.
+ * This is deliberately one sampled PR, not certification of all open PRs.
+ * A full first page cannot prove exhaustiveness: fail closed.
+ */
+async function selectOpenGameHubPr({token,fetchImpl=globalThis.fetch}={}){
+ if(typeof token!=='string'||token.length<8||token.length>2048||
+    !/^[\x21-\x7e]+$/.test(token)||typeof fetchImpl!=='function')
+   fail('AUTHENTICATION_REQUIRED');
+ const url=ROOT+'/pulls?state=open&sort=updated&direction=desc&per_page=100';
+ let response;
+ try{
+  response=await fetchImpl(url,{method:'GET',redirect:'error',
+   signal:AbortSignal.timeout(15000),headers:{
+    Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
+    'X-GitHub-Api-Version':'2022-11-28',
+    'User-Agent':'Ultra-Sentinel-Provider-Observer'}});
+ }catch{fail('GITHUB_TRANSPORT_UNAVAILABLE');}
+ if(response?.status!==200||response.url&&response.url!==url)
+   fail('GITHUB_API_UNAVAILABLE');
+ const kind=response.headers?.get?.('content-type')||'';
+ if(!/application\/(?:json|vnd\.github\+json)/i.test(kind))
+   fail('GITHUB_INVALID_CONTENT_TYPE');
+ let raw;
+ try{raw=await response.text();}catch{fail('GITHUB_INVALID_RESPONSE');}
+ if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')>MAX_BYTES)
+   fail('GITHUB_RESPONSE_TOO_LARGE');
+ let items;
+ try{items=JSON.parse(raw);}catch{fail('GITHUB_INVALID_JSON');}
+ if(!Array.isArray(items)||items.length>=100)
+   fail('GITHUB_OPEN_PRS_INCOMPLETE');
+ const seen=new Set();
+ let newest=null,preferred=null;
+ for(const item of items){
+  if(!item||!Number.isSafeInteger(item.number)||item.number<1||
+     seen.has(item.number)||item.state!=='open'||
+     typeof item.title!=='string'||!SHA.test(item.head?.sha||''))
+    fail('GITHUB_OPEN_PRS_INCOMPLETE');
+  seen.add(item.number);
+  const title=item.title.toUpperCase();
+  if(title.includes('NO MERGE'))continue;
+  if(newest===null)newest=item.number;
+  if(preferred===null&&(title.includes('SENTINEL')||title.includes('SSS')))
+   preferred=item.number;
+ }
+ return preferred===null?newest:preferred;
+}
 async function main(){
- const raw=process.argv[2]||'201';
- if(!/^[1-9][0-9]{0,8}$/.test(raw))fail('INVALID_PR_NUMBER');
- const report=await observeGameHubProviderEvidence(Number(raw),{
+ const raw=process.argv[2]||'auto';
+ if(raw!=='auto'&&!/^[1-9][0-9]{0,8}$/.test(raw))fail('INVALID_PR_NUMBER');
+ const selected=raw==='auto'?
+  await selectOpenGameHubPr({token:process.env.GITHUB_TOKEN}):Number(raw);
+ if(selected===null){
+  process.stdout.write(JSON.stringify({schema:'ultra-sentinel-provider-observer/v1',
+   status:'IDLE_NO_OPEN_PR',autoMergeAllowed:false,autoCommitAllowed:false})+'\\n');
+  return;
+ }
+ const report=await observeGameHubProviderEvidence(selected,{
   token:process.env.GITHUB_TOKEN});
  process.stdout.write(JSON.stringify(report)+'\n');
 }
@@ -94,4 +147,4 @@ if(require.main===module)main().catch(e=>{
  console.error('PROVIDER_OBSERVER_FAILED_CLOSED: '+String(e?.message||e).slice(0,170));
  process.exitCode=1;
 });
-module.exports={observeGameHubProviderEvidence};
+module.exports={observeGameHubProviderEvidence,selectOpenGameHubPr};
