@@ -113,11 +113,16 @@ test('SIGKILL between commit and verification is recovered to exact baseline tre
   child.kill('SIGKILL');
   await once(child,'exit');
   child=null;
+  // Simulate a nonce lock left behind by the same killed process.
+  const owner=JSON.parse(fs.readFileSync(txn,'utf8'));
+  const orphanLock=f.options.nonceStorePath+'.lock';
+  fs.writeFileSync(orphanLock,JSON.stringify({version:1,pid:owner.pid})+'\n',{flag:'wx',mode:0o600});
   const result=recoverInterruptedSandboxRepair({directory:f.directory,
    nonceStorePath:f.options.nonceStorePath});
   assert.equal(result.status,'RECOVERY_VERIFIED');
   assert.equal(result.disposition,'REVERTED_INTERRUPTED_REPAIR');
   assert.equal(fs.existsSync(txn),false);
+  assert.equal(fs.existsSync(orphanLock),false);
   assert.equal(git(f.directory,'rev-parse','HEAD^{tree}'),
    git(f.directory,'rev-parse',f.options.expectedHeadSha+'^{tree}'));
   assert.equal(git(f.directory,'status','--porcelain'),'');
