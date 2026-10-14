@@ -47,7 +47,7 @@ function verifierFromTrustedEnvironment(directory){
  if(!raw)throw Error('VALIDATOR_CONFIGURATION_REQUIRED');
  const argv=JSON.parse(raw);
  if(!Array.isArray(argv)||argv.length===0||argv.length>20||
-  argv.some(x=>typeof x!=='string'||!x||x.length>500||/[\\x00-\\x1f]/.test(x))||
+  argv.some(x=>typeof x!=='string'||!x||x.length>500||/[\x00-\x1f]/.test(x))||
   !['npm','node','./gradlew'].includes(argv[0]))
   throw Error('INVALID_TRUSTED_VALIDATOR');
  // Reject the former unisolated subprocess path. A declarative environment
