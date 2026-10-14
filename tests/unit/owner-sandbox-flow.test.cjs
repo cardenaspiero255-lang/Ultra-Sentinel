@@ -21,7 +21,7 @@ function fixture(){
  branch:'sandbox/repair',headSha:head,nonce,expiresAt:Date.now()+60000,
  planDigest:digestPlan(plan,changes)};
  const options={token:'token-with-length-12345',expectedOwner:'cardenaspiero255-lang',
- expectedOwnerId:12345,authorization,nonceStorePath:path.join(directory,'nonce-ledger'),
+ expectedOwnerId:12345,authorization,nonceStorePath:path.join(fs.mkdtempSync(path.join(os.tmpdir(),'ultra-flow-nonces-')),'ledger'),
  directory,plan,changes,expectedHeadSha:head,
  fetchImpl:async()=>({status:200,json:async()=>({login:'cardenaspiero255-lang',id:12345})})};
  return {directory,file,options};
@@ -35,7 +35,7 @@ test('owner-authorized integration succeeds and rejects replay after reset',asyn
   assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'after\n');
   git(f.directory,'reset','--hard',f.options.expectedHeadSha);
   await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>true}),/NONCE_REPLAY/);
- }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(f.options.nonceStorePath,{force:true});}
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
 });
 test('failed verification restores exact baseline tree',async()=>{
  const f=fixture();
@@ -45,7 +45,7 @@ test('failed verification restores exact baseline tree',async()=>{
   assert.equal(result.rollback.status,'ROLLBACK_VERIFIED');
   assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
   assert.equal(git(f.directory,'rev-parse','HEAD^{tree}'),git(f.directory,'rev-parse',f.options.expectedHeadSha+'^{tree}'));
- }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(f.options.nonceStorePath,{force:true});}
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
 });
 test('wrong owner is rejected before nonce consumption and writes',async()=>{
  const f=fixture();
@@ -54,5 +54,5 @@ test('wrong owner is rejected before nonce consumption and writes',async()=>{
    fetchImpl:async()=>({status:200,json:async()=>({login:'attacker',id:222})}),
    verifyRepair:async()=>true}),/OWNER_IDENTITY_MISMATCH/);
   assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
- }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(f.options.nonceStorePath,{force:true});}
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
 });
