@@ -195,3 +195,18 @@ test('repair expiry requires enforceable RFC3339 syntax beyond format annotation
  assert.equal(new RegExp(expiry.pattern).test('never'),false);
  assert.equal(new RegExp(expiry.pattern).test('2026-10-14T14:57:22Z'),true);
 });
+
+test('strict RFC3339 validator rejects calendar-invalid and malformed timestamps',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ for(const good of ['2024-02-29T23:59:59Z','2026-10-14T12:20:00-03:00','2026-12-31T23:59:59.123+14:00'])
+  assert.equal(isStrictRfc3339(good),true,good);
+ for(const bad of ['never','2026-02-29T12:00:00Z','2026-02-31T12:00:00Z','2026-04-31T12:00:00Z','2026-13-01T12:00:00Z','2026-01-01T24:00:00Z','2026-01-01T12:00:00+14:30','2026-01-01T12:00:00','2026-01-01T12:00:60Z'])
+  assert.equal(isStrictRfc3339(bad),false,bad);
+});
+test('incident observedAt requires syntax assertion beyond JSON Schema format annotation',()=>{
+ const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas/incident.v1.schema.json'),'utf8'));
+ assert.equal(s.properties.observedAt.format,'date-time');
+ assert.ok(s.properties.observedAt.pattern);
+ assert.equal(new RegExp(s.properties.observedAt.pattern).test('never'),false);
+ assert.equal(new RegExp(s.properties.observedAt.pattern).test('2026-10-14T12:20:00Z'),true);
+});
