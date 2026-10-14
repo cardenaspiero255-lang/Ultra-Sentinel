@@ -35,6 +35,7 @@ function isStrictRfc3339(value){
  const offsetMins=m[11]===undefined?0:Number(m[11]);
  if(offsetHours>23||offsetMins>59)return false; // RFC 3339 time-numoffset, not timezone practice.
  if(second!==60)return true;
+ if(year<1972)return false; // No IERS leap seconds then; Date.UTC(0..99) remaps to 1900..1999.
  // Date.UTC is used only after we validated all calendar components. Calculate
  // the real UTC instant *before* the extra second, with explicit offset.
  const offset=(m[9]==='-'?-1:1)*(offsetHours*60+offsetMins);
