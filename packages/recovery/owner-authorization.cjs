@@ -41,7 +41,6 @@ class PersistentNonceStore{
   try{lockFd=fs.openSync(lock,'wx',0o600);}catch(e){if(e.code==='EEXIST')return false;throw e;}
   let fd;
   try{fd=fs.openSync(this.filename,'r+');
-  try{
    const existing=fs.readFileSync(fd,'utf8');
    if(existing.split('\n').includes(hash))return false;
    fs.writeSync(fd,hash+'\n',fs.fstatSync(fd).size,'utf8');
