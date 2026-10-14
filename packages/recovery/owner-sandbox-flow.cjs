@@ -67,7 +67,7 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
  }
 }
 function sandboxGit(directory,...args){
- const result=spawnSync('git',args,{cwd:directory,encoding:'utf8',timeout:10000,
+ const result=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false',...args],{cwd:directory,encoding:'utf8',timeout:10000,
   env:{PATH:process.env.PATH,HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
  if(result.error||result.status!==0)throw Error('SANDBOX_GIT_FAILURE');
