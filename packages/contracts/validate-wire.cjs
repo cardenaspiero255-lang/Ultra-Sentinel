@@ -52,7 +52,7 @@ function safeInput(value,seen=new WeakSet(),depth=0,count={value:0}){
  }
  for(const key of Reflect.ownKeys(value)){
   if(Array.isArray(value)&&key==='length')continue; // Native array length.
-  if(Array.isArray(value)&&(!/^(0|[1-9]\\d*)$/.test(key)||Number(key)>=value.length))return false;
+  if(Array.isArray(value)&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=value.length))return false;
   if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype')return false;
   const d=Object.getOwnPropertyDescriptor(value,key);
   if(!d||!d.enumerable||!Object.hasOwn(d,'value'))return false;
