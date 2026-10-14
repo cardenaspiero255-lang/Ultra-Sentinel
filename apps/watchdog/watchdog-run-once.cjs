@@ -9,6 +9,7 @@ const crypto=require('node:crypto');
 const {evaluateChanges,validateCheckpoint}=require('./watchdog-state.cjs');
 const {listSentryIssueSample}=require('../../adapters/sentry/sentry-readonly.cjs');
 const {readJarvisRepositoryState}=require('../../adapters/jarvis/jarvis-readonly.cjs');
+const {readGameHubLiveSample}=require('./gamehub-live-sample.cjs');
 function fail(reason){throw Error(reason);}
 function privateDirectory(filename){
  if(typeof filename!=='string'||!path.isAbsolute(filename)||
@@ -24,19 +25,26 @@ function privateDirectory(filename){
 function validateAlertRecord(alert){
  if(!alert||typeof alert!=='object'||Array.isArray(alert))fail('STATE_ALERT_UNTRUSTED');
  const types=['NEW_SENTRY_ISSUE','JARVIS_PR_OPENED','JARVIS_PR_HEAD_CHANGED',
-  'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT'];
+  'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT',
+  'GAMEHUB_PR_SAMPLE_SELECTED','GAMEHUB_PR_SAMPLE_CHANGED',
+  'GAMEHUB_PR_HEAD_CHANGED','GAMEHUB_SAMPLE_NOW_IDLE'];
  if(!types.includes(alert.type))fail('STATE_ALERT_UNTRUSTED');
  let fields;
  if(alert.type==='NEW_SENTRY_ISSUE'){
   fields=['type','fingerprint'];
   if(typeof alert.fingerprint!=='string'||! /^[a-f0-9]{24}$/.test(alert.fingerprint))
    fail('STATE_ALERT_UNTRUSTED');
- }else if(alert.type==='JARVIS_PR_HEAD_CHANGED'){
+ }else if(alert.type==='JARVIS_PR_HEAD_CHANGED'||
+  alert.type==='GAMEHUB_PR_SAMPLE_SELECTED'||
+  alert.type==='GAMEHUB_PR_SAMPLE_CHANGED'||
+  alert.type==='GAMEHUB_PR_HEAD_CHANGED'){
   fields=['type','pr','headSha'];
   if(typeof alert.headSha!=='string'||! /^[a-f0-9]{40}$/.test(alert.headSha))
    fail('STATE_ALERT_UNTRUSTED');
- }else fields=['type','pr'];
- if(alert.type!=='NEW_SENTRY_ISSUE'&&(!Number.isSafeInteger(alert.pr)||alert.pr<=0))
+ }else if(alert.type==='GAMEHUB_SAMPLE_NOW_IDLE')fields=['type'];
+ else fields=['type','pr'];
+ if(!['NEW_SENTRY_ISSUE','GAMEHUB_SAMPLE_NOW_IDLE'].includes(alert.type)&&
+  (!Number.isSafeInteger(alert.pr)||alert.pr<=0))
   fail('STATE_ALERT_UNTRUSTED');
  if(Object.keys(alert).length!==fields.length||
   Object.keys(alert).some(k=>!fields.includes(k)))fail('STATE_ALERT_UNTRUSTED');
@@ -78,7 +86,7 @@ function writeAtomic(filename,data){
   if(fs.existsSync(temporary))fs.unlinkSync(temporary);
  }
 }
-function storeObservation(filename,previous,sentry,jarvis){
+function storeObservation(filename,previous,sentry,jarvis,gamehub=null){
  const directory=privateDirectory(filename);
  let lock;
  try{lock=fs.openSync(filename+'.lock',fs.constants.O_WRONLY|fs.constants.O_CREAT|
@@ -91,7 +99,7 @@ function storeObservation(filename,previous,sentry,jarvis){
   // handler; this tool intentionally cannot claim exactly-once delivery.
   if(state?.pendingAlerts.length)fail('PENDING_ALERT_DELIVERY_REQUIRED');
   const last=state?state.checkpoint:previous;
-  const result=evaluateChanges(last,sentry,jarvis);
+  const result=evaluateChanges(last,sentry,jarvis,gamehub);
   const saved={schema:'ultra-sentinel-watchdog-checkpoint/v1',
    checkpoint:result.checkpoint,pendingAlerts:result.alerts,
    deliveryAcknowledged:false};
@@ -136,12 +144,13 @@ async function observeOnce({stateFile,sentryOrg,sentryProjectId,sentryToken,gith
  // Recheck pending alerts BEFORE network calls, so they cannot be overwritten.
  const existing=checkedState(stateFile);
  if(existing?.pendingAlerts.length)fail('PENDING_ALERT_DELIVERY_REQUIRED');
- const [sentry,jarvis]=await Promise.all([
+ const [sentry,jarvis,gamehub]=await Promise.all([
   listSentryIssueSample({organization:sentryOrg,projectId:sentryProjectId,
    token:sentryToken,fetchImpl:fetchSentry}),
-  readJarvisRepositoryState({token:githubToken,fetchImpl:fetchGitHub})
+  readJarvisRepositoryState({token:githubToken,fetchImpl:fetchGitHub}),
+  readGameHubLiveSample({token:githubToken,fetchImpl:fetchGitHub})
  ]);
- return storeObservation(stateFile,null,sentry,jarvis);
+ return storeObservation(stateFile,null,sentry,jarvis,gamehub);
 }
 if(require.main===module){
  observeOnce({
