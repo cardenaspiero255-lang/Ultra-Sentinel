@@ -7,6 +7,7 @@ const crypto=require('node:crypto');
 const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
 const {PersistentNonceStore}=require('./owner-authorization.cjs');
 const {preflightRepair,REPO}=require('../../adapters/gamehub/ultra_sentinel_repair_authorization.cjs');
+const {loadGameHubRepairPreflight}=require('./gamehub-live-preflight.cjs');
 const OWNER='cardenaspiero255-lang',OWNER_ID=322222186;
 const SCOPE='repair:commit-to-pr-branch';
 const OWNER_DOMAIN='Ultra-Sentinel:gamehub-owner-consent:v1\n';
@@ -95,4 +96,10 @@ async function signedGameHubPreflight(ctx,{
    nonceUnused:true,issuedAt:ownerApproval.issuedAt});
  });
 }
-module.exports={signedGameHubPreflight,digestContext,canonicalApproval,canonicalAudit};
+async function liveSignedGameHubPreflight(prNumber,{token,requiredChecks,...attestation}={}){
+ const ctx=await loadGameHubRepairPreflight(prNumber,{token,requiredChecks,
+  fetchImpl:attestation.fetchImpl||globalThis.fetch});
+ return signedGameHubPreflight(ctx,{...attestation,token});
+}
+module.exports={signedGameHubPreflight,liveSignedGameHubPreflight,
+ digestContext,canonicalApproval,canonicalAudit};
