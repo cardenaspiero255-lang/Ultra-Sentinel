@@ -6,7 +6,7 @@ const crypto=require('node:crypto');
 const SHA=/^[a-f0-9]{40}$/,ID=/^[1-9][0-9]{0,18}$/;
 function fail(reason){throw Error(reason);}
 const fingerprint=(value)=>crypto.createHash('sha256').update(value).digest('hex').slice(0,24);
-function snapshot({sentry,jarvis}={}){
+function snapshot({sentry,jarvis,gamehub=null}={}){
  if(!sentry||sentry.schema!=='ultra-sentinel-sentry-sample/v1'||
   sentry.sampleOnly!==true||sentry.completeIssueInventory!==false||
   !Array.isArray(sentry.issues)||sentry.issues.length>25||
@@ -31,8 +31,20 @@ function snapshot({sentry,jarvis}={}){
   prs.push({pr:pr.pr,headSha:pr.headSha});
  }
  issues.sort();prs.sort((a,b)=>a.pr-b.pr);
+ if(gamehub!==null){
+  if(!gamehub||gamehub.schema!=='ultra-sentinel-gamehub-live-sample/v1'||
+    gamehub.repository!=='cardenaspiero255-lang/gamehub-ultra'||
+    gamehub.source!=='github-api-readonly'||gamehub.completePrInventory!==false||
+    gamehub.autoCommit!==false||gamehub.autoMerge!==false||
+    (gamehub.selection!==null&&(!gamehub.selection||
+     !Number.isSafeInteger(gamehub.selection.pr)||gamehub.selection.pr<=0||
+     !SHA.test(gamehub.selection.headSha||''))))
+    fail('UNTRUSTED_GAMEHUB_SAMPLE');
+ }
+ const selection=gamehub?.selection||null;
  return Object.freeze({version:1,issues:Object.freeze(issues),
-  prs:Object.freeze(prs.map(x=>Object.freeze(x)))});
+  prs:Object.freeze(prs.map(x=>Object.freeze(x))),
+  gamehub:selection===null?null:Object.freeze({pr:selection.pr,headSha:selection.headSha})});
 }
 function validateCheckpoint(prior){
  if(prior===null)return null;
@@ -51,10 +63,13 @@ function validateCheckpoint(prior){
    prSet.has(v.pr))fail('INVALID_WATCHDOG_CHECKPOINT');
   prSet.add(v.pr);
  }
+ if(prior.gamehub!==undefined&&prior.gamehub!==null&&
+  (!Number.isSafeInteger(prior.gamehub.pr)||prior.gamehub.pr<=0||
+   !SHA.test(prior.gamehub.headSha||'')))fail('INVALID_WATCHDOG_CHECKPOINT');
  return prior;
 }
-function evaluateChanges(prior,sentry,jarvis){
- const next=snapshot({sentry,jarvis});
+function evaluateChanges(prior,sentry,jarvis,gamehub=null){
+ const next=snapshot({sentry,jarvis,gamehub});
  const previous=validateCheckpoint(prior);
  if(previous===null)return Object.freeze({
   status:'BASELINE_INITIALIZED_NO_ALERT',checkpoint:next,alerts:Object.freeze([]),
@@ -73,6 +88,20 @@ function evaluateChanges(prior,sentry,jarvis){
  for(const pr of previous.prs){
   if(!nowPrs.has(pr.pr))
    alerts.push(Object.freeze({type:'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT',pr:pr.pr}));
+ }
+ const oldGamehub=previous.gamehub||null,newGamehub=next.gamehub;
+ if(newGamehub!==null&&oldGamehub===null){
+  alerts.push(Object.freeze({type:'GAMEHUB_PR_SAMPLE_SELECTED',pr:newGamehub.pr,
+   headSha:newGamehub.headSha}));
+ }else if(newGamehub===null&&oldGamehub!==null){
+  alerts.push(Object.freeze({type:'GAMEHUB_SAMPLE_NOW_IDLE'}));
+ }else if(newGamehub!==null&&oldGamehub!==null&&newGamehub.pr!==oldGamehub.pr){
+  alerts.push(Object.freeze({type:'GAMEHUB_PR_SAMPLE_CHANGED',pr:newGamehub.pr,
+   headSha:newGamehub.headSha}));
+ }else if(newGamehub!==null&&oldGamehub!==null&&
+  newGamehub.headSha!==oldGamehub.headSha){
+  alerts.push(Object.freeze({type:'GAMEHUB_PR_HEAD_CHANGED',pr:newGamehub.pr,
+   headSha:newGamehub.headSha}));
  }
  if(alerts.length>40)fail('WATCHDOG_ALERT_OVERFLOW');
  return Object.freeze({status:alerts.length?'CHANGES_OBSERVED':'NO_CHANGES',
