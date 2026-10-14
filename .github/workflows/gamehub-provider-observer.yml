@@ -7,7 +7,7 @@ on:
       pr_number:
         description: "GameHub PR number (read-only)"
         required: true
-        default: "201"
+        default: "auto"
   schedule:
     - cron: '41 */6 * * *'
 permissions:
@@ -33,5 +33,5 @@ jobs:
       - name: Read immutable GameHub PR evidence without write access
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TARGET_PR: ${{ inputs.pr_number || '201' }}
+          TARGET_PR: ${{ inputs.pr_number || 'auto' }}
         run: node scripts/gamehub-provider-observer.cjs "$TARGET_PR"
