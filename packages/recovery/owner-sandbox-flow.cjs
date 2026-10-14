@@ -10,6 +10,7 @@ const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
 const {stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore}=require('./owner-authorization.cjs');
 const {executeSandboxRepair}=require('./sandbox-executor.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
+const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 function digestPlan(plan,changes){
  return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
@@ -67,7 +68,7 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
  }
 }
 function sandboxGit(directory,...args){
- const result=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false',...args],{cwd:directory,encoding:'utf8',timeout:10000,
+ const result=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{cwd:directory,encoding:'utf8',timeout:10000,
   env:{PATH:process.env.PATH,HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
  if(result.error||result.status!==0)throw Error('SANDBOX_GIT_FAILURE');
@@ -76,6 +77,7 @@ function sandboxGit(directory,...args){
 function validateSandbox(directory,nonceStorePath){
  const root=fs.realpathSync(directory),tmp=fs.realpathSync(os.tmpdir());
  if(!root.startsWith(tmp+path.sep))throw Error('SANDBOX_ONLY');
+ assertSafeGitCheckout(root);
  if(fs.realpathSync(path.dirname(nonceStorePath)).startsWith(root+path.sep))
   throw Error('NONCE_STORE_INSIDE_WORKTREE');
  if(sandboxGit(root,'remote')!=='')throw Error('REMOTE_FORBIDDEN');
