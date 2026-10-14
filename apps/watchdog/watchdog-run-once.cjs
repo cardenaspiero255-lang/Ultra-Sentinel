@@ -81,6 +81,31 @@ function storeObservation(filename,previous,sentry,jarvis){
   try{fs.fsyncSync(parent);}finally{fs.closeSync(parent);}
  }
 }
+function pendingDigest(events){
+ if(!Array.isArray(events)||events.length===0)fail('NO_PENDING_ALERTS');
+ return crypto.createHash('sha256').update(JSON.stringify(events)).digest('hex');
+}
+// An external operator must first deliver the alert events. Only then call
+// this acknowledgement with the exact pending digest; no self-acknowledgement.
+function acknowledgeDelivery(filename,digest){
+ if(typeof digest!=='string'||!/^[a-f0-9]{64}$/.test(digest))
+  fail('INVALID_DELIVERY_RECEIPT');
+ privateDirectory(filename);
+ let lock;
+ try{lock=fs.openSync(filename+'.lock',fs.constants.O_WRONLY|
+  fs.constants.O_CREAT|fs.constants.O_EXCL|fs.constants.O_NOFOLLOW,0o600);}
+ catch(e){if(e.code==='EEXIST')fail('WATCHDOG_ALREADY_RUNNING_OR_RECOVERY_REQUIRED');throw e;}
+ try{
+  const current=checkedState(filename);
+  if(!current?.pendingAlerts.length)fail('NO_PENDING_ALERTS');
+  if(pendingDigest(current.pendingAlerts)!==digest)
+   fail('DELIVERY_RECEIPT_MISMATCH');
+  writeAtomic(filename,{...current,pendingAlerts:[],deliveryAcknowledged:false});
+  return Object.freeze({status:'DELIVERY_ACKNOWLEDGED',pending:0});
+ }finally{
+  fs.closeSync(lock);fs.unlinkSync(filename+'.lock');
+ }
+}
 async function observeOnce({stateFile,sentryOrg,sentryProjectId,sentryToken,githubToken,
  fetchSentry=globalThis.fetch,fetchGitHub=globalThis.fetch}={}){
  privateDirectory(stateFile);
@@ -113,4 +138,4 @@ if(require.main===module){
   process.exitCode=1;
  });
 }
-module.exports={observeOnce,storeObservation,checkedState};
+module.exports={observeOnce,storeObservation,checkedState,pendingDigest,acknowledgeDelivery};
