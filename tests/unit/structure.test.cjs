@@ -200,7 +200,7 @@ test('strict RFC3339 validator rejects calendar-invalid and malformed timestamps
  const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
  for(const good of ['2024-02-29T23:59:59Z','2026-10-14T12:20:00-03:00','2026-12-31T23:59:59.123+14:00'])
   assert.equal(isStrictRfc3339(good),true,good);
- for(const bad of ['never','2026-02-29T12:00:00Z','2026-02-31T12:00:00Z','2026-04-31T12:00:00Z','2026-13-01T12:00:00Z','2026-01-01T24:00:00Z','2026-01-01T12:00:00+14:30','2026-01-01T12:00:00','2026-01-01T12:00:60Z'])
+ for(const bad of ['never','2026-02-29T12:00:00Z','2026-02-31T12:00:00Z','2026-04-31T12:00:00Z','2026-13-01T12:00:00Z','2026-01-01T24:00:00Z','2026-01-01T12:00:00+24:00','2026-01-01T12:00:00','2026-01-01T12:00:60Z'])
   assert.equal(isStrictRfc3339(bad),false,bad);
 });
 test('incident observedAt requires syntax assertion beyond JSON Schema format annotation',()=>{
@@ -243,4 +243,29 @@ test('both contracts allow leap-second syntax while still rejecting nonsense',()
   assert.equal(pattern.test('never'),false,name);
   assert.equal(pattern.test('2016-12-31T23:59:61Z'),false,name);
  }
+});
+
+test('RFC3339 offsets accept the entire 00:00 to 23:59 legal range',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ for(const good of ['2026-01-01T12:00:00+14:30','2026-01-01T12:00:00+23:59',
+  '2026-01-01T12:00:00-23:59','2017-01-01T23:29:60+23:30',
+  '2016-12-31T00:00:60-23:59']){
+  assert.equal(isStrictRfc3339(good),true,good);
+  for(const [name,key] of [['incident','observedAt'],['repair-authorization','expiresAt']]){
+   const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas',name+'.v1.schema.json'),'utf8'));
+   assert.equal(new RegExp(s.properties[key].pattern).test(good),true,name+': '+good);
+  }
+ }
+ for(const bad of ['2026-01-01T12:00:00+24:00','2026-01-01T12:00:00-24:01','2017-01-01T23:30:60+23:30']){
+  assert.equal(isStrictRfc3339(bad),false,bad);
+ }
+});
+
+test('RFC3339 rejects fake leap seconds in years 0001 to 0099 despite Date.UTC century remap',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ for(const stamp of ['0072-06-30T23:59:60Z','0090-12-31T23:59:60Z',
+  '0001-12-31T23:59:60Z','0072-06-30T23:59:60+00:00']){
+  assert.equal(isStrictRfc3339(stamp),false,stamp);
+ }
+ assert.equal(isStrictRfc3339('1972-06-30T23:59:60Z'),true);
 });
