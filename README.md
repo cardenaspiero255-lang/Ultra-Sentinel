@@ -14,7 +14,9 @@ El repositorio contiene código real de **Core 2.0**, **Family Hunter**, memoria
 | Lector, proveedores y sombra GameHub | `packages/orchestrator/`, `scripts/gamehub-provider-observer.cjs` | Observación de PR, no equivalencia ni aprobación |
 | Preflight de reparación GameHub | `adapters/gamehub/ultra_sentinel_repair_authorization.cjs` (PR #37) | Callback no equivale a una autorización firmada real |
 | Autenticación firmada y rollback transaccional | [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) en borrador | No fusionado ni certificado para uso operativo |
-| Sentry, JARVIS, watchdog y alertas | Interfaces/planes, no despliegue verificado | Integración y E2E pendientes |
+| Sentry/JARVIS solo lectura | `adapters/sentry/sentry-readonly.cjs`, `adapters/jarvis/jarvis-readonly.cjs` (PR #41 fusionado) | Conectividad real con credenciales y E2E aún pendientes |
+| Evaluador sombra etiquetado | `packages/quality-gates/shadow-parity-metrics.cjs` (PR #40 fusionado) | Sin verdad independiente ni certificación de equivalencia |
+| Checkpoint y outbox watchdog | [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) en desarrollo | No hay alertas entregadas ni servicio 24/7 desplegado |
 
 La **única matriz de capacidades** US-001…US-035 es [docs/US-CAPABILITY-INVENTORY.md](docs/US-CAPABILITY-INVENTORY.md). Distingue `implementado`, `parcial` y `pendiente` con archivo responsable y brecha. El [issue histórico #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) es un catálogo de ideas, **no** estado operativo de `main`.
 
