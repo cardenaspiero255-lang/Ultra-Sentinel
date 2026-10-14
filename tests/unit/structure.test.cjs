@@ -210,3 +210,37 @@ test('incident observedAt requires syntax assertion beyond JSON Schema format an
  assert.equal(new RegExp(s.properties.observedAt.pattern).test('never'),false);
  assert.equal(new RegExp(s.properties.observedAt.pattern).test('2026-10-14T12:20:00Z'),true);
 });
+
+test('official RFC3339 positive leap seconds are accepted across UTC offsets',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ const valid=[
+  '1972-06-30T23:59:60Z',
+  '1990-12-31T23:59:60Z',
+  '2016-12-31T23:59:60.123Z',
+  '2016-12-31T18:59:60-05:00',
+  '2017-01-01T00:59:60+01:00',
+  '2017-01-01T13:59:60+14:00',
+  '2016-12-31T09:59:60-14:00'
+ ];
+ for(const stamp of valid)assert.equal(isStrictRfc3339(stamp),true,stamp);
+});
+test('leap-second validation rejects fabricated dates and non-matching offsets',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ const invalid=[
+  '2016-12-30T23:59:60Z','2016-12-31T22:59:60Z',
+  '2016-12-31T23:59:60+01:00','2017-01-01T23:59:60Z',
+  '2026-12-31T23:59:60Z','2016-02-31T23:59:60Z',
+  '2016-12-31T23:59:61Z','2016-12-31T23:59:60+14:30'
+ ];
+ for(const stamp of invalid)assert.equal(isStrictRfc3339(stamp),false,stamp);
+});
+test('both contracts allow leap-second syntax while still rejecting nonsense',()=>{
+ for(const [name,key] of [['incident','observedAt'],['repair-authorization','expiresAt']]){
+  const s=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas',name+'.v1.schema.json'),'utf8'));
+  const pattern=new RegExp(s.properties[key].pattern);
+  assert.equal(pattern.test('1990-12-31T23:59:60Z'),true,name);
+  assert.equal(pattern.test('2016-12-31T23:59:60+01:00'),true,name);
+  assert.equal(pattern.test('never'),false,name);
+  assert.equal(pattern.test('2016-12-31T23:59:61Z'),false,name);
+ }
+});
