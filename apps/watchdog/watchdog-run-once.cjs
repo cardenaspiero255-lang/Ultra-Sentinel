@@ -66,6 +66,9 @@ function checkedState(filename){
  if(!Array.isArray(raw.pendingAlerts)||raw.pendingAlerts.length>40)
   fail('STATE_PENDING_EVENTS_UNVERIFIED');
  validateCheckpoint(raw.checkpoint);
+ if(raw.batchSequence!==undefined&&
+  (!Number.isSafeInteger(raw.batchSequence)||raw.batchSequence<0))
+  fail('STATE_SEQUENCE_INVALID');
  for(const alert of raw.pendingAlerts)validateAlertRecord(alert);
  return raw;
 }
@@ -100,9 +103,13 @@ function storeObservation(filename,previous,sentry,jarvis,gamehub=null){
   if(state?.pendingAlerts.length)fail('PENDING_ALERT_DELIVERY_REQUIRED');
   const last=state?state.checkpoint:previous;
   const result=evaluateChanges(last,sentry,jarvis,gamehub);
+  // Distinguish separate incidents with identical alert contents while
+  // preserving one stable idempotency key for every retry of the same batch.
+  const batchSequence=(state?.batchSequence??0)+1;
+  if(!Number.isSafeInteger(batchSequence))fail('STATE_SEQUENCE_EXHAUSTED');
   const saved={schema:'ultra-sentinel-watchdog-checkpoint/v1',
    checkpoint:result.checkpoint,pendingAlerts:result.alerts,
-   deliveryAcknowledged:false};
+   batchSequence,deliveryAcknowledged:false};
   writeAtomic(filename,saved);
   return Object.freeze({status:result.status,alerts:result.alerts,
    monitor24x7Deployed:false,alertDeliveryConfigured:false});
