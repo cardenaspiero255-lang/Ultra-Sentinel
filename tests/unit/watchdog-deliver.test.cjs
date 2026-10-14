@@ -72,6 +72,11 @@ test('webhook cannot be plain HTTP, loopback, credentials, query token or intern
   'https://alerts.example.org/path?token=secret',
   'https://alerts.example.org/path#fragment',
   'https://alert.local/path','https://[::1]/private',
+  'https://169.254.169.254/latest/meta-data',
+  'https://100.100.100.200/latest/meta-data',
+  'https://0.0.0.0/','https://224.0.0.1/',
+  'https://198.18.0.1/','https://8.8.8.8/path',
+  'https://255.255.255.255/',
   'https://alerts..example.org/path'
  ])assert.throws(()=>validateEndpoint(url),/INVALID_ALERT_DESTINATION/,url);
  assert.equal(validateEndpoint(goodUrl),goodUrl);
