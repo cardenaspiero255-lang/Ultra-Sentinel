@@ -87,6 +87,13 @@ async function loadGameHubRepairPreflight(prNumber,{
    contexts.has(context.context)||context.state!=='success')
    fail('FAILED_OR_STALE_CLASSIC_STATUS');
   contexts.add(context.context);
+  // Normalize successful classic statuses for the existing preflight #37.
+  // A name reported on BOTH surfaces is counted once after both succeeded.
+  if(!seen.has(context.context)){
+   checks.push({name:context.context,sha:meta.headSha,
+    status:'completed',conclusion:'success'});
+   seen.add(context.context);
+  }
  }
  // Required names can be reported either as Checks API runs or as classic
  // commit status contexts. A valid classic status is not an absent check.
