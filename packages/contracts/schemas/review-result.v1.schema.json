@@ -49,5 +49,29 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "CLEAR"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidenceState": {
+            "const": "VERIFIED"
+          }
+        },
+        "required": [
+          "evidenceState"
+        ]
+      }
+    }
+  ]
 }
