@@ -38,7 +38,11 @@ async function deliverPending({stateFile,endpoint,token,signingSecret,
  const pending=checkpoint.pendingAlerts;
  if(pending.length===0)return Object.freeze({status:'NO_PENDING_ALERTS',deliveryAccepted:false});
  const digest=pendingDigest(pending);
- const key=createHash('sha256').update('ultra-sentinel-alerts/v1:'+digest).digest('hex');
+ // The monotonic checkpoint batch counter distinguishes independent
+ // occurrences even if the event set repeats later; retry stays stable.
+ const sequence=checkpoint.batchSequence??0;
+ const key=createHash('sha256').update('ultra-sentinel-alerts/v2:'+
+  sequence+':'+digest).digest('hex');
  const payload=JSON.stringify({schema:'ultra-sentinel-alert-envelope/v1',batchId:key,
   alertCount:pending.length,alerts:pending});
  const signature=createHmac('sha256',signingSecret).update(payload).digest('hex');
