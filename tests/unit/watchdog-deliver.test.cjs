@@ -102,6 +102,7 @@ test('systemd service uses locked-down read-only runtime and timer, not PR secre
  const timer=fs.readFileSync(path.resolve(__dirname,'../../deploy/systemd/ultra-sentinel-watchdog.timer'),'utf8');
  for(const required of ['User=ultra-sentinel','NoNewPrivileges=true','ProtectSystem=strict',
   'PrivateTmp=true','StateDirectoryMode=0700','UMask=0077','ReadWritePaths=/var/lib/ultra-sentinel',
+  'ExecStartPre=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-config-check.cjs',
   'ExecStartPre=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs',
   'ExecStart=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-run-once.cjs',
   'ExecStartPost=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs']){
