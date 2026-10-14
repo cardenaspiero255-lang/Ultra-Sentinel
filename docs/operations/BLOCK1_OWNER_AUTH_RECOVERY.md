@@ -59,3 +59,22 @@ Para emitir el resultado `ELIGIBLE_FOR_HUMAN_COMMIT` hacen falta **todas** estas
 5. Se devuelve solo una **elegibilidad para commit manual**, nunca un permiso de `git push`, aprobación GitHub ni `merge`. Debe repetirse el chequeo de HEAD/checks al momento de ejecutar cualquier operación futura.
 
 **Límites actuales:** la CI automatizada ha probado el puente con claves efímeras y respuestas API simuladas. Todavía faltan conexión real del lector confiable de checks y la infraestructura que emita el recibo de auditoría. Este documento no declara esa evidencia operativa obtenida, por lo que **PR #34 sigue en borrador**.
+
+## Entrada de producción para preflight de GameHub (#37 + #34)
+
+**Nuevo:** `packages/recovery/gamehub-live-preflight.cjs` produce directamente desde la API de GitHub una lista acotada de archivos, checks por HEAD SHA, estados clásicos y revisiones. **Falla conservadoramente** si falta un check, hay un SHA cambiado, una revisión bloqueante, un archivo privilegiado o una respuesta paginada/incompleta. No acepta `checkInventoryComplete` ni `headSha` del PR como prueba.
+
+`scripts/check-live-gamehub-preflight.cjs` verifica ese contexto en vivo y une la evidencia al consentimiento firmado del propietario y a la auditoría Ed25519 con clave pública separada. Este comando **solo devuelve elegibilidad para revisión humana**, jamás crea commits o fusiones. Se requiere en un host de confianza:
+
+- `ULTRA_SENTINEL_GAMEHUB_PR`: número de PR abierto.
+- `ULTRA_SENTINEL_REQUIRED_CHECKS_JSON`: lista JSON no vacía de nombres de checks exigidos; definida por **configuración confiable del operador**, no por el PR.
+- `ULTRA_SENTINEL_OWNER_GITHUB_TOKEN`: token real del propietario con scopes mínimos de **lectura** (metadata, PR y checks/statuses). Su identidad se comprueba con `GET /user`.
+- `ULTRA_SENTINEL_GAMEHUB_SIGNED_REQUEST_FILE`: ruta absoluta del JSON con `ownerApproval`, `ownerSignature`, `auditReceipt`, `auditSignature`. El JSON es dato de entrada, no fuente de autoridad.
+- `ULTRA_SENTINEL_OWNER_PUBLIC_KEY_FILE` y `ULTRA_SENTINEL_AUDIT_PUBLIC_KEY_FILE`: claves públicas Ed25519 de confianza registradas fuera de Git; claves privadas nunca en el runner.
+- `ULTRA_SENTINEL_GAMEHUB_NONCE_LEDGER`: ruta absoluta a un archivo en directorio privado persistente, fuera de Git.
+
+Después: `node scripts/check-live-gamehub-preflight.cjs`. La salida `GAMEHUB_AUTHORIZED_FOR_MANUAL_REVIEW_ONLY` **no** demuestra que exista un actor que pueda escribir commits. Un resultado de CI positivo del propio PR tampoco acredita el token real, el servidor de auditoría ni las protecciones de ramas.
+
+**Limitación de seguridad:** el lector revisa la primera página completa de hasta 50 archivos, 100 check runs y menos de 100 revisiones; rechaza respuestas mayores/incompletas. Las conversaciones de revisión resueltas se deben inspeccionar por una fuente GraphQL autorizada en la auditoría final, porque REST reviews no devuelve el estado de resolución de todos los hilos.
+
+La prueba real del propietario, del emisor de recibos y de Bubblewrap sigue pendiente hasta contar con el host y las credenciales autorizadas. **No registrar `CERTIFIED` ni fusionar PR #34 sin esas pruebas.**
