@@ -40,6 +40,7 @@ function executeSandboxRepair({directory,plan,changes,nonceStore,nonce,expectedH
   seen.add(c.path);
   const target=path.resolve(directory,c.path);
   if(!target.startsWith(fs.realpathSync(directory)+path.sep))throw Error('PATH_ESCAPE');
+  if(fs.realpathSync(target)!==target||!fs.lstatSync(target).isFile())throw Error('SYMLINK_OR_SPECIAL_FILE');
   const current=fs.readFileSync(target);
   if(crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+current.length+'\0'),current])).digest('hex')!==meta.beforeBlobSha)
    throw Error('BLOB_CAS_MISMATCH');
