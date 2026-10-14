@@ -6,6 +6,7 @@
  */
 const {loadGameHubPullRequest}=require('../packages/orchestrator/gamehub-live-reader.cjs');
 const {auditProviders}=require('../adapters/github/ultra_sentinel_review_integrations.cjs');
+const {analyzeFamilies}=require('../packages/family-hunter/ultra_sentinel_family_fingerprints.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ROOT='https://api.github.com/repos/'+REPO;
 const SHA=/^[0-9a-f]{40}$/i,MAX_BYTES=8*1024*1024;
@@ -72,10 +73,12 @@ async function observeGameHubProviderEvidence(prNumber,{token,fetchImpl=globalTh
  const latest=await getJson('/pulls/'+prNumber);
  if(latest?.state!=='open'||latest.head?.sha!==sha||
     latest.base?.sha!==review.baseSha)fail('STALE_PR_SHA');
+ const family=analyzeFamilies(review.report);
  const advisory=auditProviders({headSha:sha,reviews,checks});
  return Object.freeze({
   schema:'ultra-sentinel-provider-observer/v1',repository:REPO,pr:prNumber,
   headSha:sha,providers:advisory.providers,reviewCount:reviews.length,
+  familyCount:family.families.length,familyStatus:family.status,
   checkCount:checks.length,independentVerified:false,
   autoCommitAllowed:false,autoMergeAllowed:false,
   note:'Advisory only. Evidence never grants GitHub approval or authorization.'});
