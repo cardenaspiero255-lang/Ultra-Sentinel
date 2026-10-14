@@ -7,14 +7,18 @@
  */
 const SHA=/^[0-9a-f]{40}$/i;
 const REVIEWERS=Object.freeze({
- coderabbit:['coderabbitai','coderabbitai[bot]'],
- qodo:['qodo','qodo-merge-pro','qodo-merge-pro[bot]']
+ coderabbit:Object.freeze(['coderabbitai','coderabbitai[bot]']),
+ qodo:Object.freeze(['qodo','qodo-merge-pro','qodo-merge-pro[bot]'])
 });
 const APPS=Object.freeze({
- coderabbit:['coderabbitai'],
- qodo:['qodo','qodo-merge','qodo-merge-pro'],
- sentry:['sentry']
+ coderabbit:Object.freeze(['coderabbitai']),
+ qodo:Object.freeze(['qodo','qodo-merge','qodo-merge-pro']),
+ sentry:Object.freeze(['sentry'])
 });
+function trustedMember(list,value){
+ for(let i=0;i<list.length;i++)if(list[i]===value)return true;
+ return false;
+}
 function auditProviders({headSha,reviews,checks}={}){
  if(typeof headSha!=='string'||!SHA.test(headSha)||
     !Array.isArray(reviews)||reviews.length>1000||
@@ -24,9 +28,9 @@ function auditProviders({headSha,reviews,checks}={}){
  for(const provider of ['coderabbit','qodo','sentry']){
   const allowed=REVIEWERS[provider]||[];
   const relevantReviews=reviews.filter(r=>r&&typeof r==='object'&&
-    allowed.includes(r.user?.login)&&SHA.test(r.commit_id||''));
+    trustedMember(allowed,r.user?.login)&&SHA.test(r.commit_id||''));
   const relevantChecks=checks.filter(c=>c&&typeof c==='object'&&
-    (APPS[provider]||[]).includes(c.app?.slug)&&SHA.test(c.head_sha||''));
+    trustedMember(APPS[provider]||[],c.app?.slug)&&SHA.test(c.head_sha||''));
   const atHeadReviews=relevantReviews.filter(r=>r.commit_id===headSha);
   const atHeadChecks=relevantChecks.filter(c=>c.head_sha===headSha);
   let status='NO_EVIDENCE';
