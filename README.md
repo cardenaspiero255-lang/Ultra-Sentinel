@@ -1,55 +1,66 @@
 # Ultra Sentinel
 
-**Estado actual: estructura preparada para la migración.** Este repositorio todavía **NO** tiene el motor de auditoría de GameHub Ultra, un agente de reparación, conexiones a Sentry/Jarvis ni monitorización 24/7 desplegada. Nada de eso debe interpretarse como operativo por la presencia de carpetas o esquemas.
+**Estado actual: motor independiente de análisis y revisión en modo lectura, con migración funcional parcial. NO Triple SSS certificado.**
 
-## Objetivo
-Plataforma independiente de análisis de código, revisión segura, detección de familias de errores y recuperación supervisada. Consumirá eventos de **GameHub Ultra** y **Jarvis** mediante interfaces versionadas y permisos mínimos.
+El repositorio contiene código real de **Core 2.0**, **Family Hunter**, memoria curada/ledger y observadores autenticados de GameHub en modo de solo lectura. Esto **no** demuestra equivalencia semántica con los revisores heredados, despliegue Sentry/JARVIS, monitoreo 24/7 o permiso de reparación remota.
+
+## Capacidad instalada vs. pendiente
+
+| Capa | Código ya disponible | Límite de seguridad |
+|---|---|---|
+| Core 2.0 y detección de hallazgos | `packages/core/ultra_sentinel_core.cjs` | Motor heurístico: requiere evaluación externa |
+| Family Hunter y modos | `packages/family-hunter/` | Modo de commits no confiere escritura |
+| Memoria y reportes | `packages/memory/`, `packages/reports/` | Sin fixes históricos acreditados externamente |
+| Lector, proveedores y sombra GameHub | `packages/orchestrator/`, `scripts/gamehub-provider-observer.cjs` | Observación de PR, no equivalencia ni aprobación |
+| Preflight de reparación GameHub | `adapters/gamehub/ultra_sentinel_repair_authorization.cjs` (PR #37) | Callback no equivale a una autorización firmada real |
+| Autenticación firmada y rollback transaccional | [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) en borrador | No fusionado ni certificado para uso operativo |
+| Sentry, JARVIS, watchdog y alertas | Interfaces/planes, no despliegue verificado | Integración y E2E pendientes |
+
+La **única matriz de capacidades** US-001…US-035 es [docs/US-CAPABILITY-INVENTORY.md](docs/US-CAPABILITY-INVENTORY.md). Distingue `implementado`, `parcial` y `pendiente` con archivo responsable y brecha. El [issue histórico #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) es un catálogo de ideas, **no** estado operativo de `main`.
+
+## Flujo de trabajo
+
+1. Inventariar y reutilizar las implementaciones fusionadas; no crear un segundo Core o Family Hunter.
+2. Terminar PR #34 **integrándolo con el preflight #37**, actualizar contra `main` y acreditar identidad real, firma, nonce y recuperación aislada antes de fusionar.
+3. Observar PR **vigentes** de GameHub con los workflows de solo lectura y contrastar hallazgos sobre un corpus etiquetado. **Los checks verdes no equivalen a precisión ni a certificación.**
+4. Evaluar Quality Gate, benchmarks ciegos, seguridad y regresiones por SHA y artefactos reproducibles.
+5. Integrar Sentry/JARVIS y monitorización externa únicamente tras definir scopes, límites, privacidad, despliegue y alertas verificadas; retirar workflows antiguos solo con cutover reversible.
 
 ## Estructura
+
 ```text
-apps/                 # procesos optativos: watchdog y panel de control
-adapters/             # adaptadores externos: github, sentry, gamehub, jarvis
-packages/
-  contracts/          # esquemas de intercambio versionados v1
-  core/               # análisis puro del código y evidencias
-  family-hunter/      # clasificación y familias (hipótesis vs pruebas)
-  memory/             # playbooks auditables (no aprendizaje de datos no fiables)
-  quality-gates/      # reglas de paso/bloqueo y revisión independiente
-  orchestrator/       # coordinación sin poderes de GitHub implícitos
-  recovery/           # propuestas y recuperación reversible
-  reports/            # salidas sanitizadas y trazables
-config/               # ejemplos inactivos, sin secretos ni permisos
-docs/
-  architecture/       # decisiones ADR y límites
-  migration/          # migración gradual desde GameHub Ultra
-  security/           # modelo de amenazas
-  quality/            # tests y gates
-  operations/         # runbooks, métricas y observabilidad
-scripts/              # verificación de layout (sin red)
-tests/                # pruebas unitarias, integraciones y E2E
-.github/workflows/    # CI de estructura de mínimo privilegio
+apps/             # procesos optativos, aún no desplegados como monitor 24/7
+adapters/         # interfaces GitHub, GameHub, Sentry y JARVIS
+packages/core/    # analizador heurístico portable
+packages/family-hunter/
+packages/memory/
+packages/recovery/
+packages/quality-gates/
+packages/orchestrator/
+packages/reports/
+packages/contracts/
+scripts/          # runners y verificadores explícitos
+tests/            # unitarias, regresiones, adversariales
+.github/workflows/
+docs/            # inventario, arquitectura, runbooks y evaluación
 ```
 
-## Trabajo de migración
-1. Estabilizar PRs de origen **por separado**; el **PR #197 no se importa en esta etapa**.
-2. Migrar el código estable por capas, con TDD y CI de HEAD exacto.
-3. Implementar integraciones externas **solo** tras verificar identidades, scopes y permisos.
-4. Comparar modo sombra en GameHub hasta demostrar equivalencia y mantener rollback.
-5. Cortar los workflows antiguos únicamente después de pruebas reales E2E.
+## Verificación
 
-Documentos: [Arquitectura](docs/architecture/OVERVIEW.md) · [Plan de migración](docs/migration/PLAN.md) · [Gates](docs/quality/GATES.md) · [Roadmap](docs/ROADMAP.md).
+Requiere Node.js >=22:
 
-## Verificaciones del bootstrap
-Requiere Node.js >=22. Solo usa dependencias estándar para las comprobaciones de estructura:
 ```sh
 npm run check
 ```
-Este comando valida **únicamente la estructura, los ejemplos y los contratos**, no demuestra que el motor de Sentinel esté migrado.
 
-## Seguridad
-- Por defecto `REVIEW_WITH_SOLUTIONS`, **sin commits automáticos, aprobaciones, autofusión ni despliegue**.
-- No ejecutar código de un PR con privilegios; tratar diffs, logs, issues y plugins como datos no confiables.
-- La protección de `main`, los controles obligatorios y la GitHub App deben configurarse y comprobarse explícitamente antes del despliegue.
-- No añadir credenciales a Git, incluidas credenciales Sentry/Supabase o llaves privadas.
+Esta comprobación cubre el verificador de estructura y las pruebas configuradas en `package.json`, **no** certifica por sí misma permisos GitHub, equivalencia con GameHub ni fallos de producción.
 
-Issues: [#1](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/1)–[#5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5).
+## Límites de autorización y fusión
+
+- Modo por defecto: `REVIEW_WITH_SOLUTIONS`. No auto-commit, auto-merge ni despliegue sin consentimiento específico.
+- Los datos de PR, outputs de bots y plugins son **no confiables**; no se ejecuta código del PR dentro de un workflow privilegiado.
+- Tokens, claves privadas y credenciales no se incorporan a Git ni a logs.
+- Codex queda fuera de las revisiones del repositorio según la política del propietario; esto no desinstala una GitHub App.
+- La UI y el runtime Android pertenecen a GameHub. Mantener compatibilidad hasta pruebas cruzadas y rollback reales.
+
+Más información: [Roadmap](docs/ROADMAP.md) · [Plan migración](docs/migration/PLAN.md) · [Gates](docs/quality/GATES.md) · [Límites M8](docs/migration/M8-RELEASE-GATES.md).
