@@ -3,8 +3,9 @@
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const SHA=/^[a-f0-9]{40}$/;
+const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 function git(cwd,...args){
- const r=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false',...args],{cwd,encoding:'utf8',timeout:10000,
+ const r=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{cwd,encoding:'utf8',timeout:10000,
   env:{PATH:process.env.PATH,HOME:cwd,GIT_CONFIG_NOSYSTEM:'1',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
  if(r.error||r.status!==0)throw Error('ROLLBACK_GIT_FAILED');
@@ -13,6 +14,7 @@ function git(cwd,...args){
 function rollbackSandbox({directory,baselineHeadSha,repairHeadSha}={}){
  if(!directory||!fs.realpathSync(directory).startsWith(fs.realpathSync(os.tmpdir())+path.sep))
   throw Error('SANDBOX_ONLY');
+ assertSafeGitCheckout(directory);
  if(!SHA.test(baselineHeadSha||'')||!SHA.test(repairHeadSha||''))throw Error('INVALID_SHA');
  if(git(directory,'remote')!=='')throw Error('REMOTE_FORBIDDEN');
  if(!git(directory,'branch','--show-current').startsWith('sandbox/'))throw Error('WRONG_BRANCH');
