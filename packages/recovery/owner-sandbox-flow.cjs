@@ -30,6 +30,8 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   trustedPublicKey,now});
  if(!check.authorized||check.canonical!==stableAuthorization(authorization))
   throw Error('OWNER_AUTHORIZATION_DENIED');
+ // Reject an in-worktree ledger BEFORE creating any ledger file or journal.
+ validateSandbox(directory,nonceStorePath);
  const nonceStore=new PersistentNonceStore(nonceStorePath);
  // Journal lifetime spans all writes, asynchronous verification, and rollback.
  // It is stored outside Git, with a create-exclusive lock shared by processes.
@@ -78,7 +80,8 @@ function validateSandbox(directory,nonceStorePath){
  const root=fs.realpathSync(directory),tmp=fs.realpathSync(os.tmpdir());
  if(!root.startsWith(tmp+path.sep))throw Error('SANDBOX_ONLY');
  assertSafeGitCheckout(root);
- if(fs.realpathSync(path.dirname(nonceStorePath)).startsWith(root+path.sep))
+ const ledgerDir=fs.realpathSync(path.dirname(nonceStorePath));
+ if(ledgerDir===root||ledgerDir.startsWith(root+path.sep))
   throw Error('NONCE_STORE_INSIDE_WORKTREE');
  if(sandboxGit(root,'remote')!=='')throw Error('REMOTE_FORBIDDEN');
  const branch=sandboxGit(root,'branch','--show-current');
