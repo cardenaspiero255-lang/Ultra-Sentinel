@@ -6,7 +6,12 @@ const SHA='a'.repeat(40),BASE='b'.repeat(40);
 const PR=201,REPO='cardenaspiero255-lang/gamehub-ultra';
 const fakeLoad=async()=>({authenticated:true,headStable:true,completeDiff:true,
  source:'github-api-authenticated-readonly',state:'open',pr:PR,baseSha:BASE,
- envelope:{headSha:SHA,targetRepo:REPO},mergeAllowed:false});
+ envelope:{headSha:SHA,targetRepo:REPO},mergeAllowed:false,
+ report:{engine:'Ultra Sentinel Core',sha:SHA,verdict:'REVIEW_REQUIRED',
+ coverage:{returned:1,analyzed:1,partial:false},omitted:0,
+ findings:[{rule:'SPEECH_REENTRANT_RETRY',severity:'HIGH',confidence:'medium',
+ origin:'Ultra Sentinel Core',path:'app/src/main/java/voice/Ultra.kt',line:5,
+ evidence:'onError() startListening()'}]}});
 function mockFetch({reviews=[],checks=[],total=checks.length,changeHead=false,status=200}={}){
  const urls=[];
  const fetchImpl=async(url)=>{
@@ -28,6 +33,8 @@ test('RED migration #199: live GameHub provider observer binds all evidence to s
  assert.equal(v.headSha,SHA);
  assert.equal(v.providers.coderabbit,'COMMENT_ONLY_NOT_APPROVED');
  assert.equal(v.providers.sentry,'CHECK_SUCCESS_ADVISORY');
+ assert.equal(v.familyCount,1);
+ assert.equal(v.familyStatus,'REVIEW_REQUIRED');
  assert.equal(Object.hasOwn(v.providers,'codex'),false);
  assert.equal(v.autoCommitAllowed,false);assert.equal(v.autoMergeAllowed,false);
  assert.ok(urls.every(url=>url.startsWith('https://api.github.com/repos/'+REPO+'/')));
