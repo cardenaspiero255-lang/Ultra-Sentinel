@@ -70,6 +70,7 @@ test('required check name may originate from GitHub classic commit status instea
  });
  assert.equal(r.classicStatusInventoryComplete,true);
  assert.equal(r.requiredChecks.length,2);
+ assert.equal(r.checks.some(x=>x.name==='coverage/patch'&&x.conclusion==='success'),true);
  assert.equal(r.remoteWrites,false);
 });
 test('failed classic required context cannot pass even when check-runs succeeded',async()=>{
