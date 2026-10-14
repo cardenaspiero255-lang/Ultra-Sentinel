@@ -151,3 +151,18 @@ test('untrusted Git pre-commit hooks cannot execute during isolated repair',asyn
   fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
  }
 });
+
+test('configured Git clean filters are rejected before nonce consumption',async()=>{
+ const f=fixture();
+ try{
+  git(f.directory,'config','filter.injected.clean','false');
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({
+   ...f.options,verifyRepair:async()=>true
+  }),/UNSAFE_LOCAL_GIT_CONFIGURATION/);
+  assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
