@@ -44,3 +44,17 @@ Si se interrumpe una transacción, **no** borrar a mano `.txn`, `.lock` ni el le
 - La API de GitHub se consulta **solo para identidad y conectividad de lectura a GameHub**. La reparación actual opera sobre un sandbox local; **no** concede poderes de escritura en GameHub Ultra ni JARVIS.
 - Antes de declarar el bloque certificado, ejecutar un smoke test con token real del propietario, demostrar el aislamiento del validador con una máquina desechable y publicar evidencias de éxito/fracaso, SHA exacto y verificación independiente de los controles.
 - CI verde es necesaria pero no suficiente. Mantener el PR en borrador si cualquier gate operativo sigue pendiente.
+
+## Puente GameHub ↔ autorización firmada (#37 + #34)
+
+`packages/recovery/gamehub-signed-preflight.cjs` reutiliza el **preflight existente** de `adapters/gamehub/ultra_sentinel_repair_authorization.cjs`; **no** crea un segundo motor de reparación ni un escritor GitHub.
+
+Para emitir el resultado `ELIGIBLE_FOR_HUMAN_COMMIT` hacen falta **todas** estas evidencias, ligadas al mismo PR, SHA, conjunto de archivos y checks requeridos:
+
+1. Contexto PR realmente obtenido de GitHub por un **lector confiable**, con `checkInventoryComplete` acreditado, HEAD estable, checks requeridos completos y aprobados. No aceptar un JSON inventado por el PR como evidencia.
+2. `ownerApproval` firmado en el dispositivo del propietario con Ed25519 bajo el dominio `Ultra-Sentinel:gamehub-owner-consent:v1`. Su firma cubre identidad numérica GitHub, repositorio, número PR, SHA, ámbito `repair:commit-to-pr-branch`, nonce, emisión, expiración y `contextDigest` SHA-256.
+3. `auditReceipt` `CLEAR` firmado con **otra clave pública confiable** bajo el dominio `Ultra-Sentinel:gamehub-audit-evidence:v1`. Esta evidencia representa una auditoría del HEAD exacto y no impone un ruleset ni una aprobación adicional en GitHub. No fabricar ni firmar `CLEAR` desde datos del PR.
+4. Identidad del propietario comprobada online por API GitHub (`GET /user`), nonce único persistido y caducidad máxima de 15 minutos, con reloj del entorno confiable.
+5. Se devuelve solo una **elegibilidad para commit manual**, nunca un permiso de `git push`, aprobación GitHub ni `merge`. Debe repetirse el chequeo de HEAD/checks al momento de ejecutar cualquier operación futura.
+
+**Límites actuales:** la CI automatizada ha probado el puente con claves efímeras y respuestas API simuladas. Todavía faltan conexión real del lector confiable de checks y la infraestructura que emita el recibo de auditoría. Este documento no declara esa evidencia operativa obtenida, por lo que **PR #34 sigue en borrador**.
