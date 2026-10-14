@@ -1,9 +1,10 @@
 'use strict';
-/* Only the GitHub /user endpoint authenticates the bearer token. Never accept
-   actor identity from an untrusted repair plan or PR payload. */
-async function authenticateGitHubOwner({token,expectedOwner,fetchImpl=globalThis.fetch}={}){
- if(typeof token!=='string'||token.length<16||!expectedOwner||
-  typeof fetchImpl!=='function')throw Error('AUTHENTICATION_UNAVAILABLE');
+/* Authenticate the bearer token against GitHub and pin the owner to both
+   current login and immutable numeric account id. */
+async function authenticateGitHubOwner({token,expectedOwner,expectedOwnerId,fetchImpl=globalThis.fetch}={}){
+ if(typeof token!=='string'||token.length<16||typeof expectedOwner!=='string'||!expectedOwner||
+  !Number.isSafeInteger(expectedOwnerId)||expectedOwnerId<1||typeof fetchImpl!=='function')
+  throw Error('AUTHENTICATION_UNAVAILABLE');
  const response=await fetchImpl('https://api.github.com/user',{
   method:'GET',redirect:'error',signal:AbortSignal.timeout(10000),
   headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
@@ -11,7 +12,7 @@ async function authenticateGitHubOwner({token,expectedOwner,fetchImpl=globalThis
  if(!response||response.status!==200)throw Error('GITHUB_AUTHENTICATION_FAILED');
  const user=await response.json();
  if(!user||typeof user.login!=='string'||user.login.toLowerCase()!==expectedOwner.toLowerCase()||
-  !Number.isSafeInteger(user.id)||user.id<1)throw Error('OWNER_IDENTITY_MISMATCH');
- return Object.freeze({source:'github-authenticated-session',login:expectedOwner,userId:user.id});
+  user.id!==expectedOwnerId)throw Error('OWNER_IDENTITY_MISMATCH');
+ return Object.freeze({source:'github-authenticated-session',login:expectedOwner,userId:expectedOwnerId});
 }
 module.exports={authenticateGitHubOwner};
