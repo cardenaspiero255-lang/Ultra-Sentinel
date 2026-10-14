@@ -1,6 +1,6 @@
 # Roadmap ejecutable de Ultra Sentinel — cinco bloques sin duplicar motores
 
-**Corte verificado:** `main@056015fff8003e3cee996c295daab41497b0f40e`. El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
+**Corte actualizado:** `main@d5f5a347862777cee79a32d70468601b32b38f9b` (PR #39/#40/#41 fusionados). El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
 
 ## Bloque 1 — Autorización y recuperación de producción
 - **Ya fusionado:** preflight GameHub [PR #37](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/37).
@@ -11,7 +11,7 @@
 ## Bloque 2 — Paridad real del modo sombra
 - Reusar `gamehub-live-reader`, `gamehub-shadow` y selector actual de [PR #38](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/38); no crear segundo observador.
 - Quitar dependencia por defecto del antiguo PR GameHub #201 (los snapshots históricos se preservan).
-- Comparar hallazgos **por regla, archivo, línea y SHA**, coverage, falsos positivos/negativos, F1 y latencias contra una verdad independiente.
+- Evaluador de métricas **ya fusionado** en [PR #40](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/40): TP/FP/FN, precisión/recall/F1 sin certificación automática. Falta recopilar hallazgos **por regla, archivo, línea y SHA** sobre corpus real con etiquetas independientes y latencias verificadas.
 - **Salida:** conjunto representativo con límites y resultados publicados; `BLOCKED_SOURCE_CI` ante falla heredada.
 
 ## Bloque 3 — Quality Gate, red team y evaluación externa
@@ -19,12 +19,12 @@
 - **Salida:** gates de exact HEAD, 0 P0/P1/P2 confirmados abiertos, resultados objetivos; sin declarar superioridad sobre competidores sin benchmark validado.
 
 ## Bloque 4 — Conectores Sentry, JARVIS y GameHub
-- Reusar los lectores GitHub y contratos versionados. Desarrollar adaptadores con autenticación, privacidad, límites y permisos mínimos; QA con incidentes **sintéticos** y consentimiento.
+- Adaptadores de **solo lectura** Sentry/JARVIS implementados en [PR #41](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/41); reutilizar lectores GitHub. Pendientes: token Sentry real, QA autorizado, consentimiento, privacidad E2E y transporte/versionado de incidentes.
 - No migrar los componentes de voz, APK, UI o CAR específicos de GameHub.
 - **Salida:** E2E autorizados, telemetría sanitizada, operación observable y reversión comprobada.
 
 ## Bloque 5 — Monitor supervisor y cutover reversible
-- Health, alarmas, almacenamiento de checkpoints, idempotencia, presupuestos, escalación, retención y supervisor externo.
+- Checkpoint y outbox persistentes **en desarrollo en [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42)**; pendientes: despliegue/host real, health externo, entrega efectiva de alarmas, presupuestos, escalación, retención y supervisor externo.
 - Pruebas de pérdida de red, reinicios, tareas duplicadas y alerta, con límites de gasto claros.
 - Retirar código obsoleto de GameHub **solo tras** paridad y cierre de regresiones; conservar adaptadores de producto.
 - **Salida:** evidencias operativas y auditoría de seguridad antes de cualquier etiqueta Triple SSS.
