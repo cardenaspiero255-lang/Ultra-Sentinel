@@ -1,8 +1,10 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
-const {runOwnerAuthorizedSandboxRepair,digestPlan}=require('../../packages/recovery/owner-sandbox-flow.cjs');
+const crypto=require('node:crypto'),{execFileSync,spawn}=require('node:child_process');
+const {once}=require('node:events');
+const {setTimeout:delay}=require('node:timers/promises');
+const {runOwnerAuthorizedSandboxRepair,digestPlan,recoverInterruptedSandboxRepair}=require('../../packages/recovery/owner-sandbox-flow.cjs');
 const {stableAuthorization}=require('../../packages/recovery/owner-authorization.cjs');
 function git(cwd,...args){return execFileSync('git',args,{cwd,encoding:'utf8'}).trim();}
 function blob(data){const b=Buffer.from(data);return crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+b.length+'\0'),b])).digest('hex');}
@@ -58,4 +60,71 @@ test('wrong owner is rejected before nonce consumption and writes',async()=>{
    verifyRepair:async()=>true}),/OWNER_IDENTITY_MISMATCH/);
   assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+});
+
+
+test('parallel repair is denied while transaction remains pending',async()=>{
+ const f=fixture();
+ let release;
+ const waitForVerify=new Promise(resolve=>{release=resolve;});
+ try{
+  const first=runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>{await waitForVerify;return true;}});
+  for(let i=0;i<100&&!fs.existsSync(f.options.nonceStorePath+'.txn');i++)await delay(20);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),true);
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>true}),
+   /PENDING_RECOVERY_REQUIRED|STALE_OR_DIRTY_SANDBOX/);
+  assert.throws(()=>recoverInterruptedSandboxRepair({directory:f.directory,
+   nonceStorePath:f.options.nonceStorePath}),/TRANSACTION_OWNER_STILL_ACTIVE/);
+  release();
+  assert.equal((await first).status,'SANDBOX_REPAIR_VERIFIED');
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{
+  release?.();
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
+test('SIGKILL between commit and verification is recovered to exact baseline tree',async()=>{
+ const f=fixture();
+ let child;
+ try{
+  const input={...f.options,
+   trustedPublicKey:f.options.trustedPublicKey.export({type:'spki',format:'pem'})};
+  delete input.fetchImpl;
+  const modulePath=require.resolve('../../packages/recovery/owner-sandbox-flow.cjs');
+  const script=[
+   "const {runOwnerAuthorizedSandboxRepair}=require(process.argv[1]);",
+   "const options=JSON.parse(process.argv[2]);",
+   "options.fetchImpl=async()=>({status:200,json:async()=>({login:'cardenaspiero255-lang',id:12345})});",
+   "options.verifyRepair=async()=>new Promise(()=>setInterval(()=>{},1000));",
+   "runOwnerAuthorizedSandboxRepair(options).catch(e=>{console.error(e);process.exitCode=1;});"
+  ].join('\n');
+  child=spawn(process.execPath,['-e',script,modulePath,JSON.stringify(input)],{stdio:'ignore'});
+  const txn=f.options.nonceStorePath+'.txn';
+  let reached=false;
+  for(let i=0;i<200;i++){
+   if(fs.existsSync(txn)&&git(f.directory,'rev-parse','HEAD')!==f.options.expectedHeadSha){
+    reached=true;break;
+   }
+   if(child.exitCode!==null)break;
+   await delay(25);
+  }
+  assert.equal(reached,true,'child must create repair commit before kill');
+  child.kill('SIGKILL');
+  await once(child,'exit');
+  child=null;
+  const result=recoverInterruptedSandboxRepair({directory:f.directory,
+   nonceStorePath:f.options.nonceStorePath});
+  assert.equal(result.status,'RECOVERY_VERIFIED');
+  assert.equal(result.disposition,'REVERTED_INTERRUPTED_REPAIR');
+  assert.equal(fs.existsSync(txn),false);
+  assert.equal(git(f.directory,'rev-parse','HEAD^{tree}'),
+   git(f.directory,'rev-parse',f.options.expectedHeadSha+'^{tree}'));
+  assert.equal(git(f.directory,'status','--porcelain'),'');
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>true}),/NONCE_REPLAY/);
+ }finally{
+  if(child?.exitCode===null){child.kill('SIGKILL');await once(child,'exit');}
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
 });
