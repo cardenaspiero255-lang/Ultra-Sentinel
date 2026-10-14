@@ -64,3 +64,24 @@ test('nonce ledger rejects symlink targets and insecure existing permissions',()
   assert.throws(()=>new PersistentNonceStore(loose),/NONCE_STORE_UNSAFE/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('nonce storage rejects hardlinked ledgers and symlinked parent directories',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-ledger-links-'));
+ try{
+  const original=path.join(root,'original');fs.writeFileSync(original,'do-not-touch',{mode:0o600});
+  const linked=path.join(root,'hardlink');fs.linkSync(original,linked);
+  assert.throws(()=>new PersistentNonceStore(linked),/NONCE_STORE_UNSAFE/);
+  const privateDir=path.join(root,'private');fs.mkdirSync(privateDir,{mode:0o700});
+  const symlink=path.join(root,'alias');fs.symlinkSync(privateDir,symlink,'dir');
+  assert.throws(()=>new PersistentNonceStore(path.join(symlink,'ledger')),/NONCE_DIRECTORY_UNSAFE/);
+  assert.equal(fs.readFileSync(original,'utf8'),'do-not-touch');
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('nonce storage refuses a readable parent directory',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-ledger-parent-'));
+ try{
+  const exposed=path.join(root,'exposed');fs.mkdirSync(exposed,{mode:0o755});
+  fs.chmodSync(exposed,0o755);
+  assert.throws(()=>new PersistentNonceStore(path.join(exposed,'ledger')),/NONCE_DIRECTORY_NOT_PRIVATE/);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
