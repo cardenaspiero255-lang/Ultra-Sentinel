@@ -1,0 +1,39 @@
+[Unit]
+Description=Ultra Sentinel read-only monitoring and durable alert delivery
+Documentation=https://github.com/cardenaspiero255-lang/Ultra-Sentinel/blob/main/docs/operations/WATCHDOG-DEPLOYMENT.md
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/opt/ultra-sentinel/apps/watchdog/watchdog-run-once.cjs
+
+[Service]
+Type=oneshot
+User=ultra-sentinel
+Group=ultra-sentinel
+WorkingDirectory=/opt/ultra-sentinel
+EnvironmentFile=/etc/ultra-sentinel/watchdog.env
+Environment=ULTRA_SENTINEL_WATCHDOG_STATE_FILE=/var/lib/ultra-sentinel/watchdog.json
+StateDirectory=ultra-sentinel
+StateDirectoryMode=0700
+UMask=0077
+ExecStartPre=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs
+ExecStart=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-run-once.cjs
+ExecStartPost=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs
+TimeoutStartSec=90s
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/var/lib/ultra-sentinel
+
+[Install]
+WantedBy=multi-user.target
