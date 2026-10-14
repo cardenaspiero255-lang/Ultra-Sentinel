@@ -29,7 +29,8 @@ function verifyOwnerAuthorization({authorization,verifiedActor,expectedOwner,exp
   // The pinned key is trusted configuration, never read from a request payload.
   if(typeof signature!=='string'||! /^[A-Za-z0-9+/]{86}==$/.test(signature)||
    !trustedPublicKey)return Object.freeze({authorized:false,reason:'OWNER_SIGNATURE_REQUIRED'});
-  const key=crypto.createPublicKey(trustedPublicKey);
+  const key=trustedPublicKey instanceof crypto.KeyObject && trustedPublicKey.type==='public'
+   ?trustedPublicKey:crypto.createPublicKey(trustedPublicKey);
   if(key.asymmetricKeyType!=='ed25519'||
    !crypto.verify(null,Buffer.from(DOMAIN+canonical,'utf8'),key,Buffer.from(signature,'base64')))
    return Object.freeze({authorized:false,reason:'OWNER_SIGNATURE_INVALID'});
