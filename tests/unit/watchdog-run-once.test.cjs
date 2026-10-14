@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {inspect}=require('../../apps/watchdog/watchdog-outbox.cjs');
 const {storeObservation,pendingDigest,acknowledgeDelivery,checkedState}=
  require('../../apps/watchdog/watchdog-run-once.cjs');
 const sha='a'.repeat(40);
@@ -65,5 +66,21 @@ test('malformed previously stored state is never overwritten',()=>{
   assert.throws(()=>storeObservation(file,null,sentry([]),jarvis(sha)),/STATE_CORRUPTED/);
   assert.equal(fs.readFileSync(file,'utf8'),'garbled');
   assert.equal(fs.existsSync(file+'.lock'),false);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('operator can inspect sanitized pending events and must explicitly confirm delivery',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-watchdog-ops-'));
+ try{
+  const file=path.join(root,'checkpoint');
+  storeObservation(file,null,sentry(['100']),jarvis(sha));
+  storeObservation(file,null,sentry(['100','200']),jarvis(sha));
+  const pending=inspect(file);
+  assert.equal(pending.status,'PENDING_ALERT_DELIVERY_REQUIRED');
+  assert.equal(pending.pendingAlerts.length,1);
+  assert.equal(pending.deliveryVerified,false);
+  assert.match(pending.pendingDigest,/^[a-f0-9]{64}$/);
+  assert.equal(acknowledgeDelivery(file,pending.pendingDigest).status,'DELIVERY_ACKNOWLEDGED');
+  assert.equal(inspect(file).status,'NO_PENDING_ALERTS');
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
