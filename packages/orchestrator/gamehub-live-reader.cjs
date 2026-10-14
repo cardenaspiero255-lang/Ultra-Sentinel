@@ -10,7 +10,7 @@ const MAX_FILES=300,PER_PAGE=100,MAX_JSON=8*1024*1024;
 function fail(code){throw Error(code);}
 function validToken(token){
  return typeof token==='string'&&token.length>=8&&token.length<=2048&&
-  /^[\\x21-\\x7e]+$/.test(token);
+  /^[\x21-\x7e]+$/.test(token);
 }
 function checkPR(data,number){
  if(!data||typeof data!=='object'||Array.isArray(data)||
