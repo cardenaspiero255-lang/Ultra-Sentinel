@@ -9,6 +9,7 @@ function summarizeShadow(review,checks){
   review.authenticated!==true||review.headStable!==true||
   review.completeDiff!==true||review.mergeAllowed!==false||
   !checks||checks.headSha!==review.envelope.headSha||
+  checks.pr!==review.pr||checks.baseSha!==review.baseSha||
   !Array.isArray(checks.runs)||checks.runs.length>100)
   throw Error('INVALID_SHADOW_EVIDENCE');
  const grouped={success:0,failure:0,pending:0,skipped:0};
