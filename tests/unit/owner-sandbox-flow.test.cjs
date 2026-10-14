@@ -121,6 +121,7 @@ test('SIGKILL between commit and verification is recovered to exact baseline tre
   assert.equal(git(f.directory,'rev-parse','HEAD^{tree}'),
    git(f.directory,'rev-parse',f.options.expectedHeadSha+'^{tree}'));
   assert.equal(git(f.directory,'status','--porcelain'),'');
+  git(f.directory,'reset','--hard',f.options.expectedHeadSha);
   await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>true}),/NONCE_REPLAY/);
  }finally{
   if(child?.exitCode===null){child.kill('SIGKILL');await once(child,'exit');}
