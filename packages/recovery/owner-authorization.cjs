@@ -36,14 +36,18 @@ class PersistentNonceStore{
  consume(nonce){
   if(typeof nonce!=='string'||nonce.length<16)return false;
   const hash=crypto.createHash('sha256').update(nonce).digest('hex');
-  const fd=fs.openSync(this.filename,'r+');
+  const lock=this.filename+'.lock';
+  let lockFd;
+  try{lockFd=fs.openSync(lock,'wx',0o600);}catch(e){if(e.code==='EEXIST')return false;throw e;}
+  let fd;
+  try{fd=fs.openSync(this.filename,'r+');
   try{
    const existing=fs.readFileSync(fd,'utf8');
    if(existing.split('\n').includes(hash))return false;
    fs.writeSync(fd,hash+'\n',fs.fstatSync(fd).size,'utf8');
    fs.fsyncSync(fd);
    return true;
-  }finally{fs.closeSync(fd);}
+  }finally{if(fd!==undefined)fs.closeSync(fd);fs.closeSync(lockFd);fs.unlinkSync(lock);}
  }
 }
 module.exports={stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore};
