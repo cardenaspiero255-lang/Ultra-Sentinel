@@ -1,5 +1,7 @@
-# Adaptador Jarvis
+# Adaptador JARVIS
 
-Puente planeado con el asistente/orquestador Jarvis: órdenes autorizadas, estado, voz, errores de STT/TTS y reportes de recuperación. **No se asume nombre, ruta ni despliegue del repositorio Jarvis.**
+**Implementación de lectura GitHub:** [jarvis-readonly.cjs](jarvis-readonly.cjs), fijada al repositorio `cardenaspiero255-lang/JARVIS` e ID inmutable. Verifica identidad del repositorio y recopila metadatos limitados de PR abiertos. No obtiene conversaciones, audio ni código de PR, y nunca concede permisos de escritura.
 
-Sentinel debe seguir detectando y diagnosticando cuando Jarvis está caído. Una orden conversacional o evento sin verificar no otorga autorización de GitHub. Respetar permisos Android y privacidad de voz.
+**No está desplegado como observador continuo.** Conectar desde un runner confiable con token de solo lectura y validar QA de fallos de permisos/API antes de crear alertas. El sistema de comandos de JARVIS es otra integración que exige autenticación y autorización de cada acción.
+
+[Contrato, pruebas y criterios operativos](../../docs/operations/EXTERNAL-READONLY-ADAPTERS.md).
