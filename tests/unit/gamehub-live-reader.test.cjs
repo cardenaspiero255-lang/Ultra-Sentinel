@@ -62,3 +62,11 @@ test('changed PR base, file count and malformed patch block',async()=>{
  const invalid=pr(301);
  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({first:invalid}).fetchImpl}),/INVALID_PR_METADATA/);
 });
+
+test('runtime URL-safe punctuation is accepted but whitespace and header breaks are rejected',async()=>{
+ const good=key+'~-/=.';
+ const result=await loadGameHubPullRequest(201,{token:good,fetchImpl:mock().fetchImpl});
+ assert.equal(result.authenticated,true);
+ for(const bad of [key+'\\n',key+'\\r',key+' ',key+'\\t'])
+  await assert.rejects(()=>loadGameHubPullRequest(201,{token:bad,fetchImpl:mock().fetchImpl}),/AUTHENTICATION_REQUIRED/);
+});
