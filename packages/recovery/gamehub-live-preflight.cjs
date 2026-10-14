@@ -76,7 +76,7 @@ async function loadGameHubRepairPreflight(prNumber,{
   checks.push({name:check.name,sha:meta.headSha,
    status:'completed',conclusion:'success'});
  }
- if(requiredChecks.some(name=>!seen.has(name)))fail('REQUIRED_REPAIR_CHECK_MISSING');
+
  // Classic commit status contexts are a second, independent GitHub API surface.
  const classic=await getJson('/commits/'+meta.headSha+'/status');
  if(!classic||!Array.isArray(classic.statuses)||classic.statuses.length>=100)
@@ -88,6 +88,10 @@ async function loadGameHubRepairPreflight(prNumber,{
    fail('FAILED_OR_STALE_CLASSIC_STATUS');
   contexts.add(context.context);
  }
+ // Required names can be reported either as Checks API runs or as classic
+ // commit status contexts. A valid classic status is not an absent check.
+ if(requiredChecks.some(name=>!seen.has(name)&&!contexts.has(name)))
+  fail('REQUIRED_REPAIR_CHECK_MISSING');
  const reviews=await getJson('/pulls/'+prNumber+'/reviews?per_page=100&page=1');
  if(!Array.isArray(reviews)||reviews.length>=100||
   reviews.some(r=>!r||!['APPROVED','COMMENTED','DISMISSED','PENDING','CHANGES_REQUESTED'].includes(r.state)))
