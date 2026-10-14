@@ -110,7 +110,7 @@ test('contract v1 fields remain complete, closed and versioned',()=>{
  const mandatory={
   incident:['schemaVersion','sourceRepo','service','eventType','observedAt','evidenceState'],
   'review-result':['schemaVersion','targetRepo','headSha','verdict','evidenceState'],
-  'repair-authorization':['schemaVersion','mode','repository','prNumber','headSha','actor','scope','expiresAt','nonce']
+  'repair-authorization':['schemaVersion','mode','repository','prNumber','headSha','actor','scope','expiresAt','nonce','budget']
  };
  for(const [name,required] of Object.entries(mandatory)){
   const schema=JSON.parse(fs.readFileSync(path.join(ROOT,'packages/contracts/schemas',
@@ -152,4 +152,26 @@ test('incident and review schemas reject ambiguous verdict definitions',()=>{
  assert.equal(review.headSha.pattern,'^[0-9a-f]{40}$');
  assert.deepEqual(review.evidenceState.enum.slice().sort(),
   ['INCOMPLETE','UNVERIFIED','VERIFIED'].sort());
+});
+
+test('repair authorization v1 includes a closed finite repair budget',()=>{
+ const schema=JSON.parse(fs.readFileSync(path.join(ROOT,
+  'packages/contracts/schemas/repair-authorization.v1.schema.json'),'utf8'));
+ const budget=schema.properties.budget;
+ assert.ok(schema.required.includes('budget'),'budget cannot be omitted');
+ assert.equal(budget.type,'object');
+ assert.equal(budget.additionalProperties,false);
+ const keys=['maxCommits','maxCiRuns','maxDurationSeconds','maxFilesChanged','maxPatchBytes'];
+ assert.deepEqual([...budget.required].sort(),[...keys].sort());
+ for(const key of keys){
+  const limit=budget.properties[key];
+  assert.equal(limit.type,'integer',key);
+  assert.ok(Number.isSafeInteger(limit.minimum)&&limit.minimum>=1,key);
+  assert.ok(Number.isSafeInteger(limit.maximum)&&limit.maximum>=limit.minimum,key);
+ }
+ assert.ok(budget.properties.maxCommits.maximum<=3);
+ assert.ok(budget.properties.maxCiRuns.maximum<=6);
+ assert.ok(budget.properties.maxDurationSeconds.maximum<=900);
+ assert.ok(budget.properties.maxFilesChanged.maximum<=30);
+ assert.ok(budget.properties.maxPatchBytes.maximum<=200000);
 });
