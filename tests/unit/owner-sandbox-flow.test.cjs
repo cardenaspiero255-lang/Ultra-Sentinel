@@ -134,3 +134,20 @@ test('SIGKILL between commit and verification is recovered to exact baseline tre
   fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
  }
 });
+
+test('untrusted Git pre-commit hooks cannot execute during isolated repair',async()=>{
+ const f=fixture();
+ try{
+  const hook=path.join(f.directory,'.git','hooks','pre-commit');
+  const marker=path.join(f.directory,'hook-ran');
+  fs.writeFileSync(hook,'#!/bin/sh\nexit 99\n',{mode:0o700});
+  fs.chmodSync(hook,0o700);
+  const result=await runOwnerAuthorizedSandboxRepair({...f.options,verifyRepair:async()=>true});
+  assert.equal(result.status,'SANDBOX_REPAIR_VERIFIED');
+  assert.equal(fs.existsSync(marker),false);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
