@@ -112,3 +112,37 @@ test('systemd service uses locked-down read-only runtime and timer, not PR secre
  assert.match(timer,/Persistent=true/);
  assert.doesNotMatch(service,/GITHUB_TOKEN=ghp_|pull_request_target|curl|wget/);
 });
+
+test('identical alert payload in later incident gets distinct idempotency key; same batch retry stays stable',async()=>{
+ const f=fixture();
+ try{
+  const seen=[];
+  const transport=async(url,req)=>{
+   seen.push(req.headers['Idempotency-Key']);
+   return {url,status:202};
+  };
+  await deliverPending({stateFile:f.stateFile,endpoint:goodUrl,token,
+   signingSecret:secret,fetchImpl:transport});
+  // Issue temporarily falls outside the sampled window.
+  storeObservation(f.stateFile,null,sentry(['123']),jarvis());
+  // The same issue appears again as a new observation.
+  const next=storeObservation(f.stateFile,null,sentry(['123','456']),jarvis());
+  assert.equal(next.alerts.length,1);
+  await deliverPending({stateFile:f.stateFile,endpoint:goodUrl,token,
+   signingSecret:secret,fetchImpl:transport});
+  assert.equal(seen.length,2);
+  assert.notEqual(seen[0],seen[1],'distinct occurrences must not be deduplicated together');
+  assert.equal(checkedState(f.stateFile).pendingAlerts.length,0);
+ }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+test('corrupt sequence counter cannot reset delivery identity or cause webhook POST',async()=>{
+ const f=fixture();
+ try{
+  const data=checkedState(f.stateFile);
+  data.batchSequence=-3;
+  fs.writeFileSync(f.stateFile,JSON.stringify(data),{mode:0o600});
+  await assert.rejects(()=>deliverPending({stateFile:f.stateFile,
+   endpoint:goodUrl,token,signingSecret:secret,
+   fetchImpl:async()=>{throw Error('MUST_NOT_POST')}}),/STATE_SEQUENCE_INVALID/);
+ }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
