@@ -35,7 +35,7 @@ test('rejects malformed schema, revision, provenance and untrusted fields',()=>{
  assert.throws(()=>ledger.parseLedger(raw([{...entry(),fixSha:'invalid'}])),/INVALID_LEDGER_ENTRY/);
  assert.throws(()=>ledger.parseLedger(raw([{...entry(),evidenceUrl:'https://evil.example/fake'}])),/INVALID_LEDGER_ENTRY/);
  assert.throws(()=>ledger.parseLedger(raw([{...entry(),tests:[]}])),/INVALID_LEDGER_ENTRY/);
- assert.throws(()=>ledger.parseLedger(raw([{...entry(),summary:{toString(){throw Error('SHOULD_NOT_COERCE')}}])),/INVALID_LEDGER_ENTRY/);
+ assert.throws(()=>ledger.parseLedger(raw([{...entry(),summary:{toString(){throw Error('SHOULD_NOT_COERCE')}}}])),/INVALID_LEDGER_ENTRY/);
 });
 test('malicious entry getter is accessed at most once',()=>{
  let reads=0;
