@@ -26,7 +26,6 @@ test('nonce replay is rejected across store instances',()=>{
   assert.equal(new PersistentNonceStore(file).consume(base.nonce),false);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
-
 test('nonce ledger refuses concurrent lock rather than racing',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-lock-'));
  try{
@@ -37,5 +36,17 @@ test('nonce ledger refuses concurrent lock rather than racing',()=>{
   fs.unlinkSync(file+'.lock');
   assert.equal(store.consume(base.nonce),true);
   assert.equal(store.consume(base.nonce),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('nonce ledger rejects symlink targets and insecure existing permissions',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-hardening-'));
+ try{
+  const victim=path.join(dir,'victim');fs.writeFileSync(victim,'do-not-touch');
+  const link=path.join(dir,'ledger-link');fs.symlinkSync(victim,link);
+  assert.throws(()=>new PersistentNonceStore(link),/NONCE_STORE_UNSAFE/);
+  assert.equal(fs.readFileSync(victim,'utf8'),'do-not-touch');
+  const loose=path.join(dir,'ledger-loose');fs.writeFileSync(loose,'',{mode:0o644});
+  fs.chmodSync(loose,0o644);
+  assert.throws(()=>new PersistentNonceStore(loose),/NONCE_STORE_UNSAFE/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
