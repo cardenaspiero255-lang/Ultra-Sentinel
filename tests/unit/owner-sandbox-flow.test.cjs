@@ -166,3 +166,20 @@ test('configured Git clean filters are rejected before nonce consumption',async(
   fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
  }
 });
+
+test('a nonce ledger at the sandbox root is rejected before any file is created',async()=>{
+ const f=fixture();
+ try{
+  const nonceStorePath=path.join(f.directory,'ledger');
+  await assert.rejects(()=>runOwnerAuthorizedSandboxRepair({
+   ...f.options,nonceStorePath,verifyRepair:async()=>true
+  }),/NONCE_STORE_INSIDE_WORKTREE/);
+  assert.equal(fs.existsSync(nonceStorePath),false,'must not create ledger within worktree');
+  assert.equal(fs.existsSync(nonceStorePath+'.txn'),false,'must not start transaction');
+  assert.equal(git(f.directory,'status','--porcelain'),'');
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
