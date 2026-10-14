@@ -41,3 +41,19 @@ test('invalid SHA, arrays and unbounded snapshots fail closed',()=>{
  {...empty(),checks:Array(1001).fill({})}
  ])assert.throws(()=>auditProviders(value),/INVALID_REVIEW_EVIDENCE/);
 });
+
+test('trusted provider names cannot be mutated or fabricated by patched Array.includes',()=>{
+ assert.throws(()=>REVIEWERS.coderabbit.push('intruder[bot]'),TypeError);
+ assert.throws(()=>APPS.sentry.push('intruder'),TypeError);
+ const originalIncludes=Array.prototype.includes;
+ let output;
+ try{
+  Array.prototype.includes=()=>true;
+  output=auditProviders({headSha:SHA,
+   reviews:[{user:{login:'intruder[bot]'},state:'APPROVED',commit_id:SHA}],
+   checks:[{app:{slug:'intruder'},head_sha:SHA,status:'completed',conclusion:'success'}]});
+ }finally{Array.prototype.includes=originalIncludes;}
+ assert.equal(output.providers.coderabbit,'NO_EVIDENCE');
+ assert.equal(output.providers.qodo,'NO_EVIDENCE');
+ assert.equal(output.providers.sentry,'NO_EVIDENCE');
+});
