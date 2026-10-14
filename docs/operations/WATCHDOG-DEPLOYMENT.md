@@ -1,7 +1,7 @@
 # Supervisor Ultra Sentinel — contrato de vigilancia sin despliegue implícito
 
 ## Estado
-`apps/watchdog/watchdog-state.cjs` evalúa cambios entre muestras confiables. `apps/watchdog/watchdog-run-once.cjs` ejecuta **una iteración** que consulta Sentry/JARVIS en lectura y persiste un checkpoint privado. **No es un demonio 24/7 desplegado, no envía notificaciones ni concede escritura GitHub.**
+`apps/watchdog/watchdog-state.cjs` evalúa cambios entre muestras confiables. `apps/watchdog/watchdog-run-once.cjs` ejecuta **una iteración** que consulta Sentry/JARVIS/GameHub en lectura y persiste un checkpoint privado. **No es un demonio 24/7 desplegado, no envía notificaciones ni concede escritura GitHub.**
 
 ## Requisitos para una iteración
 
@@ -11,7 +11,7 @@
 - `ULTRA_SENTINEL_SENTRY_TOKEN`, `ULTRA_SENTINEL_READONLY_GITHUB_TOKEN`: secretos revocables, fuera de logs/artifacts.
 - Ejecución única: `node apps/watchdog/watchdog-run-once.cjs`.
 
-El primer ciclo emite `BASELINE_INITIALIZED_NO_ALERT` para evitar notificaciones falsas. Las observaciones siguientes emiten eventos `NEW_SENTRY_ISSUE`, `JARVIS_PR_OPENED`, `JARVIS_PR_HEAD_CHANGED` o `JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT`. El último **NO significa necesariamente PR cerrado**: la API puede devolver una ventana de hasta 30 PR, sin garantía de exhaustividad.
+El primer ciclo emite `BASELINE_INITIALIZED_NO_ALERT` para evitar notificaciones falsas. Las observaciones siguientes emiten eventos `NEW_SENTRY_ISSUE`, `JARVIS_PR_OPENED`, `JARVIS_PR_HEAD_CHANGED` o `JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT` y cambios en la muestra de PR de GameHub (`GAMEHUB_PR_HEAD_CHANGED`, `GAMEHUB_PR_SAMPLE_SELECTED`, `GAMEHUB_PR_SAMPLE_CHANGED`, `GAMEHUB_SAMPLE_NOW_IDLE`). **La observación de GameHub reutiliza el selector existente y se limita a un PR a la vez: no certifica todos los PR, checks ni familias de defectos.** El último **NO significa necesariamente PR cerrado**: la API puede devolver una ventana de hasta 30 PR, sin garantía de exhaustividad.
 
 ## Persistencia y entrega de eventos
 
