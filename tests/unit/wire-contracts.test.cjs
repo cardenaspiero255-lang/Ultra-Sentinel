@@ -84,3 +84,64 @@ test('high-trust review outputs reject untrusted digest formats and unsafe input
  const withUnsafe=review();withUnsafe.headSha={toString(){return sha;}};
  assert.equal(validateWire('review-result',withUnsafe).ok,false);
 });
+
+test('P1: custom array iterators cannot hide a traversing repair scope',()=>{
+ const a=repair();
+ a.scope=['../secret'];
+ const prototype=Object.create(Array.prototype);
+ prototype[Symbol.iterator]=function*(){yield 'src/file.cjs';};
+ Object.setPrototypeOf(a.scope,prototype);
+ assert.equal(validateWire('repair-authorization',a).ok,false,
+  'must inspect real owned numeric values, never a user-supplied iterator');
+});
+
+test('P2: proxy payloads fail closed without triggering traps',()=>{
+ let reads=0,prototypes=0;
+ const a=new Proxy(incident(),{
+  get(target,key,receiver){reads++;return Reflect.get(target,key,receiver);},
+  getPrototypeOf(target){prototypes++;return Reflect.getPrototypeOf(target);}
+ });
+ assert.equal(validateWire('incident',a).ok,false);
+ assert.equal(reads,0,'untrusted get trap must not be called');
+ assert.equal(prototypes,0,'untrusted getPrototypeOf trap must not be called');
+ const nested=repair();
+ nested.scope=new Proxy(['src/file.cjs'],{
+  get(target,key,receiver){reads++;return Reflect.get(target,key,receiver);}
+ });
+ assert.equal(validateWire('repair-authorization',nested).ok,false);
+ assert.equal(reads,0,'nested proxy traps must not be called');
+});
+
+test('P2: legacy Date.UTC remap cannot authorize invented year-0072 leap seconds',()=>{
+ for(const name of ['incident','repair-authorization']){
+  const item=name==='incident'?incident():repair();
+  item[name==='incident'?'observedAt':'expiresAt']='0072-06-30T23:59:60Z';
+  assert.equal(validateWire(name,item).ok,false,name);
+ }
+});
+
+test('P2: nonce minLength measures Unicode code points, not UTF-16 units',()=>{
+ const a=repair();
+ a.nonce='😀'.repeat(8);
+ assert.equal(validateWire('repair-authorization',a).ok,false);
+ a.nonce='😀'.repeat(16);
+ assert.equal(validateWire('repair-authorization',a).ok,true);
+});
+
+test('P2: oversized scope arrays stop before per-item validation',()=>{
+ const a=repair();
+ a.scope=Array.from({length:31},(_,i)=>'bad scope '+i);
+ const result=validateWire('repair-authorization',a);
+ assert.equal(result.ok,false);
+ assert.deepEqual(result.errors,['$.scope: too many items'],
+  'stop at maxItems without scanning all invalid regexes');
+});
+
+test('reject cumulative oversized wire data and unsafe contract names',()=>{
+ const a=repair();a.scope=Array.from({length:20},(_,i)=>'x'.repeat(15000)+i);
+ assert.equal(validateWire('repair-authorization',a).ok,false);
+ let coerced=0;
+ const maliciousName={toString(){coerced++;return 'incident';}};
+ assert.equal(validateWire(maliciousName,incident()).ok,false);
+ assert.equal(coerced,0,'contract names must never be coerced');
+});
