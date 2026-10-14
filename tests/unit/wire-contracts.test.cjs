@@ -66,3 +66,21 @@ test('shape boundary rejects prototype pollution, cycles, arrays and accessors',
  const getter=incident();Object.defineProperty(getter,'observedAt',{get(){throw Error('must not execute');},enumerable:true});
  assert.equal(validateWire('incident',getter).ok,false);
 });
+
+test('wire arrays reject hidden entries and appended exotic properties',()=>{
+ const withExtra=repair();
+ withExtra.scope.extra='src/admin.cjs';
+ assert.equal(validateWire('repair-authorization',withExtra).ok,false,'array custom keys must fail closed');
+ const withNegativeIndex=repair();
+ withNegativeIndex.scope['-1']='../secret';
+ assert.equal(validateWire('repair-authorization',withNegativeIndex).ok,false,'array negative keys must fail closed');
+ const withSparse=repair();
+ withSparse.scope=new Array(1);
+ assert.equal(validateWire('repair-authorization',withSparse).ok,false,'sparse array holes must fail closed');
+});
+test('high-trust review outputs reject untrusted digest formats and unsafe input',()=>{
+ const withBadDigest=review();withBadDigest.reportDigest='abc';
+ assert.equal(validateWire('review-result',withBadDigest).ok,false);
+ const withUnsafe=review();withUnsafe.headSha={toString(){return sha;}};
+ assert.equal(validateWire('review-result',withUnsafe).ok,false);
+});
