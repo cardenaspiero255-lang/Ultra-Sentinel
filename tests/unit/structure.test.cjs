@@ -260,3 +260,12 @@ test('RFC3339 offsets accept the entire 00:00 to 23:59 legal range',()=>{
   assert.equal(isStrictRfc3339(bad),false,bad);
  }
 });
+
+test('RFC3339 rejects fake leap seconds in years 0001 to 0099 despite Date.UTC century remap',()=>{
+ const {isStrictRfc3339}=require('../../packages/contracts/strict-rfc3339.cjs');
+ for(const stamp of ['0072-06-30T23:59:60Z','0090-12-31T23:59:60Z',
+  '0001-12-31T23:59:60Z','0072-06-30T23:59:60+00:00']){
+  assert.equal(isStrictRfc3339(stamp),false,stamp);
+ }
+ assert.equal(isStrictRfc3339('1972-06-30T23:59:60Z'),true);
+});
