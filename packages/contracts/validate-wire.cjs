@@ -6,6 +6,7 @@
  * Unknown schema keywords throw at load; unknown untrusted data fails closed.
  */
 const {isStrictRfc3339}=require('./strict-rfc3339.cjs');
+const {types:{isProxy}}=require('node:util');
 const SCHEMAS=Object.freeze({
  incident:require('./schemas/incident.v1.schema.json'),
  'review-result':require('./schemas/review-result.v1.schema.json'),
@@ -32,31 +33,42 @@ function auditSchema(schema){
 }
 for(const schema of Object.values(SCHEMAS))auditSchema(schema);
 
+// Reject Proxy objects before any reflection, including their prototypes and keys.
+// This enforces a plain in-process JSON-object boundary without invoking traps.
 function isPlainRecord(value){
  return value!==null&&typeof value==='object'&&!Array.isArray(value)&&
-  (Object.getPrototypeOf(value)===Object.prototype||Object.getPrototypeOf(value)===null);
+  !isProxy(value)&&(Object.getPrototypeOf(value)===Object.prototype||
+  Object.getPrototypeOf(value)===null);
 }
-function safeInput(value,seen=new WeakSet(),depth=0,count={value:0}){
- if(depth>16||++count.value>1024)return false;
+// Budget: <=1024 nodes, <=256KiB UTF-16 data, <=256 keys per object.
+function safeInput(value,seen=new WeakSet(),depth=0,budget={nodes:0,units:0}){
+ if(depth>16||++budget.nodes>1024)return false;
  if(value===null)return true;
- if(typeof value==='string')return value.length<=100_000;
+ if(typeof value==='string'){
+  budget.units+=value.length;
+  return value.length<=100_000&&budget.units<=131_072;
+ }
  if(typeof value==='number')return Number.isFinite(value);
  if(typeof value==='boolean')return true;
- if(typeof value!=='object')return false;
+ if(typeof value!=='object'||isProxy(value))return false;
  if(seen.has(value))return false;
  seen.add(value);
- if(!Array.isArray(value)&&!isPlainRecord(value))return false;
- if(Array.isArray(value)){
-  if(value.length>1024)return false;
-  for(let i=0;i<value.length;i++)if(!Object.hasOwn(value,i))return false; // No holes.
- }
- for(const key of Reflect.ownKeys(value)){
-  if(Array.isArray(value)&&key==='length')continue; // Native array length.
-  if(Array.isArray(value)&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=value.length))return false;
+ const array=Array.isArray(value);
+ if(array){
+  if(Object.getPrototypeOf(value)!==Array.prototype||value.length>1024)return false;
+  for(let i=0;i<value.length;i++)if(!Object.hasOwn(value,i))return false;
+ }else if(!isPlainRecord(value))return false;
+ const keys=Reflect.ownKeys(value);
+ if(keys.length>257)return false;
+ for(const key of keys){
+  if(array&&key==='length')continue;
   if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype')return false;
-  const d=Object.getOwnPropertyDescriptor(value,key);
-  if(!d||!d.enumerable||!Object.hasOwn(d,'value'))return false;
-  if(!safeInput(d.value,seen,depth+1,count))return false;
+  if(array&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=value.length))return false;
+  budget.units+=key.length;
+  if(key.length>1024||budget.units>131_072)return false;
+  const descriptor=Object.getOwnPropertyDescriptor(value,key);
+  if(!descriptor||!descriptor.enumerable||!Object.hasOwn(descriptor,'value'))return false;
+  if(!safeInput(descriptor.value,seen,depth+1,budget))return false;
  }
  return true;
 }
@@ -81,8 +93,9 @@ function check(schema,value,path,errors){
  if(Object.hasOwn(schema,'const')&&value!==schema.const)fail('wrong constant');
  if(schema.enum&&!schema.enum.includes(value))fail('not in enum');
  if(typeof value==='string'){
-  if(schema.minLength!==undefined&&value.length<schema.minLength)fail('too short');
-  if(schema.maxLength!==undefined&&value.length>schema.maxLength)fail('too long');
+  const points=Array.from(value).length; // JSON Schema length is Unicode code points.
+  if(schema.minLength!==undefined&&points<schema.minLength)fail('too short');
+  if(schema.maxLength!==undefined&&points>schema.maxLength)fail('too long');
   if(schema.pattern&&!new RegExp(schema.pattern).test(value))fail('pattern mismatch');
   if(schema.format==='date-time'&&!isStrictRfc3339(value))fail('invalid RFC3339 instant');
  }
@@ -91,9 +104,16 @@ function check(schema,value,path,errors){
   if(schema.maximum!==undefined&&value>schema.maximum)fail('above maximum');
  }
  if(Array.isArray(value)){
-  if(schema.minItems!==undefined&&value.length<schema.minItems)fail('too few items');
-  if(schema.maxItems!==undefined&&value.length>schema.maxItems)fail('too many items');
-  if(schema.uniqueItems&&new Set(value).size!==value.length)fail('duplicate items');
+  if(schema.minItems!==undefined&&value.length<schema.minItems){fail('too few items');return;}
+  if(schema.maxItems!==undefined&&value.length>schema.maxItems){fail('too many items');return;}
+  // Do not invoke user-supplied iterators, even after structural preflight.
+  if(schema.uniqueItems){
+   const seenItems=new Set();
+   for(let i=0;i<value.length;i++){
+    if(seenItems.has(value[i])){fail('duplicate items');break;}
+    seenItems.add(value[i]);
+   }
+  }
   if(schema.items)for(let i=0;i<value.length;i++)check(schema.items,value[i],path+'['+i+']',errors);
  }
  if(isPlainRecord(value)){
@@ -120,13 +140,14 @@ function check(schema,value,path,errors){
  * never use it as an authorization, merge gate, or evidence verification.
  */
 function validateWire(name,payload){
- if(!Object.hasOwn(SCHEMAS,name))return {ok:false,errors:['unsupported contract']};
+ if(typeof name!=='string'||!Object.hasOwn(SCHEMAS,name))return {ok:false,errors:['unsupported contract']};
  try{
   if(!safeInput(payload))return {ok:false,errors:['unsafe or cyclic input']};
   const errors=[];
   check(SCHEMAS[name],payload,'$',errors);
   if(name==='repair-authorization'&&Array.isArray(payload?.scope)){
-   for(const scope of payload.scope){
+   for(let i=0;i<payload.scope.length;i++){
+    const scope=payload.scope[i];
     if(typeof scope!=='string')continue;
     const segments=scope.split('/');
     if(segments.some(s=>!s||s==='.'||s==='..')||scope.startsWith('/')||
