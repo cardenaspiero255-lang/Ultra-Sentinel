@@ -87,3 +87,27 @@ test('tampered checkpoint cannot leak arbitrary text to webhook',async()=>{
    fetchImpl:async()=>{throw Error('MUST_NOT_SEND');}}),/STATE_ALERT_UNTRUSTED/);
  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
 });
+
+test('initial service invocation has no checkpoint and safely sends nothing',async()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-first-'));
+ try{
+  const result=await deliverPending({stateFile:path.join(root,'new.json'),
+   endpoint:goodUrl,token,signingSecret:secret,
+   fetchImpl:async()=>{throw Error('NO_NETWORK_BEFORE_BASELINE')}});
+  assert.equal(result.status,'NO_CHECKPOINT_YET');
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('systemd service uses locked-down read-only runtime and timer, not PR secrets',()=>{
+ const service=fs.readFileSync(path.resolve(__dirname,'../../deploy/systemd/ultra-sentinel-watchdog.service'),'utf8');
+ const timer=fs.readFileSync(path.resolve(__dirname,'../../deploy/systemd/ultra-sentinel-watchdog.timer'),'utf8');
+ for(const required of ['User=ultra-sentinel','NoNewPrivileges=true','ProtectSystem=strict',
+  'PrivateTmp=true','StateDirectoryMode=0700','UMask=0077','ReadWritePaths=/var/lib/ultra-sentinel',
+  'ExecStartPre=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs',
+  'ExecStart=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-run-once.cjs',
+  'ExecStartPost=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/watchdog-deliver.cjs']){
+  assert.ok(service.includes(required),required);
+ }
+ assert.match(timer,/OnCalendar=\*:0\/5/);
+ assert.match(timer,/Persistent=true/);
+ assert.doesNotMatch(service,/GITHUB_TOKEN=ghp_|pull_request_target|curl|wget/);
+});
