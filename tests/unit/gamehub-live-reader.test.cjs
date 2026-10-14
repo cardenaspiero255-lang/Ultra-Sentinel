@@ -48,3 +48,17 @@ test('100-file pagination includes verified empty terminal page',async()=>{
  const r=await loadGameHubPullRequest(201,{token:key,fetchImpl:m.fetchImpl});
  assert.equal(r.changedFiles,100);assert.equal(m.calls.length,4);
 });
+
+test('all denied, throttled and failing API statuses block read-only ingestion',async()=>{
+ for(const status of [401,403,404,429,500,503]){
+  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({status}).fetchImpl}),/GITHUB_API_UNAVAILABLE/);
+ }
+});
+test('changed PR base, file count and malformed patch block',async()=>{
+ const moved=pr(1);moved.base.sha='c'.repeat(40);
+ await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({second:moved}).fetchImpl}),/STALE_PR_SHA/);
+ const unknown=file(0);delete unknown.patch;
+ await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({pages:[[unknown]]}).fetchImpl}),/INCOMPLETE_PR_DIFF/);
+ const invalid=pr(301);
+ await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({first:invalid}).fetchImpl}),/INVALID_PR_METADATA/);
+});
