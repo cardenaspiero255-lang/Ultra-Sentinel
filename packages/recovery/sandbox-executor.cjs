@@ -7,7 +7,7 @@ const {spawnSync}=require('node:child_process');
 const SHA=/^[a-f0-9]{40}$/;
 const SAFE=/^(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+$/;
 function git(cwd,...args){
- const p=spawnSync('git',args,{cwd,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
+ const p=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false',...args],{cwd,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
   env:{PATH:process.env.PATH,HOME:cwd,GIT_CONFIG_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_OPTIONAL_LOCKS:'1'}});
  if(p.error||p.status!==0)throw Error('SANDBOX_GIT_FAILURE');
