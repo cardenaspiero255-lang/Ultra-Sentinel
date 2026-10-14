@@ -6,7 +6,7 @@
 const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
-const {evaluateChanges}=require('./watchdog-state.cjs');
+const {evaluateChanges,validateCheckpoint}=require('./watchdog-state.cjs');
 const {listSentryIssueSample}=require('../../adapters/sentry/sentry-readonly.cjs');
 const {readJarvisRepositoryState}=require('../../adapters/jarvis/jarvis-readonly.cjs');
 function fail(reason){throw Error(reason);}
@@ -21,7 +21,28 @@ function privateDirectory(filename){
   fail('STATE_DIRECTORY_UNSAFE');
  return directory;
 }
+function validateAlertRecord(alert){
+ if(!alert||typeof alert!=='object'||Array.isArray(alert))fail('STATE_ALERT_UNTRUSTED');
+ const types=['NEW_SENTRY_ISSUE','JARVIS_PR_OPENED','JARVIS_PR_HEAD_CHANGED',
+  'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT'];
+ if(!types.includes(alert.type))fail('STATE_ALERT_UNTRUSTED');
+ let fields;
+ if(alert.type==='NEW_SENTRY_ISSUE'){
+  fields=['type','fingerprint'];
+  if(typeof alert.fingerprint!=='string'||! /^[a-f0-9]{24}$/.test(alert.fingerprint))
+   fail('STATE_ALERT_UNTRUSTED');
+ }else if(alert.type==='JARVIS_PR_HEAD_CHANGED'){
+  fields=['type','pr','headSha'];
+  if(typeof alert.headSha!=='string'||! /^[a-f0-9]{40}$/.test(alert.headSha))
+   fail('STATE_ALERT_UNTRUSTED');
+ }else fields=['type','pr'];
+ if(alert.type!=='NEW_SENTRY_ISSUE'&&(!Number.isSafeInteger(alert.pr)||alert.pr<=0))
+  fail('STATE_ALERT_UNTRUSTED');
+ if(Object.keys(alert).length!==fields.length||
+  Object.keys(alert).some(k=>!fields.includes(k)))fail('STATE_ALERT_UNTRUSTED');
+}
 function checkedState(filename){
+ privateDirectory(filename);
  let stat;
  try{stat=fs.lstatSync(filename);}
  catch(e){if(e.code==='ENOENT')return null;throw e;}
@@ -36,6 +57,8 @@ function checkedState(filename){
  // An unacknowledged event stream cannot silently be discarded on restart.
  if(!Array.isArray(raw.pendingAlerts)||raw.pendingAlerts.length>40)
   fail('STATE_PENDING_EVENTS_UNVERIFIED');
+ validateCheckpoint(raw.checkpoint);
+ for(const alert of raw.pendingAlerts)validateAlertRecord(alert);
  return raw;
 }
 function writeAtomic(filename,data){
