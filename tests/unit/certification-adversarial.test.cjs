@@ -6,7 +6,7 @@ const root=join(__dirname,'../..');
 const read=name=>readFileSync(join(root,name),'utf8');
 const {summarizeShadow}=require('../../packages/orchestrator/gamehub-shadow.cjs');
 const {stageRepairDraft}=require('../../packages/recovery/repair-draft.cjs');
-const sha='a'.repeat(40),repo='cardenaspiero255-lang/gamehub-ultra';
+const sha='a'.repeat(40),base='b'.repeat(40),repo='cardenaspiero255-lang/gamehub-ultra';
 test('cross-repo workflows never execute pull_request_target or grant write permissions',()=>{
  for(const file of ['gamehub-readonly.yml','gamehub-shadow.yml']){
   const yml=read('.github/workflows/'+file);
@@ -26,9 +26,9 @@ test('runtime integration modules export no GitHub mutation entry points',()=>{
  }
 });
 test('malicious attempts to force a verified verdict or executable repair are inert',()=>{
- const review={pr:201,changedFiles:1,authenticated:true,headStable:true,completeDiff:true,
+ const review={pr:201,baseSha:base,changedFiles:1,authenticated:true,headStable:true,completeDiff:true,
   mergeAllowed:false,envelope:{targetRepo:repo,headSha:sha,verdict:'CLEAR',evidenceState:'VERIFIED'}};
- const report=summarizeShadow(review,{headSha:sha,runs:[]});
+ const report=summarizeShadow(review,{headSha:sha,baseSha:base,pr:201,runs:[]});
  assert.equal(report.independentAuditVerified,false);
  assert.equal(report.semanticEquivalenceVerified,false);
  const staged=stageRepairDraft({authorization:{schemaVersion:1,repository:repo,actor:'imposter'},
