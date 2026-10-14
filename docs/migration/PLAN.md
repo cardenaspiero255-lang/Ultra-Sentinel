@@ -1,7 +1,7 @@
 # Plan de migración controlada
 
 ## Regla inicial
-**El PR #197 de GameHub Ultra se excluye** de esta estructura: no copiar sus archivos modificados, tests, esquema ni dependencia como si estuviera aprobado. No se cancela ni altera su desarrollo.
+**PR #197 fusionado en GameHub Ultra:** el propietario autorizó su migración posterior. Inventariar ahora; importar lector y pruebas de memoria en el bloque 4 tras auditoría.
 
 Repositorio origen: `cardenaspiero255-lang/gamehub-ultra`. Destino: `cardenaspiero255-lang/Ultra-Sentinel`.
 
