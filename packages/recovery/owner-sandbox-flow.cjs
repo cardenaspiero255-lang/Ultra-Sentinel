@@ -93,7 +93,7 @@ function beginTransaction({directory,nonceStorePath,plan,expectedHeadSha,planDig
   sandboxGit(root,'status','--porcelain')!=='')throw Error('STALE_OR_DIRTY_SANDBOX');
  const baselineTree=sandboxGit(root,'rev-parse','HEAD^{tree}');
  const file=nonceStorePath+'.txn';
- const data={version:1,directory:root,branch,baselineHeadSha:expectedHeadSha,
+ const data={version:1,pid:process.pid,directory:root,branch,baselineHeadSha:expectedHeadSha,
   baselineTree,planDigest};
  let fd;
  try{fd=fs.openSync(file,'wx',0o600);}
@@ -121,9 +121,18 @@ function recoverInterruptedSandboxRepair({directory,nonceStorePath}={}){
   throw Error('JOURNAL_UNSAFE');
  const journal=JSON.parse(fs.readFileSync(file,'utf8'));
  const sha=/^[0-9a-f]{40}$/,digest=/^[0-9a-f]{64}$/;
- if(journal.version!==1||journal.directory!==root||journal.branch!==branch||
+ if(journal.version!==1||!Number.isSafeInteger(journal.pid)||journal.pid<=0||
+  journal.directory!==root||journal.branch!==branch||
   !sha.test(journal.baselineHeadSha||'')||!sha.test(journal.baselineTree||'')||
   !digest.test(journal.planDigest||''))throw Error('JOURNAL_MISMATCH');
+ // Never recover another live process. A reused PID fails closed.
+ try{
+  process.kill(journal.pid,0);
+  throw Error('TRANSACTION_OWNER_STILL_ACTIVE');
+ }catch(e){
+  if(e.message==='TRANSACTION_OWNER_STILL_ACTIVE'||e.code!=='ESRCH')throw e;
+ }
+
  const head=sandboxGit(root,'rev-parse','HEAD');
  const dirty=sandboxGit(root,'status','--porcelain');
  let disposition;
