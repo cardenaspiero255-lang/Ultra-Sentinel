@@ -82,7 +82,8 @@ function evaluateParityCampaign(input){
  return Object.freeze({
   schema:'ultra-sentinel-parity-report/v1',repository:REPO,samples,
   candidateNonRegressionInSuppliedLabels:!blocked&&samples.every(x=>x.nonRegressionObserved),
-  sourceChecksVerified:!blocked,
+  sourceChecksClaimedGreen:!blocked,
+  sourceChecksIndependentlyVerified:false,
   semanticEquivalenceCertified:false,
   independentLabelsCertified:false,
   mergeAllowed:false,autoRepair:false,autoMerge:false,
