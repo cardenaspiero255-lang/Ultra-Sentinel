@@ -1,0 +1,35 @@
+name: GameHub SSS read-only shadow
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "GameHub PR to observe"
+        required: true
+        default: "201"
+  schedule:
+    - cron: '23 */6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: gamehub-shadow-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  gamehub-shadow:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Trusted checkout, no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Compare PR evidence and existing GitHub checks (no writes)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TARGET_PR: ${{ inputs.pr_number || '201' }}
+        run: node scripts/gamehub-shadow-check.cjs "$TARGET_PR"
