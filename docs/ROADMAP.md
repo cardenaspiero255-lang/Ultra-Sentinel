@@ -1,19 +1,38 @@
-# Roadmap consolidado de Ultra Sentinel
+# Roadmap ejecutable de Ultra Sentinel — cinco bloques sin duplicar motores
 
-La **fuente de ideas y alcance** son los issues públicos de este repositorio:
+**Corte verificado:** `main@056015fff8003e3cee996c295daab41497b0f40e`. El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
 
-- [#1 — Ecosistema Jarvis + GameHub, vigilancia 24/7 y Autonomous Recovery](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/1)
-- [#2 — Family Hunter, familias/variantes, modos y commits controlados](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/2)
-- [#3 — Quality Gate SSS, análisis independiente, evidence, benchmarks](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/3)
-- [#4 — Plugins, observación PR y automatizaciones](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/4)
-- [#5 — Catálogo US-001…US-035 e IAF-01…IAF-07](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5)
+## Bloque 1 — Autorización y recuperación de producción
+- **Ya fusionado:** preflight GameHub [PR #37](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/37).
+- **Abierto:** [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34), autorización del propietario Ed25519, nonce persistente y rollback transaccional.
+- **Trabajo**: reconciliar la rama con `main`, integrar el verificador real (no callback arbitrario) con el preflight, E2E de autenticación y aislamiento de pruebas con permisos mínimos, CI adversarial y auditoría del último SHA.
+- **Salida**: ninguna autorización falsa/tardía/reutilizada habilita commits; jamás merge por test verde únicamente.
 
-Orden de implementación seguro:
-1. Bootstrap de estructura y CI (este PR).
-2. Inventario exacto desde `main` estable de GameHub y extracción del motor Core.
-3. Contratos y quality gates de lectura; integraciones por repo.
-4. Family Hunter y memoria auditada, sin duplicados ni saltos de autorización.
-5. Monitor/operaciones tras despliegue real y pruebas E2E.
-6. Writer controlado solo si existe autorización separada, revocable y validación independiente.
+## Bloque 2 — Paridad real del modo sombra
+- Reusar `gamehub-live-reader`, `gamehub-shadow` y selector actual de [PR #38](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/38); no crear segundo observador.
+- Quitar dependencia por defecto del antiguo PR GameHub #201 (los snapshots históricos se preservan).
+- Comparar hallazgos **por regla, archivo, línea y SHA**, coverage, falsos positivos/negativos, F1 y latencias contra una verdad independiente.
+- **Salida:** conjunto representativo con límites y resultados publicados; `BLOCKED_SOURCE_CI` ante falla heredada.
 
-**Excepción de alcance:** No importar el PR #197. El scaffold no equivale a haber migrado las 35 capacidades ni a nivel “Triple SSS”.
+## Bloque 3 — Quality Gate, red team y evaluación externa
+- Reutilizar Core, Family Hunter, memory ledger y pruebas adversariales existentes. Completar Mutation Lab portable, criterios ciegos, reproducibilidad y autorrevisión basada en `main` confiable.
+- **Salida:** gates de exact HEAD, 0 P0/P1/P2 confirmados abiertos, resultados objetivos; sin declarar superioridad sobre competidores sin benchmark validado.
+
+## Bloque 4 — Conectores Sentry, JARVIS y GameHub
+- Reusar los lectores GitHub y contratos versionados. Desarrollar adaptadores con autenticación, privacidad, límites y permisos mínimos; QA con incidentes **sintéticos** y consentimiento.
+- No migrar los componentes de voz, APK, UI o CAR específicos de GameHub.
+- **Salida:** E2E autorizados, telemetría sanitizada, operación observable y reversión comprobada.
+
+## Bloque 5 — Monitor supervisor y cutover reversible
+- Health, alarmas, almacenamiento de checkpoints, idempotencia, presupuestos, escalación, retención y supervisor externo.
+- Pruebas de pérdida de red, reinicios, tareas duplicadas y alerta, con límites de gasto claros.
+- Retirar código obsoleto de GameHub **solo tras** paridad y cierre de regresiones; conservar adaptadores de producto.
+- **Salida:** evidencias operativas y auditoría de seguridad antes de cualquier etiqueta Triple SSS.
+
+## Política común
+
+- Cada bloque tiene prueba y responsabilidad propia. No reestructurar el repositorio, no duplicar motores ni asumir que un issue histórico implica entrega.
+- Modo 2 de sugerencias por defecto; reparaciones solo con autorización específica revocable, nunca autofusión implícita.
+- Todos los PRs se mantienen abiertos/draft mientras falten verificación final del HEAD, CI, integraciones operativas o revisión de hallazgos.
+- Los PRs de origen solo respaldan procedencia; `main` del nuevo repositorio es el inventario de funcionalidad instalada.
+- Codex excluido según política explícita del propietario. No agregar nuevos rulesets ni obligación de aprobación externa no solicitada.

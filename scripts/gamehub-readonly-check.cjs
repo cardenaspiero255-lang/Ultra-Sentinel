@@ -1,9 +1,15 @@
 'use strict';
 const {loadGameHubPullRequest}=require('../packages/orchestrator/gamehub-live-reader.cjs');
+const {resolveGameHubTarget,requireOpenSource}=require('../packages/orchestrator/gamehub-target.cjs');
 async function main(){
- const raw=process.argv[2]||'201';
- if(!/^[1-9][0-9]{0,8}$/.test(raw))throw Error('INVALID_PR_NUMBER');
- const result=await loadGameHubPullRequest(Number(raw),{token:process.env.GITHUB_TOKEN});
+ const token=process.env.GITHUB_TOKEN;
+ const selected=await resolveGameHubTarget(process.argv[2]||'auto',{token});
+ if(selected===null){
+  process.stdout.write(JSON.stringify({target:'cardenaspiero255-lang/gamehub-ultra',
+   status:'IDLE_NO_OPEN_PR',writeAccess:false})+'\n');
+  return;
+ }
+ const result=requireOpenSource(await loadGameHubPullRequest(selected,{token}));
  if(!result.authenticated||!result.headStable||!result.completeDiff)
   throw Error('INCOMPLETE_GAMEHUB_EVIDENCE');
  // Emit only bounded safe metadata, never source diffs, tokens, or findings text.
