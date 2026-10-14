@@ -15,7 +15,7 @@ El código **no convierte un PR en autorización**. El propietario debe configur
 
 1. Crear en el dispositivo confiable del propietario un par Ed25519. Proteger la clave privada (archivo normal de permisos 0600, ruta absoluta, fuera de Git); distribuir solo la clave pública al entorno controlado que verificará firmas.
 2. Inyectar temporalmente `ULTRA_SENTINEL_OWNER_GITHUB_TOKEN` desde un almacén de secretos, con el menor alcance posible para consultar la identidad GitHub. **No** guardar tokens en el repo, argumentos CLI, artefactos, logs ni archivos de PR.
-3. Ejecutar `node scripts/verify-github-owner.cjs` para validar la identidad real y el ID. Ejecutar después `node scripts/verify-gamehub-readonly.cjs` para comprobar mediante GET autenticado que el repositorio GameHub es el esperado (ID de repositorio 1375408706). Esto no concede escritura.
+3. Instalar Bubblewrap desde el gestor de paquetes oficial del VPS/host de ensayo y comprobar que el usuario de servicio puede ejecutar `bwrap --unshare-all --clearenv ...` en un proceso aislado. No habilitar un ejecutor sin namespaces. Ejecutar `node scripts/verify-github-owner.cjs` para validar la identidad real y el ID. Ejecutar después `node scripts/verify-gamehub-readonly.cjs` para comprobar mediante GET autenticado que el repositorio GameHub es el esperado (ID de repositorio 1375408706). Esto no concede escritura.
 4. Preparar un checkout **desechable**, en `os.tmpdir()`, rama `sandbox/...`, limpio, con **cero remotos**, y ejecutar los validadores en un sandbox del sistema operativo (contenedor/máquina virtual) **sin acceso a red** ni secretos.
 5. Crear un directorio privado (0700) **fuera del árbol Git** sobre un volumen persistente y fijar ahí `nonceStorePath`. No poner el ledger dentro del checkout.
 6. Preparar un plan `REVIEW_READY_NO_EXECUTOR` con cambios permitidos, hashes blob exactos y `planDigest=digestPlan(plan, changes)` de `packages/recovery/owner-sandbox-flow.cjs`.
@@ -26,6 +26,7 @@ El código **no convierte un PR en autorización**. El propietario debe configur
     - `ULTRA_SENTINEL_REPAIR_REQUEST_FILE`: ruta absoluta al JSON anterior.
     - `ULTRA_SENTINEL_OWNER_PUBLIC_KEY_FILE`: ruta absoluta al PEM de la clave pública registrada.
     - `ULTRA_SENTINEL_VALIDATOR_ARGV_JSON`: argv JSON de las pruebas reales, p. ej. `["npm","test"]` para un proyecto Node; el comando lo elige el operador, **nunca el PR**.
+    - `ULTRA_SENTINEL_VALIDATOR_ISOLATION=bubblewrap`: obligatorio para lanzar el validador. El ejecutor exige Linux y `/usr/bin/bwrap` verificable; usa namespaces separados, red deshabilitada, entorno sin token ni HOME del usuario y solo monta el checkout desechable en escritura. Si el host no permite namespaces, la reparación se **bloquea**; no existe fallback inseguro.
     - `ULTRA_SENTINEL_OWNER_GITHUB_TOKEN`: token efímero del propietario, inyectado como secreto (el verificador no lo recibe).
 11. Ejecutar en el entorno aislado `node scripts/run-owner-sandbox-repair.cjs`. La operación fracasa de forma conservadora si falla la identidad, la firma, la validación, el estado Git o cualquier política. No realiza push ni merge.
 
