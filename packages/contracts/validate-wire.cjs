@@ -46,8 +46,13 @@ function safeInput(value,seen=new WeakSet(),depth=0,count={value:0}){
  if(seen.has(value))return false;
  seen.add(value);
  if(!Array.isArray(value)&&!isPlainRecord(value))return false;
+ if(Array.isArray(value)){
+  if(value.length>1024)return false;
+  for(let i=0;i<value.length;i++)if(!Object.hasOwn(value,i))return false; // No holes.
+ }
  for(const key of Reflect.ownKeys(value)){
-  if(Array.isArray(value)&&key==='length')continue; // Native array length is non-enumerable.
+  if(Array.isArray(value)&&key==='length')continue; // Native array length.
+  if(Array.isArray(value)&&(!/^(0|[1-9]\\d*)$/.test(key)||Number(key)>=value.length))return false;
   if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype')return false;
   const d=Object.getOwnPropertyDescriptor(value,key);
   if(!d||!d.enumerable||!Object.hasOwn(d,'value'))return false;
