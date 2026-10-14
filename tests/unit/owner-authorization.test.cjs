@@ -1,22 +1,36 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {verifyOwnerAuthorization,PersistentNonceStore}=require('../../packages/recovery/owner-authorization.cjs');
+const crypto=require('node:crypto');
+const {stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore}=require('../../packages/recovery/owner-authorization.cjs');
 const base={ownerLogin:'cardenaspiero255-lang',repo:'cardenaspiero255-lang/Ultra-Sentinel',
  branch:'sandbox/repair',headSha:'a'.repeat(40),nonce:'12345678901234567890',
- expiresAt:Date.now()+60000,planDigest:'b'.repeat(40)};
+ expiresAt:Date.now()+60000,planDigest:'b'.repeat(64)};
+const {privateKey,publicKey}=crypto.generateKeyPairSync('ed25519');
+const signature=crypto.sign(null,Buffer.from('Ultra-Sentinel:owner-authorization:v1\n'+stableAuthorization(base)),privateKey).toString('base64');
+const opts={expectedOwner:base.ownerLogin,expectedOwnerId:12345,signature,trustedPublicKey:publicKey};
 test('owner authorization rejects absent or wrong actor',()=>{
- assert.equal(verifyOwnerAuthorization({authorization:base,expectedOwner:base.ownerLogin}).authorized,false);
- assert.equal(verifyOwnerAuthorization({authorization:base,expectedOwner:base.ownerLogin,
- verifiedActor:{source:'github-authenticated-session',login:'someone-else'}}).authorized,false);
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts}).authorized,false);
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,
+ verifiedActor:{source:'github-authenticated-session',login:'someone-else',userId:12345}}).authorized,false);
 });
 test('owner authorization checks expiration and scope',()=>{
- const actor={source:'github-authenticated-session',login:base.ownerLogin};
- assert.equal(verifyOwnerAuthorization({authorization:base,expectedOwner:base.ownerLogin,verifiedActor:actor}).authorized,true);
+ const actor={source:'github-authenticated-session',login:base.ownerLogin,userId:12345};
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,verifiedActor:actor}).authorized,true);
  assert.equal(verifyOwnerAuthorization({authorization:{...base,expiresAt:Date.now()-1},
- expectedOwner:base.ownerLogin,verifiedActor:actor}).authorized,false);
+ ...opts,verifiedActor:actor}).authorized,false);
  assert.equal(verifyOwnerAuthorization({authorization:{...base,branch:'main'},
- expectedOwner:base.ownerLogin,verifiedActor:actor}).authorized,false);
+ ...opts,verifiedActor:actor}).authorized,false);
+});
+test('owner authorization requires valid signature and pinned public key',()=>{
+ const actor={source:'github-authenticated-session',login:base.ownerLogin,userId:12345};
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,verifiedActor:actor}).authorized,true);
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,signature:undefined,verifiedActor:actor}).authorized,false);
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,signature:'invalid',verifiedActor:actor}).authorized,false);
+ assert.equal(verifyOwnerAuthorization({authorization:{...base,nonce:'an-other-long-nonce-123'},...opts,verifiedActor:actor}).authorized,false);
+ const {publicKey:wrongKey}=crypto.generateKeyPairSync('ed25519');
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,trustedPublicKey:wrongKey,verifiedActor:actor}).authorized,false);
+ assert.equal(verifyOwnerAuthorization({authorization:base,...opts,expectedOwnerId:222,verifiedActor:actor}).authorized,false);
 });
 test('nonce replay is rejected across store instances',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonces-'));
