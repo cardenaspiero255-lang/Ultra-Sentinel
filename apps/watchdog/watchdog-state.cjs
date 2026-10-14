@@ -90,7 +90,9 @@ function evaluateChanges(prior,sentry,jarvis,gamehub=null){
    alerts.push(Object.freeze({type:'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT',pr:pr.pr}));
  }
  const oldGamehub=previous.gamehub||null,newGamehub=next.gamehub;
- if(newGamehub!==null&&oldGamehub===null){
+ if(previous.gamehub===undefined){
+  // Migration from checkpoints predating GameHub monitoring: baseline quietly.
+ }else if(newGamehub!==null&&oldGamehub===null){
   alerts.push(Object.freeze({type:'GAMEHUB_PR_SAMPLE_SELECTED',pr:newGamehub.pr,
    headSha:newGamehub.headSha}));
  }else if(newGamehub===null&&oldGamehub!==null){
