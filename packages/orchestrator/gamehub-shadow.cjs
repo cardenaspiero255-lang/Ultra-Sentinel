@@ -32,6 +32,8 @@ function summarizeShadow(review,checks){
  return Object.freeze({schema:'ultra-sentinel-shadow/v1',
   targetRepo:REPO,pr:review.pr,headSha:review.envelope.headSha,
   reviewerVerdict:review.envelope.verdict,
+  sourceGate:grouped.failure>0?'BLOCKED_SOURCE_CI':grouped.pending>0?'PENDING_SOURCE_CI':
+   baseline.every(x=>x.status==='SUCCESS')?'OBSERVED_NOT_CERTIFIED':'BASELINE_INCOMPLETE',
   baseline,checks:grouped,
   comparableByName:baseline.every(x=>x.status==='SUCCESS'),
   semanticEquivalenceVerified:false,independentAuditVerified:false,
