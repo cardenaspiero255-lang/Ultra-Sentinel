@@ -15,10 +15,11 @@
 - Estado en un artefacto de Actions durante siete días, **renovado en cada ejecución**. Si el artefacto expira, falta o es inválido, el modo programado se bloquea. Se prohíbe un falso reinicio de historial.
 - GitHub Actions normalmente no cobra por ejecutores estándar en repositorios **públicos**, sujeto a las condiciones y límites de GitHub. No hay promesa de cero costo si cambia la visibilidad o las políticas.
 
-## Primera activación (después de fusionar PR #42 y pasar sus gates)
+## Primera activación — GitHub sin VPS
 
-1. En Ultra Sentinel → **Actions → Ultra Sentinel — serverless GitHub observer → Run workflow**.
-2. Seleccionar `main` y activar la entrada `bootstrap=true` **solo una vez**, para crear el primer checkpoint público sin alertas retrospectivas.
+1. Opción manual: en Ultra Sentinel → **Actions → Ultra Sentinel — serverless GitHub observer → Run workflow**.
+   Opción automática del propietario: abrir una única issue con título exacto `ULTRA_SENTINEL_FIRST_BOOTSTRAP_V1`. El workflow solo admite ese evento si el autor y el emisor de GitHub tienen el ID numérico `322222186`, en el repositorio con ID `1418338512`. No responde a PR externos, ediciones o comentarios. Si ya existe un checkpoint, **se niega a reinicializar**. Esta opción deja un registro público en la issue y no hace commits.
+2. Con la opción manual, seleccionar `main` y marcar `bootstrap=true` **solo una vez**. La issue autenticada configura ese parámetro automáticamente, sin tokens adicionales.
 3. Confirmar que `Sentinel Architecture Bootstrap` y el workflow serverless pasan en el commit exacto de `main`; inspeccionar el artefacto `ultra-sentinel-github-only-state-v1`.
 4. Desde entonces, las ejecuciones programadas deben reutilizar el checkpoint de la ejecución anterior. No marcar `bootstrap=true` si ya existe artefacto.
 5. Configurar en GitHub tus preferencias de notificación de **workflow fallido**. Una detección nueva produce un evento `::warning` y un job de alerta **fallido intencionalmente**, para que GitHub registre la señal. No se garantizan push, correo, teléfono ni entrega humana: eso depende de tu configuración y de las políticas de GitHub.
