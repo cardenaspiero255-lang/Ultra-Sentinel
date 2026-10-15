@@ -6,6 +6,14 @@ const REPO='cardenaspiero255-lang/gamehub-ultra';
 const HEAD='a'.repeat(40),BASE='b'.repeat(40);
 const token='test-read-only-credential-2026';
 const URL='https://api.github.com/repos/'+REPO;
+const REPO_ID=1375408706, OWNER_ID=322222186;
+const linked=(pr,head=HEAD,base=BASE)=>({
+ number:pr,head:{sha:head,repo:{url:URL}},
+ base:{sha:base,repo:{url:URL}}
+});
+const correctCheck={id:11,name:'build',head_sha:HEAD,
+ status:'completed',conclusion:'success',
+ pull_requests:[132,158,161,163].map(pr=>linked(pr))};
 const goodFinding={rule:'UNSCOPED_COROUTINE',
  path:'app/src/main/java/voice/Ultra.kt',line:17};
 function review(pr){
@@ -23,11 +31,16 @@ function mockApi(options={}){
   calls.push({url,req});
   let body;
   if(url.includes('/check-runs?'))body=options.checks||{
-   total_count:1,check_runs:[{id:11,name:'build',head_sha:HEAD,
-    status:'completed',conclusion:'success'}]};
+   total_count:1,check_runs:[correctCheck]};
   else if(url.includes('/pulls/'))body={number:Number(url.split('/').at(-1)),
-   state:'open',head:{sha:options.racedHead||HEAD},
-   base:{sha:BASE},changed_files:4};
+   state:'open',
+   head:{sha:options.racedHead||HEAD,repo:{
+    id:options.untrustedHeadRepo?98765:REPO_ID,
+    full_name:options.untrustedHeadRepo?'other/fork':REPO,
+    owner:{id:OWNER_ID}}},
+   base:{sha:BASE,repo:{id:REPO_ID,full_name:REPO,
+    owner:{id:options.untrustedOwner?98765:OWNER_ID}}},
+   changed_files:4};
   else throw Error('Unexpected API URL');
   return {status:options.status||200,url,
    headers:{get:()=> 'application/json'},
@@ -129,4 +142,40 @@ test('coverage warning reasons are categorized without publishing raw file names
  const x=review(132).report;
  const result=findingsEvidence({...x,warnings},HEAD);
  assert.deepEqual(result.coverage.warningKinds,kinds);
+});
+
+test('the same SHA cannot borrow a green check run from another PR',async()=>{
+ const forged={...correctCheck,pull_requests:[linked(999)]};
+ const api=mockApi({checks:{total_count:1,check_runs:[forged]}});
+ const r=await captureLiveC2Cohort({token,fetchImpl:api.fetchImpl,
+  load:async n=>review(n)});
+ assert.equal(r.captureStatus,'INCOMPLETE_NOT_CERTIFIABLE');
+ assert.ok(r.samples.every(x=>x.status==='BLOCKED_INCOMPLETE_OR_STALE'));
+ assert.ok(r.samples.every(x=>x.reason==='CROSS_PR_CHECK_CONTAMINATION'));
+});
+test('missing or mismatched GitHub check-run associations fail closed',async()=>{
+ for(const associations of [
+  [],
+  [linked(132, 'c'.repeat(40))],
+  [linked(132, HEAD, 'd'.repeat(40))],
+  [{...linked(132),base:{sha:BASE,repo:{url:'https://api.github.com/repos/fork/other'}}}]
+ ]){
+  const check={...correctCheck,pull_requests:associations};
+  const api=mockApi({checks:{total_count:1,check_runs:[check]}});
+  const r=await captureLiveC2Cohort({token,fetchImpl:api.fetchImpl,
+   load:async()=>review(132)});
+  assert.equal(r.captureStatus,'INCOMPLETE_NOT_CERTIFIABLE');
+  assert.equal(r.samples[0].status,'BLOCKED_INCOMPLETE_OR_STALE');
+  assert.ok(['CROSS_PR_CHECK_CONTAMINATION',
+   'INCOMPLETE_CHECK_PROVENANCE'].includes(r.samples[0].reason));
+ }
+});
+test('forked head and untrusted owner ID never support a verified GameHub cohort',async()=>{
+ for(const api of [mockApi({untrustedHeadRepo:true}),
+  mockApi({untrustedOwner:true})]){
+  const r=await captureLiveC2Cohort({token,fetchImpl:api.fetchImpl,
+   load:async n=>review(n)});
+  assert.equal(r.captureStatus,'INCOMPLETE_NOT_CERTIFIABLE');
+  assert.ok(r.samples.every(x=>x.reason==='UNTRUSTED_PR_REPOSITORY'));
+ }
 });

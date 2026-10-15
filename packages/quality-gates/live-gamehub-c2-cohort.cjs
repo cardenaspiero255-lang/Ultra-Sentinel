@@ -6,6 +6,7 @@
  * from a PR and never declares equivalence or certification.
  */
 const {loadGameHubPullRequest}=require('../orchestrator/gamehub-live-reader.cjs');
+const {bindChecksToPr}=require('../orchestrator/check-pr-provenance.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ROOT='https://api.github.com/repos/'+REPO;
 const PRS=Object.freeze([132,158,161,163]);
@@ -13,6 +14,8 @@ const SHA=/^[0-9a-f]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const PATH=/^[A-Za-z0-9_.\/-]{1,240}$/;
 const SAFE_CODES=new Set([
+ 'UNTRUSTED_PR_REPOSITORY','CROSS_PR_CHECK_CONTAMINATION',
+ 'INCOMPLETE_CHECK_PROVENANCE',
  'INVALID_PR_METADATA','INCOMPLETE_PR_DIFF','GITHUB_API_UNAVAILABLE',
  'GITHUB_INVALID_CONTENT_TYPE','GITHUB_RESPONSE_TOO_LARGE',
  'GITHUB_TOTAL_RESPONSE_TOO_LARGE','GITHUB_INVALID_JSON',
@@ -124,12 +127,28 @@ async function observeOne(pr,{token,fetchImpl,load}){
  const candidate=findingsEvidence(review.report,head);
  const rawChecks=await githubJson('/commits/'+head+'/check-runs?per_page=100&page=1',
   token,fetchImpl);
+ // SHA equality alone is not provenance: the same commit can be attached
+ // to another pull request. Reuse the existing strict check-to-PR binder,
+ // which verifies the PR number, HEAD/base SHA and both GitHub repo URLs.
+ // Reject missing associations rather than interpreting unbound green CI
+ // as proof of this particular PR's health.
+ bindChecksToPr({headSha:head,baseSha:base,pr,raw:rawChecks});
  const checks=checksEvidence(rawChecks,head);
  const latest=await githubJson('/pulls/'+pr,token,fetchImpl);
  if(latest?.number!==pr||latest.state!=='open'||
   latest.head?.sha!==head||latest.base?.sha!==base||
   latest.changed_files!==review.changedFiles)
   fail('STALE_PR_SHA');
+ // A legitimate-looking PR number and HEAD are not enough: ensure the
+ // actual public GitHub repo ID and owner are pinned at the final read.
+ // Fail closed on a fork, rename or repository-owner identity mismatch.
+ if(latest.base?.repo?.id!==1375408706||
+  latest.base.repo.full_name!==REPO||
+  latest.base.repo.owner?.id!==322222186||
+  latest.head?.repo?.id!==1375408706||
+  latest.head.repo.full_name!==REPO||
+  latest.head.repo.owner?.id!==322222186)
+  fail('UNTRUSTED_PR_REPOSITORY');
  return Object.freeze({
   pr,repository:REPO,headSha:head,baseSha:base,
   changedFiles:review.changedFiles,draft:review.draft===true,

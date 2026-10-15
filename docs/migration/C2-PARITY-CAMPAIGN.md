@@ -56,3 +56,10 @@ El validador `github-pinned-full-source.cjs` comprueba identidad de path, tipo G
 Esto evita confundir Kotlin ejecutable con texto dentro de comentarios o cadenas multilínea y puede reducir avisos `INCOMPLETE` producidos por hunks intermedios. **No** arregla snippets GitHub omitidos, binarios, cobertura de reglas heurísticas o falta de etiquetas independientes. El código fuente **no se publica** en el artefacto ni en el reporte C2; solo se extrae el hallazgo mínimo `rule,path,line`.
 
 No habilitar esta hidratación en el monitor de cron, para no incrementar su superficie de red ni consumo de API; es exclusiva de la campaña C2 opt-in.
+
+
+## Procedencia de CI vinculada al PR (endurecimiento)
+
+Se aplica `packages/orchestrator/check-pr-provenance.cjs` a cada respuesta GitHub `check-runs` durante la campaña C2: **no basta con que el check esté verde y coincida el SHA**. La relación `pull_requests[]` del propio check debe incluir exactamente el número de PR, SHA HEAD y SHA base de GameHub, y las URL canónicas del repositorio en ambas partes. Una asociación ausente, truncada o con otro PR se rechaza con `INCOMPLETE_CHECK_PROVENANCE` o `CROSS_PR_CHECK_CONTAMINATION`.
+
+La comprobación final del PR valida además los IDs inmutables del repositorio GameHub (`1375408706`) y su propietario (`322222186`); una rama de un fork no equivale al mismo repositorio. Si GitHub no expone vínculos suficientes para un check legítimo, **el resultado sigue incompleto** hasta obtener otra evidencia auditable. La etiqueta `OBSERVED_SUCCESS_UNATTESTED` nunca acredita aprobación de branch protection ni reemplaza un corpus de defectos etiquetados independientemente.
