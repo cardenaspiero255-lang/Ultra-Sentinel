@@ -375,3 +375,44 @@ test('Missing or tampered sources retain fail-closed incomplete coverage',()=>{
  assert.equal(out.verdict,'INCOMPLETE');
  assert.equal(out.coverage.partial,true);
 });
+
+
+test('C2 real PR #132: valid deletion-only Kotlin diff is not a missing or truncated patch',()=>{
+ const deletion={filename:app+'ai/UltraQueryExecutionCoordinator.kt',
+  status:'modified',additions:0,deletions:1,changes:1,
+  patch:'@@ -13,2 +13,1 @@\n contextBefore\n-  val obsolete = true\n'};
+ const another=file(app+'voice/Real.kt',['GlobalScope.launch { unsafeWork() }']);
+ const result=analyze([deletion,another]);
+ assert.equal(result.coverage.partial,false,JSON.stringify(result.warnings));
+ assert.equal(result.verdict,'REVIEW_REQUIRED');
+ assert.ok(rules(result).includes('UNSCOPED_COROUTINE'));
+ assert.ok(!result.warnings.some(x=>x.startsWith('Parche ausente o truncado:')));
+});
+test('complete two-hunk deletion-only diff with exact original/new hunk counts stays complete',()=>{
+ const patch=[
+  '@@ -10,2 +10,1 @@',' context','-oldValue',
+  '@@ -24,2 +23,1 @@',' anotherContext','-anotherOldValue'
+ ].join('\n');
+ const result=analyze([{filename:app+'VoiceService.kt',
+  status:'modified',additions:0,deletions:2,changes:2,patch}]);
+ assert.equal(result.coverage.partial,false,JSON.stringify(result.warnings));
+ assert.equal(result.findings.filter(x=>x.rule==='BLOCKING_ANDROID_CALL').length,0);
+});
+test('deletion-only metadata without full patch or consistent hunk ranges stays INCOMPLETE',()=>{
+ const base={filename:app+'VoiceService.kt',status:'modified',
+  additions:0,deletions:2,changes:2};
+ const invalid=[
+  {...base,patch:null},
+  {...base,patch:'@@ -10,3 +10,2 @@\n first\n-removed\n'},
+  {...base,patch:'@@ -10,2 +10,1 @@\n first\n-removed\n'},
+  {...base,patch:'@@ -10,2 +10,1 @@\n first\n+newCode\n-removed\n'},
+  {...base,patch:'@@ -10,2 +10,1 @@\n first\n-removed\n-extra\n'},
+  {...base,patch:'@@ -10,2 +10,1 @@\n first\n-removed\n',additions:1,changes:3},
+  {...base,patch:'@@ -10,2 +10,1 @@\n first\n-removed\n',status:'added'}
+ ];
+ for(const candidate of invalid){
+  const result=analyze([candidate]);
+  assert.equal(result.verdict,'INCOMPLETE',JSON.stringify(candidate));
+  assert.equal(result.coverage.partial,true,JSON.stringify(candidate));
+ }
+});

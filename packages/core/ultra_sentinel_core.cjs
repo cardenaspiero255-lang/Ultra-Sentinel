@@ -142,6 +142,41 @@ function executableText(source,state={}){
  }
  return out;
 }
+// A modified file may legitimately DELETE code without adding any line.
+// A deletion-only patch must not be called "missing": still require exact
+// counts per GitHub hunk and consistent metadata to avoid a false clean result.
+function completeDeletionOnlyPatch(file,parsed){
+ if(file?.status!=='modified'||file.additions!==0||
+    !Number.isSafeInteger(file.deletions)||file.deletions<1||
+    !Number.isSafeInteger(file.changes)||file.changes!==file.deletions||
+    typeof file.patch!=='string'||parsed.partial||parsed.added.length!==0)
+   return false;
+ let active=false,oldNeed=0,newNeed=0,oldSeen=0,newSeen=0,deleted=0;
+ const lines=file.patch.split('\n');
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i].endsWith('\r')?lines[i].slice(0,-1):lines[i];
+  // A single terminal newline after the last hunk is allowed.
+  if(line===''&&i===lines.length-1)continue;
+  const h=line.match(/^@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@/);
+  if(h){
+   if(active&&(oldSeen!==oldNeed||newSeen!==newNeed))return false;
+   oldNeed=Number(h[1]===undefined?1:h[1]);
+   newNeed=Number(h[2]===undefined?1:h[2]);
+   if(!Number.isSafeInteger(oldNeed)||!Number.isSafeInteger(newNeed)||
+      oldNeed<0||newNeed<0)return false;
+   oldSeen=0;newSeen=0;active=true;continue;
+  }
+  if(!active)return false;
+  if(line.startsWith('\\ No newline at end of file'))continue;
+  if(line.startsWith('-')){oldSeen++;deleted++;}
+  else if(line.startsWith(' ')){oldSeen++;newSeen++;}
+  else return false;
+  if(oldSeen>oldNeed||newSeen>newNeed)return false;
+ }
+ return active&&oldSeen===oldNeed&&newSeen===newNeed&&
+  deleted===file.deletions;
+}
+
 function analyze(files,config={}){
  const list=Array.isArray(files)?files:[],names=list.map(f=>String(f?.filename||''));
  const alerts=[],warnings=[],dedupe=new Set();let scanned=0,partial=list.length>MAX_FILES;
@@ -156,7 +191,8 @@ function analyze(files,config={}){
    const path=String(f?.filename||'');
    if(!path||path.includes('..')||!production(path)||f.status==='removed')continue;
    const patch=parsePatch(f.patch);
-   if(patch.partial||(!patch.added.length&&Number(f.changes)>0)){
+   if(patch.partial||(!patch.added.length&&Number(f.changes)>0&&
+      !completeDeletionOnlyPatch(f,patch))){
      partial=true;warnings.push('Parche ausente o truncado: '+sanitize(path));continue;
    }
    if(!patch.added.length)continue;
