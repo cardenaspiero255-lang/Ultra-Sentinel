@@ -14,7 +14,7 @@ node scripts/audit-scheduled-heartbeat.cjs /tmp/ultra-sentinel-runs.json "$HEAD_
 
 El comando devuelve JSON con esquema `ultra-sentinel-scheduled-heartbeat-audit/v1`; sale con código 2 ante evidencia insuficiente o irregular. No exportar tokens ni detalles Sentry. Para reproducibilidad se puede pasar una hora UTC como tercer argumento.
 
-Compara exclusivamente ejecuciones `schedule`, del archivo workflow esperado y `main`, concluidas y con SHA hexadecimal. Exige tres muestras; rechaza duplicados/futuros y registra `latestAgeMinutes`, `maxGapMinutes` y `failedCount`. Un intervalo superior a 120 minutos es bloqueo de puntualidad. Un job rojo por cambio de PR se considera **ejecución observada pero no exitosa** hasta revisar el log; tampoco concede puntualidad verde.
+Compara exclusivamente ejecuciones `schedule`, del archivo workflow esperado y `main`, concluidas y con SHA hexadecimal. Exige tres muestras completadas en las últimas 24 horas; considera el SHA de la ejecución más reciente y rechaza duplicados/futuros y registra `latestAgeMinutes`, `maxGapMinutes` y `failedCount`. Un intervalo superior a 120 minutos es bloqueo de puntualidad. Un job rojo por cambio de PR se considera **ejecución observada pero no exitosa** hasta revisar el log; tampoco concede puntualidad verde.
 
 ## Limitaciones y acción correctiva
 - La autenticidad del origen de los JSON de entrada debe verificarse aparte; `sourceAuthenticityVerified=false` siempre.
