@@ -1,0 +1,101 @@
+name: Ultra Sentinel — C2 owner-only pinned source oracle
+# Read-only repro of one semantic scenario in GameHub #73 on frozen source.
+# Never checkout or execute PR workflows, publish code, or handle Sentry secrets.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ultra-sentinel-c2-owner-oracle-main
+  cancel-in-progress: false
+
+jobs:
+  pinned-owner-oracle:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_ORACLE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Trusted main checkout, no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify main contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Retrieve frozen original file, never PR head branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/c2-owner-source"
+          mkdir -p "$source_dir"
+          chmod 0700 "$source_dir"
+          metadata="$RUNNER_TEMP/c2-owner-github-blob.json"
+          pinned_head="194908b7dfa9d882afbc4d7eeaa3781b3e84e9e8"
+          pinned_blob="b54e76f263b818597186530f31e44e1060d7f49d"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "/repos/cardenaspiero255-lang/gamehub-ultra/contents/supabase/functions/ultra-research/research.ts?ref=$pinned_head" \
+            > "$metadata"
+          jq -e --arg sha "$pinned_blob" \
+            '.type == "file" and .sha == $sha and .encoding == "base64" and .size > 1000 and .size < 64000 and (.content | type == "string")' \
+            "$metadata" >/dev/null
+          jq -r .content "$metadata" | base64 --decode > "$source_dir/research.ts"
+          test "$(git hash-object "$source_dir/research.ts")" = "$pinned_blob"
+          chmod 0400 "$source_dir/research.ts"
+          rm -f "$metadata"
+      - name: Execute actual source with Node permissions denying network and writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/c2-owner-source"
+          runner_home="$RUNNER_TEMP/c2-oracle-home"
+          mkdir -p "$runner_home"
+          chmod 0700 "$runner_home"
+          # No GitHub token, GH_TOKEN or secret reaches this subprocess.
+          # Node permissions deny network, child processes and filesystem writes.
+          env -i PATH="$PATH" HOME="$runner_home" NODE_NO_WARNINGS=1 \
+            node --experimental-permission --experimental-strip-types \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/c2-owner-wikipedia-repro.cjs" \
+            --allow-fs-read="$source_dir/research.ts" \
+            "$GITHUB_WORKSPACE/scripts/c2-owner-wikipedia-repro.cjs" \
+            "$source_dir/research.ts" > "$RUNNER_TEMP/c2-owner-witness.json"
+          jq -e '.schema == "ultra-sentinel-c2-owner-witness/v1" and
+            .pr == 73 and .candidateDefect.reproduced == true and
+            .controls.relevantAccepted == true and
+            .controls.unrelatedTopicRejected == true and
+            .externalTruthCertified == false and
+            .precisionRecallComputed == false and
+            .tripleSPlusCertified == false and
+            .mergeAllowed == false' "$RUNNER_TEMP/c2-owner-witness.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-owner-witness.json"
+      - name: Upload strictly sanitized proof without source or secrets
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-owner-pinned-witness
+          path: ${{ runner.temp }}/c2-owner-witness.json
+          if-no-files-found: error
+          retention-days: 7
