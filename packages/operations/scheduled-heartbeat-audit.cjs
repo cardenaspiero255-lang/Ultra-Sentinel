@@ -26,6 +26,7 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
   seen.add(r.id);
   const created=timestamp(r.created_at);
   if(created>current)fail();
+  if(created<current-24*60*60*1000)continue;
   if(r.status!=='completed')continue;
   if(!['success','failure','cancelled','timed_out','action_required','neutral','skipped'].includes(r.conclusion))fail();
   samples.push({id:r.id,at:created,headSha:r.head_sha,conclusion:r.conclusion});
@@ -40,7 +41,7 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
  else if(latestAge>maxGapMinutes)verdict='SCHEDULE_OVERDUE';
  else if(maxGap>maxGapMinutes)verdict='SCHEDULE_GAP';
  else if(failed)verdict='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW';
- else if(samples.some(x=>x.headSha!==expectedSha))verdict='STALE_WORKFLOW_SHA';
+ else if(samples[0].headSha!==expectedSha)verdict='STALE_WORKFLOW_SHA';
  else verdict='PUNCTUALITY_OBSERVED_NOT_24X7';
  return Object.freeze({schema:'ultra-sentinel-scheduled-heartbeat-audit/v1',
   verdict,expectedSha,latestRunId:samples[0]?.id??null,
