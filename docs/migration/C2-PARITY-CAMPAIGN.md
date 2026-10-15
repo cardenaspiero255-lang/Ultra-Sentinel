@@ -1,6 +1,6 @@
 # Campaña C2 — Paridad medible sin duplicar el observador
 
-**Estado:** infraestructura de métricas implementada en `packages/quality-gates/shadow-parity-metrics.cjs` y `scripts/evaluate-shadow-parity.cjs`; comparación real y certificación **PENDIENTES**. Un resultado de unit tests con fixtures sintéticos no demuestra calidad en PR reales.
+**Cohorte activa actualizada (2026-10-15):** los PR son **#132, #159, #161 y #163**. El #158 se fusionó y queda exclusivamente como muestra histórica, no como PR activo. Los resultados de #158 no se reutilizan para el #159. Las etiquetas independientes y el baseline de cada SHA siguen pendientes.\n\n**Estado:** infraestructura de métricas implementada en `packages/quality-gates/shadow-parity-metrics.cjs` y `scripts/evaluate-shadow-parity.cjs`; comparación real y certificación **PENDIENTES**. Un resultado de unit tests con fixtures sintéticos no demuestra calidad en PR reales.
 
 ## PR abiertos y HEADs observados (2026-10-14)
 
@@ -63,3 +63,11 @@ No habilitar esta hidratación en el monitor de cron, para no incrementar su sup
 Se aplica `packages/orchestrator/check-pr-provenance.cjs` a cada respuesta GitHub `check-runs` durante la campaña C2: **no basta con que el check esté verde y coincida el SHA**. La relación `pull_requests[]` del propio check debe incluir exactamente el número de PR, SHA HEAD y SHA base de GameHub, y las URL canónicas del repositorio en ambas partes. Una asociación ausente, truncada o con otro PR se rechaza con `INCOMPLETE_CHECK_PROVENANCE` o `CROSS_PR_CHECK_CONTAMINATION`.
 
 La comprobación final del PR valida además los IDs inmutables del repositorio GameHub (`1375408706`) y su propietario (`322222186`); una rama de un fork no equivale al mismo repositorio. Si GitHub no expone vínculos suficientes para un check legítimo, **el resultado sigue incompleto** hasta obtener otra evidencia auditable. La etiqueta `OBSERVED_SUCCESS_UNATTESTED` nunca acredita aprobación de branch protection ni reemplaza un corpus de defectos etiquetados independientemente.
+
+
+## Rotación de cohorte activa (2026-10-15)
+
+- GitHub confirmó que el [PR #158](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/158) está **merged**; ya no es elegible en el lector de PR abiertos.
+- La muestra activa que lo sustituye es el [PR #159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), proyecto de *Frame Pacing & Refresh Intelligence*, HEAD observado `07e1866424305f7639e176e07a452c9f484b5e2b`. Su estado **draft** y CI deben comprobarse cada ciclo; no se interpreta como release-ready.
+- Las cuatro muestras actuales son [#132](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/132), [#159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), [#161](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/161) y [#163](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/163).
+- Si algún PR cierra, la campaña se bloquea hasta escoger explícitamente una muestra sustitutiva y recalcular su identidad. No rotar silenciosamente casos después de ver los resultados: eso podría sesgar el benchmark.
