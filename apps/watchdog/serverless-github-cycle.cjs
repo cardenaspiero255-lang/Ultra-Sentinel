@@ -12,7 +12,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {readJarvisRepositoryState}=require('../../adapters/jarvis/jarvis-readonly.cjs');
 const {readGameHubLiveSample}=require('./gamehub-live-sample.cjs');
-const {storeObservation,checkedState}=require('./watchdog-run-once.cjs');
+const {storeObservation,checkedState,pendingDigest,acknowledgeDelivery}=require('./watchdog-run-once.cjs');
 const STUB=Object.freeze({schema:'ultra-sentinel-sentry-sample/v1',
  projectId:'0',sampleOnly:true,completeIssueInventory:false,
  issues:Object.freeze([])});
@@ -36,7 +36,14 @@ async function runGithubOnlyCycle({stateFile,githubToken,bootstrap=false,
  assertPublicOnly(previous);
  if(bootstrap&&previous)throw Error('BOOTSTRAP_WOULD_DISCARD_PRIOR_STATE');
  if(!bootstrap&&!previous)throw Error('PERSISTED_STATE_REQUIRED_MANUAL_BOOTSTRAP');
- if(previous?.pendingAlerts.length)throw Error('PENDING_ALERT_DELIVERY_REQUIRED');
+ // If an earlier runner died before persisting its acknowledgment, replay
+ // the stored alert rather than silently consuming or overwriting it.
+ if(previous?.pendingAlerts.length)return Object.freeze({
+  schema:'ultra-sentinel-github-only-cycle/v1',
+  status:'REPLAY_PERSISTED_ALERTS',alerts:previous.pendingAlerts,
+  publicArtifactOnly:true,sentryConnected:false,githubWrites:false,
+  deploy24x7:false,source:'github-actions-readonly'
+ });
  const [jarvis,gamehub]=await Promise.all([
   readJarvisRepositoryState({token:githubToken,fetchImpl}),
   readGameHubLiveSample({token:githubToken,fetchImpl})
@@ -57,8 +64,21 @@ if(require.main===module){
   githubToken:process.env.GITHUB_TOKEN,bootstrap
  }).then(r=>{
   process.stdout.write(JSON.stringify(r)+'\n');
-  // exit 2 marks a change requiring attention; upload step persists state.
-  if(r.alerts.length)process.exitCode=2;
+  if(r.alerts.length){
+   // GitHub Actions' job status is the notification surface for serverless.
+   // Flush the sanitized event to job logs before clearing the outbox.
+   for(const alert of r.alerts){
+    process.stdout.write('::warning title=Ultra Sentinel GitHub alert::'+
+     alert.type.replace(/[^A-Z_]/g,'')+'\n');
+   }
+   const state=checkedState(process.env.ULTRA_SENTINEL_WATCHDOG_STATE_FILE);
+   if(!state||pendingDigest(state.pendingAlerts)!==pendingDigest(r.alerts))
+    throw Error('STATE_CHANGED_DURING_ALERT_REPORTING');
+   acknowledgeDelivery(process.env.ULTRA_SENTINEL_WATCHDOG_STATE_FILE,
+    pendingDigest(r.alerts));
+   // No write to GitHub; the failed Action and durable logs surface changes.
+   process.exitCode=2;
+  }
  }).catch(e=>{
   // Never log token, private response bodies, or raw network exception strings.
   const allowed=new Set(['INVALID_PUBLIC_CHECKPOINT_PATH',
