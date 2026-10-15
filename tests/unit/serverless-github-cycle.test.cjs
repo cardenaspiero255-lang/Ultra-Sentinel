@@ -162,3 +162,17 @@ test('Actions runner temp context is confined to step-level env or with, never i
  assert.match(text,/Restore strictly scoped previous Actions artifact\n\s+env:\n\s+STATE_DIR: \$\{\{ runner\.temp \}\}/);
  assert.match(text,/Observe GitHub in read-only mode\n\s+id: observe\n\s+env:\n\s+ULTRA_SENTINEL_WATCHDOG_STATE_FILE: \$\{\{ runner\.temp \}\}/);
 });
+
+test('checkpoint cannot be restored from a foreign repository, running job or stale schedule without warning',()=>{
+ const workflow=fs.readFileSync(path.resolve(__dirname,
+  '../../.github/workflows/serverless-github-monitor.yml'),'utf8');
+ assert.match(workflow,/--argjson repoId "\$GITHUB_REPOSITORY_ID"/);
+ assert.match(workflow,/\.repository\.id == \$repoId/);
+ assert.match(workflow,/\.status == "completed"/);
+ assert.match(workflow,/\.conclusion == "success" or \.conclusion == "failure"/);
+ assert.match(workflow,/ambiguous state artifact/);
+ assert.match(workflow,/age_seconds=.*current_epoch - created_epoch/);
+ assert.match(workflow,/age_seconds" -gt 7200/);
+ assert.match(workflow,/observation gap/);
+ assert.match(workflow,/Artifact timestamp is newer than the runner clock/);
+});
