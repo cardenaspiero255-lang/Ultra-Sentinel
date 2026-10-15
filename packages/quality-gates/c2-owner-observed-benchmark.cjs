@@ -89,25 +89,48 @@ function verifyWitness(w){
  w.precisionRecallComputed!==false||w.tripleSPlusCertified!==false||
  w.mergeAllowed!==false)fail();
 }
-function evaluateOwnerObservedC2({capture,witness}={}){
- const count=verifyCapture(capture);verifyWitness(witness);
- const f={rule:WITNESS.rule,path:WITNESS.path,line:WITNESS.line};
- const key=evidenceKey(f);
+function verifyNewsWitness(n){
+ if(!exact(n,['schema','repository','pr','headSha','blobSha','path',
+  'controls','candidateDefect','sampleKind','externalTruthCertified',
+  'independentHumanReview','precisionRecallComputed','tripleSPlusCertified','mergeAllowed'])||
+  n.schema!=='ultra-sentinel-c2-owner-news-witness/v1'||
+  n.repository!==REPO||n.pr!==WITNESS.pr||n.headSha!==WITNESS.headSha||
+  n.blobSha!==WITNESS.blobSha||n.path!==WITNESS.path||
+  n.sampleKind!=='REAL_PINNED_SOURCE_WITH_DETERMINISTIC_FIXTURE'||
+  !exact(n.controls,['independentHostsAccepted','sameHostRejected'])||
+  n.controls.independentHostsAccepted!==true||n.controls.sameHostRejected!==true||
+  !exact(n.candidateDefect,['rule','line','expected','observed','reproduced'])||
+  n.candidateDefect.rule!=='NEWS_DOMAIN_DIVERSITY_INCONSISTENT'||
+  n.candidateDefect.line!==241||
+  n.candidateDefect.expected!=='ABSTAIN_IF_DISTINCT_URL_HOSTS_LT_2'||
+  n.candidateDefect.observed!=='VERIFIED_NEWS_WITH_ONE_URL_HOST'||
+  n.candidateDefect.reproduced!==true||
+  n.externalTruthCertified!==false||n.independentHumanReview!==false||
+  n.precisionRecallComputed!==false||n.tripleSPlusCertified!==false||
+  n.mergeAllowed!==false)fail();
+}
+function evaluateOwnerObservedC2({capture,witness,newsWitness}={}){
+ const count=verifyCapture(capture);verifyWitness(witness);verifyNewsWitness(newsWitness);
+ const expected=[{rule:WITNESS.rule,path:WITNESS.path,line:WITNESS.line},
+  {rule:newsWitness.candidateDefect.rule,path:newsWitness.path,
+   line:newsWitness.candidateDefect.line}];
  const own=capture.samples.find(x=>x.pr===WITNESS.pr).candidate.findings;
- const detected=own.some(x=>evidenceKey(x)===key)?1:0;
+ const found=new Set(own.map(evidenceKey));
+ const detected=expected.filter(x=>found.has(evidenceKey(x))).length;
  const other=count-detected;
  return Object.freeze({
   schema:'ultra-sentinel-c2-owner-observed-benchmark/v1',
   repository:REPO,packetDigest:PACKET_DIGEST,
   sourceArtifacts:Object.freeze({
    candidateRun:38800582701,candidateArtifact:12004770556,
-   witnessRun:38815014127,witnessArtifact:12009932922}),
-  observedKnownCase:Object.freeze({pr:73,positive:1,detected,
-   missed:1-detected,recallWithinThisKnownCase:detected}),
-  population:Object.freeze({frozenPrs:4,verifiedPositive:1,
+   witnessRun:38815014127,witnessArtifact:12009932922,
+   newsRun:38818123100,newsArtifact:12011801729}),
+  observedKnownCases:Object.freeze({pr:73,positive:2,detected,
+   missed:2-detected,recallWithinKnownCases:detected/2}),
+  population:Object.freeze({frozenPrs:4,verifiedPositive:2,
    verifiedNegative:0,unverifiedCandidateFindings:other,
-   verifiedFalsePositives:null,neededAdditionalCasesAtLeast:119,
-   neededAdditionalPositivesAtLeast:47,neededAdditionalNegativesAtLeast:48}),
+   verifiedFalsePositives:null,neededAdditionalCasesAtLeast:118,
+   neededAdditionalPositivesAtLeast:46,neededAdditionalNegativesAtLeast:48}),
   benchmark:Object.freeze({precision:null,recall:null,f1:null,
    baselineComparable:false,minPopulationSatisfied:false,
    criticalRecallVerified:false,sourceCiFullAttestation:false}),
@@ -117,7 +140,7 @@ function evaluateOwnerObservedC2({capture,witness}={}){
   externalIndependenceClaimed:false,
   tripleSPlusCertified:false,autoMerge:false,autoRepair:false,
   verdict:'INSUFFICIENT_REAL_BENCHMARK_EVIDENCE',
-  limitation:'One confirmed behavior under controlled inputs is NOT a representative '+
+  limitation:'Two confirmed behaviors on a single PR under controlled inputs are NOT a representative '+
    'blind benchmark; unverified candidate alerts cannot be called false positives. '+
    'No validated legacy baseline, 120-case corpus or global performance metrics.'
  });
