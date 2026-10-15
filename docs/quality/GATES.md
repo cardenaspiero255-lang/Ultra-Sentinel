@@ -4,14 +4,21 @@
 1. Sintaxis Node 22 y `npm run check` en GitHub Actions sin secretos.
 2. Los archivos exigidos por `config/layout.json` existen, son regulares y sus rutas son internas.
 3. Política de ejemplo es fail-closed y los contratos JSON Schema son cerrados.
-4. Revisión profunda independiente de Codex: auditoría humana/asistente con evidencia reproducible, pruebas adversariales y CI exitosa del HEAD vigente. Ultra Sentinel puede aportar hallazgos **solo si su motor se ha implementado, ejecutado y registrado evidencias verificables**; su estructura actual no constituye una revisión ejecutada.
+4. Revisión independiente del cambio **sin Codex**: auditoría técnica con evidencia reproducible, pruebas adversariales y CI exitosa del HEAD vigente; distinguir siempre revisión automatizada de validación humana externa. Un motor implementado no sustituye una campaña real de paridad.
 
-## Al migrar motores (gates adicionales; NO implementados)
+## Motores y migración (gates en progreso, no todos acreditados)
 - Unit TDD RED/GREEN, suite de regresión y contratos equivalentes de origen.
 - Pruebas adversariales y Mutation Lab de las familias modificadas; ninguna suite omitida arbitrariamente.
 - Integración GitHub de solo lectura con revisión independiente y fallos `INCOMPLETE` por permisos/cuota/paginación.
 - Tests E2E sobre proyecto aislado antes de habilitar checks bloqueantes.
 - Android Build / Coverage solo en GameHub o cuando el cambio altere explícitamente su API/contratos, preservando required checks configurados.
+
+
+## Controles cuantitativos internos incorporados
+
+El módulo `packages/quality-gates/sssplus-pre-screen.cjs` impone límites mínimos de cohortes, clases, reglas, precisión/recall/F1 y ausencia de omisiones críticas sobre los ejemplos etiquetados entregados. `packages/quality-gates/mutation-lab.cjs` ejercita ocho familias de patrones y controles benignos con el **Core real**. Ambos tienen pruebas unitarias en CI. Ver [SSSPLUS-RELEASE-GATES](SSSPLUS-RELEASE-GATES.md).
+
+Estos controles **no** obtienen etiquetas independientes ni autentican la CI de GameHub. Su resultado no certifica SSS+ ni autoriza merges. La evidencia externa, las pruebas reales y la revisión independiente siguen pendientes.
 
 ## Política de fusión
 Verificar última cabeza SHA, todos los checks requeridos, protecciones y conversaciones críticas. Si falla alguna prueba, análisis independiente o autorización → **no fusionar**. Un check skipped no es PASS. El nombre “Triple SSS” no certifica calidad sin comparaciones externas.
