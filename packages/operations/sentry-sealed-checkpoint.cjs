@@ -5,6 +5,7 @@
  * unless encrypted with an externally managed key. Fail closed by default.
  */
 const {randomBytes,createCipheriv,createDecipheriv}=require('node:crypto');
+const {validateCheckpoint}=require('../../apps/watchdog/watchdog-state.cjs');
 const SCHEMA='ultra-sentinel-sentry-sealed-state/v1';
 const AAD=Buffer.from('ultra-sentinel/sentry-private-checkpoint/v1:repo:1418338512:main','utf8');
 function fail(){throw Error('INVALID_OR_UNAUTHORIZED_PRIVATE_CHECKPOINT');}
@@ -20,13 +21,44 @@ function strictDecode(value,min,max){
  if(bytes.length<min||bytes.length>max||bytes.toString('base64url')!==value)fail();
  return bytes;
 }
+const SHA=/^[a-f0-9]{40}$/,HASH=/^[a-f0-9]{24}$/;
+function exact(o,fields){
+ return o!==null&&typeof o==='object'&&!Array.isArray(o)&&
+  Object.keys(o).length===fields.length&&fields.every(k=>Object.hasOwn(o,k));
+}
+function validAlert(alert){
+ if(!alert||typeof alert.type!=='string')fail();
+ const type=alert.type;
+ if(type==='NEW_SENTRY_ISSUE')
+  return exact(alert,['type','fingerprint'])&&HASH.test(alert.fingerprint);
+ if(type==='GAMEHUB_SAMPLE_NOW_IDLE')
+  return exact(alert,['type']);
+ if(!Number.isSafeInteger(alert.pr)||alert.pr<1)fail();
+ if(['JARVIS_PR_OPENED','JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT'].includes(type))
+  return exact(alert,['type','pr']);
+ if(['JARVIS_PR_HEAD_CHANGED','GAMEHUB_PR_SAMPLE_SELECTED',
+  'GAMEHUB_PR_SAMPLE_CHANGED','GAMEHUB_PR_HEAD_CHANGED'].includes(type))
+  return exact(alert,['type','pr','headSha'])&&SHA.test(alert.headSha||'');
+ return false;
+}
 function validatePlaintext(raw){
  if(typeof raw!=='string'||Buffer.byteLength(raw,'utf8')<2||
     Buffer.byteLength(raw,'utf8')>65536)fail();
  let parsed;try{parsed=JSON.parse(raw);}catch{fail();}
- if(!parsed||parsed.schema!=='ultra-sentinel-watchdog-checkpoint/v1'||
-    typeof parsed.checkpoint!=='object'||parsed.checkpoint===null||
-    !Array.isArray(parsed.pendingAlerts))fail();
+ if(!exact(parsed,['schema','checkpoint','pendingAlerts',
+    'batchSequence','deliveryAcknowledged'])||
+    parsed.schema!=='ultra-sentinel-watchdog-checkpoint/v1'||
+    parsed.deliveryAcknowledged!==false||
+    !Number.isSafeInteger(parsed.batchSequence)||parsed.batchSequence<1||
+    !exact(parsed.checkpoint,['version','issues','prs','gamehub'])||
+    !Array.isArray(parsed.checkpoint.issues)||
+    !Array.isArray(parsed.checkpoint.prs)||
+    parsed.checkpoint.prs.some(x=>!exact(x,['pr','headSha']))||
+    (parsed.checkpoint.gamehub!==null&&
+     !exact(parsed.checkpoint.gamehub,['pr','headSha']))||
+    !Array.isArray(parsed.pendingAlerts)||parsed.pendingAlerts.length>40||
+    parsed.pendingAlerts.some(x=>!validAlert(x)))fail();
+ try{validateCheckpoint(parsed.checkpoint);}catch{fail();}
  return Buffer.from(raw,'utf8');
 }
 function sealSentryCheckpoint(plaintext,privateKey){
