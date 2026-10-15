@@ -42,6 +42,17 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   repair=executeSandboxRepair({directory,plan,changes,nonceStore,
    nonce:authorization.nonce,expectedHeadSha});
   if(await verifyRepair(repair)!==true)throw Error('REPAIR_VERIFICATION_FAILED');
+  // The validator executes code from the disposable checkout. A clean exit
+  // is NOT evidence it left the Git state unchanged. Never certify a commit
+  // if verifier scripts added a remote, rewrote HEAD, changed tracked files,
+  // switched branches or installed dangerous Git configuration.
+  assertSafeGitCheckout(fs.realpathSync(directory));
+  if(sandboxGit(directory,'remote')!==''||
+     sandboxGit(directory,'branch','--show-current')!==plan.branch||
+     sandboxGit(directory,'rev-parse','HEAD')!==repair.headSha||
+     sandboxGit(directory,'status','--porcelain')!==''||
+     sandboxGit(directory,'rev-parse','HEAD^{tree}')===journal.baselineTree)
+    throw Error('REPAIR_MUTATED_DURING_VERIFICATION');
   finishTransaction(journal);
   return Object.freeze({status:'SANDBOX_REPAIR_VERIFIED',repair,
    remoteWrites:false,mergeAllowed:false});
