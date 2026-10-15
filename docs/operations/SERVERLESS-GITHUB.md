@@ -49,3 +49,10 @@ Los ficheros `deploy/systemd/` permanecen disponibles **sin habilitar** para un 
 - **Alcance explícito:** el archivo del workflow todavía está en el PR #42; la CI del PR únicamente prueba código y estructura. La programación y la restauración real de artifacts en `main` **no se pueden acreditar hasta integrarlo** y ejecutar una campaña de arranque, segundo ciclo, interrupción y reanudación.
 
 No confundir cobertura de pruebas unitarias con una certificación de funcionamiento en GitHub Actions programado.
+
+
+## Segundo ciclo real, sin dar permisos adicionales
+
+Después de que la issue [#45](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/45) haya generado un checkpoint válido, el propietario (GitHub ID `322222186`) puede comentar allí la cadena **exacta** `ULTRA_SENTINEL_CHECK_NOW_V1`. La automatización escucha exclusivamente los comentarios de esa issue, en este repositorio numérico (`1418338512`), con autor y emisor autenticados; no escucha comandos desde PR ni otros issues. El paso es de lectura; no crea commits ni autoriza reparaciones.
+
+Este evento inicia una nueva observación con `bootstrap=false`, restaura el checkpoint de la última ejecución verificada y crea un nuevo artifact si la inspección termina sin error. Después se pueden verificar los eventos `issue_comment` y los jobs correspondientes. **Su éxito es una prueba del segundo ciclo, no una garantía de disponibilidad permanente:** los cron siguen siendo *best effort* y las notificaciones dependen de GitHub.
