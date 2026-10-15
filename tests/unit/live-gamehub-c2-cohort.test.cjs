@@ -179,3 +179,25 @@ test('forked head and untrusted owner ID never support a verified GameHub cohort
   assert.ok(r.samples.every(x=>x.reason==='UNTRUSTED_PR_REPOSITORY'));
  }
 });
+
+test('rate-limited first PR stops all remaining C2 reads without retrying or certifying',async()=>{
+ let loads=0,fetches=0;
+ const result=await captureLiveC2Cohort({token,fetchImpl:async()=>{fetches++;throw Error('SHOULD_NOT_FETCH');},
+  load:async()=>{loads++;throw Error('GITHUB_RATE_LIMITED');}});
+ assert.equal(loads,1);
+ assert.equal(fetches,0);
+ assert.equal(result.samples.length,4);
+ assert.equal(result.captureStatus,'INCOMPLETE_NOT_CERTIFIABLE');
+ assert.ok(result.samples.every(x=>x.reason==='GITHUB_RATE_LIMITED'));
+ assert.ok(result.samples.every(x=>x.status==='BLOCKED_INCOMPLETE_OR_STALE'));
+ assert.equal(result.tripleSPlusCertified,false);
+});
+test('C2 checks API 429 suspends the remaining PRs and never publishes rate-limit bodies',async()=>{
+ const api=mockApi({status:429});let loads=0;
+ const result=await captureLiveC2Cohort({token,fetchImpl:api.fetchImpl,
+  load:async n=>{loads++;return review(n);}});
+ assert.equal(loads,1);
+ assert.equal(api.calls.length,1);
+ assert.ok(result.samples.every(x=>x.reason==='GITHUB_RATE_LIMITED'));
+ assert.doesNotMatch(JSON.stringify(result),/token|private error/i);
+});

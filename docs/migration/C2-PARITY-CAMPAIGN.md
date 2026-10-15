@@ -71,3 +71,10 @@ La comprobación final del PR valida además los IDs inmutables del repositorio 
 - La muestra activa que lo sustituye es el [PR #159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), proyecto de *Frame Pacing & Refresh Intelligence*, HEAD observado `07e1866424305f7639e176e07a452c9f484b5e2b`. Su estado **draft** y CI deben comprobarse cada ciclo; no se interpreta como release-ready.
 - Las cuatro muestras actuales son [#132](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/132), [#159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), [#161](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/161) y [#163](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/163).
 - Si algún PR cierra, la campaña se bloquea hasta escoger explícitamente una muestra sustitutiva y recalcular su identidad. No rotar silenciosamente casos después de ver los resultados: eso podría sesgar el benchmark.
+
+
+## Control de cuota de GitHub API en la captura C2
+
+Una respuesta HTTP 429, o HTTP 403 con cabeceras verificables de cuota agotada, bloquea la campaña con el motivo mínimo `GITHUB_RATE_LIMITED`. No se hacen reintentos ni consultas a los demás PR mientras la cuota de instalación está agotada. Los cuatro slots se conservan para transparencia, pero los no consultados quedan como `BLOCKED_INCOMPLETE_OR_STALE`; nunca pasan a `CANDIDATE_SNAPSHOT_ONLY`.
+
+El estado se basa en la respuesta real de GitHub y no incluye tokens, cuerpos de error o credenciales en los informes. Cuando la cuota se renueve, repetir la campaña completa con SHA actualizados; no reutilizar una captura incompleta para la certificación. El bloqueo `GITHUB_API_BUDGET_EXHAUSTED` del lector sigue siendo un fallo explícito, distinto de la cuota compartida de GitHub.
