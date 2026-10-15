@@ -1,11 +1,11 @@
 # Roadmap ejecutable de Ultra Sentinel — cinco bloques sin duplicar motores
 
-**Corte actualizado:** `main@d5f5a347862777cee79a32d70468601b32b38f9b` (PR #39/#40/#41 fusionados). El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
+**Corte actualizado:** `main@a251653f58641a90658ae2940266f11cec03ca7d` (PR #34/#42/#44/#46/#47 fusionados después de #39/#40/#41). El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
 
 ## Bloque 1 — Autorización y recuperación de producción
 - **Ya fusionado:** preflight GameHub [PR #37](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/37).
-- **Abierto:** [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34), autorización del propietario Ed25519, nonce persistente y rollback transaccional.
-- **Trabajo**: reconciliar la rama con `main`, integrar el verificador real (no callback arbitrario) con el preflight, E2E de autenticación y aislamiento de pruebas con permisos mínimos, CI adversarial y auditoría del último SHA.
+- **Fusionado como código inactivo:** [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34), autorización Ed25519, nonce persistente y rollback transaccional. **No desplegado** con claves o token reales ni aislamiento probado en host autorizado.
+- **Trabajo restante**: comprobar el flujo contra identidad/token real, recibos de auditoría externos y aislamiento Bubblewrap en el entorno autorizado; no otorgar permisos de escritura antes de esos gates.
 - **Salida**: ninguna autorización falsa/tardía/reutilizada habilita commits; jamás merge por test verde únicamente.
 
 ## Bloque 2 — Paridad real del modo sombra
@@ -15,7 +15,7 @@
 - **Salida:** conjunto representativo con límites y resultados publicados; `BLOCKED_SOURCE_CI` ante falla heredada.
 
 ## Bloque 3 — Quality Gate, red team y evaluación externa
-- Reutilizar Core, Family Hunter, memory ledger y pruebas adversariales existentes. Completar Mutation Lab portable, criterios ciegos, reproducibilidad y autorrevisión basada en `main` confiable.
+- **Implementación interna:** [PR #47](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/47) incorpora Mutation Lab sintético de ocho reglas y scorecard cuantitativo con umbrales fijos; faltan corpus ciego y revisores externos con etiquetas independientes. Reutilizar Core, Family Hunter y memoria.
 - **Salida:** gates de exact HEAD, 0 P0/P1/P2 confirmados abiertos, resultados objetivos; sin declarar superioridad sobre competidores sin benchmark validado.
 
 ## Bloque 4 — Conectores Sentry, JARVIS y GameHub
@@ -24,15 +24,26 @@
 - **Salida:** E2E autorizados, telemetría sanitizada, operación observable y reversión comprobada.
 
 ## Bloque 5 — Monitor supervisor y cutover reversible
-- Checkpoint y outbox persistentes **en desarrollo en [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42)**; pendientes: despliegue/host real, health externo, entrega efectiva de alarmas, presupuestos, escalación, retención y supervisor externo.
+- **Serverless desplegado con GitHub Actions:** [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) fusionado, activación propietaria en [#44](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/44) y comprobación bajo demanda [#46](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/46). Primer baseline y dos ciclos de restauración reales acreditados; en cada cambio GitHub registra warning y job rojo intencionalmente. No equivale a supervisor 24/7, ni dispone de Sentry privado o monitor externo.
 - Pruebas de pérdida de red, reinicios, tareas duplicadas y alerta, con límites de gasto claros.
 - Retirar código obsoleto de GameHub **solo tras** paridad y cierre de regresiones; conservar adaptadores de producto.
 - **Salida:** evidencias operativas y auditoría de seguridad antes de cualquier etiqueta Triple SSS.
+
+
+## Bloque 6 — Memoria verificada y cuarentena
+
+- Código curado y ledger histórico de evidencia ya en `main`; sin fixes históricos promovidos.
+- Nueva cola de cuarentena de propuestas: no hay escritura, credenciales, promoción por un bot ni revocación autoconcedida. Los digests permiten revisar diferencias de contenido sin publicar consejos/secretos del PR.
+- Requisito para pasar a `verified_fix`: auditoría externa del before/after, pruebas RED/GREEN ligadas a SHA inmutable y lista autorizada en `main`.
+
+## Clasificación
+
+**Triple S+ NO CERTIFICADO.** El scorecard sintético y los workflows verdes acreditan lógica interna. Siguen pendientes benchmarks blindados con etiquetas independientes, integraciones Sentry autorizadas, pruebas de reparaciones en un entorno aislado real, medición de fiabilidad a lo largo del tiempo y rollback operativo.
 
 ## Política común
 
 - Cada bloque tiene prueba y responsabilidad propia. No reestructurar el repositorio, no duplicar motores ni asumir que un issue histórico implica entrega.
 - Modo 2 de sugerencias por defecto; reparaciones solo con autorización específica revocable, nunca autofusión implícita.
-- Todos los PRs se mantienen abiertos/draft mientras falten verificación final del HEAD, CI, integraciones operativas o revisión de hallazgos.
+- Los cambios de **lectura inactiva o modo sombra** pueden fusionarse con CI y auditoría exacta aprobadas sin afirmar despliegue. La **habilitación de reparación/escritura o certificación** continúa bloqueada si faltan integraciones operativas, identidad o pruebas hostiles reales.
 - Los PRs de origen solo respaldan procedencia; `main` del nuevo repositorio es el inventario de funcionalidad instalada.
 - Codex excluido según política explícita del propietario. No agregar nuevos rulesets ni obligación de aprobación externa no solicitada.
