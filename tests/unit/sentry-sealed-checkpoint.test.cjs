@@ -36,7 +36,7 @@ test('tampered AES envelope and extra fields are rejected rather than silently a
  const original=sealSentryCheckpoint(state(),key);
  const edited=[
   {...original,tag:original.tag.replace(/^./,original.tag[0]==='A'?'B':'A')},
-  {...original,ciphertext:original.ciphertext.replace(/^./,'_')},
+  {...original,ciphertext:original.ciphertext.replace(/^./,original.ciphertext[0]==='A'?'B':'A')},
   {...original,nonce:original.nonce.slice(2)},
   {...original,algorithm:'AES-128-CTR'},
   {...original,stacktrace:'SECRET'},
