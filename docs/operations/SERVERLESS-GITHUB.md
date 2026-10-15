@@ -38,3 +38,13 @@ Para afirmar Triple SSS aún hace falta paridad semántica con etiquetas indepen
 ## Alternativa
 
 Los ficheros `deploy/systemd/` permanecen disponibles **sin habilitar** para un futuro VPS; se reutiliza el mismo monitor, no se construye otra arquitectura. Para la etapa actual no necesitas contratarlo.
+
+
+## Endurecimiento comprobado del primer despliegue
+
+- **Contextos válidos de Actions:** `runner.temp` se usa únicamente dentro de `steps.env` o `steps.with`, no en `jobs.env`. El antiguo workflow se registraba como fallido antes de iniciar jobs cuando contenía contextos fuera de alcance; se corrigió y hay una regresión dedicada.
+- **Artefactos públicos sin filtraciones:** el checkpoint serverless exige un esquema exacto. Se rechazan propiedades adicionales tanto en la raíz del estado como dentro de las entradas PR, incluso si la validación más general del watchdog las permitiría por compatibilidad.
+- **Origen de la persistencia:** antes de restaurar, se comprueba que el run esté completado, pertenezca al mismo repositorio, venga de `main` y del workflow serverless, y tenga evento `schedule` o `workflow_dispatch`. Se rechazan timestamps futuros y se indica una **brecha de observación** si el último checkpoint tiene más de dos horas. Esa advertencia no recupera transiciones intermedias.
+- **Alcance explícito:** el archivo del workflow todavía está en el PR #42; la CI del PR únicamente prueba código y estructura. La programación y la restauración real de artifacts en `main` **no se pueden acreditar hasta integrarlo** y ejecutar una campaña de arranque, segundo ciclo, interrupción y reanudación.
+
+No confundir cobertura de pruebas unitarias con una certificación de funcionamiento en GitHub Actions programado.
