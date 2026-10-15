@@ -11,7 +11,7 @@ function capture(){
   samples:PRS.map((pr,i)=>({
    pr,repository:REPO,
    headSha:String.fromCharCode(97+i).repeat(40),
-   baseSha:String.fromCharCode(102+i).repeat(40),
+   baseSha:'f'.repeat(40),
    changedFiles:5,readerStatus:'AUTHENTICATED_SOURCE_DIFF',
    checks:{observedState:'OBSERVED_SUCCESS_UNATTESTED'},
    candidate:{coverage:{partial:false},findings:[{
