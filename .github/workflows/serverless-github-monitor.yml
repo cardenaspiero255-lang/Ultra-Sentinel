@@ -5,6 +5,9 @@ on:
   # One-time owner-authenticated first bootstrap without a workflow-dispatch API token.
   issues:
     types: [opened]
+  # Owner-only manual probe by commenting on the pinned bootstrap issue.
+  issue_comment:
+    types: [created]
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -28,10 +31,20 @@ jobs:
   read-only-monitor:
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name != 'issues' ||
-       (github.event.action == 'opened' &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'issues' &&
+        github.event.action == 'opened' &&
         github.event.issue.title == 'ULTRA_SENTINEL_FIRST_BOOTSTRAP_V1' &&
         github.event.issue.user.id == 322222186 &&
+        github.event.sender.id == 322222186 &&
+        github.event.repository.id == 1418338512) ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 45 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_CHECK_NOW_V1' &&
+        github.event.comment.user.id == 322222186 &&
         github.event.sender.id == 322222186 &&
         github.event.repository.id == 1418338512))
     runs-on: ubuntu-24.04
@@ -82,7 +95,7 @@ jobs:
             jq -e --argjson repoId "$GITHUB_REPOSITORY_ID" '
               .head_branch == "main" and
               .path == ".github/workflows/serverless-github-monitor.yml" and
-              (.event == "schedule" or .event == "workflow_dispatch" or .event == "issues") and
+              (.event == "schedule" or .event == "workflow_dispatch" or .event == "issues" or .event == "issue_comment") and
               .repository.id == $repoId and
               .status == "completed" and
               (.conclusion == "success" or .conclusion == "failure")
