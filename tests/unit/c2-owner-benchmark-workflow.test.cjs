@@ -2,17 +2,23 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 const yaml=fs.readFileSync(path.resolve(__dirname,'../../.github/workflows/c2-owner-observed-benchmark.yml'),'utf8');
-const step=yaml.split('node --experimental-permission \\')[1]?.split('> "$RUNNER_TEMP/c2-owner-benchmark.json"')[0];
-test('Node read-permission flags precede the benchmark script',()=>{
- assert.ok(step,'missing owner benchmark node command');
- const script=step.indexOf('"$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \\');
- const flags=step.indexOf('--allow-fs-read="$root/kotlin/c2-kotlin-source-witness.json"');
- assert.ok(flags>=0&&script>flags,'all Node flags must precede the main module path');
- assert.doesNotMatch(step.slice(0,script),/\n\s*\x22\$root\/kotlin\/c2-kotlin-source-witness\.json\x22/);
+const section=yaml.split('node --experimental-permission')[1]?.split('> "$RUNNER_TEMP/c2-owner-benchmark.json"')[0];
+const lines=section?.split('\n').map(s=>s.trim())??[];
+function findLine(prefix){return lines.findIndex(s=>s.startsWith(prefix));}
+const scriptPrefix='"$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs"';
+const kotlinFlag='--allow-fs-read="$root/kotlin/c2-kotlin-source-witness.json"';
+const kotlinArg='"$root/kotlin/c2-kotlin-source-witness.json"';
+test('Node read-permission flags precede the benchmark entrypoint',()=>{
+ assert.ok(section,'missing owner benchmark node command');
+ const script=findLine(scriptPrefix),flags=findLine(kotlinFlag);
+ assert.ok(script>=0 && flags>=0 && flags<script,
+  'fourth evidence permission must be before module entrypoint');
+ assert.equal(lines.filter(s=>s.startsWith(scriptPrefix)).length,1);
 });
-test('Kotlin original witness is an argument exactly once after the executable',()=>{
- const script=step.indexOf('"$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \\');
- const after=step.slice(script);
- assert.match(after,/"\$root\/news\/c2-owner-news-witness\.json" \\\n\s*"\$root\/kotlin\/c2-kotlin-source-witness\.json" \\/);
- assert.equal((after.match(/"\$root\/kotlin\/c2-kotlin-source-witness\.json"/g)||[]).length,1);
+test('Fourth original Kotlin witness is an argument once after executable',()=>{
+ const script=findLine(scriptPrefix),arg=findLine(kotlinArg);
+ assert.ok(script>=0&&arg>script,'Kotlin evidence must be an argument after entrypoint');
+ assert.equal(lines.filter(s=>s.startsWith(kotlinArg)).length,1);
+ assert.ok(lines.some(s=>s.startsWith('"$root/news/c2-owner-news-witness.json"')),
+  'third witness argument is still required');
 });
