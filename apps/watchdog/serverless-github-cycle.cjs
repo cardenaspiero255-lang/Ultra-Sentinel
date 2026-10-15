@@ -16,11 +16,38 @@ const {storeObservation,checkedState,pendingDigest,acknowledgeDelivery}=require(
 const STUB=Object.freeze({schema:'ultra-sentinel-sentry-sample/v1',
  projectId:'0',sampleOnly:true,completeIssueInventory:false,
  issues:Object.freeze([])});
+function failPrivate(){throw Error('PRIVATE_OR_INCOMPATIBLE_STATE_FORBIDDEN');}
+function exactShape(value,keys){
+ return value!==null&&typeof value==='object'&&!Array.isArray(value)&&
+  Object.keys(value).length===keys.length&&
+  keys.every(key=>Object.hasOwn(value,key));
+}
 function assertPublicOnly(previous){
- if(previous&&(!Array.isArray(previous.checkpoint?.issues)||
-  previous.checkpoint.issues.length!==0||previous.pendingAlerts.some(
-   x=>x.type==='NEW_SENTRY_ISSUE')))
-  throw Error('PRIVATE_OR_INCOMPATIBLE_STATE_FORBIDDEN');
+ if(previous===null)return;
+ // Workflow artifacts in public repositories can be downloaded by anyone.
+ // The generic watchdog validator deliberately allows additional fields for
+ // backward compatibility, so serverless must apply a STRICT allowlist
+ // before exposing any artifact to GitHub Actions.
+ if(!exactShape(previous,['schema','checkpoint','pendingAlerts',
+     'batchSequence','deliveryAcknowledged'])||
+   previous.schema!=='ultra-sentinel-watchdog-checkpoint/v1'||
+   previous.deliveryAcknowledged!==false||
+   !Number.isSafeInteger(previous.batchSequence)||previous.batchSequence<1||
+   !exactShape(previous.checkpoint,['version','issues','prs','gamehub'])||
+   previous.checkpoint.version!==1||
+   !Array.isArray(previous.checkpoint.issues)||
+   previous.checkpoint.issues.length!==0||
+   !Array.isArray(previous.checkpoint.prs)||
+   previous.checkpoint.prs.some(pr=>!exactShape(pr,['pr','headSha']))||
+   (previous.checkpoint.gamehub!==null&&
+    !exactShape(previous.checkpoint.gamehub,['pr','headSha']))||
+   !Array.isArray(previous.pendingAlerts)||previous.pendingAlerts.some(
+    alert=>alert.type==='NEW_SENTRY_ISSUE'||
+     !['JARVIS_PR_OPENED','JARVIS_PR_HEAD_CHANGED',
+       'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT',
+       'GAMEHUB_PR_SAMPLE_SELECTED','GAMEHUB_PR_SAMPLE_CHANGED',
+       'GAMEHUB_PR_HEAD_CHANGED','GAMEHUB_SAMPLE_NOW_IDLE']
+       .includes(alert.type)))failPrivate();
 }
 async function runGithubOnlyCycle({stateFile,githubToken,bootstrap=false,
  fetchImpl=globalThis.fetch}={}){
