@@ -1,6 +1,6 @@
 # Inventario único US-001—US-035 (código del repositorio independiente)
 
-**Corte de código:** `main@d5f5a347862777cee79a32d70468601b32b38f9b`, 2026-10-14 (incluye #39, #40 y #41). Los gates operativos siguen pendientes.  
+**Corte de código:** `main@a251653f58641a90658ae2940266f11cec03ca7d`, 2026-10-15 (incluye #34, #42, #44, #46 y #47 después de #39–#41). Los gates operativos siguen pendientes.  
 **Origen conceptual:** [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5); **estado operativo** actualizado aquí. El issue es histórico, **no una fuente de implementaciones confirmadas**.
 
 ## Criterio de estado
@@ -9,14 +9,14 @@
 - **parcial:** hay una pieza verificable, pero no el comportamiento completo con el alcance y evidencia requeridos.
 - **pendiente:** no se ha acreditado implementación de esta capacidad en `main`; un archivo de README o un contrato inerte no acredita un adaptador funcional.
 - El propietario del código Android/UI permanece en **GameHub**. No trasladar por duplicación.
-- **PR #34 está abierto**: firma, nonce y recuperación solo se contabilizan como **rama candidata**, no como capacidad fusionada en `main`. El [preflight #37](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/37) ya existe en `main` y debe reutilizarse.
+- **PR #34 fusionado:** firma Ed25519, nonce y recuperación en el código principal, **sin credenciales ni despliegue real**. El [preflight #37](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/37) se reutiliza; la autoridad externa y el aislamiento operativo siguen pendientes.
 - Los historiales de PR no se cuentan como pruebas operativas del nuevo repositorio; para certificar se exige SHA, regresiones, evidencia adversarial y E2E real.
 
 | ID | Capacidad | Estado en main | Responsable actual / prueba de código | Brecha para DONE |
 |---|---|---|---|---|
 | US-001 | Analizador offline de diffs | **implementado** | `packages/core/ultra_sentinel_core.cjs`; `tests/unit/ultra-sentinel-core-port.test.cjs` | Ampliar semántica y benchmark |
 | US-002 | Severidad/confianza/evidencia | **implementado** | `packages/core/ultra_sentinel_core.cjs`; `packages/orchestrator/gamehub-github-evidence.cjs` | Calibración externa |
-| US-003 | Benchmark etiquetado de reglas | **parcial** | `packages/quality-gates/shadow-parity-metrics.cjs`; `scripts/evaluate-shadow-parity.cjs` (PR #40) | Métricas ejecutables, falta corpus etiquetado independiente y evaluación ciega |
+| US-003 | Benchmark etiquetado de reglas | **parcial** | `shadow-parity-metrics.cjs` y `sssplus-pre-screen.cjs` (#40/#47); corpus externo pendiente | Métricas ejecutables, falta corpus etiquetado independiente y evaluación ciega |
 | US-004 | Hook pre-commit opcional | **pendiente** | Futuro adaptador local; no reutilizar los hooks de GameHub sin auditoría | Instalación y tests aislados |
 | US-005 | Grafo causal verificable | **parcial** | `packages/family-hunter/ultra_sentinel_family_fingerprints.cjs` | Causas raíz contrastadas con repros multiarchivo |
 | US-006 | Memoria de playbooks | **parcial** | `packages/memory/ultra_sentinel_memory.cjs`, `ultra_sentinel_memory_ledger.cjs` | Procedencia acreditada; cero fixes externos certificados |
@@ -25,8 +25,8 @@
 | US-009 | Hunter→Fixer→Judge | **parcial** | `packages/family-hunter/ultra_sentinel_family_hunter_modes.cjs`, `packages/recovery/repair-draft.cjs` | Juez independiente con veto real, E2E |
 | US-010 | Propuesta de parche acotado | **implementado** | `packages/recovery/repair-draft.cjs`; `tests/unit/supervised-repair.test.cjs` | Solo propuestas; ejecución es otra capacidad |
 | US-011 | Reproducción CI ligada a SHA | **parcial** | `packages/orchestrator/gamehub-live-reader.cjs`, `check-pr-provenance.cjs` | Manifiesto reproducible de falla CI |
-| US-012 | Feedback humano ligado a SHA | **parcial** | `adapters/gamehub/ultra_sentinel_repair_authorization.cjs` | Firma real y recibo revocable, no confiar en callback |
-| US-013 | Mutation Lab JavaScript | **pendiente** | No acreditado en `main` independiente; puede existir en GameHub | Portar solo fixtures/evaluador seguros y auditar |
+| US-012 | Feedback humano ligado a SHA | **parcial** | `gamehub-signed-preflight.cjs` y `gamehub-live-preflight.cjs` (#34) | Firma del propietario y recibo independiente reales aún sin probar |
+| US-013 | Mutation Lab JavaScript | **parcial** | `packages/quality-gates/mutation-lab.cjs` (#47), 8 mutaciones sintéticas con Core real | Ejecutar una campaña de mutación sobre código real, con ground truth externo |
 | US-014 | Mutation Lab Kotlin opt-in | **pendiente** | Runner Android permanece en GameHub | Contrato explícito y opt-in probado |
 | US-015 | OMEGA de voz/trazas | **pendiente** | `packages/contracts/` general, pero sin OMEGA integrado | Contratos Android reales y trazas de QA |
 | US-016 | Autorrevisión desde fuente confiable | **parcial** | `packages/core/ultra_sentinel_core.cjs`, `docs/quality/GATES.md` | Gate autónomo comprobado, independiente del autor |
@@ -40,23 +40,23 @@
 | US-024 | Reproducción instrumentada Android | **pendiente** | Runner pertenece a **GameHub** | Dispositivo/emulador QA, trazas reales |
 | US-025 | Diagnóstico causal con TDD RED | **parcial** | `packages/core/ultra_sentinel_remediation.cjs`; `tests/unit/family-hunter-adversarial.test.cjs` | Repro RED/GREEN por causa verificada |
 | US-026 | Reparación TDD Android/Kotlin | **parcial** | `packages/recovery/repair-draft.cjs`; PR #34 para sandbox | Reparador Kotlin probado y autorizado |
-| US-027 | Gate detectar→autorizar | **parcial** | `packages/recovery/repair-draft.cjs`; `adapters/gamehub/ultra_sentinel_repair_authorization.cjs` | Integrar identidad y firma reales de #34 |
-| US-028 | Chaos/fuzz concurrencia/voz | **parcial** | `tests/unit/rollback-scratch-drill.test.cjs`; PR #34 con SIGKILL | Fuzz de voz/red/Android y verificación de proceso real |
+| US-027 | Gate detectar→autorizar | **parcial** | `gamehub-signed-preflight.cjs` y preflight #37 integrados (#34) | Falta E2E del propietario real, firma de auditoría y claves instaladas |
+| US-028 | Chaos/fuzz concurrencia/voz | **parcial** | `tests/unit/owner-sandbox-flow.test.cjs` con SIGKILL (#34) | Fuzz Android y proceso Bubblewrap en host real |
 | US-029 | OMEGA permisos/red/estado | **pendiente** | Pendiente de contrato GameHub | Pruebas cross-product |
 | US-030 | Predicción calibrada de regresiones | **pendiente** | No se evidencia modelo calibrado en Core | Medir precision/recall/confianza |
 | US-031 | Memoria dinámica revocable | **parcial** | `packages/memory/ultra_sentinel_memory_ledger.cjs` | Acreditar fixes y revocación antes de utilizar |
 | US-032 | Benchmark ciego independiente | **parcial** | `packages/quality-gates/shadow-parity-metrics.cjs`; `docs/migration/C2-PARITY-CAMPAIGN.md` | Calculador TP/FP/FN/F1 fusionado, pero no hay ground truth independiente ni benchmark ciego |
 | US-033 | Panel Sentinel en GameHub | **pendiente (Sentinel)** | UI pertenece a **GameHub**, `apps/control-plane/README.md` | API de estado / panel verificado, sin copiar UI |
 | US-034 | Canary releases / rollback | **pendiente** | `docs/operations/RUNBOOK.md` (plan) | Pipeline/release reales y reversión supervisada |
-| US-035 | Red Team supply chain/injection | **parcial** | `tests/unit/certification-adversarial.test.cjs`, `docs/security/THREAT-MODEL.md` | Campaña independiente/fixtures inéditos |
+| US-035 | Red Team supply chain/injection | **parcial** | `certification-adversarial.test.cjs` y `mutation-lab.test.cjs` (#47) | Campaña externa con fixtures inéditos, ataques en runner real |
 
 ## Regla de reutilización y dependencias
 
 1. **Reutilizar, no duplicar:** Core, Family Hunter, memoria, `gamehub-live-reader`, observador de proveedores y preflight GameHub de #37.
-2. **Bloque 1 / PR #34:** sincronizar con `main` mediante integración sin sobrescribir #37; validar con TDD el vínculo *actor autenticado → firma sobre plan SHA-256 → autorización preflight GameHub*. El preflight aún recibe un `verifyAuthorization` inyectable: no equivale por sí mismo a atestación real.
-3. **Modo sombra:** el observador de proveedores ya selecciona PR en vivo tras #38; `gamehub-shadow.yml` y `gamehub-readonly.yml` conservan defaults #201 y deben usar el selector **existente**, con `IDLE_NO_OPEN_PR` auditable.
+2. **Bloque 1 / PR #34 fusionado:** la firma y el preflight conectado están presentes en `main`; **no hay** despliegue autorizado de claves, token real ni test de aislamiento Bubblewrap. No dar por activada la autorreparación.
+3. **Modo sombra:** los workflows de #39 sustituyeron el default stale #201 por selección dinámica con `IDLE_NO_OPEN_PR`; no equiparar lectura de checks a paridad semántica.
 4. **Paridad semántica:** los dos checks con nombre coincidente no demuestran igualdad; comparar findings con etiquetas de verdad por SHA, cobertura, FP/FN, regresiones y tiempo, sin declarar victoria por checks verdes.
-5. **Interfaces y despliegue:** adaptadores read-only de Sentry/JARVIS y calculador de paridad ya fusionados (#40/#41). Monitor con checkpoints/outbox en PR #42 **sin desplegar**; conectividad real, alertas, benchmark independiente y supervisión externa siguen pendientes, sin mover archivos Android.
+5. **Interfaces y despliegue:** monitor GitHub Actions gratuito #42/#44/#46 **activado** con checkpoint y dos restauraciones reales (run IDs 38661847051, 38662164071 y 38662228134). Solo GitHub/JARVIS/GameHub de lectura; Sentry privado no conectado, cron sin SLA 24/7. No mover archivos Android.
 6. **Cutover reversible:** mantener workflows y scripts de GameHub mientras no exista una equivalencia verificada. No fusionar/retirar componentes por simple recuento de tests.
 
 **Criterio de certificación:** 0 hallazgos P0/P1/P2 confirmados, CI exacta sin gates saltados, pruebas hostiles nuevas, autorización verificable, auditoría independiente registrada y pruebas E2E operativas. **Estado de Triple SSS: NO CERTIFICADO**.
