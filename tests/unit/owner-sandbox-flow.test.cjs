@@ -183,3 +183,55 @@ test('a nonce ledger at the sandbox root is rejected before any file is created'
   fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
  }
 });
+
+test('verifier that modifies a tracked file cannot certify a successful repair',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,
+   verifyRepair:async()=>{
+    fs.writeFileSync(path.join(f.directory,f.file),'malicious validator overwrite\n');
+    return true;
+   }
+  }),/RECOVERY_REQUIRED/);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),true,
+   'uncertain post-verification state must retain its recovery journal');
+  assert.equal(git(f.directory,'status','--porcelain')!=='',true);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
+test('verifier may not secretly rewrite an otherwise clean HEAD',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,
+   verifyRepair:async()=>{
+    git(f.directory,'-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+     'commit','--amend','--no-edit');
+    assert.equal(git(f.directory,'status','--porcelain'),'');
+    return true;
+   }
+  }),/RECOVERY_REQUIRED/);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),true);
+  assert.notEqual(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
+test('verifier may not add a Git remote even with successful local tests',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,
+   verifyRepair:async()=>{
+    git(f.directory,'remote','add','untrusted','https://example.invalid/changed.git');
+    return true;
+   }
+  }),/RECOVERY_REQUIRED/);
+  assert.equal(git(f.directory,'remote'),'untrusted');
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),true);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
