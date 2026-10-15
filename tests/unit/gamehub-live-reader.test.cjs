@@ -40,7 +40,7 @@ test('SHA race, pagination gaps, duplicate names block',async()=>{
 test('truncated patch and HTTP errors block',async()=>{
  const bad=file(0);bad.additions=2;bad.changes=2;
  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({pages:[[bad]]}).fetchImpl}),/INCOMPLETE_PR_DIFF/);
- await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({status:429}).fetchImpl}),/GITHUB_API_UNAVAILABLE/);
+ await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({status:429}).fetchImpl}),/GITHUB_RATE_LIMITED/);
  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({wrongType:true}).fetchImpl}),/GITHUB_INVALID_CONTENT_TYPE/);
 });
 test('100-file pagination includes verified empty terminal page',async()=>{
@@ -51,7 +51,7 @@ test('100-file pagination includes verified empty terminal page',async()=>{
 
 test('all denied, throttled and failing API statuses block read-only ingestion',async()=>{
  for(const status of [401,403,404,429,500,503]){
-  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({status}).fetchImpl}),/GITHUB_API_UNAVAILABLE/);
+  await assert.rejects(()=>loadGameHubPullRequest(201,{token:key,fetchImpl:mock({status}).fetchImpl}),status===429?/GITHUB_RATE_LIMITED/:/GITHUB_API_UNAVAILABLE/);
  }
 });
 test('changed PR base, file count and malformed patch block',async()=>{
@@ -69,4 +69,15 @@ test('runtime URL-safe punctuation is accepted but whitespace and header breaks 
  assert.equal(result.authenticated,true);
  for(const bad of [key+'\n',key+'\r',key+' ',key+'\t'])
   await assert.rejects(()=>loadGameHubPullRequest(201,{token:bad,fetchImpl:mock().fetchImpl}),/AUTHENTICATION_REQUIRED/);
+});
+
+test('installation quota exhaustion fails closed after one GET, with no automatic retry',async()=>{
+ const calls=[];
+ const fetchImpl=async(url,opts)=>{
+  calls.push({url,method:opts.method});
+  return {status:403,url,headers:{get:name=>name==='x-ratelimit-remaining'?'0':null},
+   text:async()=>JSON.stringify({message:'rate limit with private data'})};
+ };
+ await assert.rejects(loadGameHubPullRequest(201,{token:key,fetchImpl}),/GITHUB_RATE_LIMITED/);
+ assert.equal(calls.length,1);assert.equal(calls[0].method,'GET');
 });

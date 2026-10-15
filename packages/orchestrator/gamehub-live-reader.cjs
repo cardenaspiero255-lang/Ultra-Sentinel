@@ -4,6 +4,7 @@
  * This is not an author, CI, or repair attestation authority. */
 const {reviewGithubPrEvidence}=require('./gamehub-github-evidence.cjs');
 const {sourcePathAllowed,decodePinnedGithubSource}=require('./github-pinned-full-source.cjs');
+const {createApiBudget,rateLimitedResponse}=require('./github-api-budget.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const API='https://api.github.com/repos/'+REPO;
 const SHA=/^[a-f0-9]{40}$/;
@@ -48,7 +49,9 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
   fail('INVALID_PR_NUMBER');
  if(!validToken(token)||typeof fetchImpl!=='function')fail('AUTHENTICATION_REQUIRED');
  let transferred=0;
+ const budget=createApiBudget({maxRequests:MAX_FILES+8,maxMemoized:MAX_FILES});
  async function getJson(path){
+  return budget.run(path,async()=>{
   const url=API+path;
   let response;
   try{
@@ -58,6 +61,7 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
      'X-GitHub-Api-Version':'2022-11-28','User-Agent':'Ultra-Sentinel-ReadOnly'}
    });
   }catch{fail('GITHUB_TRANSPORT_UNAVAILABLE');}
+  if(rateLimitedResponse(response))fail('GITHUB_RATE_LIMITED');
   if(response?.status!==200)fail('GITHUB_API_UNAVAILABLE');
   if(response.url&&response.url!==url)fail('GITHUB_REDIRECT_REJECTED');
   const kind=response.headers?.get?.('content-type')||'';
@@ -70,6 +74,7 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
   transferred+=Buffer.byteLength(textBody,'utf8');
   if(transferred>MAX_JSON*5)fail('GITHUB_TOTAL_RESPONSE_TOO_LARGE');
   try{return JSON.parse(textBody);}catch{fail('GITHUB_INVALID_JSON');}
+  },{immutable:path.startsWith('/contents/')});
  }
  const first=checkPR(await getJson('/pulls/'+prNumber),prNumber);
  const files=[],seen=new Set(),seenBlobs=new Map();
