@@ -61,4 +61,10 @@ function compareFamilySnapshots(before,after){
   autoCommitAllowed:false,autoMergeAllowed:false,
   limitation:'A missing or moved heuristic finding never proves a root cause is fixed. Validate source identity, regressions and full patch coverage.'});
 }
-module.exports={compareFamilySnapshots};
+/** Canonical adapter: only Core reports passing Family Hunter's existing
+ * structural validation can enter the cross-SHA comparison. */
+function compareCoreFamilySnapshots(beforeCore,afterCore){
+ const {analyzeFamilies}=require('./ultra_sentinel_family_fingerprints.cjs');
+ return compareFamilySnapshots(analyzeFamilies(beforeCore),analyzeFamilies(afterCore));
+}
+module.exports={compareFamilySnapshots,compareCoreFamilySnapshots};
