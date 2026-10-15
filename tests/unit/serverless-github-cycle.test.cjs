@@ -121,3 +121,32 @@ test('serverless workflow has main-only schedule, no writes, explicit artifact r
  assert.doesNotMatch(workflow,/contents: write|pull-requests: write|pull_request_target|secrets\.|git push|workflow_run:/);
  assert.match(workflow,/\.path == "\.github\/workflows\/serverless-github-monitor\.yml"/);
 });
+
+test('public artifact rejects unknown root/checkpoint/PR fields to prevent accidental secret disclosure',async()=>{
+ const f=fixture(),gh=github();
+ try{
+  await runGithubOnlyCycle({stateFile:f.stateFile,
+   githubToken:token,bootstrap:true,fetchImpl:gh.fetchImpl});
+  const pristine=fs.readFileSync(f.stateFile,'utf8');
+  const changes=[
+   x=>{x.operatorSecret='not-for-public-artifact';},
+   x=>{x.checkpoint.sentryIssueTitle='private-issue';},
+   x=>{x.checkpoint.prs[0].authorEmail='secret@example.com';},
+   x=>{x.pendingAlerts.push({type:'NEW_SENTRY_ISSUE',
+    fingerprint:'a'.repeat(24)});},
+   x=>{delete x.batchSequence;},
+   x=>{x.batchSequence='1';}
+  ];
+  for(const change of changes){
+   const state=JSON.parse(pristine);change(state);
+   fs.writeFileSync(f.stateFile,JSON.stringify(state),{mode:0o600});
+   let calls=0;
+   await assert.rejects(runGithubOnlyCycle({
+    stateFile:f.stateFile,githubToken:token,fetchImpl:async()=>{
+     calls++;throw Error('NO_NETWORK_ALLOWED_FOR_PRIVATE_STATE');
+    }
+   }),/PRIVATE_OR_INCOMPATIBLE_STATE_FORBIDDEN|STATE_SEQUENCE_INVALID/);
+   assert.equal(calls,0,'unaudited artifact rejected before any GitHub poll');
+  }
+ }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
