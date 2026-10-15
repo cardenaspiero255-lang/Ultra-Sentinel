@@ -52,8 +52,8 @@ jobs:
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/owner-c2-benchmark"
-          mkdir -p "$root/candidate" "$root/witness"
-          chmod 0700 "$root" "$root/candidate" "$root/witness"
+          mkdir -p "$root/candidate" "$root/witness" "$root/news"
+          chmod 0700 "$root" "$root/candidate" "$root/witness" "$root/news"
           repo="cardenaspiero255-lang/Ultra-Sentinel"
           verify_run() {
             local id="$1" path="$2" sha="$3" artifact_name="$4" artifact_id="$5" output="$6"
@@ -79,8 +79,12 @@ jobs:
           verify_run 38815014127 .github/workflows/c2-owner-pinned-source-oracle.yml \
             4060e9402ddfe625172fd70a44b32dd0b2f7f2c3 \
             ultra-sentinel-c2-owner-pinned-witness 12009932922 "$root/witness"
+          verify_run 38818123100 .github/workflows/c2-owner-news-source-oracle.yml \
+            7a68d3ec6d3ba1c413be087442a8c8dff77542bd \
+            ultra-sentinel-c2-owner-news-witness 12011801729 "$root/news"
           test -f "$root/candidate/c2-candidate.json"
           test -f "$root/witness/c2-owner-witness.json"
+          test -f "$root/news/c2-owner-news-witness.json"
           rm -f "$root/run.json" "$root/artifacts.json"
       - name: Evaluate verified behavior, leave global metrics unavailable
         shell: bash
@@ -94,14 +98,16 @@ jobs:
             --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-owner-observed-benchmark.cjs" \
             --allow-fs-read="$root/candidate/c2-candidate.json" \
             --allow-fs-read="$root/witness/c2-owner-witness.json" \
+            --allow-fs-read="$root/news/c2-owner-news-witness.json" \
             "$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \
             "$root/candidate/c2-candidate.json" "$root/witness/c2-owner-witness.json" \
+            "$root/news/c2-owner-news-witness.json" \
             > "$RUNNER_TEMP/c2-owner-benchmark.json"
           jq -e '.schema == "ultra-sentinel-c2-owner-observed-benchmark/v1" and
             .verdict == "INSUFFICIENT_REAL_BENCHMARK_EVIDENCE" and
-            .observedKnownCase.positive == 1 and
-            .observedKnownCase.detected == 0 and
-            .observedKnownCase.missed == 1 and
+            .observedKnownCases.positive == 2 and
+            .observedKnownCases.detected == 0 and
+            .observedKnownCases.missed == 2 and
             .population.unverifiedCandidateFindings == 1 and
             .benchmark.precision == null and .benchmark.recall == null and
             .benchmark.f1 == null and .benchmark.baselineComparable == false and
