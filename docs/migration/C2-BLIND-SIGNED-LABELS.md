@@ -1,12 +1,12 @@
 # Campaña ciega C2: paquete sin predicciones y etiquetas firmadas
 
-El corpus de GameHub #132, #159, #161 y #163 se evalúa sin mostrar al etiquetador los findings del candidato, el baseline ni los resultados de CI. `createBlindReviewPacket(capture)` solo exporta PR, repo, HEAD SHA, base SHA y cantidad de archivos, junto con un digest SHA-256 canónico.
+La cohorte activa de GameHub #132, #159, #161 y #73 se evalúa sin mostrar al etiquetador los findings del candidato, el baseline ni los resultados de CI. `createBlindReviewPacket(capture)` solo exporta PR, repo, HEAD SHA, base SHA y cantidad de archivos, junto con un digest SHA-256 canónico.
 
 El etiquetador obtiene por separado los diffs originales fijados a cada SHA y redacta casos positivos **y negativos** con `(pr, rule, path, line, positive)`; no debe ver los hallazgos de Ultra Sentinel antes de cerrar la etiqueta. Se deben incluir errores inéditos, variantes y rutas relevantes no detectadas por ninguno de los motores para medir FN verdaderos.
 
 ## Formato de datos
 
-Paquete: `{ "schema": "ultra-sentinel-c2-blind-review-packet/v1", "repository": "cardenaspiero255-lang/gamehub-ultra", "cases": [{ "pr": 132, "headSha": "<40 hex>", "baseSha": "<40 hex>", "changedFiles": 21 }, ...] }`. El `digest` es SHA-256 de su JSON ordenado por la cohorte activa.
+Paquete: `{ "schema": "ultra-sentinel-c2-blind-review-packet/v1", "repository": "cardenaspiero255-lang/gamehub-ultra", "cases": [{ "pr": 132, "headSha": "<40 hex>", "baseSha": "<40 hex>", "changedFiles": 21 }, ...] }`. El `digest` es SHA-256 del JSON canónico (esquema, repositorio y cuatro identidades de cohorte en orden fijo). Al verificar etiquetas firmadas se recalcula el digest sobre el paquete recibido: se rechazan discrepancias entre SHA y digest, PR fuera de cohorte, cambios de orden, campos adicionales y contenido inyectado. Un SHA bien formado sustituido con un digest nuevo exige cotejo de procedencia contra GitHub; el hash por sí solo no lo detecta.
 
 Manifiesto de etiquetas: `{ "schema": "ultra-sentinel-c2-blind-labels/v1", "packetDigest": "<64 hex>", "labels": [{ "pr": 132, "rule": "SPEECH_REENTRANT_RETRY", "path": "app/src/main/java/.../Example.kt", "line": 42, "positive": true }, ...] }`. **Todos los valores de ejemplo son ilustrativos; no son hechos observados.**
 
@@ -28,3 +28,9 @@ Manifiesto de etiquetas: `{ "schema": "ultra-sentinel-c2-blind-labels/v1", "pack
 5. Verificar firma, hash de paquete y manifest, recalcular métricas usando el evaluador existente, inspeccionar FP/FN e incertidumbre de los hallazgos semánticos. Aplicar umbrales internos y validación independiente adicional.
 
 **Estado actual: protocolo implementado; no hay firmas externas ni etiquetas verificadas. Triple S+ NO CERTIFICADO.**
+
+## Endurecimiento del paquete (integridad, no independencia)
+
+`packages/quality-gates/c2-blind-packet-integrity.cjs` verifica forma exacta de los cuatro casos, identidades HEAD/base, límites de archivos y digest SHA-256 sobre el paquete realmente recibido. `canonicalLabelManifest` rechaza el paquete incoherente **antes** de aceptar la firma. Esta defensa impide reutilizar una firma legítima sobre bytes alterados y rechaza estructuras de cohorte manipuladas aunque se recompute su hash; no sustituye la comprobación externa del HEAD/base auténtico.
+
+**El revisor independiente aún debe aportar etiquetas reales y registrar su procedencia fuera del mismo modelo y del PR.** No crear etiquetas propias para pasar umbrales, ni confundir hash/firma con independencia o verificación del SHA actual contra GitHub. La certificación sigue `NOT_CERTIFIED` hasta la comprobación externa de todos los gates.
