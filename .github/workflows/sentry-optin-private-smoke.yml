@@ -1,0 +1,47 @@
+name: Ultra Sentinel — private Sentry read-only smoke (owner opt-in)
+# Never scheduled. Never executes pull-request code or exports private artifacts.
+on:
+  workflow_dispatch:
+    inputs:
+      approve_private_probe:
+        description: 'I authorize one read-only Sentry connectivity and in-memory encryption test'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ultra-sentinel-owner-sentry-smoke
+  cancel-in-progress: false
+
+jobs:
+  private-sentry-smoke:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'workflow_dispatch' &&
+      github.actor_id == '322222186' &&
+      inputs.approve_private_probe == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Trusted main checkout, no persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: One-shot GET-only Sentry sample and private in-memory AES roundtrip
+        shell: bash
+        env:
+          ULTRA_SENTINEL_SENTRY_ORG: ${{ vars.ULTRA_SENTINEL_SENTRY_ORG }}
+          ULTRA_SENTINEL_SENTRY_PROJECT_ID: ${{ vars.ULTRA_SENTINEL_SENTRY_PROJECT_ID }}
+          ULTRA_SENTINEL_SENTRY_READ_TOKEN: ${{ secrets.ULTRA_SENTINEL_SENTRY_READ_TOKEN }}
+          ULTRA_SENTINEL_SENTRY_CHECKPOINT_KEY: ${{ secrets.ULTRA_SENTINEL_SENTRY_CHECKPOINT_KEY }}
+        run: |
+          set -euo pipefail
+          node packages/operations/sentry-optin-smoke.cjs
