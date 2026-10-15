@@ -10,6 +10,7 @@ const {evaluateParityCampaign,findingKey}=
 const POLICY=Object.freeze({
  minDistinctPrs:4,minLabels:120,minPositive:48,minNegative:48,
  minDistinctRules:6,minDistinctPaths:4,
+ minCriticalPositives:12,minCriticalNegatives:12,minCriticalPositiveRules:3,
  minPrecision:0.95,minRecall:0.95,minF1:0.95,
  maxCriticalFalseNegatives:0
 });
@@ -36,6 +37,9 @@ function assessSssPlusPreScreen(input){
  const negative=labels.length-positive;
  const rules=new Set(labels.map(x=>x.rule));
  const paths=new Set(labels.map(x=>x.path));
+ const positiveCritical=labels.filter(l=>l.positive&&CRITICAL_RULES.has(l.rule));
+ const negativeCritical=labels.filter(l=>!l.positive&&CRITICAL_RULES.has(l.rule));
+ const positiveCriticalRules=new Set(positiveCritical.map(l=>l.rule));
  let criticalFalseNegatives=0;
  for(const s of input.samples){
   const predicted=new Set(s.candidate.map(findingKey));
@@ -52,6 +56,9 @@ function assessSssPlusPreScreen(input){
   balancedCorpus:positive>=POLICY.minPositive&&negative>=POLICY.minNegative,
   distinctRules:rules.size>=POLICY.minDistinctRules,
   distinctPaths:paths.size>=POLICY.minDistinctPaths,
+  criticalPopulation:positiveCritical.length>=POLICY.minCriticalPositives&&
+   negativeCritical.length>=POLICY.minCriticalNegatives&&
+   positiveCriticalRules.size>=POLICY.minCriticalPositiveRules,
   selfReportedSourceCiGreen:parity.sourceChecksClaimedGreen,
   nonRegression:parity.candidateNonRegressionInSuppliedLabels,
   precision:candidate.precision>=POLICY.minPrecision,
@@ -64,7 +71,9 @@ function assessSssPlusPreScreen(input){
   schema:'ultra-sentinel-sssplus-pre-screen/v1',
   repository:'cardenaspiero255-lang/gamehub-ultra',
   labelCounts:Object.freeze({total:labels.length,positive,negative,
-   rules:rules.size,paths:paths.size,prs:input.samples.length}),
+   rules:rules.size,paths:paths.size,prs:input.samples.length,
+   criticalPositive:positiveCritical.length,criticalNegative:negativeCritical.length,
+   criticalPositiveRules:positiveCriticalRules.size}),
   baseline,candidate,criticalFalseNegatives,
   policy:POLICY,gates,unmet:Object.freeze(unmet),
   internalNumericalTargetsObserved:unmet.length===0,

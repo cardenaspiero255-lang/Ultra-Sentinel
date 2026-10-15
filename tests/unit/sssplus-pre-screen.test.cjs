@@ -94,3 +94,48 @@ test('unlabelled candidate findings, path traversal and duplicate truth fail clo
   assert.throws(()=>assessSssPlusPreScreen(input));
  }
 });
+
+function remapLabels(input,predicate,mapper){
+ for(const sample of input.samples){
+  for(const label of sample.labels){
+   if(!predicate(label))continue;
+   const before=label.rule,next=mapper(label);
+   for(const finding of [...sample.baseline,...sample.candidate]){
+    if(finding.rule===before&&finding.path===label.path&&finding.line===label.line)
+     finding.rule=next;
+   }
+   label.rule=next;
+  }
+ }
+}
+test('empty critical-positive population cannot pass even with zero missed critical findings',()=>{
+ const input=campaign();
+ const replacements={
+  PRIVILEGED_UNTRUSTED_CHECKOUT:'UNCLASSIFIED_CHECKOUT',
+  POTENTIAL_HARDCODED_SECRET:'UNCLASSIFIED_SECRET',
+  POTENTIAL_PRIVATE_LOG:'UNCLASSIFIED_LOG'
+ };
+ remapLabels(input,x=>x.positive&&Object.hasOwn(replacements,x.rule),x=>replacements[x.rule]);
+ const s=assessSssPlusPreScreen(input);
+ assert.equal(s.criticalFalseNegatives,0);
+ assert.equal(s.candidate.f1,1);
+ assert.equal(s.gates.criticalPopulation,false);
+ assert.equal(s.internalNumericalTargetsObserved,false);
+});
+test('one critical-positive rule does not represent diverse critical families',()=>{
+ const input=campaign();
+ remapLabels(input,x=>x.positive&&['POTENTIAL_HARDCODED_SECRET','POTENTIAL_PRIVATE_LOG'].includes(x.rule),
+  ()=>'PRIVILEGED_UNTRUSTED_CHECKOUT');
+ const s=assessSssPlusPreScreen(input);
+ assert.ok(s.labelCounts.criticalPositive>=12);
+ assert.equal(s.labelCounts.criticalPositiveRules,1);
+ assert.equal(s.gates.criticalPopulation,false);
+});
+test('missing critical-negative controls block vacuous zero false positive success',()=>{
+ const input=campaign();
+ remapLabels(input,x=>!x.positive&&['SPEECH_REENTRANT_RETRY','UNSCOPED_COROUTINE'].includes(x.rule),
+  x=>x.rule==='SPEECH_REENTRANT_RETRY'?'UNCLASSIFIED_RETRY':'UNCLASSIFIED_SCOPE');
+ const s=assessSssPlusPreScreen(input);
+ assert.equal(s.labelCounts.criticalNegative,0);
+ assert.equal(s.gates.criticalPopulation,false);
+});
