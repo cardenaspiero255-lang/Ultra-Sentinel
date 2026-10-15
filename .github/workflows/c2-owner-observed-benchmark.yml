@@ -103,11 +103,11 @@ jobs:
             --allow-fs-read="$root/candidate/c2-candidate.json" \
             --allow-fs-read="$root/witness/c2-owner-witness.json" \
             --allow-fs-read="$root/news/c2-owner-news-witness.json" \
-            "$root/kotlin/c2-kotlin-source-witness.json" \
             --allow-fs-read="$root/kotlin/c2-kotlin-source-witness.json" \
             "$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \
             "$root/candidate/c2-candidate.json" "$root/witness/c2-owner-witness.json" \
             "$root/news/c2-owner-news-witness.json" \
+            "$root/kotlin/c2-kotlin-source-witness.json" \
             > "$RUNNER_TEMP/c2-owner-benchmark.json"
           jq -e '.schema == "ultra-sentinel-c2-owner-observed-benchmark/v1" and
             .verdict == "INSUFFICIENT_REAL_BENCHMARK_EVIDENCE" and
