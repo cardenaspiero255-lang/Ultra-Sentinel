@@ -13,23 +13,23 @@ El repositorio contiene código real de **Core 2.0**, **Family Hunter**, memoria
 | Memoria y reportes | `packages/memory/`, `packages/reports/` | Sin fixes históricos acreditados externamente |
 | Lector, proveedores y sombra GameHub | `packages/orchestrator/`, `scripts/gamehub-provider-observer.cjs` | Observación de PR, no equivalencia ni aprobación |
 | Preflight de reparación GameHub | `adapters/gamehub/ultra_sentinel_repair_authorization.cjs` (PR #37) | Callback no equivale a una autorización firmada real |
-| Autenticación firmada y rollback transaccional | [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) en borrador | No fusionado ni certificado para uso operativo |
+| Autenticación firmada y rollback transaccional | [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) **fusionado** | Código disponible; autorización de producción y rollback E2E todavía no acreditados |
 | Sentry/JARVIS solo lectura | `adapters/sentry/sentry-readonly.cjs`, `adapters/jarvis/jarvis-readonly.cjs` (PR #41 fusionado) | Conectividad real con credenciales y E2E aún pendientes |
 | Evaluador sombra etiquetado | `packages/quality-gates/shadow-parity-metrics.cjs` (PR #40 fusionado) | Sin verdad independiente ni certificación de equivalencia |
-| Checkpoint y outbox watchdog | [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) en desarrollo | No hay alertas entregadas ni servicio 24/7 desplegado |
+| Checkpoint y outbox watchdog | [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) **fusionado** | Cron `schedule` observado en Actions, alertas por estado de job; no hay SLA 24/7 ni notificación externa garantizada |
 
 La **única matriz de capacidades** US-001…US-035 es [docs/US-CAPABILITY-INVENTORY.md](docs/US-CAPABILITY-INVENTORY.md). Distingue `implementado`, `parcial` y `pendiente` con archivo responsable y brecha. El [issue histórico #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) es un catálogo de ideas, **no** estado operativo de `main`.
 
-## Serverless sin VPS (en PR #42)
+## Serverless sin VPS (implementado en `main`)
 
-La opción prioritaria para observación gratuita es **GitHub Actions**: [guía de activación](docs/operations/SERVERLESS-GITHUB.md). Cada ~30 minutos consulta una muestra de PR de JARVIS y GameHub con un token temporal de solo lectura. No necesita Oracle Cloud, tarjeta ni VPS; usa un checkpoint **público y sin datos Sentry** conservado temporalmente entre ejecuciones mediante artifacts.
+La opción prioritaria para observación gratuita es **GitHub Actions**: [guía de activación](docs/operations/SERVERLESS-GITHUB.md). El cron solicita ejecución cada 30 minutos, pero GitHub puede retrasarlo u omitirlo; las muestras reales del 15 de octubre de 2026 muestran brechas superiores a dos horas. Consulta una muestra de PR de JARVIS y GameHub con token temporal de solo lectura. No necesita Oracle Cloud, tarjeta ni VPS; usa un checkpoint **público y sin datos Sentry** conservado temporalmente entre ejecuciones mediante artifacts.
 
-No equivale a una disponibilidad 24/7 garantizada ni a una certificación Triple SSS. El [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) sigue en borrador hasta comprobar su workflow programado en `main`; el monitor VPS `systemd` permanece como alternativa sin activar. El [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) sigue separado para reparación firmada supervisada, **nunca** incluida en el monitor de lectura.
+No equivale a una disponibilidad 24/7 garantizada ni a una certificación Triple SSS. El monitor GitHub está activo en `main` y ha ejecutado eventos `schedule` auténticos; el monitor VPS `systemd` permanece sin activar. El código del [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) se fusionó pero **su reparación firmada no está habilitada en el monitor de lectura**.
 
 ## Flujo de trabajo
 
 1. Inventariar y reutilizar las implementaciones fusionadas; no crear un segundo Core o Family Hunter.
-2. Terminar PR #34 **integrándolo con el preflight #37**, actualizar contra `main` y acreditar identidad real, firma, nonce y recuperación aislada antes de fusionar.
+2. Validar el código ya fusionado de PR #34 y preflight #37 con identidad real, firma Ed25519, nonce, sandbox y recuperación E2E en un entorno autorizado **antes de habilitar escrituras**.
 3. Observar PR **vigentes** de GameHub con los workflows de solo lectura y contrastar hallazgos sobre un corpus etiquetado. **Los checks verdes no equivalen a precisión ni a certificación.**
 4. Evaluar Quality Gate, benchmarks ciegos, seguridad y regresiones por SHA y artefactos reproducibles.
 5. Integrar Sentry/JARVIS y monitorización externa únicamente tras definir scopes, límites, privacidad, despliegue y alertas verificadas; retirar workflows antiguos solo con cutover reversible.
