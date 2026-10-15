@@ -29,8 +29,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ARTIFACT_NAME: ultra-sentinel-github-only-state-v1
-      STATE_DIR: ${{ runner.temp }}/ultra-sentinel-state
-      ULTRA_SENTINEL_WATCHDOG_STATE_FILE: ${{ runner.temp }}/ultra-sentinel-state/github-checkpoint.json
       ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap == true }}
     steps:
       - name: Checkout only trusted default branch
@@ -48,6 +46,9 @@ jobs:
           test "$(git rev-parse --abbrev-ref HEAD)" = main
           npm run check
       - name: Restore strictly scoped previous Actions artifact
+        env:
+          STATE_DIR: ${{ runner.temp }}/ultra-sentinel-state
+          ULTRA_SENTINEL_WATCHDOG_STATE_FILE: ${{ runner.temp }}/ultra-sentinel-state/github-checkpoint.json
         shell: bash
         run: |
           set -euo pipefail
@@ -77,6 +78,8 @@ jobs:
           fi
       - name: Observe GitHub in read-only mode
         id: observe
+        env:
+          ULTRA_SENTINEL_WATCHDOG_STATE_FILE: ${{ runner.temp }}/ultra-sentinel-state/github-checkpoint.json
         shell: bash
         run: |
           set +e
