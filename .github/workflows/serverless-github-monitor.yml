@@ -1,0 +1,97 @@
+name: Ultra Sentinel — serverless GitHub observer
+# Does not run for untrusted pull requests. Never writes to repositories.
+# GitHub may delay or skip schedule runs; this is not real-time 24/7.
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: 'Initialize a fresh public GitHub-only checkpoint (first run ONLY)'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: ultra-sentinel-github-only-main
+  cancel-in-progress: false
+
+jobs:
+  read-only-monitor:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      ARTIFACT_NAME: ultra-sentinel-github-only-state-v1
+      STATE_DIR: ${{ runner.temp }}/ultra-sentinel-state
+      ULTRA_SENTINEL_WATCHDOG_STATE_FILE: ${{ runner.temp }}/ultra-sentinel-state/github-checkpoint.json
+      ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap == true }}
+    steps:
+      - name: Checkout only trusted default branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: main
+      - name: Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check current repository revision and local test suite
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Restore strictly scoped previous Actions artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$STATE_DIR"
+          chmod 0700 "$STATE_DIR"
+          # Missing/checkpoint retention expiry never triggers silent reset.
+          gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts?name=$ARTIFACT_NAME&per_page=100" > "$RUNNER_TEMP/sentinel-artifacts.json"
+          previous="$(jq -r --arg name "$ARTIFACT_NAME"             '[.artifacts[] | select(.name == $name and .expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | last | .workflow_run.id // empty'             "$RUNNER_TEMP/sentinel-artifacts.json")"
+          if [ -z "$previous" ]; then
+            if [ "$ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP" != true ]; then
+              echo '::error::No previous trusted checkpoint. Run workflow_dispatch once with bootstrap=true.'
+              exit 1
+            fi
+            echo 'Trusted one-time baseline initialization requested.'
+          else
+            if [ "$ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP" = true ]; then
+              echo '::error::Refusing to replace an existing checkpoint with a new baseline.'
+              exit 1
+            fi
+            gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$previous" > "$RUNNER_TEMP/sentinel-prior-run.json"
+            jq -e '.head_branch == "main" and
+              .path == ".github/workflows/serverless-github-monitor.yml" and
+              (.event == "schedule" or .event == "workflow_dispatch")'               "$RUNNER_TEMP/sentinel-prior-run.json" >/dev/null
+            gh run download "$previous" --repo "$GITHUB_REPOSITORY"               --name "$ARTIFACT_NAME" --dir "$STATE_DIR"
+            test -f "$ULTRA_SENTINEL_WATCHDOG_STATE_FILE"
+            chmod 0600 "$ULTRA_SENTINEL_WATCHDOG_STATE_FILE"
+          fi
+      - name: Observe GitHub in read-only mode
+        id: observe
+        shell: bash
+        run: |
+          set +e
+          node apps/watchdog/serverless-github-cycle.cjs
+          result=$?
+          set -e
+          if [ "$result" = 0 ] || [ "$result" = 2 ]; then
+            echo 'checkpoint_valid=true' >> "$GITHUB_OUTPUT"
+          fi
+          exit "$result"
+      - name: Persist public-only checkpoint, even after an alert
+        if: ${{ always() && steps.observe.outputs.checkpoint_valid == 'true' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-github-only-state-v1
+          path: ${{ runner.temp }}/ultra-sentinel-state/github-checkpoint.json
+          retention-days: 7
+          if-no-files-found: error
