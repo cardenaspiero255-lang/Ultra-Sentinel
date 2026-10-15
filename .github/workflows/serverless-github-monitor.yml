@@ -2,6 +2,9 @@ name: Ultra Sentinel — serverless GitHub observer
 # Does not run for untrusted pull requests. Never writes to repositories.
 # GitHub may delay or skip schedule runs; this is not real-time 24/7.
 on:
+  # One-time owner-authenticated first bootstrap without a workflow-dispatch API token.
+  issues:
+    types: [opened]
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -23,13 +26,20 @@ concurrency:
 
 jobs:
   read-only-monitor:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name != 'issues' ||
+       (github.event.action == 'opened' &&
+        github.event.issue.title == 'ULTRA_SENTINEL_FIRST_BOOTSTRAP_V1' &&
+        github.event.issue.user.id == 322222186 &&
+        github.event.sender.id == 322222186 &&
+        github.event.repository.id == 1418338512))
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
       GITHUB_TOKEN: ${{ github.token }}
       ARTIFACT_NAME: ultra-sentinel-github-only-state-v1
-      ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap == true }}
+      ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP: ${{ (github.event_name == 'workflow_dispatch' && inputs.bootstrap == true) || github.event_name == 'issues' }}
     steps:
       - name: Checkout only trusted default branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -72,7 +82,7 @@ jobs:
             jq -e --argjson repoId "$GITHUB_REPOSITORY_ID" '
               .head_branch == "main" and
               .path == ".github/workflows/serverless-github-monitor.yml" and
-              (.event == "schedule" or .event == "workflow_dispatch") and
+              (.event == "schedule" or .event == "workflow_dispatch" or .event == "issues") and
               .repository.id == $repoId and
               .status == "completed" and
               (.conclusion == "success" or .conclusion == "failure")
