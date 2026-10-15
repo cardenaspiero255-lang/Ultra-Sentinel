@@ -3,6 +3,7 @@
  * GET requests to the official GitHub API for the allowlisted GameHub repo.
  * This is not an author, CI, or repair attestation authority. */
 const {reviewGithubPrEvidence}=require('./gamehub-github-evidence.cjs');
+const {sourcePathAllowed,decodePinnedGithubSource}=require('./github-pinned-full-source.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const API='https://api.github.com/repos/'+REPO;
 const SHA=/^[a-f0-9]{40}$/;
@@ -42,7 +43,7 @@ function checkPatch(item){
  if(!hunks||plus!==item.additions||minus!==item.deletions)
   fail('INCOMPLETE_PR_DIFF');
 }
-async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch}={}){
+async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch,hydrateSource=false}={}){
  if(!Number.isSafeInteger(prNumber)||prNumber<1||prNumber>2147483647)
   fail('INVALID_PR_NUMBER');
  if(!validToken(token)||typeof fetchImpl!=='function')fail('AUTHENTICATION_REQUIRED');
@@ -71,7 +72,7 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
   try{return JSON.parse(textBody);}catch{fail('GITHUB_INVALID_JSON');}
  }
  const first=checkPR(await getJson('/pulls/'+prNumber),prNumber);
- const files=[],seen=new Set();
+ const files=[],seen=new Set(),seenBlobs=new Map();
  const pageLimit=Math.ceil(first.count/PER_PAGE)+1;
  for(let page=1;page<=pageLimit;page++){
   const entries=await getJson('/pulls/'+prNumber+'/files?per_page='+PER_PAGE+'&page='+page);
@@ -81,6 +82,8 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
     typeof item.filename!=='string'||seen.has(item.filename))
     fail('INVALID_PR_FILE_PAGE');
    seen.add(item.filename);
+   if(hydrateSource===true&&sourcePathAllowed(item.filename))
+    seenBlobs.set(item.filename,item.sha);
    checkPatch(item);
    files.push({filename:item.filename,status:item.status,changes:item.changes,
     additions:item.additions,deletions:item.deletions,patch:item.patch});
@@ -93,6 +96,22 @@ async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch
   if(page===pageLimit)fail('PR_PAGINATION_UNBOUNDED');
  }
  if(files.length!==first.count)fail('PR_FILES_MISMATCH');
+ // Optional C2 audit: Kotlin/Java hunk lexing cannot know whether a line
+ // began inside a string/comment unless the entire file is pinned to HEAD.
+ // Fetch bounded content through the same authenticated, GET-only reader,
+ // never by following a file-supplied URL. All normal observers remain unchanged.
+ if(hydrateSource===true){
+  for(const f of files){
+   if(!sourcePathAllowed(f.filename)||f.status==='removed')continue;
+   const originalSha=seenBlobs.get(f.filename);
+   if(!SHA.test(originalSha||''))fail('UNVERIFIED_PINNED_SOURCE');
+   const apiPath=f.filename.split('/').map(encodeURIComponent).join('/');
+   const raw=await getJson('/contents/'+apiPath+'?ref='+first.headSha);
+   f.fullSource=decodePinnedGithubSource(raw,{
+    path:f.filename,blobSha:originalSha
+   });
+  }
+ }
  const second=checkPR(await getJson('/pulls/'+prNumber),prNumber);
  if(first.headSha!==second.headSha||first.baseSha!==second.baseSha||
   first.repositoryId!==second.repositoryId||first.count!==second.count||

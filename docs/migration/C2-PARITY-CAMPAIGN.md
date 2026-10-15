@@ -45,3 +45,14 @@ Se añadió `packages/quality-gates/live-gamehub-c2-cohort.cjs`, CLI
 - El workflow puede finalizar rojo con código 2 por cobertura parcial o CI de origen, **sin que el reporte público se pierda**, porque el artefacto `ultra-sentinel-c2-sanitized-candidates` se guarda en caso de evaluación válida pero incompleta.
 
 **Estado de certificación:** recopilar candidatos reales **no** equivale a tener los findings del revisor heredado ni verdad independiente. La salida deja `baselineComparable:false`, `independentLabelsVerified:false`, `tripleSPlusCertified:false` siempre. Solo después de una validación ciega separada y fijada a SHA se pueden calcular métricas concluyentes y pedir una revisión de Triple S+.
+
+
+## Contexto léxico Kotlin/Java ligado al SHA (opt-in)
+
+La captura C2 solicita `hydrateSource:true` al lector **existente** `gamehub-live-reader.cjs`. Para cada archivo Kotlin/Java de producción (no pruebas), este lector consulta `GET /contents/{path}?ref={headSha}` con el mismo token de solo lectura, tamaño acotado y sin seguir `download_url`.
+
+El validador `github-pinned-full-source.cjs` comprueba identidad de path, tipo GitHub `file`, tamaño máximo de 160 KiB, bytes UTF-8 íntegros y **SHA-1 del blob Git real** comparado con la entrada de la API `pulls/{number}/files`. Luego el lector vuelve a comprobar HEAD/base SHA actuales. Si el contenido no es verificable o el HEAD cambia, la captura se bloquea en vez de afirmar cobertura completa.
+
+Esto evita confundir Kotlin ejecutable con texto dentro de comentarios o cadenas multilínea y puede reducir avisos `INCOMPLETE` producidos por hunks intermedios. **No** arregla snippets GitHub omitidos, binarios, cobertura de reglas heurísticas o falta de etiquetas independientes. El código fuente **no se publica** en el artefacto ni en el reporte C2; solo se extrae el hallazgo mínimo `rule,path,line`.
+
+No habilitar esta hidratación en el monitor de cron, para no incrementar su superficie de red ni consumo de API; es exclusiva de la campaña C2 opt-in.
