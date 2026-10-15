@@ -69,9 +69,28 @@ jobs:
               exit 1
             fi
             gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$previous" > "$RUNNER_TEMP/sentinel-prior-run.json"
-            jq -e '.head_branch == "main" and
+            jq -e --argjson repoId "$GITHUB_REPOSITORY_ID" '
+              .head_branch == "main" and
               .path == ".github/workflows/serverless-github-monitor.yml" and
-              (.event == "schedule" or .event == "workflow_dispatch")'               "$RUNNER_TEMP/sentinel-prior-run.json" >/dev/null
+              (.event == "schedule" or .event == "workflow_dispatch") and
+              .repository.id == $repoId and
+              .status == "completed" and
+              (.conclusion == "success" or .conclusion == "failure")
+            ' "$RUNNER_TEMP/sentinel-prior-run.json" >/dev/null
+            created="$(jq -er --argjson id "$previous" '
+              [.artifacts[] | select(.workflow_run.id == $id)] |
+              if length == 1 then .[0].created_at else error("ambiguous state artifact") end
+            ' "$RUNNER_TEMP/sentinel-artifacts.json")"
+            created_epoch="$(date -u -d "$created" +%s)"
+            current_epoch="$(date -u +%s)"
+            if [ "$created_epoch" -gt "$current_epoch" ]; then
+              echo '::error::Artifact timestamp is newer than the runner clock.'
+              exit 1
+            fi
+            age_seconds="$((current_epoch - created_epoch))"
+            if [ "$age_seconds" -gt 7200 ]; then
+              echo '::warning title=Ultra Sentinel observation gap::Last persisted sample is more than two hours old; intermediate PR transitions may have been missed.'
+            fi
             gh run download "$previous" --repo "$GITHUB_REPOSITORY"               --name "$ARTIFACT_NAME" --dir "$STATE_DIR"
             test -f "$ULTRA_SENTINEL_WATCHDOG_STATE_FILE"
             chmod 0600 "$ULTRA_SENTINEL_WATCHDOG_STATE_FILE"
