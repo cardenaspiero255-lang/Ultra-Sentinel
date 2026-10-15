@@ -9,7 +9,10 @@ const {loadGameHubPullRequest}=require('../orchestrator/gamehub-live-reader.cjs'
 const {bindChecksToPr}=require('../orchestrator/check-pr-provenance.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ROOT='https://api.github.com/repos/'+REPO;
-const PRS=Object.freeze([132,158,161,163]);
+// PR #158 was merged on 2026-10-15: the live cohort requires OPEN PRs.
+// PR #159 (Frame Pacing, Android performance) preserves a fourth distinct
+// domain while historical #158 evidence remains archived separately.
+const PRS=Object.freeze([132,159,161,163]);
 const SHA=/^[0-9a-f]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const PATH=/^[A-Za-z0-9_.\/-]{1,240}$/;
