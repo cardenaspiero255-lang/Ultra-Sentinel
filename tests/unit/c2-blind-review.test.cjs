@@ -4,7 +4,7 @@ const {generateKeyPairSync,sign}=require('node:crypto');
 const {createBlindReviewPacket,canonicalLabelManifest,
  verifyBlindLabelSignature,DOMAIN}=
  require('../../packages/quality-gates/c2-blind-review.cjs');
-const prs=[132,159,161,163],repo='cardenaspiero255-lang/gamehub-ultra';
+const prs=[132,159,161,73],repo='cardenaspiero255-lang/gamehub-ultra';
 const cap=()=>({schema:'ultra-sentinel-c2-live-cohort/v1',repository:repo,
  samples:prs.map((pr,i)=>({
   pr,repository:repo,readerStatus:'AUTHENTICATED_SOURCE_DIFF',
@@ -20,7 +20,7 @@ const labels=digest=>({schema:'ultra-sentinel-c2-blind-labels/v1',
   {pr:132,rule:'UNSCOPED_COROUTINE',path:'app/src/main/java/a.kt',line:10,positive:true},
   {pr:159,rule:'BLOCKING_ANDROID_CALL',path:'app/src/main/java/b.kt',line:20,positive:false},
   {pr:161,rule:'FORCED_GC',path:'app/src/main/java/c.kt',line:30,positive:true},
-  {pr:163,rule:'POTENTIAL_PRIVATE_LOG',path:'app/src/main/java/d.kt',line:40,positive:false}
+  {pr:73,rule:'POTENTIAL_PRIVATE_LOG',path:'app/src/main/java/d.kt',line:40,positive:false}
  ]});
 function signAs(key,manifest,packet){
  return sign(null,Buffer.concat([
