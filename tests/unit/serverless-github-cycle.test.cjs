@@ -176,3 +176,19 @@ test('checkpoint cannot be restored from a foreign repository, running job or st
  assert.match(workflow,/observation gap/);
  assert.match(workflow,/Artifact timestamp is newer than the runner clock/);
 });
+
+test('optional first bootstrap via GitHub issue is identity-bound and cannot auto-reset lost state',()=>{
+ const workflow=fs.readFileSync(path.resolve(__dirname,
+  '../../.github/workflows/serverless-github-monitor.yml'),'utf8');
+ assert.match(workflow,/issues:\n\s+types: \[opened\]/);
+ assert.match(workflow,/github\.event\.action == 'opened'/);
+ assert.match(workflow,/github\.event\.issue\.title == 'ULTRA_SENTINEL_FIRST_BOOTSTRAP_V1'/);
+ assert.match(workflow,/github\.event\.issue\.user\.id == 322222186/);
+ assert.match(workflow,/github\.event\.sender\.id == 322222186/);
+ assert.match(workflow,/github\.event\.repository\.id == 1418338512/);
+ assert.match(workflow,/github\.event_name == 'issues'/);
+ assert.match(workflow,/\.event == "issues"/);
+ assert.match(workflow,/Refusing to replace an existing checkpoint with a new baseline/);
+ assert.match(workflow,/\.head_branch == "main"/);
+ assert.doesNotMatch(workflow,/issue_comment:|issues:\s*\[edited\]/);
+});
