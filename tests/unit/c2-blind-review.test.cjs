@@ -115,7 +115,9 @@ test('a valid reviewer signature does not legitimize a tampered frozen PR packet
  replaced.digest=require('node:crypto').createHash('sha256')
   .update(JSON.stringify(replaced.packet),'utf8').digest('hex');
  const forged={...manifest,packetDigest:replaced.digest};
- const forgedSignature=signAs(kp.privateKey,forged,packet);
+ const forgedCanonical=canonicalLabelManifest(manifest,packet).replace(packet.digest,replaced.digest);
+ const forgedSignature=sign(null,Buffer.concat([DOMAIN,Buffer.from(forgedCanonical,'utf8')]),
+  kp.privateKey).toString('base64');
  assert.equal(verifyBlindLabelSignature({manifest:forged,packet:replaced,
   signature:forgedSignature,trustedReviewerPublicKey}).signatureVerified,false);
 });
