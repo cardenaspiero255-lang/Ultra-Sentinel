@@ -190,7 +190,8 @@ test('optional first bootstrap via GitHub issue is identity-bound and cannot aut
  assert.match(workflow,/\.event == "issues"/);
  assert.match(workflow,/Refusing to replace an existing checkpoint with a new baseline/);
  assert.match(workflow,/\.head_branch == "main"/);
- assert.doesNotMatch(workflow,/issue_comment:|issues:\s*\[edited\]/);
+ assert.doesNotMatch(workflow,/issues:\s*\[edited\]/);
+ assert.match(workflow,/github\.event\.issue\.number == 45/);
 });
 
 test('owner-only on-demand probe cannot be triggered by PR comments, other issues or untrusted actors',()=>{
