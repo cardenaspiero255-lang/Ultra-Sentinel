@@ -19,3 +19,14 @@ Tras fusionar la implementación con CI en verde, el propietario puede comentar 
 **Un resultado de éxito significa exclusivamente que este runner temporal permitió aislamiento Bubblewrap para esa prueba.** No prueba que funcione en otro sistema Linux o Android, ni la autenticación real del propietario, la correcta atestación del auditor, ni rollback real de una reparación, y no autoriza ninguna acción de escritura.
 
 La clasificación Triple S+ permanece `NOT_CERTIFIED` hasta comprobar la cadena completa y obtener evidencia externa de paridad e identidad autorizada.
+
+
+## Corrección específica para Ubuntu 24.04 y AppArmor
+
+La primera ejecución de la campaña en [GitHub Actions #38667613243](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38667613243) instaló Bubblewrap correctamente pero el proceso aislado no arrancó: `BWRAP_NAMESPACE_OPERATION_DENIED`. El error original estaba enmascarado para evitar exponer datos del host; no se podía distinguir si la causa era AppArmor, un mount o la prueba interna.
+
+Ahora, en ese **runner efímero**, el workflow instala los paquetes Ubuntu `bubblewrap apparmor apparmor-utils apparmor-profiles`, copia el perfil oficial de distribución `/usr/share/apparmor/extra-profiles/bwrap-userns-restrict` a `/etc/apparmor.d/bwrap-userns-restrict` y lo carga con `apparmor_parser`. Se verifica que `kernel.apparmor_restrict_unprivileged_userns=1` siga habilitado; si no está, la preparación falla cerrada. **No** se habilita `--share-net`, no se ejecuta la prueba con `sudo bwrap` y no se relaja ninguna restricción global.
+
+La clasificación de fallos ahora distingue errores de namespace/permisos, montaje y aserciones del fixture mediante **códigos fijos**. No imprime stderr arbitrario de Bubblewrap/Python ni rutas del host.
+
+Un ensayo aprobado seguiría acreditando únicamente aislamiento Bubblewrap en ese runner, nunca autorización real Ed25519/rollback completo o certificación S+.

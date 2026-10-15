@@ -39,3 +39,33 @@ test('isolation test actually exercises OS namespace, no network, and can never 
  assert.match(smoke,/netNamespace===hostNamespace/);
  assert.doesNotMatch(smoke,/git\s+(?:push|reset)|Authorization:\s*Bearer|exec\(/);
 });
+
+test('Ubuntu 24.04 policy is executable-scoped, not a global namespace bypass',()=>{
+ for(const exact of [
+  'apparmor-profiles','bwrap-userns-restrict',
+  '/usr/share/apparmor/extra-profiles/bwrap-userns-restrict',
+  'sudo apparmor_parser -r "$dest"',
+  'sysctl -n kernel.apparmor_restrict_unprivileged_userns',
+  'BWRAP_RESTRICTED_APPARMOR_PROFILE_LOADED'
+ ])assert.ok(workflow.includes(exact),exact);
+ assert.doesNotMatch(workflow,/sysctl\s+-w|apparmor_restrict_unprivileged_userns=0/);
+ assert.doesNotMatch(workflow,/--share-net|--privileged|chmod\s+[+]?[us]/);
+ assert.match(workflow,/test ! -L "\$src"/);
+ assert.match(workflow,/sudo install -o root -g root -m 0644/);
+});
+test('OS namespace failure classification is bounded, deterministic, and redacts raw messages',()=>{
+ const {classifyBwrapFailure}=require('../../scripts/drill-bwrap-isolation.cjs');
+ const cases=[
+  ['bwrap: setting up uid map: Permission denied','BWRAP_NAMESPACE_PERMISSION_DENIED'],
+  ['bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted','BWRAP_NAMESPACE_PERMISSION_DENIED'],
+  ['bwrap: creating new namespace failed','BWRAP_NAMESPACE_PERMISSION_DENIED'],
+  ['bwrap: bind mount failed','BWRAP_MOUNT_SETUP_FAILED'],
+  ['Traceback (most recent call last): /tmp/private-secret','BWRAP_FIXTURE_PROCESS_FAILED'],
+  ['arbitrary host path /home/runner/private','BWRAP_NAMESPACE_OPERATION_DENIED']
+ ];
+ for(const [stderr,expected] of cases){
+  const result=classifyBwrapFailure({stderr,status:1});
+  assert.equal(result,expected);
+  assert.doesNotMatch(result,/private|\/tmp\/|\/home\/|Bearer/i);
+ }
+});

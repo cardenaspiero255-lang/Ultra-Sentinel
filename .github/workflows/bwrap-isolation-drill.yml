@@ -39,15 +39,25 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse --abbrev-ref HEAD)" = main
           npm run check
-      - name: Install Bubblewrap from Ubuntu repository if necessary
+      - name: Install Bubblewrap and restricted Ubuntu AppArmor userns profile
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v bwrap >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq bubblewrap
-          fi
+          # Ubuntu 24.04 restricts unprivileged user namespaces. Install the
+          # distribution's Bwrap-only policy; do NOT relax any global sysctl.
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
           test -x /usr/bin/bwrap
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          dest=/etc/apparmor.d/bwrap-userns-restrict
+          test -f "$src"
+          test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" "$dest"
+          sudo apparmor_parser -r "$dest"
+          # Never disable the host-wide namespace restriction or share network.
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          echo "BWRAP_RESTRICTED_APPARMOR_PROFILE_LOADED"
       - name: Real isolated subprocess and denied network probe
         shell: bash
         run: |
