@@ -29,3 +29,19 @@ Los estados de abierto/borrador se verificaron mediante GitHub, pero **no** se h
 - Jamás ejecuta código del PR, tokens, pushes, autofusión o autorreparación.
 - Los resultados de fixtures sintéticos solo validan el calculador, **no** acreditan paridad del motor.
 - No retirar scripts o workflows viejos hasta tener cohortes representativas, falsos positivos y falsos negativos resueltos, revisión externa de etiquetas y capacidad de rollback.
+
+
+## Captura C2 real desde GitHub Actions (implementación posterior)
+
+Se añadió `packages/quality-gates/live-gamehub-c2-cohort.cjs`, CLI
+`scripts/capture-live-gamehub-c2.cjs` y workflow
+`.github/workflows/c2-live-capture.yml`.
+
+- Recopila solo los PR reales **#132, #158, #161 y #163**. Cada ejecución consulta los HEAD/base actuales, exige diff paginado completo con el lector existente, extrae únicamente `rule,path,line` del Core y verifica de nuevo el HEAD/base al terminar la lectura de los checks.
+- El estado de checks se registra como **observado**, no como acreditación de todas las protecciones. Si faltan resultados, alguna prueba falla, hay saltos, límite de paginación o evidencia incompleta, el caso **no** es comparable y se informa `INCOMPLETE_NOT_CERTIFIABLE`.
+- Los datos públicos exportados NO incluyen evidencia textual de vulnerabilidades, snippets de diff, respuestas API, tokens, título de issue, autor o cuerpos de PR. Los hallazgos sin posición, paths ambiguos y cobertura parcial bloquean el estado completo.
+- El lector anterior puede rechazar un PR grande, diff omitido o archivo binario. Esto se registra como `BLOCKED_INCOMPLETE_OR_STALE` y **no se fuerza** a través de una API alternativa no auditada.
+- Disparo manual: comentar **exactamente** `ULTRA_SENTINEL_C2_CAPTURE_V1` en la issue [#50](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/50) desde la cuenta propietaria. El evento no acepta comentarios en PR ni otras issues y no requiere token personal, servidor ni tarjeta. También admite `workflow_dispatch`.
+- El workflow puede finalizar rojo con código 2 por cobertura parcial o CI de origen, **sin que el reporte público se pierda**, porque el artefacto `ultra-sentinel-c2-sanitized-candidates` se guarda en caso de evaluación válida pero incompleta.
+
+**Estado de certificación:** recopilar candidatos reales **no** equivale a tener los findings del revisor heredado ni verdad independiente. La salida deja `baselineComparable:false`, `independentLabelsVerified:false`, `tripleSPlusCertified:false` siempre. Solo después de una validación ciega separada y fijada a SHA se pueden calcular métricas concluyentes y pedir una revisión de Triple S+.
