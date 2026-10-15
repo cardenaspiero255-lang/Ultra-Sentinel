@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {compareFamilySnapshots}=require('../../packages/family-hunter/family-delta.cjs');
+const {compareFamilySnapshots,compareCoreFamilySnapshots}=require('../../packages/family-hunter/family-delta.cjs');
+const {analyze}=require('../../packages/core/ultra_sentinel_core.cjs');
 const f=(id,path,line,rule='UNSCOPED_COROUTINE')=>({id,rule,occurrences:1,distinctFiles:1,
  locations:[{path,line,severity:'HIGH'}],status:'HYPOTHESIS_REQUIRES_TESTS'});
 const x='a'.repeat(24),y='b'.repeat(24),base='a'.repeat(40),head='b'.repeat(40);
@@ -29,4 +30,21 @@ test('forged lineage, duplicates, paths, repeated SHA are rejected',()=>{
  for(const corrupted of [{...v,autoMergeAllowed:true},r(base,[f(x,'../evil',1)]),r(base,[f(x,'src/A.kt',2),f(x,'src/B.kt',3)])])
   assert.throws(()=>compareFamilySnapshots(corrupted,r(head,[])),/INVALID_FAMILY_SNAPSHOT/);
  assert.throws(()=>compareFamilySnapshots(v,r(base,[])),/SAME_SNAPSHOT_SHA/);
+});
+
+test('real Core 2.0 outputs can be compared by SHA without creating a repair decision',()=>{
+ const file=path=>({filename:path,status:'added',changes:1,
+  patch:'@@ -0,0 +1 @@\n+GlobalScope.launch { work() }\n'});
+ const baseCore=analyze([file('app/src/main/java/voice/A.kt')],{sha:base});
+ const headCore=analyze([file('app/src/main/java/voice/B.kt')],{sha:head});
+ const r=compareCoreFamilySnapshots(baseCore,headCore);
+ assert.equal(r.baseSha,base);assert.equal(r.headSha,head);
+ assert.equal(r.autoCommitAllowed,false);assert.equal(r.autoMergeAllowed,false);
+ assert.equal(r.verifiedResolved,0);
+ assert.ok(['HYPOTHESES_ONLY','INCOMPLETE_EVIDENCE'].includes(r.status));
+});
+test('Core bridge refuses fabricated provenance before family transition evaluation',()=>{
+ assert.throws(()=>compareCoreFamilySnapshots({engine:'Forged',sha:base,findings:[]},
+  analyze([{filename:'app/src/main/java/voice/B.kt',status:'added',changes:1,
+   patch:'@@ -0,0 +1 @@\n+GlobalScope.launch { work() }\n'}],{sha:head})),/INVALID_CORE_ANALYSIS/);
 });
