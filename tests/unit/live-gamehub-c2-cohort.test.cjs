@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {captureLiveC2Cohort,findingsEvidence,checksEvidence,PRS}=
+const {captureLiveC2Cohort,findingsEvidence,checksEvidence,categorizeCoverageWarnings,PRS}=
  require('../../packages/quality-gates/live-gamehub-c2-cohort.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const HEAD='a'.repeat(40),BASE='b'.repeat(40);
@@ -110,4 +110,23 @@ test('reader failures are minimized to known codes and do not include exception 
  assert.equal(r.captureStatus,'INCOMPLETE_NOT_CERTIFIABLE');
  assert.ok(r.samples.every(s=>s.reason==='UNVERIFIED_SOURCE_EVIDENCE'));
  assert.doesNotMatch(JSON.stringify(r),/Bearer|github_pat_/);
+});
+
+test('coverage warning reasons are categorized without publishing raw file names or secrets',()=>{
+ const warnings=[
+  'Parche ausente o truncado: app/src/main/java/PRIVATE.kt',
+  'Archivo Kotlin/Java completo no coincide con el parche o supera el límite: SECRET.kt',
+  'Estado léxico Kotlin/Java previo al hunk desconocido; revisar archivo completo: FOO.kt',
+  'Cobertura parcial: la ausencia de alertas no significa que el PR esté limpio.',
+  'Unknown verbose secret token ghp_DO_NOT_LEAK'
+ ];
+ const kinds=categorizeCoverageWarnings(warnings);
+ assert.deepEqual(kinds,{missingOrTruncatedPatch:1,fullSourceMismatch:1,
+  unknownKotlinJavaContext:1,genericPartial:1,other:1});
+ assert.doesNotMatch(JSON.stringify(kinds),/ghp_|PRIVATE|SECRET|FOO/);
+ for(const invalid of [null,['valid',42],Array(26).fill('a'),['A'.repeat(1025)]])
+  assert.throws(()=>categorizeCoverageWarnings(invalid),/INCOMPLETE_CANDIDATE_ANALYSIS/);
+ const x=review(132).report;
+ const result=findingsEvidence({...x,warnings},HEAD);
+ assert.deepEqual(result.coverage.warningKinds,kinds);
 });
