@@ -78,3 +78,10 @@ Después: `node scripts/check-live-gamehub-preflight.cjs`. La salida `GAMEHUB_AU
 **Limitación de seguridad:** el lector revisa la primera página completa de hasta 50 archivos, 100 check runs y menos de 100 revisiones; rechaza respuestas mayores/incompletas. Las conversaciones de revisión resueltas se deben inspeccionar por una fuente GraphQL autorizada en la auditoría final, porque REST reviews no devuelve el estado de resolución de todos los hilos.
 
 La prueba real del propietario, del emisor de recibos y de Bubblewrap sigue pendiente hasta contar con el host y las credenciales autorizadas. **No registrar `CERTIFIED` ni fusionar PR #34 sin esas pruebas.**
+
+
+## Verificación final después del validador (integridad del checkout)
+
+El código que ejecuta las pruebas `npm test` o `node` dentro de Bubblewrap procede del repositorio desechable y no es un testigo de confianza. Por eso, antes de anunciar `SANDBOX_REPAIR_VERIFIED`, el orquestador **vuelve a comprobar** la configuración de Git, los remotos, la rama `sandbox/*`, el HEAD inmutable de reparación y el estado limpio del árbol de trabajo. Si un validador cambia archivos, reescribe un commit o agrega un remoto, no se emite la certificación: se inicia rollback si puede verificarse, o se conserva el journal con `RECOVERY_REQUIRED` para intervención humana. Hay pruebas negativas de los tres comportamientos.
+
+Las rutas de archivos de configuración locales se abren con `O_NOFOLLOW` y un descriptor comprobado con `fstat`: se rechazan enlaces simbólicos, enlaces duros, archivos editables por grupo/otros, directorios padres editables por terceros y ficheros mayores de 64 KiB. La existencia de pruebas verdes todavía no demuestra que el operador haya desplegado claves auténticas o un Bubblewrap funcional en un host real.
