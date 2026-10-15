@@ -82,3 +82,16 @@ La comprobación final del PR valida además los IDs inmutables del repositorio 
 Una respuesta HTTP 429, o HTTP 403 con cabeceras verificables de cuota agotada, bloquea la campaña con el motivo mínimo `GITHUB_RATE_LIMITED`. No se hacen reintentos ni consultas a los demás PR mientras la cuota de instalación está agotada. Los cuatro slots se conservan para transparencia, pero los no consultados quedan como `BLOCKED_INCOMPLETE_OR_STALE`; nunca pasan a `CANDIDATE_SNAPSHOT_ONLY`.
 
 El estado se basa en la respuesta real de GitHub y no incluye tokens, cuerpos de error o credenciales en los informes. Cuando la cuota se renueve, repetir la campaña completa con SHA actualizados; no reutilizar una captura incompleta para la certificación. El bloqueo `GITHUB_API_BUDGET_EXHAUSTED` del lector sigue siendo un fallo explícito, distinto de la cuota compartida de GitHub.
+
+
+## Entrega ciega reproducible (CLI offline)
+
+Una vez obtenida la captura C2 **real** y descargado el archivo `c2-candidate.json` del artefacto sanitizado, generar un paquete ciego con:
+
+```bash
+node scripts/create-c2-blind-packet.cjs /ruta/absoluta/c2-candidate.json > c2-reviewer-packet.json
+```
+
+El comando es local, no realiza peticiones de red y rechaza archivos relativos, enlaces simbólicos, fuentes incompletas, cambios de cohorte, checks observados no exitosos y análisis parcialmente cubiertos. Produce solo PR, HEAD/base SHA, número de archivos y un SHA-256 del JSON canónico, sin publicar los hallazgos del candidato, los resultados del baseline ni etiquetas.
+
+El paquete **no** constituye verdad de referencia ni prueba que quien etiquete sea independiente. La anotación debe realizarse fuera del modelo evaluado y contra esos mismos diffs de GitHub, documentar sus reglas, rutas y líneas, registrar casos positivos y negativos, justificar discrepancias y firmar posteriormente el manifiesto con una clave de revisión confiable. Verificar el binding Ed25519 con `packages/quality-gates/c2-blind-review.cjs`. Los requisitos cuantitativos y de revisión independiente de `SSSPLUS-RELEASE-GATES.md` siguen vigentes; ni firma ni CI verde activan certificación o autorreparación.
