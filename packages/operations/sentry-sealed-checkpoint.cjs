@@ -46,7 +46,7 @@ function sealSentryCheckpoint(plaintext,privateKey){
 function openSentryCheckpoint(raw,privateKey){
  const key=keyBytes(privateKey);
  if(!raw||typeof raw!=='object'||Array.isArray(raw)||
-  Object.keys(raw).length!==4||
+  Object.keys(raw).length!==5||
   !Object.hasOwn(raw,'schema')||!Object.hasOwn(raw,'algorithm')||
   !Object.hasOwn(raw,'nonce')||!Object.hasOwn(raw,'ciphertext')||
   !Object.hasOwn(raw,'tag')||
