@@ -100,3 +100,22 @@ test('unverified, incomplete, stale or replaced PRs cannot generate a blind coho
   assert.throws(()=>createBlindReviewPacket(c));
  }
 });
+
+test('a valid reviewer signature does not legitimize a tampered frozen PR packet',()=>{
+ const kp=generateKeyPairSync('ed25519');
+ const packet=createBlindReviewPacket(cap());
+ const manifest=labels(packet.digest),signature=signAs(kp.privateKey,manifest,packet);
+ const trustedReviewerPublicKey=kp.publicKey.export({type:'spki',format:'pem'});
+ const changed=structuredClone(packet);
+ changed.packet.cases[0].headSha='0'.repeat(40);
+ assert.equal(verifyBlindLabelSignature({manifest,packet:changed,signature,
+  trustedReviewerPublicKey}).signatureVerified,false);
+ const replaced=structuredClone(packet);
+ replaced.packet.cases[1].pr=163;
+ replaced.digest=require('node:crypto').createHash('sha256')
+  .update(JSON.stringify(replaced.packet),'utf8').digest('hex');
+ const forged={...manifest,packetDigest:replaced.digest};
+ const forgedSignature=signAs(kp.privateKey,forged,packet);
+ assert.equal(verifyBlindLabelSignature({manifest:forged,packet:replaced,
+  signature:forgedSignature,trustedReviewerPublicKey}).signatureVerified,false);
+});
