@@ -65,6 +65,22 @@ function checksEvidence(body,sha){
    pending||skipped?'INCOMPLETE_SOURCE_CI':'OBSERVED_SUCCESS_UNATTESTED'
  });
 }
+function categorizeCoverageWarnings(warnings){
+ if(!Array.isArray(warnings)||warnings.length>25)fail('INCOMPLETE_CANDIDATE_ANALYSIS');
+ const summary={missingOrTruncatedPatch:0,fullSourceMismatch:0,
+  unknownKotlinJavaContext:0,genericPartial:0,other:0};
+ for(const raw of warnings){
+  if(typeof raw!=='string'||raw.length>1024)fail('INCOMPLETE_CANDIDATE_ANALYSIS');
+  if(raw.startsWith('Parche ausente o truncado:'))summary.missingOrTruncatedPatch++;
+  else if(raw.startsWith('Archivo Kotlin/Java completo no coincide con el parche'))
+   summary.fullSourceMismatch++;
+  else if(raw.startsWith('Estado léxico Kotlin/Java previo al hunk desconocido'))
+   summary.unknownKotlinJavaContext++;
+  else if(raw.startsWith('Cobertura parcial:'))summary.genericPartial++;
+  else summary.other++;
+ }
+ return Object.freeze(summary);
+}
 function findingsEvidence(report,head){
  if(!report||report.sha!==head||!report.coverage||
   !Array.isArray(report.findings)||report.findings.length>40||
@@ -91,7 +107,8 @@ function findingsEvidence(report,head){
    returned:report.coverage.returned,analyzed:report.coverage.analyzed,
    partial:report.coverage.partial||report.omitted>0||
     nonPositional>0||report.verdict==='INCOMPLETE',
-   omitted:report.omitted,nonPositional
+   omitted:report.omitted,nonPositional,
+   warningKinds:categorizeCoverageWarnings(report.warnings||[])
   }),
   findings:Object.freeze(findings)
  });
@@ -157,4 +174,4 @@ async function captureLiveC2Cohort({token,fetchImpl=globalThis.fetch,
   note:'Live SHA and sanitized candidate findings observed. Missing prior reviewer findings and independently frozen truth labels; observed check summaries do not certify all required protections.'
  });
 }
-module.exports={captureLiveC2Cohort,findingsEvidence,checksEvidence,PRS};
+module.exports={captureLiveC2Cohort,findingsEvidence,checksEvidence,categorizeCoverageWarnings,PRS};
