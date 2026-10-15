@@ -56,7 +56,7 @@ test('pinned SHA1 Git blob and exact decoded UTF-8 required before Kotlin contex
   {...raw,content:'Zm9v'}, {...raw,content:'\ud800'},
   {...raw,path:'app/src/main/java/other.kt'},
   {...raw,size:160001}, {...raw,encoding:'utf-8'},
-  {...raw,secret:'data',content:Buffer.from('bad').toString('base64')}
+  {...raw,content:Buffer.from('bad').toString('base64')}
  ]){
   assert.throws(()=>decodePinnedGithubSource(item,{path:PATH,blobSha:raw.sha}),
     /UNVERIFIED_PINNED_SOURCE/);
