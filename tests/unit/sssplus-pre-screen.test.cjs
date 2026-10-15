@@ -126,7 +126,8 @@ test('empty critical-positive population cannot pass even with zero missed criti
 });
 test('one critical-positive rule does not represent diverse critical families',()=>{
  const input=campaign();
- remapLabels(input,x=>x.positive&&['POTENTIAL_HARDCODED_SECRET','POTENTIAL_PRIVATE_LOG'].includes(x.rule),
+ remapLabels(input,x=>x.positive&&['POTENTIAL_HARDCODED_SECRET','POTENTIAL_PRIVATE_LOG',
+  'SPEECH_REENTRANT_RETRY','UNSCOPED_COROUTINE'].includes(x.rule),
   ()=>'PRIVILEGED_UNTRUSTED_CHECKOUT');
  const s=assessSssPlusPreScreen(input);
  assert.ok(s.labelCounts.criticalPositive>=12);
@@ -135,8 +136,9 @@ test('one critical-positive rule does not represent diverse critical families',(
 });
 test('missing critical-negative controls block vacuous zero false positive success',()=>{
  const input=campaign();
- remapLabels(input,x=>!x.positive&&['SPEECH_REENTRANT_RETRY','UNSCOPED_COROUTINE'].includes(x.rule),
-  x=>x.rule==='SPEECH_REENTRANT_RETRY'?'UNCLASSIFIED_RETRY':'UNCLASSIFIED_SCOPE');
+ remapLabels(input,x=>!x.positive&&['SPEECH_REENTRANT_RETRY','UNSCOPED_COROUTINE',
+  'PRIVILEGED_UNTRUSTED_CHECKOUT','POTENTIAL_HARDCODED_SECRET','POTENTIAL_PRIVATE_LOG'].includes(x.rule),
+  ()=>'UNCLASSIFIED_CONTROL');
  const s=assessSssPlusPreScreen(input);
  assert.equal(s.labelCounts.criticalNegative,0);
  assert.equal(s.gates.criticalPopulation,false);
