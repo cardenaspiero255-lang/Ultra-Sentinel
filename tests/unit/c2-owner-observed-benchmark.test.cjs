@@ -29,13 +29,24 @@ function witness(){return {schema:'ultra-sentinel-c2-owner-witness/v1',
  sampleKind:'REAL_PINNED_SOURCE_WITH_DETERMINISTIC_FIXTURE',
  independentHumanReview:false,externalTruthCertified:false,
  precisionRecallComputed:false,tripleSPlusCertified:false,mergeAllowed:false};}
-test('mock C2 output shows 1 known missed case without inventing global metrics',()=>{
- const r=evaluateOwnerObservedC2({capture:candidate(),witness:witness()});
+function newsWitness(){return {schema:'ultra-sentinel-c2-owner-news-witness/v1',
+ repository:'cardenaspiero255-lang/gamehub-ultra',
+ pr:WITNESS.pr,headSha:WITNESS.headSha,blobSha:WITNESS.blobSha,path:WITNESS.path,
+ controls:{independentHostsAccepted:true,sameHostRejected:true},
+ candidateDefect:{rule:'NEWS_DOMAIN_DIVERSITY_INCONSISTENT',line:241,
+ expected:'ABSTAIN_IF_DISTINCT_URL_HOSTS_LT_2',
+ observed:'VERIFIED_NEWS_WITH_ONE_URL_HOST',reproduced:true},
+ sampleKind:'REAL_PINNED_SOURCE_WITH_DETERMINISTIC_FIXTURE',
+ independentHumanReview:false,externalTruthCertified:false,
+ precisionRecallComputed:false,tripleSPlusCertified:false,mergeAllowed:false};}
+test('mock C2 output shows 2 missed cases without global metrics',()=>{
+ const r=evaluateOwnerObservedC2({capture:candidate(),witness:witness(),newsWitness:newsWitness()});
  assert.equal(r.packetDigest,PACKET_DIGEST);
  assert.equal(r.verdict,'INSUFFICIENT_REAL_BENCHMARK_EVIDENCE');
- assert.deepEqual(r.observedKnownCase,{pr:73,positive:1,detected:0,
-  missed:1,recallWithinThisKnownCase:0});
+ assert.deepEqual(r.observedKnownCases,{pr:73,positive:2,detected:0,
+  missed:2,recallWithinKnownCases:0});
  assert.equal(r.population.unverifiedCandidateFindings,1);
+ assert.equal(r.population.verifiedPositive,2);
  assert.equal(r.population.verifiedFalsePositives,null);
  for(const metric of ['precision','recall','f1'])assert.equal(r.benchmark[metric],null);
  for(const key of ['tripleSPlusCertified','autoMerge','autoRepair'])assert.equal(r[key],false);
@@ -44,9 +55,9 @@ test('mock C2 output shows 1 known missed case without inventing global metrics'
 test('even if one known case is detected, corpus remains below minimum',()=>{
  const c=candidate();
  c.samples[3].candidate.findings.push({rule:WITNESS.rule,path:WITNESS.path,line:WITNESS.line});
- const r=evaluateOwnerObservedC2({capture:c,witness:witness()});
- assert.deepEqual(r.observedKnownCase,{pr:73,positive:1,detected:1,
-  missed:0,recallWithinThisKnownCase:1});
+ const r=evaluateOwnerObservedC2({capture:c,witness:witness(),newsWitness:newsWitness()});
+ assert.deepEqual(r.observedKnownCases,{pr:73,positive:2,detected:1,
+  missed:1,recallWithinKnownCases:0.5});
  assert.equal(r.population.unverifiedCandidateFindings,1);
  assert.equal(r.benchmark.f1,null);
 });
@@ -65,16 +76,20 @@ test('wrong SHA, changed frozen packet, CI status, false controls or duplicate f
   (c,w)=>{w.controls.relevantAccepted=false},
   (c,w)=>{w.candidateDefect.observed='UNRELATED_ARTICLE_NOT_TRUSTED'},
   (c,w)=>{w.tripleSPlusCertified=true},
+  (c,w,n)=>{n.candidateDefect.reproduced=false},
+  (c,w,n)=>{n.candidateDefect.line=42},
+  (c,w,n)=>{n.controls.sameHostRejected=false},
   (c,w)=>{c.prs[0]=163},
   (c,w)=>{c.samples[0].pr=163}
  ];
- for(const change of mutate){const c=candidate(),w=witness();change(c,w);
-  assert.throws(()=>evaluateOwnerObservedC2({capture:c,witness:w}),
+ for(const change of mutate){const c=candidate(),w=witness(),news=newsWitness();change(c,w,news);
+  assert.throws(()=>evaluateOwnerObservedC2({capture:c,witness:w,newsWitness:news}),
    /UNVERIFIED_C2_OWNER_EVIDENCE/);}
 });
 test('exact byte hash, absolute paths and symlink rejection apply before scoring',()=>{
  assert.match(EXPECTED.candidate,/^[a-f0-9]{64}$/);
  assert.match(EXPECTED.witness,/^[a-f0-9]{64}$/);
+ assert.match(EXPECTED.news,/^[a-f0-9]{64}$/);
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'c2-real-evidence-'));
  try{
   const file=path.join(dir,'candidate.json');
