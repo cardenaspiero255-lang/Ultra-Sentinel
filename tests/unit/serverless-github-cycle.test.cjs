@@ -114,7 +114,7 @@ test('serverless workflow has main-only schedule, no writes, explicit artifact r
   "cron: '17,47 * * * *'","workflow_dispatch:",
   "contents: read","pull-requests: read","actions: read",
   "cancel-in-progress: false","github.ref == 'refs/heads/main'",
-  'persist-credentials: false','PERSISTED_STATE_REQUIRED_MANUAL_BOOTSTRAP',
+  'persist-credentials: false','No previous trusted checkpoint. Run workflow_dispatch once with bootstrap=true.',
   'retention-days: 7','steps.observe.outputs.checkpoint_valid',
   'actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f'
  ])assert.ok(workflow.includes(token),token);
