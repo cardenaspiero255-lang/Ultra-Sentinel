@@ -150,3 +150,15 @@ test('public artifact rejects unknown root/checkpoint/PR fields to prevent accid
   }
  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
 });
+
+test('Actions runner temp context is confined to step-level env or with, never invalid job-level env',()=>{
+ const text=fs.readFileSync(path.resolve(__dirname,
+  '../../.github/workflows/serverless-github-monitor.yml'),'utf8');
+ const job=text.split('  read-only-monitor:')[1];
+ assert.ok(job,'read-only-monitor job must exist');
+ const head=job.split('    steps:')[0];
+ assert.doesNotMatch(head,/\$\{\{\s*runner\./,
+  'runner context is not allowed at jobs.<job_id>.env');
+ assert.match(text,/Restore strictly scoped previous Actions artifact\n\s+env:\n\s+STATE_DIR: \$\{\{ runner\.temp \}\}/);
+ assert.match(text,/Observe GitHub in read-only mode\n\s+id: observe\n\s+env:\n\s+ULTRA_SENTINEL_WATCHDOG_STATE_FILE: \$\{\{ runner\.temp \}\}/);
+});
