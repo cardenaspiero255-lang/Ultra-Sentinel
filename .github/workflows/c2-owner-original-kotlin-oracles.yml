@@ -61,7 +61,7 @@ jobs:
             dest="$root/$pr"
             mkdir -p "$dest"
             chmod 0700 "$dest"
-            file="\${path##*/}"
+            file="${path##*/}"
             metadata="$RUNNER_TEMP/c2-kotlin-github-metadata.json"
             gh api -H 'Accept: application/vnd.github+json' \
               "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" > "$metadata"
