@@ -1,0 +1,55 @@
+name: Ultra Sentinel — real Bubblewrap isolation drill
+# No owner token, no Sentry token, no PR code, no repository writes.
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ultra-sentinel-bwrap-owner-drill-main
+  cancel-in-progress: false
+jobs:
+  isolation-drill:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      (github.event_name == 'workflow_dispatch' && github.actor == 'cardenaspiero255-lang' ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_BWRAP_DRILL_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Trusted main checkout, no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify trusted source and contracts
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Install Bubblewrap from Ubuntu repository if necessary
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bwrap >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq bubblewrap
+          fi
+          test -x /usr/bin/bwrap
+      - name: Real isolated subprocess and denied network probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/drill-bwrap-isolation.cjs
