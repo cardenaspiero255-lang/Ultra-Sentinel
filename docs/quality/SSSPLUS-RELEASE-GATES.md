@@ -27,6 +27,9 @@ Los umbrales propuestos, internos y sujetos a validación contra muestras reales
 | Precision, recall y F1 | cada una ≥ 0,95 (micro promedio) |
 | Regresión por PR | 0 regresiones frente al baseline en TP, FN y FP |
 | Falsos negativos críticos definidos | 0 |
+| Etiquetas críticas positivas verificables | ≥12 |
+| Controles críticos negativos | ≥12 |
+| Reglas críticas distintas con positivos | ≥3 |
 | Estados de CI de origen | todos declarados `SUCCESS`; requieren verificación externa adicional |
 
 Las reglas críticas incluidas ahora son `PRIVILEGED_UNTRUSTED_CHECKOUT`, `POTENTIAL_HARDCODED_SECRET`, `SPEECH_REENTRANT_RETRY`, `UNSCOPED_COROUTINE`, `POTENTIAL_PRIVATE_LOG`. Su conjunto es conservador, no una taxonomía exhaustiva de vulnerabilidades.
