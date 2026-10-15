@@ -20,6 +20,12 @@ El repositorio contiene código real de **Core 2.0**, **Family Hunter**, memoria
 
 La **única matriz de capacidades** US-001…US-035 es [docs/US-CAPABILITY-INVENTORY.md](docs/US-CAPABILITY-INVENTORY.md). Distingue `implementado`, `parcial` y `pendiente` con archivo responsable y brecha. El [issue histórico #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) es un catálogo de ideas, **no** estado operativo de `main`.
 
+## Serverless sin VPS (en PR #42)
+
+La opción prioritaria para observación gratuita es **GitHub Actions**: [guía de activación](docs/operations/SERVERLESS-GITHUB.md). Cada ~30 minutos consulta una muestra de PR de JARVIS y GameHub con un token temporal de solo lectura. No necesita Oracle Cloud, tarjeta ni VPS; usa un checkpoint **público y sin datos Sentry** conservado temporalmente entre ejecuciones mediante artifacts.
+
+No equivale a una disponibilidad 24/7 garantizada ni a una certificación Triple SSS. El [PR #42](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/42) sigue en borrador hasta comprobar su workflow programado en `main`; el monitor VPS `systemd` permanece como alternativa sin activar. El [PR #34](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/34) sigue separado para reparación firmada supervisada, **nunca** incluida en el monitor de lectura.
+
 ## Flujo de trabajo
 
 1. Inventariar y reutilizar las implementaciones fusionadas; no crear un segundo Core o Family Hunter.
