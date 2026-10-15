@@ -106,7 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
             bubblewrap apparmor apparmor-utils apparmor-profiles
           src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
           test -f "$src" && test ! -L "$src"
@@ -123,10 +123,24 @@ jobs:
           test -x "$jdk/bin/java"
           mkdir -p "$RUNNER_TEMP/c2-kotlin-empty-home"
           chmod 0700 "$RUNNER_TEMP/c2-kotlin-empty-home"
+          # Preserve the real ELF dynamic loader on merged-/usr runners.
+          # Without /lib64 -> usr/lib64 the kernel returns ENOENT for Java.
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
           env -i PATH=/usr/bin:/bin HOME="$RUNNER_TEMP/c2-kotlin-empty-home" \
             /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
             --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
-            --ro-bind /usr /usr \
+            "${mounts[@]}" \
             --ro-bind "$jdk" /jdk \
             --ro-bind "$build" /workspace \
             --proc /proc --dev /dev --tmpfs /tmp \
