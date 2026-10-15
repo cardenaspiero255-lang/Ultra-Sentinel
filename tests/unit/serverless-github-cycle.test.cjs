@@ -190,5 +190,27 @@ test('optional first bootstrap via GitHub issue is identity-bound and cannot aut
  assert.match(workflow,/\.event == "issues"/);
  assert.match(workflow,/Refusing to replace an existing checkpoint with a new baseline/);
  assert.match(workflow,/\.head_branch == "main"/);
- assert.doesNotMatch(workflow,/issue_comment:|issues:\s*\[edited\]/);
+ assert.doesNotMatch(workflow,/issues:\s*\[edited\]/);
+ assert.match(workflow,/github\.event\.issue\.number == 45/);
+});
+
+test('owner-only on-demand probe cannot be triggered by PR comments, other issues or untrusted actors',()=>{
+ const workflow=fs.readFileSync(path.resolve(__dirname,
+  '../../.github/workflows/serverless-github-monitor.yml'),'utf8');
+ for(const marker of [
+  'issue_comment:', 'types: [created]',
+  "github.event_name == 'issue_comment'",
+  "github.event.action == 'created'",
+  'github.event.issue.number == 45',
+  'github.event.issue.pull_request == null',
+  "github.event.comment.body == 'ULTRA_SENTINEL_CHECK_NOW_V1'",
+  'github.event.comment.user.id == 322222186',
+  'github.event.sender.id == 322222186',
+  'github.event.repository.id == 1418338512',
+  '.event == "issue_comment"'
+ ])assert.ok(workflow.includes(marker),marker);
+ assert.match(workflow,/github\.event_name == 'issues'/);
+ assert.match(workflow,/github\.event_name == 'schedule'/);
+ assert.match(workflow,/github\.event_name == 'workflow_dispatch'/);
+ assert.doesNotMatch(workflow,/pull_request_target|contents: write|pull-requests: write/);
 });
