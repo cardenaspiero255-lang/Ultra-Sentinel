@@ -109,14 +109,52 @@ function verifyNewsWitness(n){
   n.precisionRecallComputed!==false||n.tripleSPlusCertified!==false||
   n.mergeAllowed!==false)fail();
 }
-function evaluateOwnerObservedC2({capture,witness,newsWitness}={}){
+function verifyKotlinWitness(k){
+ if(!exact(k,['schema','cases','controlsPassed','syntheticDefectsClaimed',
+  'externalIndependenceClaimed','tripleSPlusCertified','autoMerge'])||
+  k.schema!=='ultra-sentinel-c2-kotlin-owner-oracles/v1'||
+  k.controlsPassed!==true||k.syntheticDefectsClaimed!==false||
+  k.externalIndependenceClaimed!==false||k.tripleSPlusCertified!==false||
+  k.autoMerge!==false||!Array.isArray(k.cases)||k.cases.length!==3)fail();
+ const [home,frame,network]=k.cases;
+ if(!exact(home,['pr','kind','passed','reproduced'])||
+  home.pr!==132||home.kind!=='BENIGN_CONTROL'||
+  home.passed!==true||home.reproduced!==false)fail();
+ const expectedPath='app/src/main/java/com/cardenaspiero255/gamehubultra/';
+ if(!exact(frame,['pr','kind','rule','path','line','reproduced'])||
+  frame.pr!==159||frame.kind!=='POSITIVE_BEHAVIOR'||
+  frame.rule!=='STALE_FRAME_TIMING_ACCEPTED'||
+  frame.path!==expectedPath+'performance/framepacing/FramePacingIntelligenceEngine.kt'||
+  frame.line!==129||frame.reproduced!==true)fail();
+ if(!exact(network,['pr','kind','rule','path','line','reproduced',
+   'observedAverageLatencyMs'])||
+  network.pr!==161||network.kind!=='POSITIVE_BEHAVIOR'||
+  network.rule!=='CROSS_TRANSPORT_LATENCY_MIX'||
+  network.path!==expectedPath+'network/diagnostics/NetworkGamingDiagnosticsEngine.kt'||
+  network.line!==43||network.reproduced!==true||
+  network.observedAverageLatencyMs!==215)fail();
+ return Object.freeze([{rule:frame.rule,path:frame.path,line:frame.line,pr:159},
+  {rule:network.rule,path:network.path,line:network.line,pr:161}]);
+}
+function evaluateOwnerObservedC2({capture,witness,newsWitness,kotlinWitness}={}){
  const count=verifyCapture(capture);verifyWitness(witness);verifyNewsWitness(newsWitness);
- const expected=[{rule:WITNESS.rule,path:WITNESS.path,line:WITNESS.line},
-  {rule:newsWitness.candidateDefect.rule,path:newsWitness.path,
-   line:newsWitness.candidateDefect.line}];
- const own=capture.samples.find(x=>x.pr===WITNESS.pr).candidate.findings;
- const found=new Set(own.map(evidenceKey));
- const detected=expected.filter(x=>found.has(evidenceKey(x))).length;
+ const otherCases=verifyKotlinWitness(kotlinWitness);
+ const cases=[
+  {pr:73,rule:WITNESS.rule,path:WITNESS.path,line:WITNESS.line},
+  {pr:73,rule:newsWitness.candidateDefect.rule,path:newsWitness.path,
+   line:newsWitness.candidateDefect.line},
+  ...otherCases
+ ];
+ const breakdown=[73,159,161].map(pr=>{
+  const expected=cases.filter(x=>x.pr===pr);
+  const actual=capture.samples.find(x=>x.pr===pr).candidate.findings;
+  const predicted=new Set(actual.map(evidenceKey));
+  const detected=expected.filter(x=>predicted.has(evidenceKey({
+   rule:x.rule,path:x.path,line:x.line}))).length;
+  return Object.freeze({pr,positive:expected.length,detected,
+   missed:expected.length-detected});
+ });
+ const detected=breakdown.reduce((acc,x)=>acc+x.detected,0);
  const other=count-detected;
  return Object.freeze({
   schema:'ultra-sentinel-c2-owner-observed-benchmark/v1',
@@ -124,13 +162,15 @@ function evaluateOwnerObservedC2({capture,witness,newsWitness}={}){
   sourceArtifacts:Object.freeze({
    candidateRun:38800582701,candidateArtifact:12004770556,
    witnessRun:38815014127,witnessArtifact:12009932922,
-   newsRun:38818123100,newsArtifact:12011801729}),
-  observedKnownCases:Object.freeze({pr:73,positive:2,detected,
-   missed:2-detected,recallWithinKnownCases:detected/2}),
-  population:Object.freeze({frozenPrs:4,verifiedPositive:2,
-   verifiedNegative:0,unverifiedCandidateFindings:other,
-   verifiedFalsePositives:null,neededAdditionalCasesAtLeast:118,
-   neededAdditionalPositivesAtLeast:46,neededAdditionalNegativesAtLeast:48}),
+   newsRun:38818123100,newsArtifact:12011801729,
+   kotlinRun:38822482392,kotlinArtifact:12013827086}),
+  observedKnownCases:Object.freeze({positive:4,detected,missed:4-detected,
+   recallWithinKnownCases:detected/4,perPr:Object.freeze(breakdown)}),
+  population:Object.freeze({frozenPrs:4,representedByPositiveCases:3,
+   verifiedPositive:4,verifiedNegative:0,benignControlsObserved:1,
+   unverifiedCandidateFindings:other,verifiedFalsePositives:null,
+   neededAdditionalCasesAtLeast:116,neededAdditionalPositivesAtLeast:44,
+   neededAdditionalNegativesAtLeast:48}),
   benchmark:Object.freeze({precision:null,recall:null,f1:null,
    baselineComparable:false,minPopulationSatisfied:false,
    criticalRecallVerified:false,sourceCiFullAttestation:false}),
@@ -140,7 +180,7 @@ function evaluateOwnerObservedC2({capture,witness,newsWitness}={}){
   externalIndependenceClaimed:false,
   tripleSPlusCertified:false,autoMerge:false,autoRepair:false,
   verdict:'INSUFFICIENT_REAL_BENCHMARK_EVIDENCE',
-  limitation:'Two confirmed behaviors on a single PR under controlled inputs are NOT a representative '+
+  limitation:'Four source behaviors across three PRs under controlled inputs are NOT a representative '+
    'blind benchmark; unverified candidate alerts cannot be called false positives. '+
    'No validated legacy baseline, 120-case corpus or global performance metrics.'
  });
