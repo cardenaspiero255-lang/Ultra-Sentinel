@@ -8,7 +8,7 @@ const path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {stableAuthorization,verifyOwnerAuthorization}=require('../../packages/recovery/owner-authorization.cjs');
 const {signAuthorization}=require('../../scripts/sign-owner-authorization.cjs');
-const {verifierFromTrustedEnvironment,bubblewrapCommand}=require('../../scripts/run-owner-sandbox-repair.cjs');
+const {verifierFromTrustedEnvironment,bubblewrapCommand,readTrustedFile}=require('../../scripts/run-owner-sandbox-repair.cjs');
 test('offline owner signing verifies against pinned key; changes invalidate signature',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-owner-sign-'));
  try{
@@ -76,4 +76,29 @@ test('untrusted validator command is blocked before running a process',()=>{
   if(previous===undefined)delete process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON;
   else process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON=previous;
  }
+});
+
+test('trusted owner public key and request files reject symlinks, writable files and oversized payloads',()=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-owner-trust-'));
+ try{
+  const valid=path.join(directory,'authorized.pem');
+  fs.writeFileSync(valid,'trusted-ed25519-public-key',{mode:0o644});
+  assert.equal(readTrustedFile(valid),'trusted-ed25519-public-key');
+  assert.throws(()=>readTrustedFile('relative.pem'),/ABSOLUTE_CONFIG_PATH_REQUIRED/);
+  const link=path.join(directory,'link.pem');
+  fs.symlinkSync(valid,link);
+  assert.throws(()=>readTrustedFile(link));
+  fs.chmodSync(valid,0o666);
+  assert.throws(()=>readTrustedFile(valid),/UNSAFE_CONFIG_FILE/);
+  fs.chmodSync(valid,0o600);
+  const hardlink=path.join(directory,'hardlink.pem');
+  fs.linkSync(valid,hardlink);
+  assert.throws(()=>readTrustedFile(valid),/UNSAFE_CONFIG_FILE/);
+  fs.unlinkSync(hardlink);
+  fs.writeFileSync(valid,'X'.repeat(65537),{mode:0o600});
+  assert.throws(()=>readTrustedFile(valid),/UNSAFE_CONFIG_FILE/);
+  fs.writeFileSync(valid,'trusted-key',{mode:0o600});
+  fs.chmodSync(directory,0o777);
+  assert.throws(()=>readTrustedFile(valid),/UNSAFE_CONFIG_PARENT/);
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
 });
