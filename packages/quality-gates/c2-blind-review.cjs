@@ -28,7 +28,7 @@ function createBlindReviewPacket(capture){
  const cases=[];
  for(let i=0;i<PRS.length;i++){
   const s=capture.samples[i];
-  if(!s||s.pr!==PRS[i]||s.repository!==REPO||
+  if(!s||s.status!==undefined||s.pr!==PRS[i]||s.repository!==REPO||
    !SHA.test(s.headSha||'')||!SHA.test(s.baseSha||'')||
    !Number.isSafeInteger(s.changedFiles)||s.changedFiles<1||
    s.changedFiles>300||typeof s.readerStatus!=='string'||
