@@ -13,7 +13,7 @@ const linked=(pr,head=HEAD,base=BASE)=>({
 });
 const correctCheck={id:11,name:'build',head_sha:HEAD,
  status:'completed',conclusion:'success',
- pull_requests:[132,158,161,163].map(pr=>linked(pr))};
+ pull_requests:[132,159,161,163].map(pr=>linked(pr))};
 const goodFinding={rule:'UNSCOPED_COROUTINE',
  path:'app/src/main/java/voice/Ultra.kt',line:17};
 function review(pr){
@@ -52,7 +52,7 @@ test('four actual PR slots and sanitized candidate-only findings never generate 
  const api=mockApi();
  const r=await captureLiveC2Cohort({token,fetchImpl:api.fetchImpl,
   load:async n=>review(n)});
- assert.deepEqual(PRS,[132,158,161,163]);
+ assert.deepEqual(PRS,[132,159,161,163]);
  assert.equal(r.samples.length,4);
  assert.equal(r.captureStatus,'CANDIDATE_SNAPSHOT_ONLY');
  assert.equal(r.tripleSPlusCertified,false);
