@@ -14,11 +14,8 @@ const POLICY=Object.freeze({
  minPrecision:0.95,minRecall:0.95,minF1:0.95,
  maxCriticalFalseNegatives:0
 });
-const CRITICAL_RULES=Object.freeze(new Set([
- 'PRIVILEGED_UNTRUSTED_CHECKOUT','POTENTIAL_HARDCODED_SECRET',
- 'SPEECH_REENTRANT_RETRY','UNSCOPED_COROUTINE',
- 'POTENTIAL_PRIVATE_LOG'
-]));
+const {isCriticalRule}=require('./critical-rule-policy.cjs');
+const {evaluateStratifiedBenchmark}=require('./stratified-benchmark.cjs');
 function fail(code){throw Error(code);}
 function aggregate(xs){
  const total={tp:0,fp:0,fn:0,tn:0};
@@ -37,17 +34,18 @@ function assessSssPlusPreScreen(input){
  const negative=labels.length-positive;
  const rules=new Set(labels.map(x=>x.rule));
  const paths=new Set(labels.map(x=>x.path));
- const positiveCritical=labels.filter(l=>l.positive&&CRITICAL_RULES.has(l.rule));
- const negativeCritical=labels.filter(l=>!l.positive&&CRITICAL_RULES.has(l.rule));
+ const positiveCritical=labels.filter(l=>l.positive&&isCriticalRule(l.rule));
+ const negativeCritical=labels.filter(l=>!l.positive&&isCriticalRule(l.rule));
  const positiveCriticalRules=new Set(positiveCritical.map(l=>l.rule));
  let criticalFalseNegatives=0;
  for(const s of input.samples){
   const predicted=new Set(s.candidate.map(findingKey));
   for(const label of s.labels){
-   if(label.positive&&CRITICAL_RULES.has(label.rule)&&
+   if(label.positive&&isCriticalRule(label.rule)&&
       !predicted.has(findingKey(label)))criticalFalseNegatives++;
   }
  }
+ const strata=evaluateStratifiedBenchmark(input);
  const candidate=aggregate(parity.samples.map(x=>x.candidate));
  const baseline=aggregate(parity.samples.map(x=>x.baseline));
  const gates=Object.freeze({
@@ -64,7 +62,8 @@ function assessSssPlusPreScreen(input){
   precision:candidate.precision>=POLICY.minPrecision,
   recall:candidate.recall>=POLICY.minRecall,
   f1:candidate.f1>=POLICY.minF1,
-  criticalRecall:criticalFalseNegatives<=POLICY.maxCriticalFalseNegatives
+  criticalRecall:criticalFalseNegatives<=POLICY.maxCriticalFalseNegatives,
+  stratifiedQuality:strata.internalStrataPassed
  });
  const unmet=Object.keys(gates).filter(k=>gates[k]===false);
  return Object.freeze({
@@ -74,7 +73,7 @@ function assessSssPlusPreScreen(input){
    rules:rules.size,paths:paths.size,prs:input.samples.length,
    criticalPositive:positiveCritical.length,criticalNegative:negativeCritical.length,
    criticalPositiveRules:positiveCriticalRules.size}),
-  baseline,candidate,criticalFalseNegatives,
+  baseline,candidate,criticalFalseNegatives,stratified:strata,
   policy:POLICY,gates,unmet:Object.freeze(unmet),
   internalNumericalTargetsObserved:unmet.length===0,
   independentLabelsVerified:false,
