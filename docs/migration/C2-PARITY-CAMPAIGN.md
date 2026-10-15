@@ -1,6 +1,10 @@
 # Campaña C2 — Paridad medible sin duplicar el observador
 
-**Cohorte activa actualizada (2026-10-15):** los PR son **#132, #159, #161 y #163**. El #158 se fusionó y queda exclusivamente como muestra histórica, no como PR activo. Los resultados de #158 no se reutilizan para el #159. Las etiquetas independientes y el baseline de cada SHA siguen pendientes.\n\n**Estado:** infraestructura de métricas implementada en `packages/quality-gates/shadow-parity-metrics.cjs` y `scripts/evaluate-shadow-parity.cjs`; comparación real y certificación **PENDIENTES**. Un resultado de unit tests con fixtures sintéticos no demuestra calidad en PR reales.
+**Cohorte activa posterior a la fusión de #163 (15 de octubre de 2026):** GameHub **#132, #159, #161 y #73**. GitHub confirmó que [#163](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/163) está fusionado (main `fca3250bd71700045cf9b2fc4e4281421f545d2e`) y ya no cumple la condición de muestra abierta. [#73](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/73), investigación general y Q&A, es la muestra sustitutiva explícita: HEAD `194908b7dfa9d882afbc4d7eeaa3781b3e84e9e8`, base `2dee9f6024748bb54b9da86a758fc09c18c426b4`, 7 archivos en el momento de selección. Cualquier modificación posterior exige una nueva captura SHA-pinned.
+
+**Advertencia:** se reinicia el conjunto de etiquetas para la muestra sustituta; **no se trasladan las etiquetas del #163 al #73** ni se atribuyen pruebas o resultados independientes. La fuente de checks de algunos PR antiguos puede ser incompleta, lo que debe mantener el estado `INCOMPLETE_NOT_CERTIFIABLE`, nunca autorizar una certificación. Ninguna muestra con el estado `merged` es elegible para la captura actual de PR abiertos.
+
+**Estado:** infraestructura de métricas implementada en `packages/quality-gates/shadow-parity-metrics.cjs` y `scripts/evaluate-shadow-parity.cjs`; comparación real, baseline heredado y etiquetas externas siguen **PENDIENTES**. Un resultado de pruebas sintéticas solo valida la lógica del evaluador.
 
 ## Historial de la cohorte original (2026-10-14; NO usar para validar el estado actual)
 
@@ -37,7 +41,7 @@ Se añadió `packages/quality-gates/live-gamehub-c2-cohort.cjs`, CLI
 `scripts/capture-live-gamehub-c2.cjs` y workflow
 `.github/workflows/c2-live-capture.yml`.
 
-- Recopila solo los cuatro PR de la cohorte activa: **#132, #159, #161 y #163**. Cada ejecución consulta los HEAD/base actuales, exige diff paginado completo con el lector existente, extrae únicamente `rule,path,line` del Core y verifica de nuevo el HEAD/base al terminar la lectura de los checks.
+- Recopila solo los cuatro PR de la cohorte activa: **#132, #159, #161 y #73**. Cada ejecución consulta los HEAD/base actuales, exige diff paginado completo con el lector existente, extrae únicamente `rule,path,line` del Core y verifica de nuevo el HEAD/base al terminar la lectura de los checks.
 - El estado de checks se registra como **observado**, no como acreditación de todas las protecciones. Si faltan resultados, alguna prueba falla, hay saltos, límite de paginación o evidencia incompleta, el caso **no** es comparable y se informa `INCOMPLETE_NOT_CERTIFIABLE`.
 - Los datos públicos exportados NO incluyen evidencia textual de vulnerabilidades, snippets de diff, respuestas API, tokens, título de issue, autor o cuerpos de PR. Los hallazgos sin posición, paths ambiguos y cobertura parcial bloquean el estado completo.
 - El lector anterior puede rechazar un PR grande, diff omitido o archivo binario. Esto se registra como `BLOCKED_INCOMPLETE_OR_STALE` y **no se fuerza** a través de una API alternativa no auditada.
@@ -68,8 +72,8 @@ La comprobación final del PR valida además los IDs inmutables del repositorio 
 ## Rotación de cohorte activa (2026-10-15)
 
 - GitHub confirmó que el [PR #158](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/158) está **merged**; ya no es elegible en el lector de PR abiertos.
-- La muestra activa que lo sustituye es el [PR #159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), proyecto de *Frame Pacing & Refresh Intelligence*, HEAD observado `07e1866424305f7639e176e07a452c9f484b5e2b`. Su estado **draft** y CI deben comprobarse cada ciclo; no se interpreta como release-ready.
-- Las cuatro muestras actuales son [#132](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/132), [#159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), [#161](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/161) y [#163](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/163).
+- La muestra activa que lo sustituyó fue el [PR #159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), proyecto de *Frame Pacing & Refresh Intelligence*, HEAD observado `07e1866424305f7639e176e07a452c9f484b5e2b`. Su estado **draft** y CI deben comprobarse cada ciclo; no se interpreta como release-ready.
+- Las cuatro muestras **actuales** son [#132](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/132), [#159](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/159), [#161](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/161) y [#73](https://github.com/cardenaspiero255-lang/gamehub-ultra/pull/73); #163 es histórico tras su fusión.
 - Si algún PR cierra, la campaña se bloquea hasta escoger explícitamente una muestra sustitutiva y recalcular su identidad. No rotar silenciosamente casos después de ver los resultados: eso podría sesgar el benchmark.
 
 
