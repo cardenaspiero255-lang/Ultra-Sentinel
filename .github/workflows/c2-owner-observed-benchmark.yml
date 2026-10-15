@@ -1,0 +1,117 @@
+name: Ultra Sentinel — C2 owner evidence benchmark (no external reviewer)
+# Replays two real, immutable, sanitized Actions artifacts; never invents labels.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ultra-sentinel-c2-owner-benchmark-main
+  cancel-in-progress: false
+
+jobs:
+  verify-owner-benchmark:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_BENCHMARK_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Trusted main checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify source revision and whole CI test suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Confirm immutable run provenance and retrieve sanitized artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/owner-c2-benchmark"
+          mkdir -p "$root/candidate" "$root/witness"
+          chmod 0700 "$root" "$root/candidate" "$root/witness"
+          repo="cardenaspiero255-lang/Ultra-Sentinel"
+          verify_run() {
+            local id="$1" path="$2" sha="$3" artifact_name="$4" artifact_id="$5" output="$6"
+            gh api "/repos/$repo/actions/runs/$id" > "$root/run.json"
+            jq -e --argjson run "$id" --argjson actor 322222186 \
+              --argjson repoId 1418338512 --arg path "$path" --arg sha "$sha" '
+              .id == $run and .status == "completed" and .conclusion == "success" and
+              .event == "issue_comment" and .path == $path and
+              .head_branch == "main" and .head_sha == $sha and
+              .actor.id == $actor and .repository.id == $repoId
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts.json"
+            jq -e --arg name "$artifact_name" --argjson run "$id" --argjson aid "$artifact_id" '
+              [.artifacts[] | select(.id == $aid and .name == $name and
+              .workflow_run.id == $run and .expired == false)] | length == 1
+            ' "$root/artifacts.json" >/dev/null
+            gh run download "$id" --repo "$repo" --name "$artifact_name" --dir "$output"
+            test "$(find "$output" -maxdepth 1 -type f | wc -l)" -eq 1
+          }
+          verify_run 38800582701 .github/workflows/c2-live-capture.yml \
+            fbf036562d0812f09a917e873d4d73739b9589b8 \
+            ultra-sentinel-c2-sanitized-candidates 12004770556 "$root/candidate"
+          verify_run 38815014127 .github/workflows/c2-owner-pinned-source-oracle.yml \
+            4060e9402ddfe625172fd70a44b32dd0b2f7f2c3 \
+            ultra-sentinel-c2-owner-pinned-witness 12009932922 "$root/witness"
+          test -f "$root/candidate/c2-candidate.json"
+          test -f "$root/witness/c2-owner-witness.json"
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Evaluate verified behavior, leave global metrics unavailable
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/owner-c2-benchmark"
+          # No GitHub token, network, child process or write access in the scorer.
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-owner-observed-benchmark.cjs" \
+            --allow-fs-read="$root/candidate/c2-candidate.json" \
+            --allow-fs-read="$root/witness/c2-owner-witness.json" \
+            "$GITHUB_WORKSPACE/scripts/evaluate-c2-owner-observed.cjs" \
+            "$root/candidate/c2-candidate.json" "$root/witness/c2-owner-witness.json" \
+            > "$RUNNER_TEMP/c2-owner-benchmark.json"
+          jq -e '.schema == "ultra-sentinel-c2-owner-observed-benchmark/v1" and
+            .verdict == "INSUFFICIENT_REAL_BENCHMARK_EVIDENCE" and
+            .observedKnownCase.positive == 1 and
+            .observedKnownCase.detected == 0 and
+            .observedKnownCase.missed == 1 and
+            .population.unverifiedCandidateFindings == 1 and
+            .benchmark.precision == null and .benchmark.recall == null and
+            .benchmark.f1 == null and .benchmark.baselineComparable == false and
+            .tripleSPlusCertified == false and .autoMerge == false and
+            .autoRepair == false' "$RUNNER_TEMP/c2-owner-benchmark.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-owner-benchmark.json"
+      - name: Upload only the blocked benchmark report
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-owner-benchmark-partial
+          path: ${{ runner.temp }}/c2-owner-benchmark.json
+          retention-days: 7
+          if-no-files-found: error
