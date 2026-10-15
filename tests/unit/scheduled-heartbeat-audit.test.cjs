@@ -50,3 +50,14 @@ test('empty and invalid input reject false healthy conclusions',()=>{
  assert.throws(()=>audit(null),/INVALID_SCHEDULE_EVIDENCE/);
  assert.throws(()=>audit(base,{expectedSha:'main'}),/INVALID_SCHEDULE_EVIDENCE/);
 });
+
+test('historic schedule gaps outside the 24-hour window do not prevent current punctuality',()=>{
+ const old=sample('2026-10-13T05:00:00Z');
+ const r=audit([...base,old]);
+ assert.equal(r.verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+ assert.equal(r.sampleCount,3);
+});
+test('older workflow revision within lookback does not invalidate latest main SHA',()=>{
+ const r=audit([base[0],sample('2026-10-15T15:30:00Z',{sha:OTHER}),base[2]]);
+ assert.equal(r.verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+});
