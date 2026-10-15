@@ -56,8 +56,10 @@ test('a single missed critical finding blocks candidate despite 98 percent recal
 test('one regression versus earlier engine blocks even when aggregate precision remains high',()=>{
  const input=campaign();
  // Make one PR regress by adding a benign false positive while other 3 improve.
- const benign=input.samples[0].labels.find(x=>!x.positive);
- input.samples[0].candidate.push({rule:benign.rule,path:benign.path,line:benign.line});
+ const benign=input.samples[0].labels.filter(x=>!x.positive).slice(0,2);
+ input.samples[0].candidate.push(...benign.map(x=>({
+  rule:x.rule,path:x.path,line:x.line
+ })));
  const s=assessSssPlusPreScreen(input);
  assert.equal(s.gates.nonRegression,false);
  assert.equal(s.internalNumericalTargetsObserved,false);
