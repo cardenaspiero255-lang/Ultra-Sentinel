@@ -7,6 +7,7 @@
  */
 const crypto=require('node:crypto');
 const {PRS}=require('./live-gamehub-c2-cohort.cjs');
+const {isValidFrozenBlindPacket}=require('./c2-blind-packet-integrity.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const DOMAIN=Buffer.from('Ultra-Sentinel:C2:blind-labels:v1\n','utf8');
 const SHA=/^[0-9a-f]{40}$/;
@@ -49,6 +50,7 @@ function createBlindReviewPacket(capture){
   truthLabelsIncluded:false,independentReviewCertified:false});
 }
 function canonicalLabelManifest(manifest,packet){
+ if(!isValidFrozenBlindPacket(packet))fail('INVALID_BLIND_PACKET');
  if(!manifest||!packet||
   !exact(manifest,['schema','packetDigest','labels'])||
   manifest.schema!=='ultra-sentinel-c2-blind-labels/v1'||
