@@ -4,6 +4,20 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {bubblewrapCommand}=require('./run-owner-sandbox-repair.cjs');
 function fail(reason){throw Error(reason);}
+/**
+ * Convert arbitrary stderr from OS subprocesses to fixed public error codes.
+ * Never print the subprocess stderr itself (it could contain a host path).
+ */
+function classifyBwrapFailure(result){
+ const diagnostic=typeof result?.stderr==='string'?result.stderr.slice(0,8192):'';
+ if(/(?:setting up uid map|Failed RTM_NEWADDR|creating new namespace|unshare|userns|Operation not permitted|Permission denied)/i.test(diagnostic))
+  return 'BWRAP_NAMESPACE_PERMISSION_DENIED';
+ if(/(?:ro-bind|bind mount|mount failed|Failed to make \/ slave|mountpoint)/i.test(diagnostic))
+  return 'BWRAP_MOUNT_SETUP_FAILED';
+ if(/(?:SyntaxError|AssertionError|Traceback \(most recent call last\)|python3:)/i.test(diagnostic))
+  return 'BWRAP_FIXTURE_PROCESS_FAILED';
+ return 'BWRAP_NAMESPACE_OPERATION_DENIED';
+}
 function runIsolationDrill(){
  if(process.platform!=='linux')fail('LINUX_HOST_REQUIRED');
  const binary='/usr/bin/bwrap';
@@ -45,7 +59,7 @@ function runIsolationDrill(){
    env:{PATH:'/usr/bin:/bin',HOME:sandbox,GIT_CONFIG_NOSYSTEM:'1',
     GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}
   });
-  if(result.error||result.status!==0)fail('BWRAP_NAMESPACE_OPERATION_DENIED');
+  if(result.error||result.status!==0)fail(classifyBwrapFailure(result));
   let report;
   try{report=JSON.parse(result.stdout.trim());}catch{fail('BWRAP_INVALID_EVIDENCE');}
   if(!report||report.netNamespace===hostNamespace||
@@ -66,6 +80,8 @@ if(require.main===module){
  catch(error){
   const allowed=new Set(['LINUX_HOST_REQUIRED','BWRAP_BINARY_MISSING',
    'BWRAP_BINARY_UNSAFE','BWRAP_NAMESPACE_OPERATION_DENIED',
+   'BWRAP_NAMESPACE_PERMISSION_DENIED','BWRAP_MOUNT_SETUP_FAILED',
+   'BWRAP_FIXTURE_PROCESS_FAILED',
    'BWRAP_INVALID_EVIDENCE','BWRAP_ISOLATION_NOT_PROVEN',
    'ISOLATION_COMMAND_UNTRUSTED']);
   process.stderr.write('BWRAP_DRILL_BLOCKED: '+
@@ -73,4 +89,4 @@ if(require.main===module){
   process.exitCode=1;
  }
 }
-module.exports={runIsolationDrill};
+module.exports={runIsolationDrill,classifyBwrapFailure};
