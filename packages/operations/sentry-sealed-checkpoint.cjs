@@ -12,7 +12,8 @@ function fail(){throw Error('INVALID_OR_UNAUTHORIZED_PRIVATE_CHECKPOINT');}
 function keyBytes(value){
  if(typeof value!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(value))fail();
  const key=Buffer.from(value,'base64url');
- if(key.length!==32||key.toString('base64url')!==value)fail();
+ if(key.length!==32||key.toString('base64url')!==value||
+  key.every(byte=>byte===key[0]))fail();
  return key;
 }
 function strictDecode(value,min,max){
