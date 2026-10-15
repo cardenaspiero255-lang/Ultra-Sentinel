@@ -7,6 +7,7 @@
  */
 const {loadGameHubPullRequest}=require('../orchestrator/gamehub-live-reader.cjs');
 const {bindChecksToPr}=require('../orchestrator/check-pr-provenance.cjs');
+const {rateLimitedResponse}=require('../orchestrator/github-api-budget.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ROOT='https://api.github.com/repos/'+REPO;
 // PR #158 was merged on 2026-10-15: the live cohort requires OPEN PRs.
@@ -20,6 +21,7 @@ const SAFE_CODES=new Set([
  'UNTRUSTED_PR_REPOSITORY','CROSS_PR_CHECK_CONTAMINATION',
  'INCOMPLETE_CHECK_PROVENANCE',
  'INVALID_PR_METADATA','INCOMPLETE_PR_DIFF','GITHUB_API_UNAVAILABLE',
+ 'GITHUB_RATE_LIMITED','GITHUB_API_BUDGET_EXHAUSTED',
  'GITHUB_INVALID_CONTENT_TYPE','GITHUB_RESPONSE_TOO_LARGE',
  'GITHUB_TOTAL_RESPONSE_TOO_LARGE','GITHUB_INVALID_JSON',
  'GITHUB_INVALID_RESPONSE','GITHUB_REDIRECT_REJECTED',
@@ -37,6 +39,7 @@ async function githubJson(suffix,token,fetchImpl){
   headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
    'X-GitHub-Api-Version':'2022-11-28','User-Agent':'Ultra-Sentinel-C2-ReadOnly'}});}
  catch{fail('GITHUB_TRANSPORT_UNAVAILABLE');}
+ if(rateLimitedResponse(response))fail('GITHUB_RATE_LIMITED');
  if(!response||response.status!==200||response.url&&response.url!==url)
   fail('GITHUB_API_UNAVAILABLE');
  if(!/application\/(?:json|vnd\.github\+json)/i.test(response.headers?.get?.('content-type')||''))
@@ -169,11 +172,20 @@ async function captureLiveC2Cohort({token,fetchImpl=globalThis.fetch,
   typeof load!=='function')
   fail('AUTHENTICATION_REQUIRED');
  const samples=[];
+ let quotaExhausted=false;
  for(const pr of PRS){
+  if(quotaExhausted){
+   samples.push(Object.freeze({pr,repository:REPO,
+    status:'BLOCKED_INCOMPLETE_OR_STALE',reason:'GITHUB_RATE_LIMITED',
+    candidateFindingsCollected:false,
+    baselineFindingsCollected:false,independentLabelsCollected:false}));
+   continue;
+  }
   try{
    const result=await observeOne(pr,{token,fetchImpl,load});
    samples.push(result);
   }catch(error){
+   if(error?.message==='GITHUB_RATE_LIMITED')quotaExhausted=true;
    const reason=SAFE_CODES.has(error?.message)?error.message:
     error?.message==='INCOMPLETE_CHECKS'?'INCOMPLETE_CHECKS':
     error?.message==='INCOMPLETE_CANDIDATE_ANALYSIS'?'INCOMPLETE_CANDIDATE_ANALYSIS':
