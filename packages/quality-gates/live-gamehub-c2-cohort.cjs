@@ -10,10 +10,13 @@ const {bindChecksToPr}=require('../orchestrator/check-pr-provenance.cjs');
 const {rateLimitedResponse}=require('../orchestrator/github-api-budget.cjs');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ROOT='https://api.github.com/repos/'+REPO;
-// PR #158 was merged on 2026-10-15: the live cohort requires OPEN PRs.
-// PR #159 (Frame Pacing, Android performance) preserves a fourth distinct
-// domain while historical #158 evidence remains archived separately.
-const PRS=Object.freeze([132,159,161,163]);
+// GameHub #158 and #163 have been MERGED. This campaign requires OPEN PRs.
+// #163 is retained only as HISTORICAL evidence; do not silently reuse its
+// previous labels/checks after closing or pretend it is still an open sample.
+// #73 covers general research/Q&A alongside #132 voice, #159 frame pacing
+// and #161 network diagnostics. Cohort rotation requires re-blinding labels
+// and checking exact HEAD/base SHAs against current GitHub source evidence.
+const PRS=Object.freeze([132,159,161,73]);
 const SHA=/^[0-9a-f]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const PATH=/^[A-Za-z0-9_.\/-]{1,240}$/;
