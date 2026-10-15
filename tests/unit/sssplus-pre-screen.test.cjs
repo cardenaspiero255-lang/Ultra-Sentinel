@@ -17,7 +17,7 @@ const paths=[
 function sample(pr){
  const labels=Array.from({length:30},(_,i)=>({
   rule:rules[i%rules.length],path:paths[i%paths.length],
-  line:i+1,positive:i%2===0}));
+  line:i+1,positive:(Math.floor(i/rules.length)+pr)%2===0}));
  const baseline=labels.filter((x,i)=>x.positive&&i!==0||i===1)
   .map(({rule,path,line})=>({rule,path,line}));
  const candidate=labels.filter(x=>x.positive)
@@ -39,6 +39,8 @@ test('perfect synthetic cohort passes fixed numerical targets WITHOUT certificat
  assert.ok(s.baseline.f1<s.candidate.f1);
  assert.equal(s.criticalFalseNegatives,0);
  assert.equal(s.verdict,'NUMERICAL_PRESCREEN_ONLY');
+ assert.equal(s.gates.stratifiedQuality,true);
+ assert.ok(s.stratified.strata.every(x=>x.represented));
  assert.equal(s.tripleSPlusCertified,false);
  assert.equal(s.independentLabelsVerified,false);
  assert.equal(s.liveSourceCiIndependentlyVerified,false);
