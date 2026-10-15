@@ -5,9 +5,10 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {spawnSync}=require('node:child_process');
 const SHA=/^[a-f0-9]{40}$/;
+const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 const SAFE=/^(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+$/;
 function git(cwd,...args){
- const p=spawnSync('git',args,{cwd,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
+ const p=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{cwd,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
   env:{PATH:process.env.PATH,HOME:cwd,GIT_CONFIG_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_OPTIONAL_LOCKS:'1'}});
  if(p.error||p.status!==0)throw Error('SANDBOX_GIT_FAILURE');
@@ -16,6 +17,7 @@ function git(cwd,...args){
 function executeSandboxRepair({directory,plan,changes,nonceStore,nonce,expectedHeadSha}={}){
  if(!directory||!fs.realpathSync(directory).startsWith(fs.realpathSync(require('node:os').tmpdir())+path.sep))
   throw Error('SANDBOX_DIRECTORY_REQUIRED');
+ assertSafeGitCheckout(directory);
  if(!plan||plan.status!=='REVIEW_READY_NO_EXECUTOR'||plan.commitAllowed!==false||
   plan.mergeAllowed!==false||plan.expectedHeadSha!==expectedHeadSha||
   !SHA.test(expectedHeadSha||''))throw Error('INVALID_REPAIR_PLAN');
