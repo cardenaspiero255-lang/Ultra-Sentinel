@@ -10,10 +10,21 @@ const {runOwnerAuthorizedSandboxRepair}=require('../packages/recovery/owner-sand
 const OWNER='cardenaspiero255-lang';
 const OWNER_ID=322222186;
 function readTrustedFile(filename){
- if(!filename||!path.isAbsolute(filename))throw Error('ABSOLUTE_CONFIG_PATH_REQUIRED');
- const stat=fs.lstatSync(filename);
- if(!stat.isFile()||stat.isSymbolicLink())throw Error('UNSAFE_CONFIG_FILE');
- return fs.readFileSync(filename,'utf8');
+ if(typeof filename!=='string'||!path.isAbsolute(filename))
+  throw Error('ABSOLUTE_CONFIG_PATH_REQUIRED');
+ // Public trust anchors may be readable, but MUST NOT be group/world-writable.
+ // Use O_NOFOLLOW and fstat on the opened fd to defeat a symlink swap between
+ // path inspection and read. The request JSON is also bounded.
+ const parent=fs.lstatSync(path.dirname(filename));
+ if(!parent.isDirectory()||parent.isSymbolicLink()||
+  (parent.mode&0o022)!==0)throw Error('UNSAFE_CONFIG_PARENT');
+ const fd=fs.openSync(filename,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW);
+ try{
+  const stat=fs.fstatSync(fd);
+  if(!stat.isFile()||stat.nlink!==1||(stat.mode&0o022)!==0||
+     stat.size<1||stat.size>65536)throw Error('UNSAFE_CONFIG_FILE');
+  return fs.readFileSync(fd,'utf8');
+ }finally{fs.closeSync(fd);}
 }
 function bubblewrapCommand(directory,argv){
  if(process.platform!=='linux'||typeof directory!=='string'||!path.isAbsolute(directory)||
@@ -94,4 +105,4 @@ if(require.main===module){
   process.exitCode=1;
  });
 }
-module.exports={main,verifierFromTrustedEnvironment,bubblewrapCommand};
+module.exports={main,verifierFromTrustedEnvironment,bubblewrapCommand,readTrustedFile};
