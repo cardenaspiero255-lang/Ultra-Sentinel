@@ -97,7 +97,7 @@ function findingsEvidence(report,head){
  });
 }
 async function observeOne(pr,{token,fetchImpl,load}){
- const review=await load(pr,{token,fetchImpl});
+ const review=await load(pr,{token,fetchImpl,hydrateSource:true});
  if(review?.state!=='open'||review.authenticated!==true||
   review.headStable!==true||review.completeDiff!==true||
   review.mergeAllowed!==false||review.envelope?.targetRepo!==REPO||
