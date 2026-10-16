@@ -1,0 +1,172 @@
+name: Ultra Sentinel — C2 unseen original Kotlin benign voice controls
+# Owner-authenticated, frozen SHA Git blobs, isolated JVM, sanitized JSON.
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ultra-sentinel-c2-unseen-benign-voice-controls-main
+  cancel-in-progress: false
+
+jobs:
+  kotlin-original-behavior:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_UNSEEN_BENIGN_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout trusted Ultra Sentinel main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: main
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate main source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Fetch three pinned benign controls from holdout PR206 and PR208
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-kotlin-pinned"
+          mkdir -p "$root"
+          chmod 0700 "$root"
+          # Verify that identities were frozen before this behavior oracle.
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38838525845" \
+            | jq -e '.id == 38838525845 and .conclusion == "success" and
+              .path == ".github/workflows/c2-unseen-holdout-freeze.yml" and
+              .head_sha == "6946e730d030f4772eff3ea9e704d7731f99c721" and
+              .actor.id == 322222186' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38838525845/artifacts" \
+            | jq -e '[.artifacts[] | select(.id == 12019324481 and
+              .name == "ultra-sentinel-c2-unseen-holdout-freeze" and
+              .workflow_run.id == 38838525845)] | length == 1' >/dev/null
+          cat > "$RUNNER_TEMP/c2-kotlin-manifest-lines" <<'C2_PINNED_INPUTS'
+206|53cb89551d6e750d263bc0e25dde9f4d3069144f|84314310e5aee094b558e0f59d33e2779b258be7|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraTtsInitializationGate.kt
+208|df2bd33416d652480e51994784e511fbcb7ede12|739cabd415d931fb7a2816a881df300a07c81559|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecoveryPolicy.kt
+208|df2bd33416d652480e51994784e511fbcb7ede12|e7c30a22bd66d8c01752281b53bc5ab61e431beb|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecognitionHealth.kt
+C2_PINNED_INPUTS
+          while IFS='|' read -r pr head blob path; do
+            dest="$root/$pr"
+            mkdir -p "$dest"
+            chmod 0700 "$dest"
+            file="${path##*/}"
+            metadata="$RUNNER_TEMP/c2-kotlin-github-metadata.json"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" > "$metadata"
+            jq -e --arg blob "$blob" \
+              '.type == "file" and .encoding == "base64" and .sha == $blob and
+               .size >= 100 and .size <= 100000 and (.content | type == "string")' \
+              "$metadata" >/dev/null
+            jq -r .content "$metadata" | base64 --decode > "$dest/$file"
+            test "$(git hash-object "$dest/$file")" = "$blob"
+            chmod 0400 "$dest/$file"
+          done < "$RUNNER_TEMP/c2-kotlin-manifest-lines"
+          rm -f "$RUNNER_TEMP/c2-kotlin-manifest-lines" "$RUNNER_TEMP/c2-kotlin-github-metadata.json"
+          test "$(git hash-object "$root/206/UltraTtsInitializationGate.kt")" = "84314310e5aee094b558e0f59d33e2779b258be7"
+          test "$(git hash-object "$root/208/UltraWakeRecoveryPolicy.kt")" = "739cabd415d931fb7a2816a881df300a07c81559"
+          test "$(git hash-object "$root/208/UltraWakeRecognitionHealth.kt")" = "e7c30a22bd66d8c01752281b53bc5ab61e431beb"
+      - name: Compile pinned ASR recovery and TTS lifecycle with ABI-only stub
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          src="$RUNNER_TEMP/c2-kotlin-pinned"
+          build="$RUNNER_TEMP/c2-kotlin-bundle"
+          mkdir -p "$build"
+          chmod 0700 "$build"
+          kotlinc \
+            "$src/206/UltraTtsInitializationGate.kt" \
+            "$src/208/UltraWakeRecoveryPolicy.kt" \
+            "$src/208/UltraWakeRecognitionHealth.kt" \
+            tests/oracles/c2-unseen-benign-android-stub.kt \
+            tests/oracles/c2-unseen-benign-voice-controls.kt \
+            -include-runtime -d "$build/c2-oracles.jar"
+          test -s "$build/c2-oracles.jar"
+          chmod 0400 "$build/c2-oracles.jar"
+      - name: Install Bubblewrap under restricted Ubuntu AppArmor policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run immutable Kotlin oracles without network, tokens or host filesystem
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="$RUNNER_TEMP/c2-kotlin-bundle"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mkdir -p "$RUNNER_TEMP/c2-kotlin-empty-home"
+          chmod 0700 "$RUNNER_TEMP/c2-kotlin-empty-home"
+          # Preserve the real ELF dynamic loader on merged-/usr runners.
+          # Without /lib64 -> usr/lib64 the kernel returns ENOENT for Java.
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          env -i PATH=/usr/bin:/bin HOME="$RUNNER_TEMP/c2-kotlin-empty-home" \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+            "${mounts[@]}" \
+            --ro-bind "$jdk" /jdk \
+            --ro-bind "$build" /workspace \
+            --proc /proc --dev /dev --tmpfs /tmp \
+            --dir /home --chdir /workspace \
+            -- /jdk/bin/java -jar /workspace/c2-oracles.jar \
+            > "$RUNNER_TEMP/c2-kotlin-source-witness.json"
+          jq -e '.schema == "ultra-sentinel-c2-unseen-benign-controls/v1" and
+            .sourceOriginal == true and (.controls|length) == 3 and
+            (.controls|all(.passed == true)) and
+            .allControlsPassed == true and
+            .realDefectsVerified == 0 and .negativeFindingLabelsEstablished == 0 and
+            .candidateInspected == false and .baselineCompared == false and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false' \
+            "$RUNNER_TEMP/c2-kotlin-source-witness.json" >/dev/null
+          echo "C2_UNSEEN_BENIGN_VOICE_ORIGINAL_CONTROLS_PASSED"
+          cat "$RUNNER_TEMP/c2-kotlin-source-witness.json"
+      - name: Archive minimal source witness with no source, secrets or tokens
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-unseen-benign-voice-witness
+          path: ${{ runner.temp }}/c2-kotlin-source-witness.json
+          if-no-files-found: error
+          retention-days: 7
