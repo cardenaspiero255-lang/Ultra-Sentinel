@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Optional source hydration for Kotlin/Java C2 analysis at a pinned immutable
+ * Optional source hydration for Kotlin/Java and narrowly allowlisted research TypeScript C2 analysis at a pinned immutable
  * GitHub PR HEAD, never from a PR-controlled URL or download_url.
  * Caller must supply trusted file SHA from GitHub's PR-files API.
  */
@@ -11,7 +11,7 @@ function fail(){throw Error('UNVERIFIED_PINNED_SOURCE');}
 function sourcePathAllowed(filename){
  return typeof filename==='string'&&filename.length<=240&&
   !filename.includes('..')&&!filename.includes('//')&&
-  SOURCE.test(filename);
+  (SOURCE.test(filename)||filename==='supabase/functions/ultra-research/research.ts');
 }
 function decodePinnedGithubSource(raw,{path,blobSha}={}){
  if(!sourcePathAllowed(path)||!SHA.test(blobSha||'')||
