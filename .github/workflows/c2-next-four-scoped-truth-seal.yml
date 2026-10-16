@@ -1,0 +1,131 @@
+name: Ultra Sentinel — C2 four source-scoped signed-truth candidates
+# Owner-only proof aggregation. No model findings, network in verifier, writes or approvals.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-four-original-source-truth
+  cancel-in-progress: false
+jobs:
+  seal-four-bounded-source-cases:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' && github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_FOUR_SCOPED_SOURCE_TRUTH_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout owner main without GitHub token persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run full contract suite
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Verify archived source truth and counterfactual controls have trusted immutable provenance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-four-real-original-source"
+          mkdir -p "$root/prior" "$root/negative"
+          chmod 0700 "$root" "$root/prior" "$root/negative"
+          for id in 38931168454 38946358219; do
+            gh api "/repos/$repo/actions/runs/$id" > "$root/run-$id.json"
+            jq -e --argjson n "$id" '.id == $n and
+              .event == "issue_comment" and .status == "completed" and
+              .conclusion == "success" and .head_branch == "main" and
+              .repository.id == 1418338512 and .actor.id == 322222186' \
+              "$root/run-$id.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts-$id.json"
+          done
+          jq -e '.path == ".github/workflows/c2-next-two-source-truth-seal.yml" and
+            .head_sha == "ce187a77141f1d3f1f3f33419ca68813efd52139"' \
+            "$root/run-38931168454.json" >/dev/null
+          jq -e '.path == ".github/workflows/c2-next-original-pr157-pr158-oracles.yml" and
+            .head_sha == "0b9ca41e3bff1219effa799a98bedde38172f579"' \
+            "$root/run-38946358219.json" >/dev/null
+          jq -e '[.artifacts[]|select(
+            .id == 12058802148 and
+            .name == "ultra-sentinel-c2-next-two-positive-original-truth" and
+            .workflow_run.id == 38931168454 and
+            .digest == "sha256:2557e84eb9922a2a32f98e0ff710324ea626c64df2a9e5dc5e0fba49a96e6d05" and
+            .expired == false)] | length == 1' "$root/artifacts-38931168454.json" >/dev/null
+          jq -e '[.artifacts[]|select(
+            .id == 12066196917 and
+            .name == "ultra-sentinel-c2-next-pr157-pr158-scoped-negative-controls" and
+            .workflow_run.id == 38946358219 and
+            .digest == "sha256:9bda473d6d80e833f4e46e6893e943f551ff299d59cf3e25de0e9a05d2ef3e6a" and
+            .expired == false)] | length == 1' "$root/artifacts-38946358219.json" >/dev/null
+          gh run download 38931168454 --repo "$repo" \
+            --name ultra-sentinel-c2-next-two-positive-original-truth --dir "$root/prior"
+          gh run download 38946358219 --repo "$repo" \
+            --name ultra-sentinel-c2-next-pr157-pr158-scoped-negative-controls --dir "$root/negative"
+          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/negative" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/prior" "$root/negative" -type l | wc -l)" -eq 0
+          test -f "$root/prior/c2-next-two-source-truth.json"
+          test -f "$root/negative/c2-next-counterfactual-negative-proof.json"
+          rm -f "$root"/run-*.json "$root"/artifacts-*.json
+      - name: Validate four scoped truth labels under no-network no-write Node permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-four-real-original-source"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/seal-c2-four-scoped-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-four-scoped-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-two-original-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-one-positive-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-holdout.cjs" \
+            --allow-fs-read="$root/prior/c2-next-two-source-truth.json" \
+            --allow-fs-read="$root/negative/c2-next-counterfactual-negative-proof.json" \
+            "$GITHUB_WORKSPACE/scripts/seal-c2-four-scoped-truth.cjs" \
+            "$root/prior/c2-next-two-source-truth.json" \
+            "$root/negative/c2-next-counterfactual-negative-proof.json" \
+            > "$RUNNER_TEMP/c2-four-bounded-source-truth.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-four-scoped-source-truth-seal/v1" and
+            (.labels|length) == 4 and
+            .labels[0].pr == 152 and .labels[0].positive == true and
+            .labels[1].pr == 153 and .labels[1].positive == true and
+            .labels[2].pr == 157 and .labels[2].positive == false and
+            .labels[3].pr == 158 and .labels[3].positive == false and
+            .sourcePositiveLabels == 2 and .verifiedScopedNegativeLabels == 2 and
+            .verifiedNegativeFindingLabels == 2 and .benchmarkScoredLabels == 0 and
+            .neededAdditionalPositiveLabelsAtLeast == 46 and
+            .neededAdditionalNegativeLabelsAtLeast == 46 and
+            .neededAdditionalLabelsAtLeast == 116 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and .tripleSPlusCertified == false and
+            .verdict == "TRUTH_CORPUS_INCOMPLETE"
+          ' "$RUNNER_TEMP/c2-four-bounded-source-truth.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-four-bounded-source-truth.json"
+      - name: Archive only four minimized source-scoped truth identities
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-four-source-scoped-truth
+          path: ${{ runner.temp }}/c2-four-bounded-source-truth.json
+          if-no-files-found: error
+          retention-days: 14
