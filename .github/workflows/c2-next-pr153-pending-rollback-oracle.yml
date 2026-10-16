@@ -62,6 +62,22 @@ jobs:
             | jq -e '[.artifacts[] | select(.id == 12027755925 and
               .name == "ultra-sentinel-c2-next-eight-holdout-freeze" and
               .workflow_run.id == 38856860621)] | length == 1' >/dev/null
+          mkdir -p "$root/preregistered"
+          gh run download 38856860621 \
+            --repo cardenaspiero255-lang/Ultra-Sentinel \
+            --name ultra-sentinel-c2-next-eight-holdout-freeze \
+            --dir "$root/preregistered"
+          jq -e '.schema == "ultra-sentinel-c2-next-holdout-freeze/v1" and
+            .packetDigest == "f5f2f66b31e5dc768c18be68bef29cbd0f97c8161fda212ce2ae1e64eb664b34" and
+            .engineSourceSha == "547938ed88804e25bbabecf74a3c3d91b74cf1a4" and
+            .status == "FROZEN_INPUT_ONLY" and
+            .candidateInspected == false and .labelsVerified == 0 and
+            .truthLabelsInspected == false and .baselineInspected == false and
+            (.cases|length) == 8 and
+            .cases[3].pr == 153 and
+            .cases[3].headSha == "6508cc124076b9dea437ea1efc213d3ce55d7baf"
+          ' "$root/preregistered/frozen-next-holdout.json" >/dev/null
+          rm -rf "$root/preregistered"
           printf '%s\n' '153|6508cc124076b9dea437ea1efc213d3ce55d7baf|d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f|app/src/main/java/com/cardenaspiero255/gamehubultra/PerGameAdaptiveRuntime.kt' > "$RUNNER_TEMP/c2-kotlin-manifest-lines"
           while IFS='|' read -r pr head blob path; do
             dest="$root/$pr"
@@ -92,7 +108,7 @@ jobs:
           mkdir -p "$build"
           chmod 0700 "$build"
           kotlinc \
-            "$src/205/UltraFrontierV2.kt" \
+            "$src/153/PerGameAdaptiveRuntime.kt" \
             tests/oracles/c2-next-pr153-domain-abi.kt \
             tests/oracles/c2-next-pr153-data-abi.kt \
             tests/oracles/c2-next-pr153-coroutines-abi.kt \
