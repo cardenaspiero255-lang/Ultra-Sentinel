@@ -43,7 +43,7 @@ function campaign(){
     baseSha:NEW_LOCK.cases[i].baseSha,scope:{...x.scope},findings:x.findings.map(y=>({...y}))}))},
   baseline:{sourceEngineSha:'e'.repeat(40),kind:'BASELINE',
    samples:cases.map((x,i)=>({pr:NEW_LOCK.cases[i].pr,headSha:NEW_LOCK.cases[i].headSha,
-    baseSha:NEW_LOCK.cases[i].baseSha,scope:x.scope,findings:x.findings}))}
+    baseSha:NEW_LOCK.cases[i].baseSha,scope:{...x.scope},findings:x.findings.map(y=>({...y}))}))}
  });
 }
 test('honest 4-label corpus cannot produce numeric precision and stays NOT_CERTIFIED',()=>{
