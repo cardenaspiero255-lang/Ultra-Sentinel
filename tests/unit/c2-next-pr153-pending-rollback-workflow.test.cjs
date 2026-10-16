@@ -39,7 +39,7 @@ test('positive control follows actual crash/replay sequence, plus safety control
   'CLEAR_FAILURE_AFTER_HANDLED_LEAVES_PROFILE_STATE_DIVERGENCE',
   'RECOVERY_DOES_NOT_REPERSIST_TARGET_PROFILE',
   'REPLAY_ONCE_WITHOUT_PENDING_IDEMPOTENT',
-  'return result',
+  'return checkNotNull(result).getOrThrow()',
   'clearFailureOnce',
   'profile==initialProfile'
  ])assert.ok(kotlin.includes(phrase),phrase);
