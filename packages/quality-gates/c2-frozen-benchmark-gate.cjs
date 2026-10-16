@@ -4,6 +4,7 @@
  * All fields are untrusted until authenticated against GitHub artifact hashes,
  * source Git blobs, separate oracles, and both pinned engine builds.
  */
+const crypto=require('node:crypto');
 const {NEW_LOCK}=require('./c2-next-holdout.cjs');
 const {PACKET_DIGEST}=require('./c2-next-one-positive-truth.cjs');
 const {assessSssPlusPreScreen,POLICY}=require('./sssplus-pre-screen.cjs');
@@ -116,6 +117,15 @@ function assessFrozenC2Benchmark(input){
   input.truth.candidatePredictionsRead!==false||
   input.truth.baselinePredictionsRead!==false)
   return blocked('BLOCKED_PROVENANCE_OR_COVERAGE',null,['invalidEnvelopeOrTruth']);
+ const expectedTruthDigest=crypto.createHash('sha256').update(JSON.stringify({
+  schema:'ultra-sentinel-c2-truth-snapshot/v1',
+  packetDigest:PACKET_DIGEST,sourceEngineSha:NEW_LOCK.engineSourceSha,
+  labels:input.truth.labels
+ })).digest('hex');
+ // SHA-256 prevents accidental or opportunistic alterations *after* sealing.
+ // It is NOT a signature and does not authenticate the author or source oracles.
+ if(input.truth.sealedDigest!==expectedTruthDigest)
+  return blocked('BLOCKED_PROVENANCE_OR_COVERAGE',null,['tamperedTruthDigest']);
  const labels=knownLabels(input.truth.labels);
  if(!labels)return blocked('BLOCKED_PROVENANCE_OR_COVERAGE',null,['invalidTruthIdentities']);
  const n=labels.counts;
