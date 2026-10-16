@@ -1,0 +1,207 @@
+name: Ultra Sentinel — C2 new holdout real PR154 PR155 source behavior controls
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-next-original-154-155
+  cancel-in-progress: false
+jobs:
+  owner-original-source-oracles:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_THERMAL_BATTERY_CONTROLS_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout trusted main without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Test all architecture and evidence contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Verify prior frozen eight-PR holdout and fetch exact Git blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-next-kotlin-pinned"
+          mkdir -p "$root/154" "$root/155" "$root/preregistered"
+          chmod 0700 "$root" "$root/154" "$root/155"
+          gh api "/repos/$repo/actions/runs/38856860621" > "$root/freeze-run.json"
+          jq -e '.id == 38856860621 and .conclusion == "success" and
+            .status == "completed" and
+            .path == ".github/workflows/c2-next-eight-holdout-freeze.yml" and
+            .head_sha == "408c05a424d5f07d9cbec5e6fe555de0cdcdec9f" and
+            .actor.id == 322222186 and .repository.id == 1418338512
+          ' "$root/freeze-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38856860621/artifacts" > "$root/freeze-artifacts.json"
+          jq -e '[.artifacts[]|select(.id == 12027755925 and
+            .name == "ultra-sentinel-c2-next-eight-holdout-freeze" and
+            .workflow_run.id == 38856860621 and .expired == false)]
+            | length == 1' "$root/freeze-artifacts.json" >/dev/null
+          gh run download 38856860621 --repo "$repo" \
+            --name ultra-sentinel-c2-next-eight-holdout-freeze \
+            --dir "$root/preregistered"
+          jq -e '.schema == "ultra-sentinel-c2-next-holdout-freeze/v1" and
+            .packetDigest == "f5f2f66b31e5dc768c18be68bef29cbd0f97c8161fda212ce2ae1e64eb664b34" and
+            .engineSourceSha == "547938ed88804e25bbabecf74a3c3d91b74cf1a4" and
+            .status == "FROZEN_INPUT_ONLY" and .labelsVerified == 0 and
+            .candidateInspected == false and .truthLabelsInspected == false and
+            .baselineInspected == false and .tripleSPlusCertified == false and
+            (.cases|length) == 8 and
+            .cases[4].pr == 154 and
+            .cases[4].headSha == "858c9ce5cb6a7916d63f2348432013e49d02ba79" and
+            .cases[5].pr == 155 and
+            .cases[5].headSha == "2289f4e4cda55ddaa50f2016113ded82dc17203c"
+          ' "$root/preregistered/frozen-next-holdout.json" >/dev/null
+          printf '%s\n' \
+            '154|858c9ce5cb6a7916d63f2348432013e49d02ba79|b2e15247536ecc00d4811021774ab2f34608ac3e|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/ThermalPredictionAdvisor.kt' \
+            '155|2289f4e4cda55ddaa50f2016113ded82dc17203c|8696360219231f3f1477d5ad21c93bca2197e281|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt' > "$root/manifest"
+          while IFS='|' read -r pr head blob file; do
+            meta="$root/metadata.json"
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$file?ref=$head" > "$meta"
+            jq -e --arg sha "$blob" --arg p "$file" '.type == "file" and
+              .path == $p and .sha == $sha and .encoding == "base64" and
+              .size >= 100 and .size <= 100000' "$meta" >/dev/null
+            jq -r .content "$meta" | base64 --decode > "$root/$pr/FILENAME_PLACEHOLDER"
+            case "$pr" in
+              154) name=ThermalPredictionAdvisor.kt ;;
+              155) name=BatteryAwareGamingEngine.kt ;;
+              *) exit 2 ;;
+            esac
+            mv "$root/$pr/FILENAME_PLACEHOLDER" "$root/$pr/$name"
+            test "$(git hash-object "$root/$pr/$name")" = "$blob"
+            chmod 0400 "$root/$pr/$name"
+          done < "$root/manifest"
+          rm -rf "$root/metadata.json" "$root/manifest" "$root/freeze-run.json" \
+            "$root/freeze-artifacts.json" "$root/preregistered"
+          test "$(git hash-object "$root/154/ThermalPredictionAdvisor.kt")" = b2e15247536ecc00d4811021774ab2f34608ac3e
+          test "$(git hash-object "$root/155/BatteryAwareGamingEngine.kt")" = 8696360219231f3f1477d5ad21c93bca2197e281
+      - name: Compile exact original Kotlin and dependency ABI-only stubs
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-next-kotlin-pinned"
+          build="$RUNNER_TEMP/c2-next-kotlin-build"
+          mkdir -p "$build"
+          chmod 0700 "$build"
+          kotlinc "$root/154/ThermalPredictionAdvisor.kt" \
+            tests/oracles/c2-next-pr154-pr155-domain-abi.kt \
+            tests/oracles/c2-next-pr154-thermal-controls.kt \
+            -include-runtime -d "$build/pr154.jar"
+          kotlinc "$root/155/BatteryAwareGamingEngine.kt" \
+            tests/oracles/c2-next-pr154-pr155-domain-abi.kt \
+            tests/oracles/c2-next-pr155-battery-controls.kt \
+            -include-runtime -d "$build/pr155.jar"
+          test -s "$build/pr154.jar" && test -s "$build/pr155.jar"
+          chmod 0400 "$build/pr154.jar" "$build/pr155.jar"
+      - name: Install networkless Bubblewrap and mandatory AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run both original-source oracles without network or tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="$RUNNER_TEMP/c2-next-kotlin-build"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mkdir -p "$RUNNER_TEMP/c2-next-empty-home"
+          chmod 0700 "$RUNNER_TEMP/c2-next-empty-home"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          for pr in 154 155; do
+            env -i PATH=/usr/bin:/bin HOME="$RUNNER_TEMP/c2-next-empty-home" \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              "${mounts[@]}" \
+              --ro-bind "$jdk" /jdk --ro-bind "$build" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar "/workspace/pr$pr.jar" \
+              > "$RUNNER_TEMP/c2-next-pr$pr-control.json"
+          done
+          jq -e '.schema == "ultra-sentinel-c2-next-original-pr154-thermal-controls/v1" and
+            .pr == 154 and .sourceGitBlob == "b2e15247536ecc00d4811021774ab2f34608ac3e" and
+            .noWarningPassed == true and .preventivePassed == true and
+            .duplicateSuppressed == true and .recoveryPassed == true and
+            .highConfidenceClamped == true and .lowConfidenceClamped == true and
+            .executedOriginalSource == true and .candidateInspected == false and
+            .baselineCompared == false and .negativeFindingLabelsEstablished == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false
+          ' "$RUNNER_TEMP/c2-next-pr154-control.json" >/dev/null
+          jq -e '.schema == "ultra-sentinel-c2-next-original-pr155-battery-controls/v1" and
+            .pr == 155 and .sourceGitBlob == "8696360219231f3f1477d5ad21c93bca2197e281" and
+            .emptyNormal == true and .criticalConserve == true and
+            .chargingPreventsDrain == true and .highDrainBalanced == true and
+            .lowDrainNormal == true and .shortWindowNotExtrapolated == true and
+            .powerSaverConserve == true and .orderingStable == true and
+            .chargingBoundaryResets == true and
+            .executedOriginalSource == true and .candidateInspected == false and
+            .baselineCompared == false and .negativeFindingLabelsEstablished == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false
+          ' "$RUNNER_TEMP/c2-next-pr155-control.json" >/dev/null
+          jq -s '{schema:"ultra-sentinel-c2-next-thermal-battery-controls/v1",
+            validatedOriginalPrs:[.[].pr], originals:.,
+            candidateInspected:false,baselineCompared:false,
+            negativeFindingLabelsEstablished:0,
+            precision:null,recall:null,f1:null,fpNonRegressionVerified:false,
+            tripleSPlusCertified:false,verdict:"TECHNICAL_CONTROLS_ONLY"
+          }' "$RUNNER_TEMP/c2-next-pr154-control.json" \
+             "$RUNNER_TEMP/c2-next-pr155-control.json" \
+            > "$RUNNER_TEMP/c2-next-original-controls-result.json"
+          cat "$RUNNER_TEMP/c2-next-original-controls-result.json"
+      - name: Archive only sanitized original-source behavioral controls
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-pr154-pr155-original-controls
+          path: ${{ runner.temp }}/c2-next-original-controls-result.json
+          if-no-files-found: error
+          retention-days: 14
