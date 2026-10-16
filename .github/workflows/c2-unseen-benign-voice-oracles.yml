@@ -63,10 +63,10 @@ jobs:
               .name == "ultra-sentinel-c2-unseen-holdout-freeze" and
               .workflow_run.id == 38838525845)] | length == 1' >/dev/null
           cat > "$RUNNER_TEMP/c2-kotlin-manifest-lines" <<'C2_PINNED_INPUTS'
-206|53cb89551d6e750d263bc0e25dde9f4d3069144f|84314310e5aee094b558e0f59d33e2779b258be7|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraTtsInitializationGate.kt
-208|df2bd33416d652480e51994784e511fbcb7ede12|739cabd415d931fb7a2816a881df300a07c81559|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecoveryPolicy.kt
-208|df2bd33416d652480e51994784e511fbcb7ede12|e7c30a22bd66d8c01752281b53bc5ab61e431beb|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecognitionHealth.kt
-C2_PINNED_INPUTS
+          206|53cb89551d6e750d263bc0e25dde9f4d3069144f|84314310e5aee094b558e0f59d33e2779b258be7|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraTtsInitializationGate.kt
+          208|df2bd33416d652480e51994784e511fbcb7ede12|739cabd415d931fb7a2816a881df300a07c81559|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecoveryPolicy.kt
+          208|df2bd33416d652480e51994784e511fbcb7ede12|e7c30a22bd66d8c01752281b53bc5ab61e431beb|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakeRecognitionHealth.kt
+          C2_PINNED_INPUTS
           while IFS='|' read -r pr head blob path; do
             dest="$root/$pr"
             mkdir -p "$dest"
