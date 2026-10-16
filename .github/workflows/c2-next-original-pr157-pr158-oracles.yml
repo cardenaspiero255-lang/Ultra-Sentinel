@@ -197,6 +197,18 @@ jobs:
              "$RUNNER_TEMP/c2-next-pr158-control.json" \
             > "$RUNNER_TEMP/c2-next-original-controls-result.json"
           cat "$RUNNER_TEMP/c2-next-original-controls-result.json"
+      - name: Original-source counterfactual negative-proof canaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/c2-next-negative-counterfactuals.sh
+      - name: Archive separate mutation-sensitive scoped source predicates
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-pr157-pr158-scoped-negative-controls
+          path: ${{ runner.temp }}/c2-next-counterfactual-negative-proof.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Archive only sanitized original-source behavioral controls
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
