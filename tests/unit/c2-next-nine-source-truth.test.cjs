@@ -9,7 +9,7 @@ const root='app/src/main/java/com/cardenaspiero255/gamehubultra/domain/';
 function seven(){
  const clean=x=>({pr:x.pr,headSha:x.headSha,blobSha:x.blobSha,rule:x.rule,
   path:x.path,line:x.line,positive:x.positive});
- const labels=[NEW,...POSITIVES,...SAFE.map(clean),...NEGATIVES.map(clean)];
+ const labels=[NEW,...POSITIVES,...SAFE.map(clean),...NEGATIVES.map(clean)].map(x=>({...x}));
  const raw={
   schema:'ultra-sentinel-c2-next-seven-original-source-truth/v1',
   packetDigest:'f5f2f66b31e5dc768c18be68bef29cbd0f97c8161fda212ce2ae1e64eb664b34',
