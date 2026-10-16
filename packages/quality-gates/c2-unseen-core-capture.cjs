@@ -13,7 +13,12 @@ const CORE_BLOBS=Object.freeze({
 const PRS=Object.freeze([205,206,208]);
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const PATH=/^[A-Za-z0-9_.\/-]{1,240}$/;
-function fail(){throw Error('C2_UNSEEN_CORE_CAPTURE_BLOCKED');}
+function fail(reason='UNVERIFIED_SOURCE'){throw Error('C2_UNSEEN_CORE_CAPTURE_BLOCKED'+(reason?'_'+reason:''));}
+const LOADER_ERRORS=new Set(['INCOMPLETE_ANALYSIS','INCOMPLETE_GITHUB_EVIDENCE',
+ 'INCOMPLETE_PR_DIFF','INVALID_PR_FILE_PAGE','PR_FILES_MISMATCH','INVALID_GAMEHUB_SNAPSHOT',
+ 'UNVERIFIED_PINNED_SOURCE','GITHUB_API_UNAVAILABLE','GITHUB_RATE_LIMITED',
+ 'GITHUB_RESPONSE_TOO_LARGE','GITHUB_TOTAL_RESPONSE_TOO_LARGE','STALE_PR_SHA',
+ 'GITHUB_INVALID_JSON','GITHUB_INVALID_RESPONSE','GITHUB_TRANSPORT_UNAVAILABLE']);
 function copyFindings(raw){
  if(!Array.isArray(raw)||raw.length>40)fail();
  const seen=new Set(),found=[];let nonPositional=0;
@@ -42,7 +47,9 @@ async function captureUnseenCoreHoldout({token,load=loadGameHubPullRequest,
   if(!pinned)fail();
   let review;
   try{review=await load(pr,{token,fetchImpl,hydrateSource:true});}
-  catch{fail();}
+  catch(e){fail('PR'+pr+'_'+(LOADER_ERRORS.has(e?.message)?e.message:'UNVERIFIED_SOURCE'));}
+  if(review?.report?.coverage?.partial===true)fail('PR'+pr+'_PARTIAL_COVERAGE');
+  if(review?.report?.omitted>0)fail('PR'+pr+'_TRUNCATED_FINDINGS');
   if(!review||review.pr!==pr||review.state!==pinned.state||
    review.authenticated!==true||review.headStable!==true||
    review.completeDiff!==true||review.mergeAllowed!==false||
@@ -58,7 +65,7 @@ async function captureUnseenCoreHoldout({token,load=loadGameHubPullRequest,
    !Number.isSafeInteger(review.report.coverage.analyzed)||
    review.report.coverage.analyzed<0||
    review.report.coverage.analyzed>pinned.changedFiles||
-   review.report.omitted!==0)fail();
+   review.report.omitted!==0)fail('PR'+pr+'_INCOMPLETE_REVIEW');
   const summary=copyFindings(review.report.findings);
   samples.push(Object.freeze({pr,headSha:pinned.headSha,baseSha:pinned.baseSha,
    changedFiles:pinned.changedFiles,source:'AUTHENTICATED_IMMUTABLE_GITHUB_DIFF',
