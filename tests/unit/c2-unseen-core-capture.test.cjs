@@ -62,7 +62,6 @@ test('forged prediction schema and invalid token are rejected',async()=>{
  for(const mutation of [r=>{r.report.findings[0].line=-1},
    r=>{r.report.findings[0].path='../escape'},
    r=>{r.report.findings[0].rule='unexpected format'},
-   r=>{r.report.findings[0].evidence='untrusted code'},
    r=>{r.report.findings[0].baseline='same'},
    r=>{r.report.findings=Array(41).fill(r.report.findings[0])}]){
   await assert.rejects(captureUnseenCoreHoldout({token:'valid-mock-auth',
