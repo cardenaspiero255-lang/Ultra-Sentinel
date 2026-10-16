@@ -60,7 +60,7 @@ jobs:
               "$root/run-$id.json" >/dev/null
             gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts-$id.json"
           done
-          jq -e '.path == ".github/workflows/c2-next-four-scoped-truth-seal.yml" and
+          jq -e '.path == ".github/workflows/c2-next-five-source-truth-seal.yml" and
             .head_sha == "a3c8895ff81b822fbe50b4c84911c4f0de60d077"' \
             "$root/run-38969278857.json" >/dev/null
           jq -e '.path == ".github/workflows/c2-next-original-pr154-pr155-oracles.yml" and
