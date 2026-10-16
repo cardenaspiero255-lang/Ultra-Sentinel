@@ -1,0 +1,14 @@
+# C2 — Frozen PR #150 original Kotlin recommendation-confidence oracle
+
+The original SHA-frozen historical PR #150 code in GameHub Ultra has not previously yielded a label in the seven-case source-truth seal. Its unchanged file `app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt` at HEAD `4c6912d7ca17df0669f8a0d9667f34d2f2b205a9` has Git blob `37866fd3dbfcd19d9daaf29a5e1e426391c723d4`, bound to source-universe owner run 38974165470.
+
+We preregister **two candidate predicates**, no automatic truth increment:
+
+* **Potential original-source positive** (line 252), `ALL_AUTHORITATIVE_SOURCES_OPPOSE_RECOMMENDATION`: with complete device/runtime/game telemetry and a single fresh/authoritative external source explicitly stating `supportsRecommendation=false`, the original confidence path incorrectly rates the recommendation as `HIGH` without a contradiction. This semantic policy violation is *observable under a controlled JVM input*, not a claim that real external research providers produced this exact signal or that it is P0/P1. A temporary counterfactual copy requiring `supportsRecommendation == true` for HIGH must cause the original-expectation assertion to fail. Do not split identical root behavior across several labels.
+* **Predicate-scoped original-source negative** (line 250), `WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE`: with complete telemetry, remembered history and a stale/non-authoritative external endorsement, the original guard downgrades confidence to `MEDIUM`. A temporary counterfactual copy removing the weak-evidence guard must cause exactly the dedicated assertion to fail. This does **not** prove all PR #150 findings are clean.
+
+Executable, independent oracle `tests/oracles/c2-next-pr150-confidence.kt` plus ABI-only stubs compile untouched original Kotlin, not Ultra Sentinel Core. Owner-only workflow `.github/workflows/c2-next-pr150-confidence-oracle.yml` pins the GitHub source/blob, authenticates the earlier frozen source acquisition, compiles once, runs original behavior in networkless Bubblewrap/AppArmor, and then builds/runs counterfactual copies. It emits only a minimal, non-scored witness; it **never accesses candidate or legacy predictions**.
+
+An original-source witness is **NOT** a sealed truth label until a separate owner run checks the authenticated workflow SHA, artifacts and unique evidence hash and advances the chain from seven identities. A synthetic mutant is never itself a defect from the historic PR. If compilation, sandbox, particular assertion or source hash fails, no truth may be granted. 95% and SSS+ remain `NOT_CERTIFIED`.
+
+The wider current source-coverage conflict of **241 source input entries / 153 maximal Core-eligible / 88 excluded** remains open. This oracle does not change candidate or baseline, benchmark gates, or the frozen eight-PR population.

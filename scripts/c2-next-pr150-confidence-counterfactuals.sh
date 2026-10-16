@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$RUNNER_TEMP/c2-pr150"
+source="$root/SmartRecommendationExplanation.kt"
+test "$(git hash-object "$source")" = 37866fd3dbfcd19d9daaf29a5e1e426391c723d4
+build="$root/mutants"
+mkdir -p "$build/fixed-positive" "$build/broken-negative"
+python3 - "$source" "$build" <<'PY'
+import pathlib,sys
+src=pathlib.Path(sys.argv[1]).read_text(encoding="utf8")
+out=pathlib.Path(sys.argv[2])
+cases={
+ "fixed-positive":("input.externalEvidence.any { it.fresh && it.authoritative } ->",
+     "input.externalEvidence.any { it.fresh && it.authoritative && it.supportsRecommendation == true } ->"),
+ "broken-negative":("weakExternalEvidence || unavailable.isNotEmpty() -> RecommendationConfidenceBand.MEDIUM",
+     "unavailable.isNotEmpty() -> RecommendationConfidenceBand.MEDIUM")
+}
+for label,(old,new) in cases.items():
+    if src.count(old)!=1:
+        raise SystemExit("C2_PR150_SOURCE_DRIFT")
+    (out/label/"SmartRecommendationExplanation.kt").write_text(src.replace(old,new,1),encoding="utf8")
+PY
+for label in fixed-positive broken-negative; do
+ kotlinc "$build/$label/SmartRecommendationExplanation.kt" \
+   tests/oracles/c2-next-pr150-confidence-domain-abi.kt \
+   tests/oracles/c2-next-pr150-confidence.kt -include-runtime -d "$build/$label/run.jar"
+ test -s "$build/$label/run.jar"
+done
+jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+test -x "$jdk/bin/java"
+mounts=(--ro-bind /usr /usr)
+for mount in /bin /lib /lib64; do
+ if [ -L "$mount" ]; then
+  name="$(readlink "$mount")"
+  [[ "$name" != /* && "$name" != *..* ]] || exit 2
+  mounts+=(--symlink "$name" "$mount")
+ elif [ -d "$mount" ]; then
+  mounts+=(--ro-bind "$mount" "$mount")
+ else exit 2; fi
+done
+for label in fixed-positive broken-negative; do
+ set +e
+ env -i PATH=/usr/bin:/bin HOME=/tmp \
+  /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+  --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+  "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$build" /workspace \
+  --proc /proc --dev /dev --tmpfs /tmp --chdir /workspace \
+  -- /jdk/bin/java -jar "/workspace/$label/run.jar" > "$build/$label.log" 2>&1
+ code=$?
+ set -e
+ test "$code" -ne 0 || { echo "C2_PR150_COUNTERFACTUAL_SURVIVED_$label"; exit 2; }
+ case "$label" in
+  fixed-positive)
+   grep -F 'java.lang.IllegalStateException: C2_NEXT_PR150_CONTROL_FAILED_ALL_AUTHORITATIVE_SOURCES_OPPOSE_RECOMMENDATION' "$build/$label.log" >/dev/null ;;
+  broken-negative)
+   grep -F 'java.lang.IllegalStateException: C2_NEXT_PR150_CONTROL_FAILED_WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE' "$build/$label.log" >/dev/null ;;
+ esac
+done
