@@ -14,6 +14,13 @@ Para no modificar el Core ni ocultar esta limitación, la nueva captura compara 
 
 El único output publicable contiene `(rule,path,line)` por hallazgo; jamás diffs, cuerpos de código, tokens, transcripciones, claves o archivos de origen. El evaluador posterior es offline con `env -i`, permisos de solo lectura de Node y sin token GitHub.
 
+
+### Actualización de HEAD del PR #208 posterior al congelamiento
+
+El 16 de octubre de 2026 el PR #208 avanzó a HEAD `bf3bfd1490e9446fc000bf03fca2e5e3be631865` (15 archivos), **después** del congelamiento C2 original en `df2bd33416d652480e51994784e511fbcb7ede12` (13 archivos). El primer run con comparaciones inmutables bloqueó de forma segura al contrastar incorrectamente el HEAD **actual** con el histórico sellado. La medición posterior debe consultar exclusivamente `compare/fca3250bd71700045cf9b2fc4e4281421f545d2e...df2bd33416d652480e51994784e511fbcb7ede12` y `contents?ref=df2bd...`, mientras la API del PR actual se usa solo para confirmar que sigue siendo el mismo repositorio/propietario.
+
+**Nunca sustituir el HEAD histórico por el actualizado para mejorar el score, ni llamar a esta medición "situación actual del PR #208".** El control firmado previamente y los SHA de los archivos constituyen la procedencia del ensayo. Si el PR cambia, la versión nueva necesita otra cohorte congelada y nuevas etiquetas independientes.
+
 ## Qué medimos y qué NO
 
 - `observedKnownPositives.total=3`: positivos que **no participaron** en el diseño de las cuatro reglas antiguas. `detected` y `missed` se obtienen comparando directamente la identidad exacta `rule/path/line`.

@@ -118,15 +118,17 @@ jobs:
             esac
             mkdir -p "$root/$pr"
             gh api "/repos/$repo/pulls/$pr" > "$root/$pr/pr.json"
-            jq -e --argjson n "$pr" --arg head "$head" --arg base "$base" \
-              --arg state "$state" --argjson count "$count" '
-              .number == $n and .state == $state and
-              .head.sha == $head and .base.sha == $base and
-              .changed_files == $count and
+            # A live PR may advance after the truth cohort was frozen.
+            # Verify repository identity, never substitute its current HEAD.
+            # Only the owner-run v3 truth artifact above authorizes original SHA.
+            jq -e --argjson n "$pr" '
+              .number == $n and .state != null and
               .head.repo.id == 1375408706 and
               .base.repo.id == 1375408706 and
               .head.repo.owner.id == 322222186 and
-              .base.repo.owner.id == 322222186
+              .base.repo.owner.id == 322222186 and
+              .base.repo.full_name == "cardenaspiero255-lang/gamehub-ultra" and
+              .head.repo.full_name == "cardenaspiero255-lang/gamehub-ultra"
             ' "$root/$pr/pr.json" >/dev/null
             # GitHub PR-files is mutable and was inconsistent for #208:
             # Only immutable commit comparison matches the actual HEAD blob.
@@ -146,10 +148,15 @@ jobs:
               .size > 100 and .size < 160000 and
               (.content | type) == "string"
             ' "$root/$pr/source.json" >/dev/null
-            # Ensure the PR still has the exact same HEAD and base.
-            gh api "/repos/$repo/pulls/$pr" | jq -e \
-              --arg head "$head" --arg base "$base" \
-              '.head.sha == $head and .base.sha == $base' >/dev/null
+            # Detect an unexpected repository replacement, not a normal
+            # revision of the mutable PR after this historical freeze.
+            gh api "/repos/$repo/pulls/$pr" | jq -e --argjson n "$pr" '
+              .number == $n and
+              .head.repo.id == 1375408706 and
+              .base.repo.id == 1375408706 and
+              .head.repo.owner.id == 322222186 and
+              .base.repo.owner.id == 322222186
+            ' >/dev/null
             rm -f "$root/$pr/pr.json"
           done
       - name: Measure only the three sealed target files using unchanged Core, offline
