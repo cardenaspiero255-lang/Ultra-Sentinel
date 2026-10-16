@@ -20,6 +20,7 @@ function truth(){return {schema:'ultra-sentinel-c2-owner-truth-seal/v3',
  benignBehaviorControls:3,includesPredictions:false,includesBaseline:false,
  precision:null,recall:null,f1:null,baselineComparable:false,
  tripleSPlusCertified:false}};
+function finding(p){return {rule:p.rule,path:p.path,line:p.line};}
 function candidate(byPr={}){return {
  schema:'ultra-sentinel-c2-unseen-core-capture/v1',
  repository:LOCK.repository,modelSourceSha:LOCK.modelSourceSha,
@@ -37,7 +38,7 @@ function candidate(byPr={}){return {
 };}
 test('first unblinding gives true held-out hit rate but no global precision/recall/F1',()=>{
  const r=evaluateFirstUnseenHoldout({truth:truth(),candidate:candidate({
-  205:[POS[0]],206:[POS[1]],208:[POS[2]]
+  205:[finding(POS[0])],206:[finding(POS[1])],208:[finding(POS[2])]
  })});
  assert.deepEqual(r.observedKnownPositives,{total:3,detected:3,missed:0,observedHitRate:1});
  assert.equal(r.globalPrecision,null);assert.equal(r.globalRecall,null);
@@ -49,7 +50,7 @@ test('first unblinding gives true held-out hit rate but no global precision/reca
 test('missed or extra predictions are observed, not silently scored as TN or FP',()=>{
  const extra={rule:'UNSCOPED_COROUTINE',path:POS[2].path,line:50};
  const r=evaluateFirstUnseenHoldout({truth:truth(),candidate:candidate({
-  205:[POS[0],extra],206:[],208:[]
+  205:[finding(POS[0]),extra],206:[],208:[]
  })});
  assert.deepEqual(r.observedKnownPositives,{total:3,detected:1,missed:2,observedHitRate:1/3});
  assert.equal(r.unlabelledCandidateFindings,1);
