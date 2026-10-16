@@ -1,0 +1,126 @@
+name: Ultra Sentinel — C2 next owner sealed original-source PR153 truth
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-next-one-positive-source-truth
+  cancel-in-progress: false
+jobs:
+  seal-one-new-source-positive:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_PR153_TRUTH_SEAL_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout trusted main without GitHub token persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run complete security and source-quality checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate prior independent source freeze and original Kotlin oracle receipts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-next-original-positive-truth"
+          mkdir -p "$root/freeze" "$root/witness"
+          chmod 0700 "$root" "$root/freeze" "$root/witness"
+          for run in 38856860621 38889693623; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run-$run.json"
+            jq -e --argjson n "$run" '
+              .id == $n and .status == "completed" and
+              .conclusion == "success" and .event == "issue_comment" and
+              .head_branch == "main" and .actor.id == 322222186 and
+              .repository.id == 1418338512' "$root/run-$run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts-$run.json"
+          done
+          jq -e '.path == ".github/workflows/c2-next-eight-holdout-freeze.yml" and
+            .head_sha == "408c05a424d5f07d9cbec5e6fe555de0cdcdec9f"
+          ' "$root/run-38856860621.json" >/dev/null
+          jq -e '.path == ".github/workflows/c2-next-pr153-pending-rollback-oracle.yml" and
+            .head_sha == "71aa7937625daa9945bbaf0a495a4f9073c5faaa"
+          ' "$root/run-38889693623.json" >/dev/null
+          jq -e '[.artifacts[]|select(.id == 12027755925 and
+            .name == "ultra-sentinel-c2-next-eight-holdout-freeze" and
+            .workflow_run.id == 38856860621 and .expired == false)] | length == 1' \
+            "$root/artifacts-38856860621.json" >/dev/null
+          jq -e '[.artifacts[]|select(.id == 12040619454 and
+            .name == "ultra-sentinel-c2-next-pr153-pending-replay-original-witness" and
+            .workflow_run.id == 38889693623 and .expired == false)] | length == 1' \
+            "$root/artifacts-38889693623.json" >/dev/null
+          gh run download 38856860621 --repo "$repo" \
+            --name ultra-sentinel-c2-next-eight-holdout-freeze \
+            --dir "$root/freeze"
+          gh run download 38889693623 --repo "$repo" \
+            --name ultra-sentinel-c2-next-pr153-pending-replay-original-witness \
+            --dir "$root/witness"
+          test "$(find "$root/freeze" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/witness" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/freeze" "$root/witness" -type l | wc -l)" -eq 0
+          test -f "$root/freeze/frozen-next-holdout.json"
+          test -f "$root/witness/c2-kotlin-source-witness.json"
+          echo 'a3e3d28a8bf3d4b0a59541efd96f698002deea355ec35dd8e17e5662a9830cba  '"$root/witness/c2-kotlin-source-witness.json" | sha256sum --check --status
+          rm -f "$root"/run-*.json "$root"/artifacts-*.json
+      - name: Seal source truth under Node deny-write deny-network exact-file permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-next-original-positive-truth"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/seal-c2-next-source-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-one-positive-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-holdout.cjs" \
+            --allow-fs-read="$root/freeze/frozen-next-holdout.json" \
+            --allow-fs-read="$root/witness/c2-kotlin-source-witness.json" \
+            "$GITHUB_WORKSPACE/scripts/seal-c2-next-source-truth.cjs" \
+            "$root/freeze/frozen-next-holdout.json" \
+            "$root/witness/c2-kotlin-source-witness.json" \
+            > "$RUNNER_TEMP/c2-next-pr153-positive-truth.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-source-truth-seal/v1" and
+            .status == "SOURCE_BEHAVIOR_TRUTH_PARTIAL" and
+            .sourcePositiveLabels == 1 and .verifiedNegativeFindingLabels == 0 and
+            .benchmarkScoredLabels == 0 and
+            (.labels|length) == 1 and .labels[0].pr == 153 and
+            .labels[0].positive == true and
+            .labels[0].line == 71 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and
+            .tripleSPlusCertified == false and
+            .verdict == "TRUTH_CORPUS_INCOMPLETE"
+          ' "$RUNNER_TEMP/c2-next-pr153-positive-truth.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-next-pr153-positive-truth.json"
+      - name: Archive minimal SHA-bound source truth, no candidate or baseline
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-pr153-positive-source-truth
+          path: ${{ runner.temp }}/c2-next-pr153-positive-truth.json
+          if-no-files-found: error
+          retention-days: 14
