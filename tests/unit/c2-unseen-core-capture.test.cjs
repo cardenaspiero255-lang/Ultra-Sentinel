@@ -69,3 +69,15 @@ test('forged prediction schema and invalid token are rejected',async()=>{
   /C2_UNSEEN_CORE_CAPTURE_BLOCKED/);
  }
 });
+
+test('safe source failure codes identify blocked PR without exposing exception content',async()=>{
+ await assert.rejects(captureUnseenCoreHoldout({token:'valid-mock-auth',
+  load:async pr=>{if(pr===205)throw Error('INCOMPLETE_ANALYSIS');return source(pr);}}),
+  /C2_UNSEEN_CORE_CAPTURE_BLOCKED_PR205_INCOMPLETE_ANALYSIS/);
+ await assert.rejects(captureUnseenCoreHoldout({token:'valid-mock-auth',
+  load:async pr=>{if(pr===206)throw Error('Bearer ghp_UNSAFE_SECRET');return source(pr);}}),
+  /C2_UNSEEN_CORE_CAPTURE_BLOCKED_PR206_UNVERIFIED_SOURCE/);
+ await assert.rejects(captureUnseenCoreHoldout({token:'valid-mock-auth',
+  load:async pr=>{const x=source(pr);if(pr===208)x.report.coverage.partial=true;return x;}}),
+  /C2_UNSEEN_CORE_CAPTURE_BLOCKED_PR208_PARTIAL_COVERAGE/);
+});
