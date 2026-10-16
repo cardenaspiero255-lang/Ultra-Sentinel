@@ -1,0 +1,97 @@
+name: Ultra Sentinel — C2 PR151 original Kotlin nonfinite pre-merge smoke
+# PR code is untrusted: no GH_TOKEN, no secrets, no write scopes, sandboxed JVM.
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/c2-next-pr151-nonfinite-headroom.yml'
+      - '.github/workflows/c2-next-pr151-pr-smoke.yml'
+      - 'tests/oracles/c2-next-pr151-domain-abi.kt'
+      - 'tests/oracles/c2-next-pr151-nonfinite-headroom.kt'
+permissions:
+  contents: read
+jobs:
+  original-kotlin-no-token:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout PR code with no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Download fixed public historical GitHub source, check Git blob hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_path=app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt
+          root="$RUNNER_TEMP/c2-pr151-untrusted-smoke"
+          mkdir -p "$root"
+          url="https://raw.githubusercontent.com/cardenaspiero255-lang/gamehub-ultra/9ad983576c16c6c34d59283979d83c69ede50dce/$source_path"
+          curl --fail --location --silent --show-error --max-time 45 "$url" -o "$root/AiSessionCoach.kt"
+          test "$(git hash-object "$root/AiSessionCoach.kt")" = adb11032b9b7f62f865228dfa1c27258ca3fa0df
+          test "$(wc -c < "$root/AiSessionCoach.kt")" -le 100000
+          chmod 0400 "$root/AiSessionCoach.kt"
+      - name: Compile actual original source and independent adversarial controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-pr151-untrusted-smoke"
+          kotlinc "$root/AiSessionCoach.kt" \
+            tests/oracles/c2-next-pr151-domain-abi.kt \
+            tests/oracles/c2-next-pr151-nonfinite-headroom.kt \
+            -include-runtime -d "$root/controls.jar"
+          test -s "$root/controls.jar"
+          chmod 0400 "$root/controls.jar"
+      - name: Require AppArmor Bubblewrap isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Test original Kotlin result without network, host files or secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr151-untrusted-smoke"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+            ${mounts[@]} --ro-bind "$jdk" /jdk --ro-bind "$root/controls.jar" /original.jar \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /tmp \
+            -- /jdk/bin/java -jar /original.jar > "$root/result.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-original-pr151-nonfinite-witness/v1" and
+            .pr == 151 and .sourceGitBlob == "adb11032b9b7f62f865228dfa1c27258ca3fa0df" and
+            .rule == "NONFINITE_THERMAL_HEADROOM_ACCEPTED" and .line == 264 and
+            .reproducedBehavioralDefect == true and .finiteHighControlPassed == true and
+            .missingRejected == true and .nanRejected == true and
+            .infiniteMidSessionIncorrectlyAlerted == true and
+            .infinitePreSessionIncorrectlyAlerted == true and
+            .infiniteRecurringIncorrectlyAlerted == true and
+            .originalSourceExecuted == true and
+            .candidateInspected == false and .baselineCompared == false and
+            .positiveFindingLabelsSealed == 0 and
+            .negativeFindingLabelsEstablished == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false
+          ' "$root/result.json" >/dev/null
+          echo 'C2_PR151_PREMERGE_NONFINITE_ORACLE_NOT_BENCHMARK_CERTIFIED'
