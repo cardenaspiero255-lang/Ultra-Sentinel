@@ -4,10 +4,10 @@ private fun requireOriginal(predicate: Boolean, name: String) {
     if (!predicate) throw IllegalStateException("C2_NEXT_PR150_CONTROL_FAILED_" + name)
 }
 
-private fun explanationFor(source: RecommendationExternalEvidence): SmartRecommendationExplanation =
+private fun explanationFor(source: RecommendationExternalEvidence, history: List<String> = emptyList()): SmartRecommendationExplanation =
     SmartRecommendationExplanationFactory.build(
         input = SmartPerformanceInput(
-            externalEvidence = listOf(source)
+            externalEvidence = listOf(source), historicalObservations = history
         ),
         recommendedProfile = PerformanceProfile.X4,
         reason = "X4 es la opción recomendada.",
@@ -54,7 +54,7 @@ fun main() {
             fresh = false,
             authoritative = false,
             supportsRecommendation = true
-        )
+        ), history = listOf("accepted-session")
     )
     requireOriginal(weak.unavailableData.isEmpty(),
         "WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE_COMPLETE_CONTEXT")
