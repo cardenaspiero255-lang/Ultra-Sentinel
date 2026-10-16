@@ -1,0 +1,136 @@
+name: Ultra Sentinel — first real unseen holdout detector measurement
+# SHA-frozen truth precedes candidate measurement. No global 95% claim.
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: ultra-sentinel-c2-first-unseen-main
+  cancel-in-progress: false
+
+jobs:
+  measure-owner-first-holdout:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_UNSEEN_FIRST_MEASURE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Checkout trusted latest main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check code and prove Core engine still matches original preregistered version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" = b8b6e79c1c544a9c22ea5aa0ea857881a0e1b6d9
+          npm run check
+      - name: Verify SHA-pinned truth v3 existed before measurement
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-unseen-first-measure"
+          mkdir -p "$root/truth"
+          gh api "/repos/$repo/actions/runs/38842931678" > "$root/run.json"
+          jq -e '
+            .id == 38842931678 and .status == "completed" and
+            .conclusion == "success" and
+            .path == ".github/workflows/c2-unseen-truth-v3.yml" and
+            .event == "issue_comment" and .head_branch == "main" and
+            .head_sha == "ae9e833ada13cef8c1322fab983409df09f2a86d" and
+            .actor.id == 322222186 and .repository.id == 1418338512
+          ' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38842931678/artifacts" > "$root/artifacts.json"
+          jq -e '
+            [.artifacts[] | select(.id == 12021956554 and
+              .name == "ultra-sentinel-c2-unseen-truth-v3-partial" and
+              .workflow_run.id == 38842931678 and .expired == false)]
+            | length == 1
+          ' "$root/artifacts.json" >/dev/null
+          gh run download 38842931678 --repo "$repo" \
+            --name ultra-sentinel-c2-unseen-truth-v3-partial --dir "$root/truth"
+          test -f "$root/truth/c2-unseen-truth-v3.json"
+          test "$(find "$root/truth" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/truth" -maxdepth 1 -type l | wc -l)" -eq 0
+          echo 'dce263a427b05c2fcb4fa2c52509ed6a82964772fe9c4f0bd526230c77809a59  '"$root/truth/c2-unseen-truth-v3.json" | sha256sum --check --status
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Read real SHA-frozen GameHub PR diffs and execute unchanged Core
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/capture-c2-unseen-core.cjs \
+            > "$RUNNER_TEMP/c2-unseen-first-measure/candidate.json"
+          jq -e '.schema == "ultra-sentinel-c2-unseen-core-capture/v1" and
+            (.samples | length) == 3 and .samples[0].pr == 205 and
+            .samples[1].pr == 206 and .samples[2].pr == 208 and
+            .sourceKind == "FROZEN_ORIGINAL_PR_DIFF" and
+            .allSamplesComplete == true and
+            .labelsRead == false and .baselineRead == false and
+            .fpNonRegressionVerified == false and
+            .globalPrecision == null and .globalRecall == null and
+            .globalF1 == null and .tripleSPlusCertified == false
+          ' "$RUNNER_TEMP/c2-unseen-first-measure/candidate.json" >/dev/null
+      - name: Independently score sealed positives, fail closed without prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-unseen-first-measure"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/evaluate-c2-unseen-first.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-unseen-unblind-evaluator.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-unseen-holdout.cjs" \
+            --allow-fs-read="$root/truth/c2-unseen-truth-v3.json" \
+            --allow-fs-read="$root/candidate.json" \
+            "$GITHUB_WORKSPACE/scripts/evaluate-c2-unseen-first.cjs" \
+            "$root/truth/c2-unseen-truth-v3.json" \
+            "$root/candidate.json" \
+            > "$RUNNER_TEMP/c2-unseen-small-holdout-result.json"
+          jq -e '.schema == "ultra-sentinel-c2-unseen-first-unblinding/v1" and
+            .observedKnownPositives.total == 3 and
+            .verifiedNegativeFindingLabels == 0 and
+            .verifiedFalsePositives == null and
+            .falsePositiveRate == null and
+            .globalPrecision == null and .globalRecall == null and
+            .globalF1 == null and .baselineComparable == false and
+            .fpNonRegressionVerified == false and
+            .certified95Percent == false and .tripleSPlusCertified == false and
+            .verdict == "SMALL_HOLDOUT_NOT_CERTIFIABLE"
+          ' "$RUNNER_TEMP/c2-unseen-small-holdout-result.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-unseen-small-holdout-result.json"
+      - name: Archive sanitized small-holdout result only
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-unseen-three-positive-detection
+          path: ${{ runner.temp }}/c2-unseen-small-holdout-result.json
+          if-no-files-found: error
+          retention-days: 14
