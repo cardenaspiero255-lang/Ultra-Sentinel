@@ -1,0 +1,160 @@
+name: Ultra Sentinel — C2 next original PR152 supported refresh oracle
+# Source-independent technical witness; no candidate, baseline or scoring access.
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-next-pr152-original-source
+  cancel-in-progress: false
+jobs:
+  kotlin-original-behavior:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_PR152_REFRESH_ORACLE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout trusted main without persisted GitHub token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify all architecture and evidence contracts
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate frozen holdout and acquire original PR152 Kotlin Git blob
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-pr152-pinned"
+          mkdir -p "$root/freeze" "$root/source"
+          chmod 0700 "$root" "$root/freeze" "$root/source"
+          gh api "/repos/$repo/actions/runs/38856860621" > "$root/run.json"
+          jq -e '.id == 38856860621 and .conclusion == "success" and
+            .status == "completed" and .event == "issue_comment" and
+            .path == ".github/workflows/c2-next-eight-holdout-freeze.yml" and
+            .head_sha == "408c05a424d5f07d9cbec5e6fe555de0cdcdec9f" and
+            .actor.id == 322222186 and .repository.id == 1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38856860621/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[] | select(
+            .id == 12027755925 and .name == "ultra-sentinel-c2-next-eight-holdout-freeze" and
+            .workflow_run.id == 38856860621 and .expired == false)] | length == 1' "$root/artifacts.json" >/dev/null
+          gh run download 38856860621 --repo "$repo" \
+            --name ultra-sentinel-c2-next-eight-holdout-freeze --dir "$root/freeze"
+          jq -e '.schema == "ultra-sentinel-c2-next-holdout-freeze/v1" and
+            .status == "FROZEN_INPUT_ONLY" and
+            .packetDigest == "f5f2f66b31e5dc768c18be68bef29cbd0f97c8161fda212ce2ae1e64eb664b34" and
+            .engineSourceSha == "547938ed88804e25bbabecf74a3c3d91b74cf1a4" and
+            .candidateInspected == false and .truthLabelsInspected == false and
+            .baselineInspected == false and .labelsVerified == 0 and
+            (.cases|length) == 8 and .cases[2].pr == 152 and
+            .cases[2].headSha == "104b7dc33e4c0341cec3fca81e3c8fbe3625357f" and
+            .cases[2].baseSha == "e2050a76af7fa3010032604e6537ab124e7b4c38"
+          ' "$root/freeze/frozen-next-holdout.json" >/dev/null
+          p=app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiProfileBuilder.kt
+          gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$p?ref=104b7dc33e4c0341cec3fca81e3c8fbe3625357f" > "$root/metadata.json"
+          jq -e --arg p "$p" '.type == "file" and .encoding == "base64" and
+            .path == $p and .sha == "549e3b1d619b83e59bc37b31b4860191c25528f1" and
+            .size >= 100 and .size <= 100000' "$root/metadata.json" >/dev/null
+          jq -r .content "$root/metadata.json" | base64 --decode > "$root/source/AiProfileBuilder.kt"
+          test "$(git hash-object "$root/source/AiProfileBuilder.kt")" = 549e3b1d619b83e59bc37b31b4860191c25528f1
+          chmod 0400 "$root/source/AiProfileBuilder.kt"
+          rm -f "$root/run.json" "$root/artifacts.json" "$root/metadata.json"
+          rm -rf "$root/freeze"
+      - name: Compile untouched AiProfileBuilder with external ABI-only stubs
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-pr152-pinned"
+          mkdir -p "$root/build"
+          kotlinc "$root/source/AiProfileBuilder.kt" \
+            tests/oracles/c2-next-pr152-domain-abi.kt \
+            tests/oracles/c2-next-pr152-refresh-controls.kt \
+            -include-runtime -d "$root/build/oracle.jar"
+          test -s "$root/build/oracle.jar"
+          chmod 0400 "$root/build/oracle.jar"
+      - name: Require networkless Bubblewrap with restricted AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run original source under isolated JVM without token or network
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr152-pinned"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+            ${mounts[@]} --ro-bind "$jdk" /jdk \
+            --ro-bind "$root/build" /workspace \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+            -- /jdk/bin/java -jar /workspace/oracle.jar > "$RUNNER_TEMP/c2-pr152-witness.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-original-pr152-refresh-witness/v1" and
+            .pr == 152 and
+            .sourceGitBlob == "549e3b1d619b83e59bc37b31b4860191c25528f1" and
+            .rule == "SUPPORTED_REFRESH_CANDIDATE_STARVED_BY_UNSUPPORTED_PLURALITY" and
+            .line == 207 and .reproducedBehavioralDefect == true and
+            .supportedPluralitySelected == true and .unsupportedOnlyRejected == true and
+            .insufficientSamplesRejected == true and .existingTargetPreserved == true and
+            .executedOriginalSource == true and
+            .candidateInspected == false and .baselineCompared == false and
+            .positiveFindingLabelsSealed == 0 and .negativeFindingLabelsEstablished == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and .tripleSPlusCertified == false
+          ' "$RUNNER_TEMP/c2-pr152-witness.json" >/dev/null
+          echo 'C2_PR152_SOURCE_ORACLE_REPRODUCED_NO_BENCHMARK_METRICS'
+          cat "$RUNNER_TEMP/c2-pr152-witness.json"
+      - name: Archive only minimal behavioral witness, no source or model outputs
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-pr152-original-refresh-witness
+          path: ${{ runner.temp }}/c2-pr152-witness.json
+          if-no-files-found: error
+          retention-days: 14

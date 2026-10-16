@@ -1,0 +1,13 @@
+# C2 — frozen GameHub #152 supported-refresh oracle (unscored)
+
+**Frozen cohort:** [Actions #38856860621](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38856860621), artifact \`12027755925\`, packet digest \`f5f2f66b31e5dc768c18be68bef29cbd0f97c8161fda212ce2ae1e64eb664b34\`. Historical GameHub PR #152 HEAD \`104b7dc33e4c0341cec3fca81e3c8fbe3625357f\`, base \`e2050a76af7fa3010032604e6537ab124e7b4c38\`, original Kotlin Git blob \`549e3b1d619b83e59bc37b31b4860191c25528f1\`.
+
+## Predefined fault predicate (prior to model predictions)
+
+In \`AiProfileBuilder.kt\` line 207, the implementation obtains the global most frequent sampled display refresh *before* checking its membership in \`capabilities.supportedRefreshRatesHz\`. Controlled cohort: 120 Hz x4 samples (unsupported), 60 Hz x3 samples (supported). The code returns no inferred target, even though 60 Hz meets the minimum 3 observations and is explicitly allowed. Expected domain behavior for this scenario would select 60 Hz from the *supported* samples. This is a **testable hypothesis**, not yet a sealed truth label nor an incidence report on a physical device.
+
+The witness uses immutable original Kotlin fetched by SHA and Git blob, not a model reimplementation, with minimal external-domain ABI stubs. It requires controls for supported plurality, unsupported-only input, insufficient evidence, and preservation of an existing 60 Hz setting. Execute only on trusted \`main\`, using the owner's GitHub workflow dispatch or exact owner issue #50 comment \`ULTRA_SENTINEL_C2_NEXT_PR152_REFRESH_ORACLE_V1\`. The job verifies the earlier freeze receipt, compiles original Kotlin, and runs the JAR inside Bubblewrap/AppArmor without network or GitHub token, returning a minimized JSON witness.
+
+**Until the source workflow passes:** \`reproducedBehavioralDefect\` is a hypothesis, \`positiveFindingLabelsSealed=0\`. Even after it passes, the witness is not automatically a label: validate full rule/path/line semantics, source provenance, and immutable result digest in a separate **truth-sealing** run, without inspecting candidate or baseline outputs.
+
+**Never inflate metrics:** absence of an alert is not a true negative; these controls are not 4/4 TNs. Scored positive labels from this experiment: 0 until sealing. Verified negative finding labels: 0. Precision, recall, F1, FP parity and Triple S+ remain unavailable. The existing PR #153 single sealed positive is unchanged. Next: construct real balanced labels across the full preregistered cohort, seal truth, then evaluate frozen candidate and baseline on identical complete coverage.
