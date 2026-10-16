@@ -13,7 +13,7 @@ function prior(){return {
  previousTruthDigest:'13ff038ec3c91c369ebf8eb38a7c9d3579c2c100b2178199335a372d8fdd0260',
  evidence:{previousSealRun:38947142683,previousSealArtifact:12065927799,
   newWitnessRun:38968765586,newWitnessArtifact:12075688473},
- labels:[NEW,...POSITIVES,...NEGATIVES.map(({pr,headSha,blobSha,rule,path,line,positive})=>({pr,headSha,blobSha,rule,path,line,positive}))],
+ labels:[NEW,...POSITIVES,...NEGATIVES.map(({pr,headSha,blobSha,rule,path,line,positive})=>({pr,headSha,blobSha,rule,path,line,positive}))].map(x=>({...x})),
  sourcePositiveLabels:3,verifiedScopedNegativeLabels:2,
  verifiedNegativeFindingLabels:2,benchmarkScoredLabels:0,
  neededAdditionalPositiveLabelsAtLeast:45,neededAdditionalNegativeLabelsAtLeast:46,
