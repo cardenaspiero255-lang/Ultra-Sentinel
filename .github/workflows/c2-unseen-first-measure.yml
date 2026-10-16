@@ -81,24 +81,100 @@ jobs:
           test "$(find "$root/truth" -maxdepth 1 -type l | wc -l)" -eq 0
           echo 'dce263a427b05c2fcb4fa2c52509ed6a82964772fe9c4f0bd526230c77809a59  '"$root/truth/c2-unseen-truth-v3.json" | sha256sum --check --status
           rm -f "$root/run.json" "$root/artifacts.json"
-      - name: Read real SHA-frozen GameHub PR diffs and execute unchanged Core
+      - name: Fetch exact GitHub base-to-HEAD compare and target Git blobs, no PR source logs
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          node scripts/capture-c2-unseen-core.cjs \
-            > "$RUNNER_TEMP/c2-unseen-first-measure/candidate.json"
+          umask 077
+          repo=cardenaspiero255-lang/gamehub-ultra
+          root="$RUNNER_TEMP/c2-unseen-target-files"
+          mkdir -p "$root"
+          for pr in 205 206 208; do
+            case "$pr" in
+              205)
+                base=22f37acf28677aa8aaa271aac35591950c5addfd
+                head=1ecf73e789b91354ce9d8b7289d9492930ae5950
+                count=6
+                blob=f0461cd51e00d2d7b2bc4225aeefee400e2e9fa4
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraFrontierV2.kt
+                state=closed ;;
+              206)
+                base=b1089cb127b79706f30908df9db8fa35bdc1a8e7
+                head=53cb89551d6e750d263bc0e25dde9f4d3069144f
+                count=14
+                blob=6ce74fb027c0d6e3fe6cfe48d3b0b5fc1ba2497a
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraSpeechChunker.kt
+                state=closed ;;
+              208)
+                base=fca3250bd71700045cf9b2fc4e4281421f545d2e
+                head=df2bd33416d652480e51994784e511fbcb7ede12
+                count=13
+                blob=9298fe614e1ddbad27e2253c02e9415122cfa263
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/voice/ContinuousVoiceController.kt
+                state=open ;;
+              *) exit 2 ;;
+            esac
+            mkdir -p "$root/$pr"
+            gh api "/repos/$repo/pulls/$pr" > "$root/$pr/pr.json"
+            jq -e --argjson n "$pr" --arg head "$head" --arg base "$base" \
+              --arg state "$state" --argjson count "$count" '
+              .number == $n and .state == $state and
+              .head.sha == $head and .base.sha == $base and
+              .changed_files == $count and
+              .head.repo.id == 1375408706 and
+              .base.repo.id == 1375408706 and
+              .head.repo.owner.id == 322222186 and
+              .base.repo.owner.id == 322222186
+            ' "$root/$pr/pr.json" >/dev/null
+            # GitHub PR-files is mutable and was inconsistent for #208:
+            # Only immutable commit comparison matches the actual HEAD blob.
+            gh api "/repos/$repo/compare/$base...$head" > "$root/$pr/compare.json"
+            jq -e --arg base "$base" --arg head "$head" \
+              --arg file "$file" --arg blob "$blob" --argjson count "$count" '
+              .status == "ahead" and .merge_base_commit.sha == $base and
+              .base_commit.sha == $base and .commits[-1].sha == $head and
+              (.files | length) == $count and
+              ([.files[] | select(.filename == $file and .sha == $blob and
+                 .status != "removed" and (.patch | type) == "string")] | length) == 1
+            ' "$root/$pr/compare.json" >/dev/null
+            gh api "/repos/$repo/contents/$file?ref=$head" > "$root/$pr/source.json"
+            jq -e --arg file "$file" --arg blob "$blob" '
+              .type == "file" and .path == $file and .sha == $blob and
+              .encoding == "base64" and
+              .size > 100 and .size < 160000 and
+              (.content | type) == "string"
+            ' "$root/$pr/source.json" >/dev/null
+            # Ensure the PR still has the exact same HEAD and base.
+            gh api "/repos/$repo/pulls/$pr" | jq -e \
+              --arg head "$head" --arg base "$base" \
+              '.head.sha == $head and .base.sha == $base' >/dev/null
+            rm -f "$root/$pr/pr.json"
+          done
+      - name: Measure only the three sealed target files using unchanged Core, offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          sources="$RUNNER_TEMP/c2-unseen-target-files"
+          root="$RUNNER_TEMP/c2-unseen-first-measure"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE" \
+            --allow-fs-read="$sources" \
+            "$GITHUB_WORKSPACE/scripts/capture-c2-unseen-targeted.cjs" \
+            "$sources" > "$root/candidate.json"
           jq -e '.schema == "ultra-sentinel-c2-unseen-core-capture/v1" and
             (.samples | length) == 3 and .samples[0].pr == 205 and
             .samples[1].pr == 206 and .samples[2].pr == 208 and
-            .sourceKind == "FROZEN_ORIGINAL_PR_DIFF" and
+            .sourceKind == "FROZEN_TARGET_FILE_DIFF" and
+            .wholePrCoverage == false and
             .allSamplesComplete == true and
             .labelsRead == false and .baselineRead == false and
             .fpNonRegressionVerified == false and
             .globalPrecision == null and .globalRecall == null and
             .globalF1 == null and .tripleSPlusCertified == false
-          ' "$RUNNER_TEMP/c2-unseen-first-measure/candidate.json" >/dev/null
+          ' "$root/candidate.json" >/dev/null
       - name: Independently score sealed positives, fail closed without prerequisites
         shell: bash
         run: |
