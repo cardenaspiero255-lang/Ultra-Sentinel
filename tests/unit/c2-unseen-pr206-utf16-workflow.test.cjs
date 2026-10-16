@@ -26,8 +26,8 @@ test('Unicode oracle requires failure on surrogate boundary AND benign controls'
  assert.match(oracle,/repeat\(799\)\+"😀"/);
  assert.match(oracle,/normalChunks\.all/);
  assert.match(oracle,/safeChunks\.all/);
- assert.match(oracle,/candidateInspected\\":false/);
- assert.match(oracle,/globalPrecision\\":null/);
+ assert.match(oracle,/candidateInspected":false/);
+ assert.match(oracle,/globalPrecision":null/);
  assert.match(yaml,/candidateInspected == false/);
  assert.match(yaml,/controlsPassed == true/);
  assert.match(yaml,/tripleSPlusCertified == false/);
