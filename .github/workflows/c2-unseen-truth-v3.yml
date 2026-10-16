@@ -1,0 +1,122 @@
+name: Ultra Sentinel — C2 unseen truth extension to three original-source positives
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-owner-truth-v3-main
+  cancel-in-progress: false
+jobs:
+  seal-three-unseen-oracles:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_UNSEEN_TRUTH_V3' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Trusted read-only checkout of main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: main
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run complete TDD checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Check prior source run provenance and retrieve exactly two artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-unseen-truth-v2"
+          mkdir -p "$root/previous" "$root/pr208"
+          repo="cardenaspiero255-lang/Ultra-Sentinel"
+          verify_run() {
+            local id="$1" workflow="$2" sha="$3" name="$4" artifact="$5" out="$6"
+            gh api "/repos/$repo/actions/runs/$id" > "$root/run.json"
+            jq -e --argjson id "$id" --arg workflow "$workflow" --arg sha "$sha" '
+              .id == $id and .status == "completed" and .conclusion == "success" and
+              .event == "issue_comment" and .path == $workflow and
+              .head_branch == "main" and .head_sha == $sha and
+              .actor.id == 322222186 and .repository.id == 1418338512
+            ' "$root/run.json" > /dev/null
+            gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$id" --argjson aid "$artifact" --arg name "$name" '
+              [.artifacts[] | select(.id == $aid and .name == $name and
+                .workflow_run.id == $id and .expired == false)] | length == 1
+            ' "$root/artifacts.json" >/dev/null
+            gh run download "$id" --repo "$repo" --name "$name" --dir "$out"
+            test "$(find "$out" -maxdepth 1 -type f | wc -l)" -eq 1
+            test "$(find "$out" -maxdepth 1 -type l | wc -l)" -eq 0
+          }
+          verify_run 38841966994 .github/workflows/c2-unseen-truth-v2.yml \
+            97d9eac888379f6d2d93c01b505567ae0ff44ad7 \
+            ultra-sentinel-c2-unseen-truth-v2-partial 12021274341 "$root/previous"
+          verify_run 38842384635 .github/workflows/c2-unseen-pr208-mic-state.yml \
+            7e0f7a3f311991fcd0d00e10a19fe2bcdabedb89 \
+            ultra-sentinel-c2-unseen-pr208-mic-state-witness 12021074190 "$root/pr208"
+          test -f "$root/previous/c2-unseen-truth-v2.json"
+          test -f "$root/pr208/c2-kotlin-source-witness.json"
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Seal source truth v2 without network or credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-unseen-truth-v2"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/extend-c2-unseen-truth-v3.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-unseen-truth-v3.cjs" \
+            --allow-fs-read="$root/previous/c2-unseen-truth-v2.json" \
+            --allow-fs-read="$root/pr208/c2-kotlin-source-witness.json" \
+            "$GITHUB_WORKSPACE/scripts/extend-c2-unseen-truth-v3.cjs" \
+            "$root/previous/c2-unseen-truth-v2.json" \
+            "$root/pr208/c2-kotlin-source-witness.json" \
+            > "$RUNNER_TEMP/c2-unseen-truth-v3.json"
+          jq -e '.schema == "ultra-sentinel-c2-owner-truth-seal/v3" and
+            .status == "SOURCE_BEHAVIOR_TRUTH_PARTIAL" and
+            (.labels|length) == 3 and
+            .labels[0].pr == 205 and .labels[0].positive == true and
+            .labels[1].pr == 206 and .labels[1].positive == true and
+            .labels[2].pr == 208 and .labels[2].positive == true and
+            .verifiedPositiveBehavior == 3 and
+            .verifiedNegativeFindingLabels == 0 and
+            .benignBehaviorControls == 3 and
+            .remainingLabelsTo120 == 117 and
+            .neededAdditionalPositivesAtLeast == 45 and
+            .neededAdditionalNegativesAtLeast == 48 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .baselineComparable == false and
+            .noFalsePositiveIncreaseCertified == false and
+            .tripleSPlusCertified == false and
+            .mergeAllowed == false and .autoRepair == false and
+            .verdict == "TRUTH_CORPUS_INCOMPLETE"
+          ' "$RUNNER_TEMP/c2-unseen-truth-v3.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-unseen-truth-v3.json"
+      - name: Upload only SHA-linked partial truth v3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-unseen-truth-v3-partial
+          path: ${{ runner.temp }}/c2-unseen-truth-v3.json
+          retention-days: 14
+          if-no-files-found: error
