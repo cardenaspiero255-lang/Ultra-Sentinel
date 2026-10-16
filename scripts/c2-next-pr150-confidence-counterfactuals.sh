@@ -20,3 +20,21 @@ for label,(old,new) in cases.items():
         raise SystemExit("C2_PR150_SOURCE_DRIFT")
     (out/label/"SmartRecommendationExplanation.kt").write_text(src.replace(old,new,1),encoding="utf8")
 PY
+for label in fixed-positive broken-negative; do
+ kotlinc "$build/$label/SmartRecommendationExplanation.kt" \
+   tests/oracles/c2-next-pr150-confidence-domain-abi.kt \
+   tests/oracles/c2-next-pr150-confidence.kt -include-runtime -d "$build/$label/run.jar"
+ test -s "$build/$label/run.jar"
+done
+jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+test -x "$jdk/bin/java"
+mounts=(--ro-bind /usr /usr)
+for mount in /bin /lib /lib64; do
+ if [ -L "$mount" ]; then
+  name="$(readlink "$mount")"
+  [[ "$name" != /* && "$name" != *..* ]] || exit 2
+  mounts+=(--symlink "$name" "$mount")
+ elif [ -d "$mount" ]; then
+  mounts+=(--ro-bind "$mount" "$mount")
+ else exit 2; fi
+done
