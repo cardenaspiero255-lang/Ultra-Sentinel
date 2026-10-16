@@ -95,3 +95,33 @@ test('insufficient critical positives, negatives or rules cannot pass numerical 
  assert.notEqual(r.status,'NUMERICAL_DIAGNOSTIC_ONLY');
  assert.equal(r.precision,null);
 });
+
+
+test('extra false positive must be reported as numeric regression, never certified',()=>{
+ const c=campaign();
+ const negative=c.truth.labels.find(x=>!x.positive&&x.pr===NEW_LOCK.cases[0].pr);
+ c.candidate.samples[0].findings.push({rule:negative.rule,path:negative.path,line:negative.line});
+ const r=assessFrozenC2Benchmark(c);
+ assert.equal(r.comparisonPerformed,true);
+ assert.equal(r.status,'NUMERICAL_FAIL_NOT_CERTIFIED');
+ assert.equal(r.candidate.fp,1);
+ assert.equal(r.baseline.fp,0);
+ assert.equal(r.fpNonRegressionObserved,false);
+ assert.equal(r.tripleSPlusCertified,false);
+});
+test('missing one critical true positive blocks even with >95% global recall',()=>{
+ const c=campaign();
+ const k=c.truth.labels.find(x=>x.positive&&
+  x.rule==='PRIVILEGED_UNTRUSTED_CHECKOUT'&&x.pr===NEW_LOCK.cases[0].pr);
+ const findings=c.candidate.samples[0].findings;
+ const i=findings.findIndex(x=>x.rule===k.rule&&x.path===k.path&&x.line===k.line);
+ assert.ok(i>=0);
+ findings.splice(i,1);
+ const r=assessFrozenC2Benchmark(c);
+ assert.equal(r.comparisonPerformed,true);
+ assert.ok(r.candidate.recall>0.95);
+ assert.equal(r.candidate.fn,1);
+ assert.ok(r.unmet.includes('criticalRecall'));
+ assert.equal(r.status,'NUMERICAL_FAIL_NOT_CERTIFIED');
+ assert.equal(r.tripleSPlusCertified,false);
+});
