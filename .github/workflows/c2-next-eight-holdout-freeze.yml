@@ -1,0 +1,100 @@
+name: Ultra Sentinel — C2 second untouched eight-PR benchmark holdout freeze
+# Freeze input identities BEFORE viewing any candidate findings or truth labels.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+concurrency:
+  group: ultra-sentinel-c2-next-eight-owner-holdout-freeze
+  cancel-in-progress: false
+jobs:
+  freeze-owner-next-holdout:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_HOLDOUT_FREEZE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Trusted main checkout with no persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run existing security and quality checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          # Baseline detector code pinned immediately after three post-holdout fixes.
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" = 7df2a994f566ad56bdacab999fa6ba83b69e3b4d
+          test "$(git hash-object packages/core/c2-known-defect-regressions.cjs)" = 8c2fa4289d331e157b07f4e693239ac7e31cae8c
+          npm run check
+      - name: Freeze eight independent GitHub PR metadata envelopes, NO candidate/labels
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-next-freeze"
+          mkdir -p "$root"
+          : > "$root/records.ndjson"
+          # Use only immutable identities; never retrieve diffs or predictions.
+          for pr in 150 151 152 153 154 155 157 158; do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/pulls/$pr" \
+              | jq -ce --argjson number "$pr" '
+                select(.number == $number and
+                  .base.repo.full_name == "cardenaspiero255-lang/gamehub-ultra" and
+                  .head.repo.full_name == "cardenaspiero255-lang/gamehub-ultra") |
+                {pr:.number,headSha:.head.sha,baseSha:.base.sha,
+                 changedFiles:.changed_files,state:.state,
+                 baseRepoId:.base.repo.id,baseOwnerId:.base.repo.owner.id,
+                 headRepoId:.head.repo.id,headOwnerId:.head.repo.owner.id}
+              ' >> "$root/records.ndjson"
+          done
+          jq -se . "$root/records.ndjson" > "$root/normalized-api.json"
+          test "$(jq length "$root/normalized-api.json")" -eq 8
+          rm -f "$root/records.ndjson"
+      - name: Validate frozen identities without network or token
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-next-freeze"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/verify-c2-next-holdout.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-holdout.cjs" \
+            --allow-fs-read="$root/normalized-api.json" \
+            "$GITHUB_WORKSPACE/scripts/verify-c2-next-holdout.cjs" \
+            "$root/normalized-api.json" > "$root/frozen-next-holdout.json"
+          jq -e '.status == "FROZEN_INPUT_ONLY" and
+            .candidateInspected == false and .truthLabelsInspected == false and .baselineInspected == false and
+            .knownCaseTrainingOverlap == 0 and .labelsVerified == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false and .canMerge == false and .canRepair == false and .fpNonRegressionVerified == false and
+            (.cases|length) == 8' "$root/frozen-next-holdout.json" >/dev/null
+          rm -f "$root/normalized-api.json"
+          cat "$root/frozen-next-holdout.json"
+      - name: Publish sanitized input freeze only
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-eight-holdout-freeze
+          path: ${{ runner.temp }}/c2-next-freeze/frozen-next-holdout.json
+          retention-days: 14
+          if-no-files-found: error
