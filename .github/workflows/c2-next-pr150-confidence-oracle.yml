@@ -1,4 +1,6 @@
 name: Ultra Sentinel — C2 original PR150 confidence source oracle and counterfactuals
+# Oracle controls: ALL_AUTHORITATIVE_SOURCES_OPPOSE_RECOMMENDATION
+# Oracle controls: WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE
 on:
   issue_comment:
     types: [created]
