@@ -1,0 +1,136 @@
+name: Ultra Sentinel — C2 seven immutable original-source truth cases
+# Source-oracle receipts only. No candidate or baseline access, no writes to repository.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-seven-source-truth
+  cancel-in-progress: false
+jobs:
+  verify-and-seal-seven-source-cases:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' && github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_SEVEN_SOURCE_TRUTH_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - name: Checkout trusted main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check all tests and contracts at original witness truth verifier HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate immutable owner source runs and archive SHA256 digests
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-seven-real-originals"
+          mkdir -p "$root/previous" "$root/new"
+          chmod 0700 "$root" "$root/previous" "$root/new"
+          for id in 38969278857 38969804193; do
+            gh api "/repos/$repo/actions/runs/$id" > "$root/run-$id.json"
+            jq -e --argjson id "$id" '.id == $id and
+              .event == "issue_comment" and .status == "completed" and
+              .conclusion == "success" and .head_branch == "main" and
+              .repository.id == 1418338512 and .actor.id == 322222186' \
+              "$root/run-$id.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts-$id.json"
+          done
+          jq -e '.path == ".github/workflows/c2-next-five-source-truth-seal.yml" and
+            .head_sha == "a3c8895ff81b822fbe50b4c84911c4f0de60d077"' \
+            "$root/run-38969278857.json" >/dev/null
+          jq -e '.path == ".github/workflows/c2-next-original-pr154-pr155-oracles.yml" and
+            .head_sha == "36ec2099051a1a18d22366991553e86f5844c670"' \
+            "$root/run-38969804193.json" >/dev/null
+          jq -e '[.artifacts[]|select(
+            .id == 12075338764 and
+            .name == "ultra-sentinel-c2-next-five-source-truth" and
+            .workflow_run.id == 38969278857 and
+            .digest == "sha256:9e754dc490d5c7d1afe3e5b278a8762f0499ba5a20f1de548f57fa1c259a31af" and
+            .expired == false)]|length == 1' "$root/artifacts-38969278857.json" >/dev/null
+          jq -e '[.artifacts[]|select(
+            .id == 12076406708 and
+            .name == "ultra-sentinel-c2-next-pr154-pr155-scoped-negatives" and
+            .workflow_run.id == 38969804193 and
+            .digest == "sha256:84b7e898c1fa1d2f1d5dfee6e8d0feb39de17f3067c2dea761a3a25c15d2a01c" and
+            .expired == false)]|length == 1' "$root/artifacts-38969804193.json" >/dev/null
+          gh run download 38969278857 --repo "$repo" \
+            --name ultra-sentinel-c2-next-five-source-truth --dir "$root/previous"
+          gh run download 38969804193 --repo "$repo" \
+            --name ultra-sentinel-c2-next-pr154-pr155-scoped-negatives --dir "$root/new"
+          test "$(find "$root/previous" -maxdepth 1 -type f|wc -l)" -eq 1
+          test "$(find "$root/new" -maxdepth 1 -type f|wc -l)" -eq 1
+          test "$(find "$root/previous" "$root/new" -type l|wc -l)" -eq 0
+          test -f "$root/previous/c2-five-source-truth.json"
+          test -f "$root/new/c2-next-thermal-battery-negatives.json"
+          rm -f "$root"/run-*.json "$root"/artifacts-*.json
+      - name: Seal seven original-source labels in isolated offline Node verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-seven-real-originals"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/seal-c2-next-seven-original-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-seven-source-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-five-source-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-four-scoped-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-two-original-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-one-positive-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-next-holdout.cjs" \
+            --allow-fs-read="$root/previous/c2-five-source-truth.json" \
+            --allow-fs-read="$root/new/c2-next-thermal-battery-negatives.json" \
+            "$GITHUB_WORKSPACE/scripts/seal-c2-next-seven-original-truth.cjs" \
+            "$root/previous/c2-five-source-truth.json" \
+            "$root/new/c2-next-thermal-battery-negatives.json" \
+            > "$RUNNER_TEMP/c2-seven-source-truth.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-seven-original-source-truth-seal/v1" and
+            (.labels|length) == 7 and
+            .labels[0].pr == 151 and .labels[0].positive == true and
+            .labels[1].pr == 152 and .labels[1].positive == true and
+            .labels[2].pr == 153 and .labels[2].positive == true and
+            .labels[3].pr == 154 and .labels[3].positive == false and
+            .labels[4].pr == 155 and .labels[4].positive == false and
+            .labels[5].pr == 157 and .labels[5].positive == false and
+            .labels[6].pr == 158 and .labels[6].positive == false and
+            .sourcePositiveLabels == 3 and .verifiedScopedNegativeLabels == 4 and
+            .verifiedNegativeFindingLabels == 4 and .benchmarkScoredLabels == 0 and
+            .neededAdditionalPositiveLabelsAtLeast == 45 and
+            .neededAdditionalNegativeLabelsAtLeast == 44 and
+            .neededAdditionalLabelsAtLeast == 113 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and .tripleSPlusCertified == false and
+            .verdict == "TRUTH_CORPUS_INCOMPLETE"' "$RUNNER_TEMP/c2-seven-source-truth.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-seven-source-truth.json"
+      - name: Archive only minimized SHA-linked partial truth
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-seven-source-truth
+          path: ${{ runner.temp }}/c2-seven-source-truth.json
+          if-no-files-found: error
+          retention-days: 14
