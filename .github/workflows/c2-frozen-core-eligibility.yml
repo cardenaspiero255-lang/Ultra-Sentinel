@@ -1,0 +1,102 @@
+name: Ultra Sentinel — C2 owner frozen Core file eligibility preflight
+# Independent source/coverage preflight; MUST NOT execute candidate or baseline predictions.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-frozen-core-eligibility
+  cancel-in-progress: false
+jobs:
+  owner-frozen-core-eligibility:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_FROZEN_ELIGIBILITY_AUDIT_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted Ultra Sentinel main without persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check original frozen Core policy blob and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          npm run check
+      - name: Authenticate only original 241-entry source inventory run and immutable ZIP hash
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-source-eligibility"
+          mkdir -p "$root/source"
+          gh api "/repos/$repo/actions/runs/38974165470" > "$root/run.json"
+          jq -e '.id == 38974165470 and .event == "issue_comment" and
+            .path == ".github/workflows/c2-frozen-source-universe.yml" and
+            .head_sha == "7bf0122fa298dc0bfb5da5ca7e8d89e1dcbf39e0" and
+            .head_branch == "main" and .status == "completed" and
+            .conclusion == "success" and .actor.id == 322222186 and
+            .repository.id == 1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38974165470/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(.id == 12077973482 and
+            .name == "ultra-sentinel-c2-frozen-source-universe" and
+            .workflow_run.id == 38974165470 and
+            .digest == "sha256:fcc878c3af06d053e3e2b3e9ef3cc0f646e1a0edee4871a95333f16cd9e476a7" and
+            .expired == false)]|length == 1' "$root/artifacts.json" >/dev/null
+          gh run download 38974165470 --repo "$repo" \
+            --name ultra-sentinel-c2-frozen-source-universe --dir "$root/source"
+          test -f "$root/source/source-inventory.json"
+          test "$(find "$root/source" -maxdepth 1 -type l|wc -l)" -eq 0
+          test "$(find "$root/source" -maxdepth 1 -type f|wc -l)" -eq 4
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Audit actual 241/241 source inputs against frozen Core production selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-source-eligibility"
+          env -u GITHUB_TOKEN -u GH_TOKEN node scripts/audit-c2-frozen-core-eligibility.cjs \
+            "$root/source/source-inventory.json" > "$root/core-eligibility.json"
+          jq -e '.schema == "ultra-sentinel-c2-frozen-core-eligibility-audit/v1" and
+            .totalInputFileEntries == 241 and
+            .coreProductionEligibleUpperBound == 153 and
+            .coreExcludedFileEntries == 88 and
+            (.eligibilityPerPr|length) == 8 and
+            [.eligibilityPerPr[].frozenCoreEligibleUpperBound] == [15,27,27,15,16,15,23,15] and
+            [.eligibilityPerPr[].frozenCorePathExcluded] == [6,14,14,11,8,11,16,8] and
+            .fullInputDelivery241Proven == true and
+            .fullCoreAnalysis241Proven == false and
+            .status == "BLOCKED_FROZEN_CORE_ANALYZED_COUNT" and
+            .detectorExecuted == false and .benchmarkScoredLabels == 0 and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false' "$root/core-eligibility.json" >/dev/null
+          echo 'C2_SOURCE_241_DELIVERED_FROZEN_CORE_153_ELIGIBLE_88_EXCLUDED_NOT_CERTIFIED'
+          cat "$root/core-eligibility.json"
+      - name: Archive limited eligibility receipt, never model outputs or private source
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-frozen-core-eligibility-audit
+          path: ${{ runner.temp }}/c2-source-eligibility/core-eligibility.json
+          if-no-files-found: error
+          retention-days: 30
