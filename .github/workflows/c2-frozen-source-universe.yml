@@ -1,0 +1,140 @@
+name: Ultra Sentinel — C2 owner frozen eight-PR source-universe snapshot
+# Truth-blind, detector-blind. A source snapshot is not a scored benchmark.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-frozen-source-universe
+  cancel-in-progress: false
+jobs:
+  owner-eight-pr-source-universe:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_FROZEN_SOURCE_UNIVERSE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout trusted Ultra Sentinel main with complete commit history and no persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Test code and authenticate objective predecessor baseline BEFORE viewing predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          candidate=547938ed88804e25bbabecf74a3c3d91b74cf1a4
+          baseline=3c97b60717f6a08ddc7d618587202537d62bc951
+          test "$(git rev-list --parents -n 1 "$candidate")" = "$candidate $baseline"
+          test "$(git show "$candidate:packages/core/ultra_sentinel_core.cjs" | git hash-object --stdin)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git show "$baseline:packages/core/ultra_sentinel_core.cjs" | git hash-object --stdin)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git show "$candidate:packages/core/c2-semantic-patterns.cjs" | git hash-object --stdin)" = 7df2a994f566ad56bdacab999fa6ba83b69e3b4d
+          test "$(git show "$baseline:packages/core/c2-semantic-patterns.cjs" | git hash-object --stdin)" = b8b6e79c1c544a9c22ea5aa0ea857881a0e1b6d9
+          test "$(git cat-file -t "$candidate:packages/core/c2-known-defect-regressions.cjs")" = blob
+          ! git cat-file -e "$baseline:packages/core/c2-known-defect-regressions.cjs"
+          npm run check
+      - name: Fetch all eight original immutable base...HEAD GitHub compares
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/gamehub-ultra
+          root="$RUNNER_TEMP/c2-source-universe"
+          mkdir -p "$root/compares"
+          entries=(
+            '150|74c5fb9697b2855a1395c9562c2f9b74df9c34c1|4c6912d7ca17df0669f8a0d9667f34d2f2b205a9|21'
+            '151|c594cb5383591d5040b1e88930fc76a5e5c9c6fa|9ad983576c16c6c34d59283979d83c69ede50dce|41'
+            '152|e2050a76af7fa3010032604e6537ab124e7b4c38|104b7dc33e4c0341cec3fca81e3c8fbe3625357f|41'
+            '153|86565d51b021e9834062552522dda0424a9cb2bc|6508cc124076b9dea437ea1efc213d3ce55d7baf|26'
+            '154|260c184932052a7cde0ce4f761e47cdea5f02725|858c9ce5cb6a7916d63f2348432013e49d02ba79|24'
+            '155|362675d4e013fe79c57526ef7e3a7ca4c98a7115|2289f4e4cda55ddaa50f2016113ded82dc17203c|26'
+            '157|362675d4e013fe79c57526ef7e3a7ca4c98a7115|cb184c56d28342e46923d149c0e7f27141ce1a24|39'
+            '158|1060ce8b9f35d191ce8639337e4cff50085cbd7e|9d8572afedc634ac07dae58a0da326ea62bdc1da|23'
+          )
+          for item in "${entries[@]}"; do
+            IFS='|' read -r pr base head count <<< "$item"
+            gh api "/repos/$repo/compare/$base...$head" > "$root/compares/pr-$pr.json"
+            jq -e --arg b "$base" --arg h "$head" --argjson n "$count" '
+              .status == "ahead" and .base_commit.sha == $b and
+              .merge_base_commit.sha == $b and .commits[-1].sha == $h and
+              (.files|length) == $n and
+              all(.files[];(.patch|type) == "string" and (.sha|type) == "string")
+            ' "$root/compares/pr-$pr.json" >/dev/null
+          done
+      - name: Verify immutable source inventory offline without token
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-source-universe"
+          env -u GH_TOKEN -u GITHUB_TOKEN node scripts/verify-c2-source-inventory.cjs \
+            "$root/compares" > "$root/source-inventory.json"
+          jq -e '.changedFileEntries == 241 and (.cases|length) == 8 and
+            .sourceMetadataVerified == true and .sourceBlobBytesMaterialized == false and
+            .engineExecutionPerformed == false and .truthLabelsAdded == 0 and
+            .precision == null and .tripleSPlusCertified == false' "$root/source-inventory.json" >/dev/null
+      - name: Materialize the same original Git blobs and full patches exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-source-universe"
+          git -c protocol.file.allow=never clone --no-checkout --filter=blob:none \
+            --quiet https://github.com/cardenaspiero255-lang/gamehub-ultra.git "$root/gamehub"
+          for item in \
+            '74c5fb9697b2855a1395c9562c2f9b74df9c34c1|4c6912d7ca17df0669f8a0d9667f34d2f2b205a9' \
+            'c594cb5383591d5040b1e88930fc76a5e5c9c6fa|9ad983576c16c6c34d59283979d83c69ede50dce' \
+            'e2050a76af7fa3010032604e6537ab124e7b4c38|104b7dc33e4c0341cec3fca81e3c8fbe3625357f' \
+            '86565d51b021e9834062552522dda0424a9cb2bc|6508cc124076b9dea437ea1efc213d3ce55d7baf' \
+            '260c184932052a7cde0ce4f761e47cdea5f02725|858c9ce5cb6a7916d63f2348432013e49d02ba79' \
+            '362675d4e013fe79c57526ef7e3a7ca4c98a7115|2289f4e4cda55ddaa50f2016113ded82dc17203c' \
+            '362675d4e013fe79c57526ef7e3a7ca4c98a7115|cb184c56d28342e46923d149c0e7f27141ce1a24' \
+            '1060ce8b9f35d191ce8639337e4cff50085cbd7e|9d8572afedc634ac07dae58a0da326ea62bdc1da'
+          do
+            IFS='|' read -r base head <<< "$item"
+            git -C "$root/gamehub" fetch --quiet --no-tags origin "$base" "$head"
+          done
+          env -u GH_TOKEN -u GITHUB_TOKEN node scripts/materialize-c2-source-universe.cjs \
+            "$root/compares" "$root/gamehub" "$root/source" > "$root/source-status.json"
+          jq -e '.changedFiles == 241 and .completeForBothInputs == true and
+            .detectorsExecuted == false and .scoredLabels == 0 and
+            .tripleSPlusCertified == false' "$root/source-status.json" >/dev/null
+          jq -e '.materializedChangedEntries == 241 and (.samples|length) == 8 and
+            .detectorsExecuted == false and .truthRead == false and
+            .scoredLabels == 0 and .tripleSPlusCertified == false' \
+            "$root/source/manifest.json" >/dev/null
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+            -cf "$root/source-universe.tar" -C "$root/source" .
+          sha256sum "$root/source-universe.tar" "$root/source/manifest.json" \
+            "$root/source-inventory.json" > "$root/SHA256SUMS"
+          sha256sum --check "$root/SHA256SUMS"
+          echo C2_FROZEN_SOURCE_UNIVERSE_241_SOURCE_ENTRIES_CAPTURED_NO_MODEL_RUN
+      - name: Archive complete source bundle and source/manifest digests, never models or truth
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-frozen-source-universe
+          path: |
+            ${{ runner.temp }}/c2-source-universe/source-universe.tar
+            ${{ runner.temp }}/c2-source-universe/source-inventory.json
+            ${{ runner.temp }}/c2-source-universe/source-status.json
+            ${{ runner.temp }}/c2-source-universe/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
