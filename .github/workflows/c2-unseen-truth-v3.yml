@@ -113,10 +113,10 @@ jobs:
             .verdict == "TRUTH_CORPUS_INCOMPLETE"
           ' "$RUNNER_TEMP/c2-unseen-truth-v3.json" >/dev/null
           cat "$RUNNER_TEMP/c2-unseen-truth-v3.json"
-      - name: Upload only SHA-linked partial truth v2
+      - name: Upload only SHA-linked partial truth v3
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
-          name: ultra-sentinel-c2-unseen-truth-v2-partial
+          name: ultra-sentinel-c2-unseen-truth-v3-partial
           path: ${{ runner.temp }}/c2-unseen-truth-v3.json
           retention-days: 14
           if-no-files-found: error
