@@ -54,7 +54,7 @@ for pr in 157 158; do
   env -i PATH=/usr/bin:/bin HOME=/tmp \
     /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
     --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
-    ""${mounts[@]}"" --ro-bind "$jdk" /jdk --ro-bind "$build" /workspace \
+    "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$build" /workspace \
     --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
     -- /jdk/bin/java -jar "/workspace/mutant$pr.jar" \
     > "$build/mutant$pr.log" 2>&1
