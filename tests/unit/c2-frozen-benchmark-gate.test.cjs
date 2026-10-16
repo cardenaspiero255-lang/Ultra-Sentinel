@@ -10,7 +10,7 @@ function sample(pr,i){
  const labels=Array.from({length:16},(_,j)=>({
   pr,headSha:NEW_LOCK.cases[i].headSha,rule:rules[j%8],
   path:'app/src/main/java/holdout/file'+(j%4)+'.kt',line:100+pr*20+j,
-  positive:j%2===0,sourceBlobSha:'c'.repeat(40),
+  positive:(Math.floor(j/8)+i)%2===0,sourceBlobSha:'c'.repeat(40),
   evidenceSha256:String(i*16+j).padStart(64,'0')
  }));
  const findings=labels.filter(x=>x.positive).map(({rule,path,line})=>({rule,path,line}));
