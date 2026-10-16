@@ -4,6 +4,7 @@
  * automatic remediation. These patterns are regression monitors for known C2
  * behaviors, not blind labels or proof of semantic reliability.
  */
+const {knownDefectRegressionCandidates}=require('./c2-known-defect-regressions.cjs');
 const RESEARCH='supabase/functions/ultra-research/research.ts';
 const FRAME='/performance/framepacing/FramePacingIntelligenceEngine.kt';
 const NETWORK='/network/diagnostics/NetworkGamingDiagnosticsEngine.kt';
@@ -65,6 +66,8 @@ function semanticCandidates({path,lines,added,active}={}){
      'Dos artículos con URLs del mismo hostname y dominios declarados distintos deben causar abstención.');
   }
  }
+ for(const risk of knownDefectRegressionCandidates({path,lines,added,active}))
+  findings.push(risk);
  return findings;
 }
 module.exports={semanticCandidates};

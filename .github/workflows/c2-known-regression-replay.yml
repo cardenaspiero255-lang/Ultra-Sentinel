@@ -1,0 +1,198 @@
+name: Ultra Sentinel — KNOWN regression replay of first unblinded source defects
+# SHA-frozen truth precedes candidate measurement. No global 95% claim.
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: ultra-sentinel-c2-known-regression-replay-main
+  cancel-in-progress: false
+
+jobs:
+  replay-owner-known-regressions:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_KNOWN_REPLAY_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Checkout trusted latest main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check new rule module and existing Core, never rewrite historical baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" != b8b6e79c1c544a9c22ea5aa0ea857881a0e1b6d9
+          test -f packages/core/c2-known-defect-regressions.cjs
+          npm run check
+      - name: Verify SHA-pinned truth v3 existed before measurement
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-unseen-first-measure"
+          mkdir -p "$root/truth"
+          gh api "/repos/$repo/actions/runs/38842931678" > "$root/run.json"
+          jq -e '
+            .id == 38842931678 and .status == "completed" and
+            .conclusion == "success" and
+            .path == ".github/workflows/c2-unseen-truth-v3.yml" and
+            .event == "issue_comment" and .head_branch == "main" and
+            .head_sha == "ae9e833ada13cef8c1322fab983409df09f2a86d" and
+            .actor.id == 322222186 and .repository.id == 1418338512
+          ' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38842931678/artifacts" > "$root/artifacts.json"
+          jq -e '
+            [.artifacts[] | select(.id == 12021956554 and
+              .name == "ultra-sentinel-c2-unseen-truth-v3-partial" and
+              .workflow_run.id == 38842931678 and .expired == false)]
+            | length == 1
+          ' "$root/artifacts.json" >/dev/null
+          gh run download 38842931678 --repo "$repo" \
+            --name ultra-sentinel-c2-unseen-truth-v3-partial --dir "$root/truth"
+          test -f "$root/truth/c2-unseen-truth-v3.json"
+          test "$(find "$root/truth" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/truth" -maxdepth 1 -type l | wc -l)" -eq 0
+          echo 'dce263a427b05c2fcb4fa2c52509ed6a82964772fe9c4f0bd526230c77809a59  '"$root/truth/c2-unseen-truth-v3.json" | sha256sum --check --status
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Fetch exact GitHub base-to-HEAD compare and target Git blobs, no PR source logs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/gamehub-ultra
+          root="$RUNNER_TEMP/c2-unseen-target-files"
+          mkdir -p "$root"
+          for pr in 205 206 208; do
+            case "$pr" in
+              205)
+                base=22f37acf28677aa8aaa271aac35591950c5addfd
+                head=1ecf73e789b91354ce9d8b7289d9492930ae5950
+                count=6
+                blob=f0461cd51e00d2d7b2bc4225aeefee400e2e9fa4
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraFrontierV2.kt
+                state=closed ;;
+              206)
+                base=b1089cb127b79706f30908df9db8fa35bdc1a8e7
+                head=53cb89551d6e750d263bc0e25dde9f4d3069144f
+                count=14
+                blob=6ce74fb027c0d6e3fe6cfe48d3b0b5fc1ba2497a
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraSpeechChunker.kt
+                state=closed ;;
+              208)
+                base=fca3250bd71700045cf9b2fc4e4281421f545d2e
+                head=df2bd33416d652480e51994784e511fbcb7ede12
+                count=13
+                blob=9298fe614e1ddbad27e2253c02e9415122cfa263
+                file=app/src/main/java/com/cardenaspiero255/gamehubultra/voice/ContinuousVoiceController.kt
+                state=open ;;
+              *) exit 2 ;;
+            esac
+            mkdir -p "$root/$pr"
+            gh api "/repos/$repo/pulls/$pr" > "$root/$pr/pr.json"
+            # A live PR may advance after the truth cohort was frozen.
+            # Verify repository identity, never substitute its current HEAD.
+            # Only the owner-run v3 truth artifact above authorizes original SHA.
+            jq -e --argjson n "$pr" '
+              .number == $n and .state != null and
+              .head.repo.id == 1375408706 and
+              .base.repo.id == 1375408706 and
+              .head.repo.owner.id == 322222186 and
+              .base.repo.owner.id == 322222186 and
+              .base.repo.full_name == "cardenaspiero255-lang/gamehub-ultra" and
+              .head.repo.full_name == "cardenaspiero255-lang/gamehub-ultra"
+            ' "$root/$pr/pr.json" >/dev/null
+            # GitHub PR-files is mutable and was inconsistent for #208:
+            # Only immutable commit comparison matches the actual HEAD blob.
+            gh api "/repos/$repo/compare/$base...$head" > "$root/$pr/compare.json"
+            jq -e --arg base "$base" --arg head "$head" \
+              --arg file "$file" --arg blob "$blob" --argjson count "$count" '
+              .status == "ahead" and .merge_base_commit.sha == $base and
+              .base_commit.sha == $base and .commits[-1].sha == $head and
+              (.files | length) == $count and
+              ([.files[] | select(.filename == $file and .sha == $blob and
+                 .status != "removed" and (.patch | type) == "string")] | length) == 1
+            ' "$root/$pr/compare.json" >/dev/null
+            gh api "/repos/$repo/contents/$file?ref=$head" > "$root/$pr/source.json"
+            jq -e --arg file "$file" --arg blob "$blob" '
+              .type == "file" and .path == $file and .sha == $blob and
+              .encoding == "base64" and
+              .size > 100 and .size < 160000 and
+              (.content | type) == "string"
+            ' "$root/$pr/source.json" >/dev/null
+            # Detect an unexpected repository replacement, not a normal
+            # revision of the mutable PR after this historical freeze.
+            gh api "/repos/$repo/pulls/$pr" | jq -e --argjson n "$pr" '
+              .number == $n and
+              .head.repo.id == 1375408706 and
+              .base.repo.id == 1375408706 and
+              .head.repo.owner.id == 322222186 and
+              .base.repo.owner.id == 322222186
+            ' >/dev/null
+            rm -f "$root/$pr/pr.json"
+          done
+      - name: Replay three ALREADY-DISCLOSED training regressions on original source
+        shell: bash
+        run: |
+          set -euo pipefail
+          sources="$RUNNER_TEMP/c2-unseen-target-files"
+          current="$(git rev-parse HEAD)"
+          test "$current" != bb38bb77983339301cafe8a7594e258e0c2924a6
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE" \
+            --allow-fs-read="$sources" \
+            "$GITHUB_WORKSPACE/scripts/replay-c2-known-regressions.cjs" \
+            "$sources" "$current" > "$RUNNER_TEMP/c2-known-regression-result.json"
+          jq -e '.schema == "ultra-sentinel-c2-known-regressions/v1" and
+            .trainingOnly == true and .freshHoldout == false and
+            .wholePrCoverage == false and
+            .knownRegressionMatches.total == 3 and
+            .knownRegressionMatches.detected == 3 and
+            .knownRegressionMatches.missed == 0 and
+            .legacyFrozenBaselineMatches == 0 and
+            .verifiedNegativeFindingLabels == 0 and
+            .falsePositivesVerified == null and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and
+            .tripleSPlusCertified == false and
+            .autoRepair == false and
+            .verdict == "KNOWN_TRAINING_REPLAY_NOT_CERTIFICATION"
+          ' "$RUNNER_TEMP/c2-known-regression-result.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-known-regression-result.json"
+      - name: Archive only sanitized known-case regression counts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-known-regression-replay
+          path: ${{ runner.temp }}/c2-known-regression-result.json
+          if-no-files-found: error
+          retention-days: 14
