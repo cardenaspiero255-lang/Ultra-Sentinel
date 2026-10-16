@@ -80,8 +80,8 @@ jobs:
             .cases[5].headSha == "2289f4e4cda55ddaa50f2016113ded82dc17203c"
           ' "$root/preregistered/frozen-next-holdout.json" >/dev/null
           printf '%s\n' \
-            '154|858c9ce5cb6a7916d63f2348432013e49d02ba79|b2e15247536ecc00d4811021774ab2f34608ac3e|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/ThermalPredictionAdvisor.kt' \
-            '155|2289f4e4cda55ddaa50f2016113ded82dc17203c|8696360219231f3f1477d5ad21c93bca2197e281|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/BatteryAwareGamingEngine.kt' > "$root/manifest"
+            '154|858c9ce5cb6a7916d63f2348432013e49d02ba79|b2e15247536ecc00d4811021774ab2f34608ac3e|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/ThermalPredictionAdvisor.kt' \
+            '155|2289f4e4cda55ddaa50f2016113ded82dc17203c|8696360219231f3f1477d5ad21c93bca2197e281|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt' > "$root/manifest"
           while IFS='|' read -r pr head blob file; do
             meta="$root/metadata.json"
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$file?ref=$head" > "$meta"
