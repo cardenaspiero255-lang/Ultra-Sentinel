@@ -42,14 +42,14 @@ function verifyTruth(t){
 }
 function verifyCandidate(c){
  if(!exact(c,['schema','repository','modelSourceSha','coreGitBlobs',
-  'sourceKind','samples','candidateOnly','labelsRead','baselineRead',
+  'sourceKind','wholePrCoverage','samples','candidateOnly','labelsRead','baselineRead',
   'allSamplesComplete','globalPrecision','globalRecall','globalF1',
   'fpNonRegressionVerified','tripleSPlusCertified','mergeAllowed','autoRepair'])||
   c.schema!=='ultra-sentinel-c2-unseen-core-capture/v1'||
   c.repository!==LOCK.repository||c.modelSourceSha!==LOCK.modelSourceSha||
   !exact(c.coreGitBlobs,['core','semantic'])||
   Object.keys(BLOBS).some(k=>c.coreGitBlobs[k]!==BLOBS[k])||
-  c.sourceKind!=='FROZEN_ORIGINAL_PR_DIFF'||c.candidateOnly!==true||
+  c.sourceKind!=='FROZEN_TARGET_FILE_DIFF'||c.wholePrCoverage!==false||c.candidateOnly!==true||
   c.labelsRead!==false||c.baselineRead!==false||
   c.allSamplesComplete!==true||c.globalPrecision!==null||
   c.globalRecall!==null||c.globalF1!==null||
@@ -62,7 +62,7 @@ function verifyCandidate(c){
    'partial','nonPositionalFindings','findings'])||
    p.pr!==pr||p.headSha!==locked.headSha||p.baseSha!==locked.baseSha||
    p.changedFiles!==locked.changedFiles||
-   p.source!=='AUTHENTICATED_IMMUTABLE_GITHUB_DIFF'||p.partial!==false||
+   p.source!=='VERIFIED_PINNED_GITHUB_COMPARE_TARGET'||p.partial!==false||
    !Number.isSafeInteger(p.nonPositionalFindings)||
    p.nonPositionalFindings<0||p.nonPositionalFindings>40||
    !Array.isArray(p.findings)||p.findings.length>40)fail();
@@ -105,8 +105,8 @@ function evaluateFirstUnseenHoldout({truth,candidate}={}){
   certified95Percent:false,tripleSPlusCertified:false,
   autoRepair:false,mergeAllowed:false,
   verdict:'SMALL_HOLDOUT_NOT_CERTIFIABLE',
-  limitation:'Three held-out positives allow an observed hit rate only. '+
-   'Unlabelled candidate findings cannot be counted as false positives. '+
+  limitation:'Three target-file-only held-out positives allow an observed hit rate only. '+
+   'Whole-PR coverage is NOT asserted; unlabelled findings are not FPs. '+
    'No finding-level negatives, equal-SHA legacy baseline or representative '+
    '120-label corpus exists; no global precision, recall or F1 claim is valid.'
  });
