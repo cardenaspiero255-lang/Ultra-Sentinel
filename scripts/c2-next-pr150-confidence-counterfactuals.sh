@@ -38,3 +38,21 @@ for mount in /bin /lib /lib64; do
   mounts+=(--ro-bind "$mount" "$mount")
  else exit 2; fi
 done
+for label in fixed-positive broken-negative; do
+ set +e
+ env -i PATH=/usr/bin:/bin HOME=/tmp \
+  /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+  --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+  "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$build" /workspace \
+  --proc /proc --dev /dev --tmpfs /tmp --chdir /workspace \
+  -- /jdk/bin/java -jar "/workspace/$label/run.jar" > "$build/$label.log" 2>&1
+ code=$?
+ set -e
+ test "$code" -ne 0 || { echo "C2_PR150_COUNTERFACTUAL_SURVIVED_$label"; exit 2; }
+ case "$label" in
+  fixed-positive)
+   grep -F 'java.lang.IllegalStateException: C2_NEXT_PR150_CONTROL_FAILED_ALL_AUTHORITATIVE_SOURCES_OPPOSE_RECOMMENDATION' "$build/$label.log" >/dev/null ;;
+  broken-negative)
+   grep -F 'java.lang.IllegalStateException: C2_NEXT_PR150_CONTROL_FAILED_WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE' "$build/$label.log" >/dev/null ;;
+ esac
+done
