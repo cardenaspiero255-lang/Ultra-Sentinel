@@ -14,12 +14,12 @@ test('controls use distinct source SHA from both frozen PRs',()=>{
  ])assert.ok(yaml.includes(x),x);
 });
 test('benign controls never become artificial truth negatives or enter candidate',()=>{
- assert.match(kt,/negativeFindingLabelsEstablished\\":0/);
- assert.match(kt,/candidateInspected\\":false/);
- assert.match(kt,/realDefectsVerified\\":0/);
+ assert.ok(kt.includes('negativeFindingLabelsEstablished":0'));
+ assert.ok(kt.includes('candidateInspected":false'));
+ assert.ok(kt.includes('realDefectsVerified":0'));
  assert.match(yaml,/negativeFindingLabelsEstablished == 0/);
  assert.match(yaml,/candidateInspected == false/);
- assert.match(yaml,/canMerge|canRepair|tripleSPlusCertified == false/);
+ assert.ok(yaml.includes("tripleSPlusCertified == false"));
 });
 test('ASR/TTS oracle has actual negative behavioral checks',()=>{
  for(const text of ['ASR_BACKOFF','ASR_SATURATION','ASR_NO_FALSE_HEALTH_RESET',
