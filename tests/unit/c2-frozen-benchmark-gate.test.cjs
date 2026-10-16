@@ -40,14 +40,14 @@ function campaign(){
    candidatePredictionsRead:false,baselinePredictionsRead:false},
   candidate:{sourceEngineSha:NEW_LOCK.engineSourceSha,kind:'CANDIDATE',
    samples:cases.map((x,i)=>({pr:NEW_LOCK.cases[i].pr,headSha:NEW_LOCK.cases[i].headSha,
-    baseSha:NEW_LOCK.cases[i].baseSha,scope:x.scope,findings:x.findings}))},
+    baseSha:NEW_LOCK.cases[i].baseSha,scope:{...x.scope},findings:x.findings.map(y=>({...y}))}))},
   baseline:{sourceEngineSha:'e'.repeat(40),kind:'BASELINE',
    samples:cases.map((x,i)=>({pr:NEW_LOCK.cases[i].pr,headSha:NEW_LOCK.cases[i].headSha,
     baseSha:NEW_LOCK.cases[i].baseSha,scope:x.scope,findings:x.findings}))}
  });
 }
 test('honest 4-label corpus cannot produce numeric precision and stays NOT_CERTIFIED',()=>{
- const c=campaign();c.truth.labels=c.truth.labels.slice(0,4);
+ const c=campaign();c.truth.labels=c.truth.labels.slice(0,4);reseal(c);
  // A strictly smaller truth population cannot cover all candidate alerts.
  const r=assessFrozenC2Benchmark(c);
  assert.equal(r.status,'BLOCKED_INSUFFICIENT_TRUTH');
