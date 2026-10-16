@@ -4,6 +4,7 @@
 const VERSION='2.0.0';
 const {buildRemediations,markdown:repairMarkdown}=require('./ultra_sentinel_remediation.cjs');
 const {search:searchMemory}=require('../memory/ultra_sentinel_memory.cjs');
+const {semanticCandidates}=require('./c2-semantic-patterns.cjs');
 const MAX_FILES=300,MAX_PATCH=320000;
 const SEVERITY={BLOCKER:4,HIGH:3,MEDIUM:2,LOW:1};
 function sanitize(s){
@@ -208,13 +209,15 @@ function analyze(files,config={}){
    const kotlin=android&&path.endsWith('.kt');
    const java=android&&path.endsWith('.java');
    const languageSource=kotlin||java;
+   const researchTs=path==='supabase/functions/ultra-research/research.ts';
+   const attestedSemanticSource=languageSource||researchTs;
    const sourceProvided=f.fullSource!==undefined;
-   const fullLines=languageSource&&typeof f.fullSource==='string'&&
+   const fullLines=attestedSemanticSource&&typeof f.fullSource==='string'&&
      Buffer.byteLength(f.fullSource,'utf8')<=160000?
      f.fullSource.split(/\r?\n/):null;
    const sourceMatches=!!(fullLines&&patch.scan.every(x=>
      x.line>0&&x.line<=fullLines.length&&fullLines[x.line-1]===x.text));
-   if(languageSource&&sourceProvided&&!sourceMatches){
+   if(attestedSemanticSource&&sourceProvided&&!sourceMatches){
      partial=true;
      warnings.push('Archivo Kotlin/Java completo no coincide con el parche o supera el límite: '+sanitize(path));
    }
@@ -276,6 +279,17 @@ function analyze(files,config={}){
        put('PRIVILEGED_UNTRUSTED_CHECKOUT','BLOCKER','high',path,x.line,t,'Código de PR no confiable junto a workflow privilegiado.','Auditar scopes y fork PR sin secretos.');
      if(/(?:SENTRY_AUTH_TOKEN|OPENAI_API_KEY|GITHUB_TOKEN|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]\s*["'][^"']{10,}["']/.test(t))
        put('POTENTIAL_HARDCODED_SECRET','BLOCKER','medium',path,x.line,'[REDACTED POTENTIAL SECRET]','Posible credencial literal en código.','Comprobar y revocar si es real; leer desde secret store.');
+   }
+   if(sourceMatches&&fullLines&&(kotlin||researchTs)){
+     // These are hypotheses from Git-verified full source and exact changed
+     // lines. In particular, an existing risk in a touched file is not proof
+     // it was introduced by this PR. Every finding requires a runtime oracle.
+     for(const risk of semanticCandidates({
+       path,lines:fullLines,added:rows,active:executableByLine
+     })){
+       put(risk.rule,risk.severity,risk.confidence,path,risk.line,
+         risk.text,risk.reason,risk.verification);
+     }
    }
    if(android){
      for(let i=0;i<rows.length;i++){
