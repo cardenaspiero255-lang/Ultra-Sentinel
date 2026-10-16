@@ -1,5 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
+const crypto=require('node:crypto');
 const {assessFrozenC2Benchmark}=require('../../packages/quality-gates/c2-frozen-benchmark-gate.cjs');
 const {NEW_LOCK}=require('../../packages/quality-gates/c2-next-holdout.cjs');
 const {PACKET_DIGEST}=require('../../packages/quality-gates/c2-next-one-positive-truth.cjs');
@@ -19,9 +20,17 @@ function sample(pr,i){
   nonPositionalFindings:0,partial:false,source:'PINNED_GITHUB_COMPARE'};
  return {labels,scope,findings};
 }
+function reseal(c){
+ c.truth.sealedDigest=crypto.createHash('sha256').update(JSON.stringify({
+  schema:'ultra-sentinel-c2-truth-snapshot/v1',
+  packetDigest:PACKET_DIGEST,sourceEngineSha:NEW_LOCK.engineSourceSha,
+  labels:c.truth.labels
+ })).digest('hex');
+ return c;
+}
 function campaign(){
  const cases=NEW_LOCK.cases.map((x,i)=>sample(x.pr,i));
- return {
+ return reseal({
   schema:'ultra-sentinel-c2-frozen-benchmark-input/v1',
   repository:NEW_LOCK.repository,packetDigest:PACKET_DIGEST,
   truth:{schema:'ultra-sentinel-c2-frozen-truth/v1',sealedDigest:'d'.repeat(64),
@@ -35,7 +44,7 @@ function campaign(){
   baseline:{sourceEngineSha:'e'.repeat(40),kind:'BASELINE',
    samples:cases.map((x,i)=>({pr:NEW_LOCK.cases[i].pr,headSha:NEW_LOCK.cases[i].headSha,
     baseSha:NEW_LOCK.cases[i].baseSha,scope:x.scope,findings:x.findings}))}
- };
+ });
 }
 test('honest 4-label corpus cannot produce numeric precision and stays NOT_CERTIFIED',()=>{
  const c=campaign();c.truth.labels=c.truth.labels.slice(0,4);
@@ -91,6 +100,7 @@ test('insufficient critical positives, negatives or rules cannot pass numerical 
  }));
  c.candidate.samples.forEach(x=>x.findings.forEach(f=>f.rule=rules[5]));
  c.baseline.samples.forEach(x=>x.findings.forEach(f=>f.rule=rules[5]));
+ reseal(c);
  const r=assessFrozenC2Benchmark(c);
  assert.notEqual(r.status,'NUMERICAL_DIAGNOSTIC_ONLY');
  assert.equal(r.precision,null);
@@ -124,4 +134,14 @@ test('missing one critical true positive blocks even with >95% global recall',()
  assert.ok(r.unmet.includes('criticalRecall'));
  assert.equal(r.status,'NUMERICAL_FAIL_NOT_CERTIFIED');
  assert.equal(r.tripleSPlusCertified,false);
+});
+
+
+test('tampered sealed truth digest blocks before reading detector outputs',()=>{
+ const c=campaign();
+ c.truth.sealedDigest='f'.repeat(64);
+ const r=assessFrozenC2Benchmark(c);
+ assert.equal(r.status,'BLOCKED_PROVENANCE_OR_COVERAGE');
+ assert.equal(r.comparisonPerformed,false);
+ assert.equal(r.precision,null);
 });
