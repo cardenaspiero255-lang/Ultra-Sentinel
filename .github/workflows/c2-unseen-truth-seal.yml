@@ -1,0 +1,122 @@
+name: Ultra Sentinel — C2 unseen behavior truth seal (owner-only)
+# Immutable origin attestations. No baseline/candidate output may be read.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-unseen-truth-seal
+  cancel-in-progress: false
+jobs:
+  seal-owner-truth:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_UNSEEN_TRUTH_SEAL_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout trusted main without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run full static and TDD checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Verify owner, frozen run, SHA and fetch three minimal oracle artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/unseen-truth-seal"
+          umask 077
+          mkdir -p "$root/freeze" "$root/positive" "$root/benign"
+          repo="cardenaspiero255-lang/Ultra-Sentinel"
+          verify_run() {
+            local id="$1" source="$2" sha="$3" name="$4" artifact="$5" out="$6"
+            gh api "/repos/$repo/actions/runs/$id" > "$root/run.json"
+            jq -e --argjson id "$id" --arg sha "$sha" --arg source "$source" '
+              .id == $id and .status == "completed" and .conclusion == "success" and
+              .event == "issue_comment" and .path == $source and
+              .head_branch == "main" and .head_sha == $sha and
+              .actor.id == 322222186 and .repository.id == 1418338512
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$id/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$id" --argjson artifact "$artifact" --arg name "$name" '
+              [.artifacts[] | select(.id == $artifact and .name == $name and
+                .workflow_run.id == $id and .expired == false)] | length == 1
+            ' "$root/artifacts.json" >/dev/null
+            gh run download "$id" --repo "$repo" --name "$name" --dir "$out"
+            test "$(find "$out" -maxdepth 1 -type f | wc -l)" -eq 1
+            test "$(find "$out" -maxdepth 1 -type l | wc -l)" -eq 0
+          }
+          verify_run 38838525845 .github/workflows/c2-unseen-holdout-freeze.yml \
+            6946e730d030f4772eff3ea9e704d7731f99c721 \
+            ultra-sentinel-c2-unseen-holdout-freeze 12019324481 "$root/freeze"
+          verify_run 38839053940 .github/workflows/c2-unseen-pr206-utf16-oracle.yml \
+            1562bdd72ee9c57038af881640121c39c9578905 \
+            ultra-sentinel-c2-unseen-pr206-utf16-witness 12019719566 "$root/positive"
+          verify_run 38840046800 .github/workflows/c2-unseen-benign-voice-oracles.yml \
+            2f1476412d71cc7d1e7e01fa051039a532aa01d5 \
+            ultra-sentinel-c2-unseen-benign-voice-witness 12020522075 "$root/benign"
+          test -f "$root/freeze/frozen-holdout.json"
+          test -f "$root/positive/c2-kotlin-source-witness.json"
+          test -f "$root/benign/c2-kotlin-source-witness.json"
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Seal exact original behavior only, with no network or GitHub token
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/unseen-truth-seal"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/seal-c2-unseen-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-unseen-truth-binder.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates/c2-unseen-holdout.cjs" \
+            --allow-fs-read="$root/freeze/frozen-holdout.json" \
+            --allow-fs-read="$root/positive/c2-kotlin-source-witness.json" \
+            --allow-fs-read="$root/benign/c2-kotlin-source-witness.json" \
+            "$GITHUB_WORKSPACE/scripts/seal-c2-unseen-truth.cjs" \
+            "$root/freeze/frozen-holdout.json" \
+            "$root/positive/c2-kotlin-source-witness.json" \
+            "$root/benign/c2-kotlin-source-witness.json" \
+            > "$RUNNER_TEMP/c2-unseen-truth-seal.json"
+          jq -e '.schema == "ultra-sentinel-c2-owner-truth-seal/v1" and
+            .status == "SOURCE_BEHAVIOR_TRUTH_PARTIAL" and
+            (.labels|length) == 1 and .labels[0].positive == true and
+            .labels[0].pr == 206 and .labels[0].rule == "TTS_UTF16_SURROGATE_SPLIT" and
+            .verifiedPositiveBehavior == 1 and .verifiedNegativeFindingLabels == 0 and
+            .benignBehaviorControls == 3 and .remainingLabelsTo120 == 119 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false and .mergeAllowed == false and
+            .autoRepair == false and .verdict == "TRUTH_CORPUS_INCOMPLETE"
+          ' "$RUNNER_TEMP/c2-unseen-truth-seal.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-unseen-truth-seal.json"
+      - name: Publish only the sealed partial truth and no underlying source
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-unseen-truth-seal-partial
+          path: ${{ runner.temp }}/c2-unseen-truth-seal.json
+          retention-days: 14
+          if-no-files-found: error
