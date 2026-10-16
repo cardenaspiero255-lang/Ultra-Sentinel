@@ -198,6 +198,18 @@ jobs:
              "$RUNNER_TEMP/c2-next-pr155-control.json" \
             > "$RUNNER_TEMP/c2-next-original-controls-result.json"
           cat "$RUNNER_TEMP/c2-next-original-controls-result.json"
+      - name: Original-source counterfactual thermal and battery negative canaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/c2-next-thermal-battery-counterfactuals.sh
+      - name: Archive two scope-limited thermal/battery source-negative predicates
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-pr154-pr155-scoped-negatives
+          path: ${{ runner.temp }}/c2-next-thermal-battery-negatives.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Archive only sanitized original-source behavioral controls
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
