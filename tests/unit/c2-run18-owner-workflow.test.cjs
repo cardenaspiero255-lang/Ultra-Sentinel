@@ -17,6 +17,7 @@ test('previous 16 truths, original blobs and production callers are authenticate
  '5d271a02aa4227e07a5c352b572f6c14621e80fc',
  'cb23014c91b447bef2eeb7b619503495d31a55da',
  'febd1687ceb26a9f195413021fb0257392c0592b',
+ '154-caller|858c9ce5cb6a7916d63f2348432013e49d02ba79|5d271a02aa4227e07a5c352b572f6c14621e80fc|21944|',
  'UltraMathEngine.solve(transcript)','UltraWakeBargeInPolicy.decide(',
  'UltraWakeRecognitionDisposition.STOP_TTS -> return stopActiveUltraSpeech('])
   assert.ok(yml.includes(s),s);
