@@ -1,0 +1,5 @@
+package com.cardenaspiero255.gamehubultra.data
+class GameSessionRecord
+class ConnectedGameAccount
+class StoreLibraryGame
+class OptimizationContextKey
