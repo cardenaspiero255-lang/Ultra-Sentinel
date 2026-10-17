@@ -1,0 +1,93 @@
+name: Ultra Sentinel — C2 owner Kotlin upstream task candidate freeze
+# Owner-only, pinned public upstream metadata; never execute upstream code or label cases.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-kotlin-upstream-candidates
+  cancel-in-progress: false
+jobs:
+  inspect-pinned-upstream-task-directory:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_UPSTREAM_KOTLIN_106_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout trusted main without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify Sentinel architecture and candidate intake tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Fetch ORIGINAL pinned upstream GitHub directory response
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-upstream-kotlin-candidates"
+          mkdir -p "$root"
+          sha=b9025d86f7ae634901396766bd61f6d4ae6d2165
+          gh api '/repos/Kotlin/kotlin-swe-bench' > "$root/source.json"
+          jq -e '.full_name == "Kotlin/kotlin-swe-bench" and
+            .license.spdx_id == "Apache-2.0"' "$root/source.json" >/dev/null
+          gh api "/repos/Kotlin/kotlin-swe-bench/commits/$sha" > "$root/commit.json"
+          jq -e --arg sha "$sha" '.sha == $sha' "$root/commit.json" >/dev/null
+          gh api "/repos/Kotlin/kotlin-swe-bench/contents/tasks?ref=$sha" \
+            > "$root/original_tasks_directory.json"
+          test -s "$root/original_tasks_directory.json"
+          rm -f "$root/source.json" "$root/commit.json"
+      - name: Offline fail-closed 106-candidate immutable source freeze
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-upstream-kotlin-candidates"
+          node scripts/freeze-c2-kotlin-upstream-candidates.cjs \
+            "$root/original_tasks_directory.json" \
+            "$root/c2-upstream-kotlin-candidate-index.json"
+          jq -e '
+            .schema == "ultra-sentinel-c2-external-kotlin-source-candidates/v1" and
+            .sourceRepository == "Kotlin/kotlin-swe-bench" and
+            .sourceCommit == "b9025d86f7ae634901396766bd61f6d4ae6d2165" and
+            .candidateCount == 106 and .repositoryCount == 9 and
+            (.perRepository|length) == 9 and (.candidates|length) == 106 and
+            .status == "METADATA_ONLY_106_CANDIDATES_UNVERIFIED" and
+            .groundTruthSourceLabels == 0 and .newPositiveLabels == 0 and
+            .newNegativeLabels == 0 and .benchmarkScoredLabels == 0 and
+            .sourceBehaviorExecuted == false and .blindHoldout == false and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false and .canCertify == false
+          ' "$root/c2-upstream-kotlin-candidate-index.json" >/dev/null
+      - name: Archive original metadata and non-certifying discovery roster
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-kotlin-106-original-metadata-candidates
+          path: |
+            ${{ runner.temp }}/c2-upstream-kotlin-candidates/original_tasks_directory.json
+            ${{ runner.temp }}/c2-upstream-kotlin-candidates/c2-upstream-kotlin-candidate-index.json
+          retention-days: 14
+          if-no-files-found: error
