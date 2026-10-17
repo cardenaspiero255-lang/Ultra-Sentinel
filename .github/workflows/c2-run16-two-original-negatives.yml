@@ -1,0 +1,164 @@
+name: Ultra Sentinel — C2 owner two original-source negative truths
+# Never score models, train on frozen holdout or alter frozen baseline.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-run16-owner-two-negatives
+  cancel-in-progress: false
+jobs:
+  seal-two-bounded-negatives:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_RUN16_TWO_NEGATIVES_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout only trusted main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify all static, security and source-truth regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate old twelve-label owner truth and untouched original Git source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-run16"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/prior" "$root/callsites"
+          gh api "/repos/$repo/actions/runs/39059101315" > "$root/prior-run.json"
+          jq -e '.id == 39059101315 and
+            .path == ".github/workflows/c2-pr158-owner-source-truth.yml" and
+            .head_sha == "89e8ae834c9a48a765e873500b4b2e5c78c9724a" and
+            .head_branch == "main" and .status == "completed" and
+            .conclusion == "success" and .actor.id == 322222186 and
+            .repository.id == 1418338512' "$root/prior-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39059101315/artifacts" > "$root/old-artifacts.json"
+          jq -e '[.artifacts[] | select(
+            .id == 12110378858 and
+            .name == "ultra-sentinel-c2-pr158-owner-source-truth" and
+            .workflow_run.id == 39059101315 and
+            .digest == "sha256:2c14ea320284efac3539f0811bc9910ce5854bf3391452383734a7eed65d6193" and
+            .expired == false)] | length == 1' "$root/old-artifacts.json" >/dev/null
+          gh run download 39059101315 --repo "$repo" \
+            --name ultra-sentinel-c2-pr158-owner-source-truth --dir "$root/prior"
+          test -f "$root/prior/c2-pr158-owner-truth.json"
+          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/prior" -type l | wc -l)" -eq 0
+          jq -e '.schema == "ultra-sentinel-c2-pr158-owner-source-truth-seal/v1" and
+            .presealDigest == "aa5de2d6028806b2f88aa1b027a5a8ede2d1aa75c3edd6385879ab100d68f0e3" and
+            .ownerRunId == 39059101315 and (.labels|length) == 12 and
+            .sourcePositiveLabels == 7 and .verifiedScopedNegativeLabels == 5 and
+            .benchmarkScoredLabels == 0 and .tripleSPlusCertified == false' \
+            "$root/prior/c2-pr158-owner-truth.json" >/dev/null
+          while IFS='|' read -r pr alias head blob size source; do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$source?ref=$head" > "$root/file.json"
+            jq -e --arg sha "$blob" --arg name "$source" --argjson bytes "$size" '
+              .type == "file" and .path == $name and .sha == $sha and
+              .size == $bytes and .encoding == "base64"' "$root/file.json" >/dev/null
+            jq -r .content "$root/file.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+          done <<'SOURCE_LIST'
+          151|151.kt|9ad983576c16c6c34d59283979d83c69ede50dce|f623999ecd31f6961bc48f34d834674494b7d1db|1577|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/components/SessionCoachPresentation.kt
+          153|153.kt|6508cc124076b9dea437ea1efc213d3ce55d7baf|18911c26a9afaf051fda0e9ea14cdaccf943a47b|6140|app/src/main/java/com/cardenaspiero255/gamehubultra/data/GameStateOwnershipContracts.kt
+          151|ui-caller|9ad983576c16c6c34d59283979d83c69ede50dce|6bfce4f62894c5f96cf993933a9e2a426163720a|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/components/PerformanceSessionComponents.kt
+          153|viewmodel|6508cc124076b9dea437ea1efc213d3ce55d7baf|592fc44b083721e15fd3ce5c105502f0547449cc|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/GameHubViewModel.kt
+          153|composition|6508cc124076b9dea437ea1efc213d3ce55d7baf|51aa42d47aa451fa1866616e67accfa70e0980c2|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/composition/GameHubProductionComposition.kt
+          SOURCE_LIST
+          grep -Fq 'SessionCoachPresentation.lines(' "$root/ui-caller"
+          grep -Fq 'repository.saveAdaptiveProfileForGame(packageName, profile)' "$root/viewmodel"
+          grep -Fq 'AdaptiveAwareGameSelectionStateRepository(' "$root/composition"
+          test "$(sha256sum "$root/151.kt" | cut -d' ' -f1)" = 635d678a15f914e2fc3fb84a05839cf2eef8187c4221a5c8f3e4c3128157ea7e
+          test "$(sha256sum "$root/153.kt" | cut -d' ' -f1)" = 8e136084412a57074f3c3a5ce8d7e209cef8274f79a752b5d1dc957447f7ee15
+          rm -f "$root/prior-run.json" "$root/old-artifacts.json" "$root/file.json"
+          rm -f "$root/ui-caller" "$root/viewmodel" "$root/composition"
+      - name: Enforce AppArmor plus Bubblewrap network isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Execute both untouched original Kotlin controls and reject their mutations
+        shell: bash
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-run16-owner-negative-oracles.sh "$RUNNER_TEMP/c2-run16"
+          test -s "$RUNNER_TEMP/c2-run16/151-witness.json"
+          test -s "$RUNNER_TEMP/c2-run16/153-witness.json"
+      - name: Seal exactly two new original negative predicates
+        shell: bash
+        env:
+          OWNER_ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          test "$OWNER_ACTOR_ID" = 322222186
+          node - <<'NODE'
+          'use strict';
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const {presealTwoNegatives}=require('./packages/quality-gates/c2-run16-two-negatives.cjs');
+          if(process.env.GITHUB_ACTIONS!=='true'||
+             process.env.GITHUB_REPOSITORY!=='cardenaspiero255-lang/Ultra-Sentinel'||
+             process.env.GITHUB_REF!=='refs/heads/main'||
+             !/^\d+$/.test(process.env.GITHUB_RUN_ID||''))throw Error('C2_RUN16_OWNER_REJECTED');
+          const root=process.env.RUNNER_TEMP+'/c2-run16';
+          const prior=JSON.parse(fs.readFileSync(root+'/prior/c2-pr158-owner-truth.json','utf8'));
+          const witnesses=[151,153].map(n=>JSON.parse(fs.readFileSync(root+'/'+n+'-witness.json','utf8')));
+          const s=presealTwoNegatives({prior,witnesses});
+          const witnessDigest=crypto.createHash('sha256').update(JSON.stringify(witnesses)).digest('hex');
+          const result={...s,schema:'ultra-sentinel-c2-run16-two-negatives-owner-seal/v1',
+            status:'SOURCE_BEHAVIOR_TRUTH_PARTIAL',ownerRunId:Number(process.env.GITHUB_RUN_ID),
+            witnessDigest,sourceCIAuthenticated:true,benchmarkCertified:false,
+            verdict:'TRUTH_CORPUS_INCOMPLETE'};
+          fs.writeFileSync(root+'/c2-run16-two-negatives-owner-truth.json',
+            JSON.stringify(result,null,2)+'\n');
+          NODE
+          jq -e '.schema == "ultra-sentinel-c2-run16-two-negatives-owner-seal/v1" and
+            (.labels|length) == 14 and .labels[0].pr == 151 and
+            .labels[1].pr == 153 and .labels[0].positive == false and
+            .labels[1].positive == false and .sourcePositiveLabels == 7 and
+            .verifiedScopedNegativeLabels == 7 and .neededAdditionalLabelsAtLeast == 106 and
+            .benchmarkScoredLabels == 0 and .precision == null and .recall == null and
+            .f1 == null and .fpNonRegressionVerified == false and
+            .tripleSPlusCertified == false and .sourceCIAuthenticated == true and
+            .benchmarkCertified == false' \
+            "$RUNNER_TEMP/c2-run16/c2-run16-two-negatives-owner-truth.json" >/dev/null
+      - name: Archive partial source truth only, never predictions
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-run16-two-original-negatives
+          path: ${{ runner.temp }}/c2-run16/c2-run16-two-negatives-owner-truth.json
+          retention-days: 14
+          if-no-files-found: error
