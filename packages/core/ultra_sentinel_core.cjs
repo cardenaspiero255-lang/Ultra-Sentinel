@@ -339,7 +339,7 @@ function analyze(files,config={}){
    const f=alerts.find(x=>x.rule===suggestion.rule&&x.path===suggestion.path&&x.line===suggestion.line);
    suggestion.relatedEvidence=searchMemory({rule:suggestion.rule,path:suggestion.path,reason:f?.reason,domain:f?.domains?.[0]},[],2);
  }
- return {engine:'Ultra Sentinel Core',version:VERSION,sha,mode:'independent-rule-and-structure-reasoner',
+ return {engine:'Ultra Sentinel Core',version:VERSION,sha,mode:externalKotlin?'experimental-kotlin-jvm-v3-source-scope':'independent-rule-and-structure-reasoner',
   coverage:{returned:list.length,analyzed:scanned,partial},validationPlan:plan,remediations:repairs,findings:alerts.slice(0,40),
   omitted:Math.max(0,alerts.length-40),warnings:warnings.slice(0,25),
   verdict:partial?'INCOMPLETE':alerts.some(x=>SEVERITY[x.severity]>=3)?'REVIEW_REQUIRED':'NO_CRITICAL_PATTERN',
