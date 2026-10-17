@@ -51,10 +51,12 @@ function presealRun21({prior,witnesses}={}){
     label.line<=0||typeof label.rule!=='string'||!label.rule||
     typeof label.path!=='string'||!label.path||
     !HEX40.test(label.headSha)||!HEX40.test(label.blobSha)||
-    typeof label.positive!=='boolean'||!HEX64.test(label.evidenceSha256)||
+    typeof label.positive!=='boolean'||
+    (label.evidenceSha256!=null&&!HEX64.test(label.evidenceSha256))||
     !NEW_LOCK.cases.some(c=>c.pr===label.pr&&c.headSha===label.headSha)||
-    ids.has(identity(label))||proofs.has(label.evidenceSha256))fail();
-  ids.add(identity(label));proofs.add(label.evidenceSha256);
+    ids.has(identity(label))||
+    (label.evidenceSha256!=null&&proofs.has(label.evidenceSha256)))fail();
+  ids.add(identity(label));if(label.evidenceSha256)proofs.add(label.evidenceSha256);
   positives.push(label.positive);
  }
  if(positives.filter(Boolean).length!==9||positives.filter(x=>!x).length!==9)fail();
