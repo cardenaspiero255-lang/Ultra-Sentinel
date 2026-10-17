@@ -116,7 +116,7 @@ jobs:
              process.env.GITHUB_REPOSITORY!=='cardenaspiero255-lang/Ultra-Sentinel'||
              process.env.GITHUB_REF!=='refs/heads/main'||!/^\d+$/.test(process.env.GITHUB_RUN_ID||''))
             throw Error('C2_RUN22_OWNER_BLOCKED');
-          const root=process.env.RUNNER_TEMP+'/c2-run21';
+          const root=process.env.RUNNER_TEMP+'/c2-run22';
           const prior=JSON.parse(fs.readFileSync(root+'/prior/c2-run21-owner-source-truth.json','utf8'));
           const witness=JSON.parse(fs.readFileSync(root+'/158-witness.json','utf8'));
           const preseal=presealRun22({prior,witness});
