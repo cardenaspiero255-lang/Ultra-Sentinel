@@ -139,28 +139,23 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/c2-excluded-file-audit"
           env -u GH_TOKEN -u GITHUB_TOKEN node scripts/audit-c2-excluded-source-files.cjs \
-            "$root/compares" > "$root/receipt.json"
-          jq -e '.schema == "ultra-sentinel-c2-excluded-file-diff-audit/v1" and
-            .changedFileEntries == 241 and
-            .coreEligibleUpperBound == 153 and
-            .excludedEntriesInspected == 88 and
-            .excludedUnitTests == 82 and
-            .excludedInstrumentedTests == 1 and
-            .excludedGradleFiles == 5 and
-            (.receipts|length) == 88 and
-            .sourceBytesCheckedAgainstGitMetadata == true and
-            .fullOriginalTestExecution == false and
-            .frozenCoreFullSemanticCoverageEstablished == false and
+            "$root/compares" "$root/original-head" > "$root/receipt.json"
+          jq -e '.schema == "ultra-sentinel-c2-excluded-original-blob-review/v1" and
+            .verifiedOriginalHeadBlobs == 88 and
+            .originalKotlinTestFilesVerified == 83 and
+            .originalGradleFilesVerified == 5 and
+            .originalSourceContentReviewComplete == true and
+            (.items|length) == 88 and
+            .coreFullSemanticCoverageCertified == false and
             .truthLabelsAdded == 0 and .candidateInspected == false and
             .baselineCompared == false and
             .precision == null and .recall == null and .f1 == null and
             .tripleSPlusCertified == false and
-            .status == "EXCLUDED_PATCHES_INSPECTED_NOT_SEMANTICALLY_CLEARED"' \
+            .status == "ORIGINAL_HEAD_CONTENT_INSPECTED_HEURISTIC_ONLY_NOT_CERTIFIED"' \
             "$root/receipt.json" >/dev/null
-          echo C2_EXCLUDED_88_SHA_PINNED_PATCH_AUDIT_PASSED_NOT_CERTIFIED
-          jq -c '{changedFileEntries,coreEligibleUpperBound,excludedEntriesInspected,
-            excludedUnitTests,excludedInstrumentedTests,excludedGradleFiles,
-            auditDigest,status,truthLabelsAdded,tripleSPlusCertified}' "$root/receipt.json"
+          echo C2_EXCLUDED_88_FULL_ORIGINAL_GIT_BLOBS_SHA_VERIFIED_HEURISTIC_ONLY_NOT_CERTIFIED
+          jq -c '{verifiedOriginalHeadBlobs,originalKotlinTestFilesVerified,originalGradleFilesVerified,
+            fullSourceAuditSha256,status,truthLabelsAdded,tripleSPlusCertified}' "$root/receipt.json"
       - name: Archive only minimized source patch audit receipts
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
