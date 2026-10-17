@@ -158,7 +158,22 @@ jobs:
           print('C2 PASS: 15 full original responses, 241 diffs, 215 unique HEAD blobs, 26 duplicate groups, 1 connected component; no metric')
           PY
           test -s "$RUNNER_TEMP/c2-frozen-git-trees/provenance_manifest.json"
-      - name: Archive all original tree JSONs, SHA256, and verified offline graph
+      - name: Derive deduplicated source-oracle triage (no labels or model scoring)
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-frozen-git-trees"
+          node scripts/triage-c2-original-source.cjs \
+            "$root/trees" "$root/provenance_manifest.json" \
+            "$root/original_source_triage.json"
+          jq -e '
+            .status == "ORIGINAL_SOURCE_QUEUE_READY_NOT_CERTIFIED" and
+            .candidateCount == 215 and .counts.changedFileOccurrences == 241 and
+            .counts.frozenCoreEligible == 153 and .counts.excluded == 88 and
+            .labelsAdded == 0 and .precision == null and
+            .blindHoldout == false and .tripleSPlusCertified == false
+          ' "$root/original_source_triage.json" >/dev/null
+      - name: Archive original Git trees, SHA256, graph, and non-certifying triage queue
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
           name: ultra-sentinel-c2-fifteen-original-git-trees
