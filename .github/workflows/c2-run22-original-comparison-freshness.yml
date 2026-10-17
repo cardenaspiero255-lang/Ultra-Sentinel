@@ -63,7 +63,9 @@ jobs:
           gh run download 39075155081 --repo "$repo" \
             --name ultra-sentinel-c2-run21-two-original-source-negatives --dir "$root/prior"
           test -f "$root/prior/c2-run21-owner-source-truth.json"
-          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 1
+          test -f "$root/prior/151-witness.json"
+          test -f "$root/prior/154-witness.json"
+          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 3
           test "$(find "$root/prior" -type l | wc -l)" -eq 0
           while IFS='|' read -r alias head blob path; do
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" \
