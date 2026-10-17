@@ -16,7 +16,7 @@ new='''        val match = pattern.find(json) ?: return emptyList()
             val char = json[index]
             if (escaped) {
                 escaped = false
-            } else if (char == '\\') {
+            } else if (char == '\\\\') {
                 escaped = true
             } else if (char == '"') {
                 insideString = !insideString
