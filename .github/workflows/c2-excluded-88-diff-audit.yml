@@ -85,6 +85,54 @@ jobs:
           test -f "$root/original-artifact/source-inventory.json"
           test "$(find "$root/original-artifact" -maxdepth 1 -type l|wc -l)" -eq 0
           rm -f "$root/source-run.json" "$root/source-artifacts.json"
+      - name: Safely extract trusted original Git head blobs as inert data only
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-excluded-file-audit"
+          python3 - "$root/original-artifact/source-universe.tar" "$root/original-head" <<'PY'
+          import os,pathlib,sys,tarfile,shutil
+          archive=pathlib.Path(sys.argv[1])
+          target=pathlib.Path(sys.argv[2])
+          if target.exists() or archive.is_symlink() or archive.stat().st_size > 80*1024*1024:
+              raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+          target.mkdir(mode=0o700)
+          with tarfile.open(archive,mode='r:') as tar:
+              members=tar.getmembers()
+              if not 1<=len(members)<=5000:
+                  raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+              total=0
+              for m in members:
+                  components=[x for x in m.name.split('/') if x not in ('','.')]
+                  if not components or m.name.startswith('/') or '..' in components or any('\\' in x for x in components):
+                      if m.isdir() and m.name in ('.','./'):continue
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  dest=target.joinpath(*components)
+                  if not dest.resolve().is_relative_to(target.resolve()):
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  if m.isdir():
+                      dest.mkdir(parents=True,exist_ok=True)
+                      continue
+                  if not m.isfile() or m.size<0 or m.size>8*1024*1024:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  total+=m.size
+                  if total>160*1024*1024:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  src=tar.extractfile(m)
+                  if src is None: raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW
+                  fd=os.open(dest,flags,0o600)
+                  with os.fdopen(fd,'wb') as out:
+                      shutil.copyfileobj(src,out)
+                  if dest.stat().st_size!=m.size:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+          PY
+          jq -e '.schema == "ultra-sentinel-c2-frozen-source-universe/v1" and
+            .materializedChangedEntries == 241 and
+            .detectorsExecuted == false and .truthRead == false and
+            .scoredLabels == 0 and .tripleSPlusCertified == false' \
+            "$root/original-head/manifest.json" >/dev/null
       - name: Read and validate every historically excluded test/Gradle patch
         shell: bash
         run: |
