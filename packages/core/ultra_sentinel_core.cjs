@@ -66,9 +66,21 @@ function recoverAddedPatch(item,entry){
  return patch;
 }
 
-function production(path){
- return /^(app\/src\/main\/|supabase\/functions\/|\.github\/(?:workflows|scripts)\/|control-center\/)/.test(path)
- && !/(\.md$|\/test\/|\/tests\/|Test\.(kt|java)$|\.(?:test|spec|benchmark)\.(?:cjs|mjs|js|ts|jsx|tsx)$|(?:^|\/)ultra_sentinel_benchmark\.cjs$)/i.test(path);
+// Experimental source eligibility for repositories with conventional Gradle
+// module/src/main/kotlin layout, separate from the SHA-frozen GameHub baseline.
+function generalKotlinProduction(path){
+ if(typeof path!=='string'||!path||path.length>350||
+    path.startsWith('/')||path.includes('//')||
+    path.split('/').includes('..')||
+    !/^[A-Za-z0-9_./-]+$/.test(path)||
+    /(?:^|\/)(?:test|tests|testFixtures|androidTest)\//i.test(path)||
+    /(?:Test|Spec)\.kt$/i.test(path))return false;
+ return /(?:^|\/)src\/main\/(?:kotlin|java)\/[A-Za-z0-9_./-]+\.kt$/.test(path);
+}
+function production(path,externalKotlin=false){
+ return (/^(app\/src\/main\/|supabase\/functions\/|\.github\/(?:workflows|scripts)\/|control-center\/)/.test(path)
+ && !/(\.md$|\/test\/|\/tests\/|Test\.(kt|java)$|\.(?:test|spec|benchmark)\.(?:cjs|mjs|js|ts|jsx|tsx)$|(?:^|\/)ultra_sentinel_benchmark\.cjs$)/i.test(path))
+ ||(externalKotlin===true&&generalKotlinProduction(path));
 }
 function tags(path){
  const d={voice:/voice|wake|speech|tts/i,android:/app\/src\/main/i,ci:/\.github\/workflows/i,security:/auth|token|credential|secret/i,ai:/frontier|research|agent|intent/i,performance:/thermal|framepacing|performance/i,network:/network|dns|wifi|router/i};
@@ -179,6 +191,7 @@ function completeDeletionOnlyPatch(file,parsed){
 }
 
 function analyze(files,config={}){
+ const externalKotlin=config?.sourceScope==='KOTLIN_JVM_V3_EXPERIMENTAL';
  const list=Array.isArray(files)?files:[],names=list.map(f=>String(f?.filename||''));
  const alerts=[],warnings=[],dedupe=new Set();let scanned=0,partial=list.length>MAX_FILES;
  const sha=/^[0-9a-f]{40}$/i.test(config.sha||'')?config.sha:'unknown';
@@ -190,7 +203,7 @@ function analyze(files,config={}){
  };
  for(const f of list.slice(0,MAX_FILES)){
    const path=String(f?.filename||'');
-   if(!path||path.includes('..')||!production(path)||f.status==='removed')continue;
+   if(!path||path.includes('..')||!production(path,externalKotlin)||f.status==='removed')continue;
    const patch=parsePatch(f.patch);
    if(patch.partial||(!patch.added.length&&Number(f.changes)>0&&
       !completeDeletionOnlyPatch(f,patch))){
@@ -206,7 +219,7 @@ function analyze(files,config={}){
    // block comment or raw string. Never guess lexical mode from a hunk.
    // The optional fullSource must be provided from the same immutable HEAD;
    // cross-check every added/context line against it before trusting its lexer.
-   const kotlin=android&&path.endsWith('.kt');
+   const kotlin=(android||(externalKotlin&&generalKotlinProduction(path)))&&path.endsWith('.kt');
    const java=android&&path.endsWith('.java');
    const languageSource=kotlin||java;
    const researchTs=path==='supabase/functions/ultra-research/research.ts';
@@ -326,7 +339,7 @@ function analyze(files,config={}){
    const f=alerts.find(x=>x.rule===suggestion.rule&&x.path===suggestion.path&&x.line===suggestion.line);
    suggestion.relatedEvidence=searchMemory({rule:suggestion.rule,path:suggestion.path,reason:f?.reason,domain:f?.domains?.[0]},[],2);
  }
- return {engine:'Ultra Sentinel Core',version:VERSION,sha,mode:'independent-rule-and-structure-reasoner',
+ return {engine:'Ultra Sentinel Core',version:VERSION,sha,mode:externalKotlin?'experimental-kotlin-jvm-v3-source-scope':'independent-rule-and-structure-reasoner',
   coverage:{returned:list.length,analyzed:scanned,partial},validationPlan:plan,remediations:repairs,findings:alerts.slice(0,40),
   omitted:Math.max(0,alerts.length-40),warnings:warnings.slice(0,25),
   verdict:partial?'INCOMPLETE':alerts.some(x=>SEVERITY[x.severity]>=3)?'REVIEW_REQUIRED':'NO_CRITICAL_PATTERN',
@@ -358,4 +371,4 @@ function markdown(result){
  lines.push('','Sin auto-merge ni auto-aprobación. Exigir pruebas y revisiones completas.');
  return lines.join('\n').slice(0,58000);
 }
-module.exports={recoverAddedPatch,missingAddedPatch,analyze,parsePatch,markdown,VERSION};
+module.exports={recoverAddedPatch,missingAddedPatch,analyze,parsePatch,markdown,VERSION,generalKotlinProduction};
