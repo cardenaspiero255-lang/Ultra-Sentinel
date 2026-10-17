@@ -1,0 +1,167 @@
+name: Ultra Sentinel — C2 owner original fifteen Git trees and provenance graph
+# Persist RAW GitHub tree JSON; derive graph offline without trusting a Python network call.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-raw-git-trees-provenance
+  cancel-in-progress: false
+jobs:
+  immutable-owner-trees:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_ORIGINAL_GIT_TREES_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout trusted main without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Run repository tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check source safety and CI contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Fetch and persist exact fifteen original Git recursive-tree responses
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-frozen-git-trees"
+          mkdir -p "$root/trees"
+          for sha in \
+            74c5fb9697b2855a1395c9562c2f9b74df9c34c1 \
+            4c6912d7ca17df0669f8a0d9667f34d2f2b205a9 \
+            c594cb5383591d5040b1e88930fc76a5e5c9c6fa \
+            9ad983576c16c6c34d59283979d83c69ede50dce \
+            e2050a76af7fa3010032604e6537ab124e7b4c38 \
+            104b7dc33e4c0341cec3fca81e3c8fbe3625357f \
+            86565d51b021e9834062552522dda0424a9cb2bc \
+            6508cc124076b9dea437ea1efc213d3ce55d7baf \
+            260c184932052a7cde0ce4f761e47cdea5f02725 \
+            858c9ce5cb6a7916d63f2348432013e49d02ba79 \
+            362675d4e013fe79c57526ef7e3a7ca4c98a7115 \
+            2289f4e4cda55ddaa50f2016113ded82dc17203c \
+            cb184c56d28342e46923d149c0e7f27141ce1a24 \
+            1060ce8b9f35d191ce8639337e4cff50085cbd7e \
+            9d8572afedc634ac07dae58a0da326ea62bdc1da; do
+              gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/trees/$sha?recursive=1" \
+                > "$root/trees/$sha.json"
+              jq -e --arg sha "$sha" '
+                .sha == $sha and .truncated == false and
+                (.tree | type == "array") and
+                ([.tree[] | select(.type == "blob")] | length > 0)' \
+                "$root/trees/$sha.json" >/dev/null
+          done
+          test "$(find "$root/trees" -maxdepth 1 -name '*.json' | wc -l)" -eq 15
+          (cd "$root/trees" && sha256sum -- *.json > SHA256SUMS)
+      - name: Build source-independent graph from saved original response files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import collections,hashlib,itertools,json,os,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'c2-frozen-git-trees'
+          cases=[
+            (150,'74c5fb9697b2855a1395c9562c2f9b74df9c34c1','4c6912d7ca17df0669f8a0d9667f34d2f2b205a9',21),
+            (151,'c594cb5383591d5040b1e88930fc76a5e5c9c6fa','9ad983576c16c6c34d59283979d83c69ede50dce',41),
+            (152,'e2050a76af7fa3010032604e6537ab124e7b4c38','104b7dc33e4c0341cec3fca81e3c8fbe3625357f',41),
+            (153,'86565d51b021e9834062552522dda0424a9cb2bc','6508cc124076b9dea437ea1efc213d3ce55d7baf',26),
+            (154,'260c184932052a7cde0ce4f761e47cdea5f02725','858c9ce5cb6a7916d63f2348432013e49d02ba79',24),
+            (155,'362675d4e013fe79c57526ef7e3a7ca4c98a7115','2289f4e4cda55ddaa50f2016113ded82dc17203c',26),
+            (157,'362675d4e013fe79c57526ef7e3a7ca4c98a7115','cb184c56d28342e46923d149c0e7f27141ce1a24',39),
+            (158,'1060ce8b9f35d191ce8639337e4cff50085cbd7e','9d8572afedc634ac07dae58a0da326ea62bdc1da',23)]
+          all_shas=set(itertools.chain.from_iterable((base,head) for _,base,head,_ in cases))
+          assert len(all_shas)==15,'C2_RAW_GIT_TREE_COUNT_MISMATCH'
+          trees={};source_manifest=[]
+          for sha in sorted(all_shas):
+            path=root/'trees'/f'{sha}.json';raw=path.read_bytes();response=json.loads(raw)
+            assert response['sha']==sha and response['truncated'] is False
+            mapped={}
+            for e in response['tree']:
+              p=e['path']
+              assert p and not p.startswith('/') and '..' not in pathlib.PurePosixPath(p).parts
+              if e['type']=='blob':
+                assert p not in mapped and len(e['sha'])==40
+                mapped[p]=e['sha']
+            trees[sha]=mapped
+            source_manifest.append(dict(sha=sha,filename=path.name,sha256=hashlib.sha256(raw).hexdigest(),
+                response_entry_count=len(response['tree']),blob_entry_count=len(mapped)))
+          changed={};blob_usage=collections.defaultdict(list)
+          for pr,base,head,expected in cases:
+            a=trees[base];b=trees[head]
+            diff=sorted(p for p in set(a)|set(b) if a.get(p)!=b.get(p))
+            assert len(diff)==expected,(pr,len(diff),expected)
+            assert all(p in b for p in diff),'C2_ORIGINAL_DELETED_PATH_REQUIRES_SCOPE_CHANGE'
+            changed[pr]=diff
+            for p in diff:blob_usage[b[p]].append(dict(pr=pr,path=p))
+          assert sum(map(len,changed.values()))==241
+          assert len(blob_usage)==215
+          duplicates={sha:loc for sha,loc in blob_usage.items() if len(loc)>1}
+          assert len(duplicates)==26
+          assert sum(map(len,duplicates.values()))==52
+          assert all(sorted({x['pr'] for x in loc})==[155,157] for loc in duplicates.values())
+          prod={pr:{p for p in paths if '/src/main/' in p and p.endswith('.kt')} for pr,paths in changed.items()}
+          edges=[]
+          for a,b in itertools.combinations(sorted(changed),2):
+            shared=sorted(prod[a]&prod[b])
+            identical=sorted(sha for sha,loc in duplicates.items()
+                if {a,b}.issubset({x['pr'] for x in loc}))
+            if shared or identical:edges.append(dict(prs=[a,b],
+                shared_production_paths=shared,identical_head_blob_sha=identical))
+          reached={150}
+          while True:
+            more=reached|{n for edge in edges for n in edge['prs']
+                         if any(x in reached for x in edge['prs'])}
+            if more==reached:break
+            reached=more
+          assert reached==set(changed),'C2_GRAPH_NOT_ONE_HISTORICAL_COMPONENT'
+          ledger={
+            'schema':'ultra-sentinel-c2-fifteen-original-tree-provenance/v1',
+            'sourceRepository':'cardenaspiero255-lang/gamehub-ultra',
+            'responseSha256':source_manifest,
+            'frozenPRs':[dict(pr=pr,base=base,head=head,changedPaths=changed[pr])
+                         for pr,base,head,_ in cases],
+            'counts':{'originalTreeResponses':len(trees),'changedFileOccurrences':241,
+                      'uniqueChangedPaths':len(set(itertools.chain.from_iterable(changed.values()))),
+                      'uniqueHeadBlobs':215,'duplicateHeadBlobGroups':26,
+                      'duplicateHeadBlobOccurrences':52},
+            'duplicateHeadBlobs':[dict(sha=sha,occurrences=loc) for sha,loc in sorted(duplicates.items())],
+            'productionDependencyEdges':edges,
+            'connectedComponents':[sorted(reached)],
+            'holdoutStatus':'HISTORICAL_DEVELOPMENT_ONLY',
+            'blindHoldoutCertified':False,'oldDetectorExecuted':False,'newDetectorExecuted':False,
+            'precision':None,'recall':None,'f1':None,'tripleSPlusCertified':False}
+          (root/'provenance_manifest.json').write_text(json.dumps(ledger,indent=2,sort_keys=True)+'\n')
+          print('C2 PASS: 15 full original responses, 241 diffs, 215 unique HEAD blobs, 26 duplicate groups, 1 connected component; no metric')
+          PY
+          test -s "$RUNNER_TEMP/c2-frozen-git-trees/provenance_manifest.json"
+      - name: Archive all original tree JSONs, SHA256, and verified offline graph
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-fifteen-original-git-trees
+          path: ${{ runner.temp }}/c2-frozen-git-trees/
+          retention-days: 14
+          if-no-files-found: error
