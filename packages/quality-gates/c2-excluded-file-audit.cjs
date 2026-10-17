@@ -106,4 +106,81 @@ function auditExcludedSourceScope(comparisons){
  };
  return Object.freeze({...withoutDigest,auditDigest:hash(JSON.stringify(withoutDigest))});
 }
-module.exports={auditExcludedSourceScope,classifyExcluded,countFullHunks};
+
+// Second-stage original-full-blob audit. Verify bytes against the Git SHA
+// supplied by original frozen compare; do not execute untrusted repository code.
+function verifyOriginalExcludedHeadBlobs(audit,root){
+ const fs=require('node:fs'),path=require('node:path');
+ if(!audit||audit.schema!=='ultra-sentinel-c2-excluded-file-diff-audit/v1'||
+  !Array.isArray(audit.receipts)||audit.receipts.length!==audit.excludedEntriesInspected||
+  !Number.isSafeInteger(audit.excludedEntriesInspected)||!Number.isSafeInteger(audit.changedFileEntries)||
+  audit.changedFileEntries!==241||!audit.sourceBytesCheckedAgainstGitMetadata||
+  audit.truthLabelsAdded!==0||audit.tripleSPlusCertified!==false||
+  !/^[a-f0-9]{64}$/.test(audit.auditDigest)||
+  typeof root!=='string'||!path.isAbsolute(root))fail();
+ const {auditDigest,...body}=audit;
+ if(hash(JSON.stringify(body))!==auditDigest)fail();
+ let realRoot;
+ try{
+  const stat=fs.lstatSync(root);
+  if(!stat.isDirectory()||stat.isSymbolicLink())fail();
+  realRoot=fs.realpathSync(root);
+ }catch{fail();}
+ const seen=new Set(),items=[];let unit=0,instrument=0,gradle=0;
+ for(const item of audit.receipts){
+  if(!item||!SHA.test(item.sourceBlobSha)||typeof item.path!=='string'||
+     !/^[a-zA-Z0-9_.\/-]+$/.test(item.path)||item.path.startsWith('/')||
+     item.path.split('/').includes('..')||!NEW_LOCK.cases.some(x=>x.pr===item.pr&&x.headSha===item.headSha)||
+     classifyExcluded(item.path)!==item.class||seen.has(item.pr+'|'+item.path))fail();
+  seen.add(item.pr+'|'+item.path);
+  const file=path.resolve(realRoot,'pr-'+item.pr,'head',item.path);
+  if(!file.startsWith(realRoot+path.sep))fail();
+  let bytes;
+  try{
+   if(fs.realpathSync(file)!==file)fail();
+   const stat=fs.lstatSync(file);
+   if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
+    stat.size<1||stat.size>8*1024*1024)fail();
+   bytes=fs.readFileSync(file);
+  }catch{fail();}
+  if(bytes.length>8*1024*1024||bytes.includes(0))fail();
+  const gitBlob=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+  if(gitBlob!==item.sourceBlobSha)fail();
+  let fullSource;
+  try{fullSource=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}
+  catch{fail();}
+  const warningRules=[];
+  if(item.class!=='BUILD_GRADLE'){
+   if(/@Ignore\b|@Disabled\b/.test(fullSource))warningRules.push('IGNORED_TEST_REQUIRES_REVIEW');
+   if(/\bassert(?:True|False|Equals|NotNull|Null|Throws)\s*\(/.test(fullSource)||
+    /\bassert\s*\(/.test(fullSource)){}else warningRules.push('NO_RECOGNIZED_ASSERTION_HEURISTIC_ONLY');
+  }else{
+   if(/(?:ignoreFailures\s*=\s*true|isEnabled\s*=\s*false|failOnNoMatchingTests\s*=\s*false)/i.test(fullSource))
+    warningRules.push('GRADLE_TEST_POLICY_REQUIRES_REVIEW');
+  }
+  if(item.class==='UNIT_TEST')unit++;
+  if(item.class==='INSTRUMENTED_TEST')instrument++;
+  if(item.class==='BUILD_GRADLE')gradle++;
+  items.push({pr:item.pr,path:item.path,originalBlobSha:item.sourceBlobSha,
+   originalSha256:hash(bytes),bytesRead:bytes.length,contentType:item.class,
+   fullContentReadable:true,lexicalWarnings:warningRules,
+   semanticCorrectnessProven:false,behaviorExecuted:false,authenticTruthLabelsAdded:0});
+ }
+ if(seen.size!==audit.excludedEntriesInspected||
+  unit!==audit.excludedUnitTests||instrument!==audit.excludedInstrumentedTests||
+  gradle!==audit.excludedGradleFiles)fail();
+ const payload={schema:'ultra-sentinel-c2-excluded-original-blob-review/v1',
+  sourceInventorySha256:audit.sourceInventorySha256,
+  sourceDiffAuditSha256:audit.auditDigest,verifiedOriginalHeadBlobs:items.length,
+  originalKotlinTestFilesVerified:unit+instrument,
+  originalGradleFilesVerified:gradle,
+  originalSourceContentReviewComplete:true,
+  items,truthLabelsAdded:0,candidateInspected:false,baselineCompared:false,
+  coreFullSemanticCoverageCertified:false,
+  originalCodeDefectFreeCertified:false,
+  precision:null,recall:null,f1:null,tripleSPlusCertified:false,
+  status:'ORIGINAL_HEAD_CONTENT_INSPECTED_HEURISTIC_ONLY_NOT_CERTIFIED'};
+ return Object.freeze({...payload,fullSourceAuditSha256:hash(JSON.stringify(payload))});
+}
+
+module.exports={auditExcludedSourceScope,classifyExcluded,countFullHunks,verifyOriginalExcludedHeadBlobs};
