@@ -87,9 +87,9 @@ jobs:
           done <<'SOURCE_LIST'
           151|151.kt|9ad983576c16c6c34d59283979d83c69ede50dce|f623999ecd31f6961bc48f34d834674494b7d1db|1577|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/components/SessionCoachPresentation.kt
           153|153.kt|6508cc124076b9dea437ea1efc213d3ce55d7baf|18911c26a9afaf051fda0e9ea14cdaccf943a47b|6140|app/src/main/java/com/cardenaspiero255/gamehubultra/data/GameStateOwnershipContracts.kt
-          151|ui-caller|9ad983576c16c6c34d59283979d83c69ede50dce|6bfce4f62894c5f96cf993933a9e2a426163720a|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/components/PerformanceSessionComponents.kt
-          153|viewmodel|6508cc124076b9dea437ea1efc213d3ce55d7baf|592fc44b083721e15fd3ce5c105502f0547449cc|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/GameHubViewModel.kt
-          153|composition|6508cc124076b9dea437ea1efc213d3ce55d7baf|51aa42d47aa451fa1866616e67accfa70e0980c2|999999|app/src/main/java/com/cardenaspiero255/gamehubultra/composition/GameHubProductionComposition.kt
+          151|ui-caller|9ad983576c16c6c34d59283979d83c69ede50dce|6bfce4f62894c5f96cf993933a9e2a426163720a|10436|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/components/PerformanceSessionComponents.kt
+          153|viewmodel|6508cc124076b9dea437ea1efc213d3ce55d7baf|592fc44b083721e15fd3ce5c105502f0547449cc|10474|app/src/main/java/com/cardenaspiero255/gamehubultra/ui/GameHubViewModel.kt
+          153|composition|6508cc124076b9dea437ea1efc213d3ce55d7baf|51aa42d47aa451fa1866616e67accfa70e0980c2|10343|app/src/main/java/com/cardenaspiero255/gamehubultra/composition/GameHubProductionComposition.kt
           SOURCE_LIST
           grep -Fq 'SessionCoachPresentation.lines(' "$root/ui-caller"
           grep -Fq 'repository.saveAdaptiveProfileForGame(packageName, profile)' "$root/viewmodel"
