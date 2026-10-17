@@ -46,6 +46,50 @@ function parseVerifiedSourceDiff(f,buf){
   throw Error('PATCH_COUNT_MISMATCH');
  return entries;
 }
+
+// Mask non-executable Kotlin/Gradle text using the full original HEAD blob.
+// Carry comment/string state across hunk boundaries. Use lexical evidence
+// only; masking is not equivalent to typechecking or test execution.
+function executableLines(fullSource){
+ const s=String(fullSource),out=[];
+ let current='',mode='code',depth=0,escaped=false;
+ const blank=n=>{current+=' '.repeat(n);};
+ for(let i=0;i<s.length;){
+  const ch=s[i],two=s.slice(i,i+2),three=s.slice(i,i+3);
+  if(ch==='\n'){out.push(current);current='';if(mode==='line')mode='code';i++;continue;}
+  if(mode==='line'){blank(1);i++;continue;}
+  if(mode==='block'){
+   if(two==='/*'){depth++;blank(2);i+=2;continue;}
+   if(two==='*/'){depth--;blank(2);i+=2;if(depth===0)mode='code';continue;}
+   blank(1);i++;continue;
+  }
+  if(mode==='raw'){
+   if(three==='"""'){mode='code';blank(3);i+=3;continue;}
+   blank(1);i++;continue;
+  }
+  if(mode==='quote'){
+   if(escaped){escaped=false;blank(1);i++;continue;}
+   if(ch==='\\'){escaped=true;blank(1);i++;continue;}
+   if(ch==='"'){mode='code';blank(1);i++;continue;}
+   blank(1);i++;continue;
+  }
+  if(mode==='char'){
+   if(escaped){escaped=false;blank(1);i++;continue;}
+   if(ch==='\\'){escaped=true;blank(1);i++;continue;}
+   if(ch==="'"){mode='code';blank(1);i++;continue;}
+   blank(1);i++;continue;
+  }
+  if(two==='//'){mode='line';blank(2);i+=2;continue;}
+  if(two==='/*'){mode='block';depth=1;blank(2);i+=2;continue;}
+  if(three==='"""'){mode='raw';blank(3);i+=3;continue;}
+  if(ch==='"'){mode='quote';blank(1);i++;continue;}
+  if(ch==="'"){mode='char';blank(1);i++;continue;}
+  current+=ch;i++;
+ }
+ out.push(current);
+ return out;
+}
+
 function analyzeV3(files){
  const list=Array.isArray(files)?files:[];
  const findings=[],omissions=[],inputCount=list.length,seen=new Set();
@@ -66,8 +110,9 @@ function analyzeV3(files){
    if(actual!==f.sha)throw Error('BLOB_MISMATCH');
    const added=parseVerifiedSourceDiff(f,data);verified++;
    if(added.length>0)analyzed++; // structural source/patch inspection, not behavioral verification
+   const lines=executableLines(f.fullSource);
    for(const a of added){
-    const text=a.text;
+    const text=lines[a.line-1]||'';
     let rule=null;
     if(kind!=='GRADLE_KTS'&&/^\s*@(?:Ignore|Disabled)\b/.test(text))
      rule='KOTLIN_DISABLED_TEST_REVIEW';
