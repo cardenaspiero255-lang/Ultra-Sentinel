@@ -52,8 +52,11 @@ function verifyTrees(manifest,rawTrees){
       parsed.tree.length!==r.response_entry_count)fail();
     const blobs=new Map();
     for(const entry of parsed.tree){
-      if(!entry||!safePath(entry.path)||!['blob','tree'].includes(entry.type)||
-        !SHA.test(entry.sha))fail();
+      if(!entry||typeof entry.path!=='string'||!entry.path.length||
+        entry.path.length>1024||entry.path.startsWith('/')||
+        entry.path.includes('\\\\')||entry.path.includes('\u0000')||
+        entry.path.split('/').includes('..')||
+        !['blob','tree','commit'].includes(entry.type)||!SHA.test(entry.sha))fail();
       if(entry.type==='blob'){
         if(blobs.has(entry.path))fail();
         blobs.set(entry.path,entry.sha);
