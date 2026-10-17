@@ -1,0 +1,146 @@
+name: Ultra Sentinel — C2 frozen PR150 negative-only history source oracle
+# Original-source oracle: NEGATIVE_ONLY_HISTORY_HIGH_CONFIDENCE
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-pr150-bad-history-negative-history-source
+  cancel-in-progress: false
+jobs:
+  owner-pr150-original-negative-history:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_PR150_NEGATIVE_HISTORY_ORACLE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - name: Checkout trusted main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run tests and check frozen C2 source inventory unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate frozen owner compare and exact original PR150 Git blob
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr150-bad-history"
+          mkdir -p "$root"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/38974165470" > "$root/verified-owner-run.json"
+          jq -e '.id == 38974165470 and .status == "completed" and
+            .conclusion == "success" and .event == "issue_comment" and
+            .path == ".github/workflows/c2-frozen-source-universe.yml" and
+            .head_sha == "7bf0122fa298dc0bfb5da5ca7e8d89e1dcbf39e0" and
+            .actor.id == 322222186 and .repository.id == 1418338512' \
+            "$root/verified-owner-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38974165470/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(.id == 12077973482 and
+            .name == "ultra-sentinel-c2-frozen-source-universe" and
+            .workflow_run.id == 38974165470 and
+            .digest == "sha256:fcc878c3af06d053e3e2b3e9ef3cc0f646e1a0edee4871a95333f16cd9e476a7" and
+            .expired == false)]|length == 1' "$root/artifacts.json" >/dev/null
+          path=app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt
+          gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=4c6912d7ca17df0669f8a0d9667f34d2f2b205a9" > "$root/original.json"
+          jq -e --arg p "$path" '.type == "file" and .path == $p and
+            .sha == "37866fd3dbfcd19d9daaf29a5e1e426391c723d4" and
+            .encoding == "base64" and .size > 5000 and .size < 100000' \
+            "$root/original.json" >/dev/null
+          jq -r .content "$root/original.json" | base64 --decode > "$root/SmartRecommendationExplanation.kt"
+          test "$(git hash-object "$root/SmartRecommendationExplanation.kt")" = 37866fd3dbfcd19d9daaf29a5e1e426391c723d4
+          chmod 0400 "$root/SmartRecommendationExplanation.kt"
+          rm -f "$root/original.json" "$root/artifacts.json" "$root/verified-owner-run.json"
+      - name: Compile untouched original source with ABI-only test stubs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr150-bad-history"
+          command -v kotlinc && command -v java
+          kotlinc "$root/SmartRecommendationExplanation.kt" \
+            tests/oracles/c2-next-pr150-confidence-domain-abi.kt \
+            tests/oracles/c2-next-pr150-negative-history.kt \
+            -include-runtime -d "$root/original.jar"
+          test -s "$root/original.jar"
+          chmod 0400 "$root/original.jar"
+      - name: Install mandatory AppArmor and networkless Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run original Kotlin behavior oracle without network or token
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr150-bad-history"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              name="$(readlink "$mount")"
+              [[ "$name" != /* && "$name" != *..* ]] || exit 2
+              mounts+=(--symlink "$name" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$root" /workspace \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+            -- /jdk/bin/java -jar /workspace/original.jar > "$RUNNER_TEMP/c2-pr150-bad-history-original.json"
+          jq -e '.schema == "ultra-sentinel-c2-pr150-negative-history-source-oracle/v1" and
+            .pr == 150 and .headSha == "4c6912d7ca17df0669f8a0d9667f34d2f2b205a9" and
+            .sourceGitBlob == "37866fd3dbfcd19d9daaf29a5e1e426391c723d4" and
+            .rule == "NEGATIVE_ONLY_HISTORY_HIGH_CONFIDENCE" and
+            .line == 251 and .originalBadHistoryHigh == true and
+            .emptyHistoryMedium == true and .executedOriginalSource == true and
+            .mutantKilled == false and .newTruthLabelsSealed == 0 and
+            .candidateInspected == false and .baselineCompared == false and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false' "$RUNNER_TEMP/c2-pr150-bad-history-original.json" >/dev/null
+      - name: Require two independent counterfactual mutant failures on exact predicates
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u GITHUB_TOKEN -u GH_TOKEN bash scripts/c2-next-pr150-negative-history-mutant.sh
+          jq -e '.executedOriginalSource == true' "$RUNNER_TEMP/c2-pr150-bad-history-original.json" >/dev/null
+          echo C2_PR150_NEGATIVE_ONLY_BAD_HISTORY_MUTATION_PROVEN_NOT_SEALED
+      - name: Archive source-original behavior witness only (not scored labels)
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-pr150-bad-history-negative-history-source-oracle
+          path: ${{ runner.temp }}/c2-pr150-bad-history-original.json
+          if-no-files-found: error
+          retention-days: 30
