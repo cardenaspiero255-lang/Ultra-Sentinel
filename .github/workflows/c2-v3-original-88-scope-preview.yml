@@ -1,0 +1,166 @@
+name: Ultra Sentinel — C2 V3 original Kotlin test / Gradle scope preview
+# New V3 reader; benchmark legacy + frozen candidate Core left untouched.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-v3-excluded-preview
+  cancel-in-progress: false
+jobs:
+  owner-v3-88-original-preview:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_V3_ORIGINAL_88_PREVIEW_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run tests including untouched frozen Core hash assertion
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          npm run check
+      - name: Authenticate 241 original GitHub source entries and fetch SHA-locked compares
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-v3-excluded-preview"
+          mkdir -p "$root/compares"
+          gh api "/repos/$repo/actions/runs/38974165470" > "$root/source-run.json"
+          jq -e '.id == 38974165470 and .status == "completed" and
+            .conclusion == "success" and .event == "issue_comment" and
+            .actor.id == 322222186 and .repository.id == 1418338512 and
+            .head_sha == "7bf0122fa298dc0bfb5da5ca7e8d89e1dcbf39e0"' \
+            "$root/source-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38974165470/artifacts" > "$root/source-artifacts.json"
+          jq -e '[.artifacts[]|select(.id == 12077973482 and
+            .workflow_run.id == 38974165470 and
+            .name == "ultra-sentinel-c2-frozen-source-universe" and
+            .digest == "sha256:fcc878c3af06d053e3e2b3e9ef3cc0f646e1a0edee4871a95333f16cd9e476a7" and
+            .expired == false)] | length == 1' "$root/source-artifacts.json" >/dev/null
+          entries=(
+            '150|74c5fb9697b2855a1395c9562c2f9b74df9c34c1|4c6912d7ca17df0669f8a0d9667f34d2f2b205a9'
+            '151|c594cb5383591d5040b1e88930fc76a5e5c9c6fa|9ad983576c16c6c34d59283979d83c69ede50dce'
+            '152|e2050a76af7fa3010032604e6537ab124e7b4c38|104b7dc33e4c0341cec3fca81e3c8fbe3625357f'
+            '153|86565d51b021e9834062552522dda0424a9cb2bc|6508cc124076b9dea437ea1efc213d3ce55d7baf'
+            '154|260c184932052a7cde0ce4f761e47cdea5f02725|858c9ce5cb6a7916d63f2348432013e49d02ba79'
+            '155|362675d4e013fe79c57526ef7e3a7ca4c98a7115|2289f4e4cda55ddaa50f2016113ded82dc17203c'
+            '157|362675d4e013fe79c57526ef7e3a7ca4c98a7115|cb184c56d28342e46923d149c0e7f27141ce1a24'
+            '158|1060ce8b9f35d191ce8639337e4cff50085cbd7e|9d8572afedc634ac07dae58a0da326ea62bdc1da'
+          )
+          for entry in "${entries[@]}"; do
+            IFS='|' read -r pr base head <<< "$entry"
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/compare/$base...$head" \
+              > "$root/compares/pr-$pr.json"
+          done
+          gh run download 38974165470 --repo "$repo" \
+            --name ultra-sentinel-c2-frozen-source-universe --dir "$root/original-artifact"
+          test -f "$root/original-artifact/source-universe.tar"
+          test -f "$root/original-artifact/source-inventory.json"
+          test "$(find "$root/original-artifact" -maxdepth 1 -type l|wc -l)" -eq 0
+          rm -f "$root/source-run.json" "$root/source-artifacts.json"
+      - name: Safely extract trusted original Git head blobs as inert data only
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-v3-excluded-preview"
+          python3 - "$root/original-artifact/source-universe.tar" "$root/original-head" <<'PY'
+          import os,pathlib,sys,tarfile,shutil
+          archive=pathlib.Path(sys.argv[1])
+          target=pathlib.Path(sys.argv[2])
+          if target.exists() or archive.is_symlink() or archive.stat().st_size > 80*1024*1024:
+              raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+          target.mkdir(mode=0o700)
+          with tarfile.open(archive,mode='r:') as tar:
+              members=tar.getmembers()
+              if not 1<=len(members)<=5000:
+                  raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+              total=0
+              for m in members:
+                  components=[x for x in m.name.split('/') if x not in ('','.')]
+                  if not components or m.name.startswith('/') or '..' in components or any('\\' in x for x in components):
+                      if m.isdir() and m.name in ('.','./'):continue
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  dest=target.joinpath(*components)
+                  if not dest.resolve().is_relative_to(target.resolve()):
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  if m.isdir():
+                      dest.mkdir(parents=True,exist_ok=True)
+                      continue
+                  if not m.isfile() or m.size<0 or m.size>8*1024*1024:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  total+=m.size
+                  if total>160*1024*1024:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  src=tar.extractfile(m)
+                  if src is None: raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+                  flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW
+                  fd=os.open(dest,flags,0o600)
+                  with os.fdopen(fd,'wb') as out:
+                      shutil.copyfileobj(src,out)
+                  if dest.stat().st_size!=m.size:
+                      raise SystemExit('C2_EXCLUDED_TAR_BLOCKED')
+          PY
+          jq -e '.schema == "ultra-sentinel-c2-frozen-source-universe/v1" and
+            .materializedChangedEntries == 241 and
+            .detectorsExecuted == false and .truthRead == false and
+            .scoredLabels == 0 and .tripleSPlusCertified == false' \
+            "$root/original-head/manifest.json" >/dev/null
+      - name: Execute new V3 structural reviewer on all 88 SHA-attested original Kotlin/Gradle heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-v3-excluded-preview"
+          env -u GITHUB_TOKEN -u GH_TOKEN node scripts/evaluate-c2-v3-original-excluded.cjs \
+            "$root/compares" "$root/original-head" > "$root/receipt.json"
+          jq -e '.schema == "ultra-sentinel-c2-v3-original-excluded-preview/v1" and
+            .totalHistoricalEntries == 241 and .previouslyExcluded == 88 and
+            .frozenCoreMaxEligible == 153 and
+            .originalFilesVerified == 88 and .omitted == 0 and
+            (.prs|length) == 8 and
+            .frozenCoreShaUnchanged == "db29f94be1e0afb791a241d26f449695df0eafd0" and
+            .semanticBehaviorVerified == 0 and
+            .originalTruthLabelsAdded == 0 and
+            .legacyCandidateParityProven == false and
+            .sourceCodeBehaviorExecuted == false and
+            .precision == null and .recall == null and .f1 == null and
+            .certification == "NOT_CERTIFIED" and
+            .status == "V3_SOURCE_PATCH_ADVISORY_PREVIEW_ONLY"' "$root/receipt.json" >/dev/null
+          echo C2_V3_ORIGINAL_88_CODE_HEADS_INSPECTED_ADVISORY_ONLY_NOT_CERTIFIED
+          jq -c '{originalFilesVerified,structuralDiffsAnalyzed,omitted,
+            semanticBehaviorVerified,originalTruthLabelsAdded,receiptSha256,certification}' \
+            "$root/receipt.json"
+      - name: Archive V3 owner original-data preview only; no truth or model scores
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-v3-original-88-scope-preview
+          path: ${{ runner.temp }}/c2-v3-excluded-preview/receipt.json
+          retention-days: 30
+          if-no-files-found: error
