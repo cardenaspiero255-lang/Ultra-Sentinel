@@ -1,0 +1,117 @@
+name: Ultra Sentinel — C2 original excluded test/Gradle diff audit
+# Truth- and model-blind supplementary review; does not alter frozen Core.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-excluded-file-audit
+  cancel-in-progress: false
+jobs:
+  owner-excluded-88-audit:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_EXCLUDED_88_AUDIT_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run tests including untouched frozen Core hash assertion
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          npm run check
+      - name: Authenticate 241 original GitHub source entries and fetch SHA-locked compares
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-excluded-file-audit"
+          mkdir -p "$root/compares"
+          gh api "/repos/$repo/actions/runs/38974165470" > "$root/source-run.json"
+          jq -e '.id == 38974165470 and .status == "completed" and
+            .conclusion == "success" and .event == "issue_comment" and
+            .actor.id == 322222186 and .repository.id == 1418338512 and
+            .head_sha == "7bf0122fa298dc0bfb5da5ca7e8d89e1dcbf39e0"' \
+            "$root/source-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38974165470/artifacts" > "$root/source-artifacts.json"
+          jq -e '[.artifacts[]|select(.id == 12077973482 and
+            .workflow_run.id == 38974165470 and
+            .name == "ultra-sentinel-c2-frozen-source-universe" and
+            .digest == "sha256:fcc878c3af06d053e3e2b3e9ef3cc0f646e1a0edee4871a95333f16cd9e476a7" and
+            .expired == false)] | length == 1' "$root/source-artifacts.json" >/dev/null
+          entries=(
+            '150|74c5fb9697b2855a1395c9562c2f9b74df9c34c1|4c6912d7ca17df0669f8a0d9667f34d2f2b205a9'
+            '151|c594cb5383591d5040b1e88930fc76a5e5c9c6fa|9ad983576c16c6c34d59283979d83c69ede50dce'
+            '152|e2050a76af7fa3010032604e6537ab124e7b4c38|104b7dc33e4c0341cec3fca81e3c8fbe3625357f'
+            '153|86565d51b021e9834062552522dda0424a9cb2bc|6508cc124076b9dea437ea1efc213d3ce55d7baf'
+            '154|260c184932052a7cde0ce4f761e47cdea5f02725|858c9ce5cb6a7916d63f2348432013e49d02ba79'
+            '155|362675d4e013fe79c57526ef7e3a7ca4c98a7115|2289f4e4cda55ddaa50f2016113ded82dc17203c'
+            '157|362675d4e013fe79c57526ef7e3a7ca4c98a7115|cb184c56d28342e46923d149c0e7f27141ce1a24'
+            '158|1060ce8b9f35d191ce8639337e4cff50085cbd7e|9d8572afedc634ac07dae58a0da326ea62bdc1da'
+          )
+          for entry in "${entries[@]}"; do
+            IFS='|' read -r pr base head <<< "$entry"
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/compare/$base...$head" \
+              > "$root/compares/pr-$pr.json"
+          done
+          rm -f "$root/source-run.json" "$root/source-artifacts.json"
+      - name: Read and validate every historically excluded test/Gradle patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-excluded-file-audit"
+          env -u GH_TOKEN -u GITHUB_TOKEN node scripts/audit-c2-excluded-source-files.cjs \
+            "$root/compares" > "$root/receipt.json"
+          jq -e '.schema == "ultra-sentinel-c2-excluded-file-diff-audit/v1" and
+            .changedFileEntries == 241 and
+            .coreEligibleUpperBound == 153 and
+            .excludedEntriesInspected == 88 and
+            .excludedUnitTests == 82 and
+            .excludedInstrumentedTests == 1 and
+            .excludedGradleFiles == 5 and
+            (.receipts|length) == 88 and
+            .sourceBytesCheckedAgainstGitMetadata == true and
+            .fullOriginalTestExecution == false and
+            .frozenCoreFullSemanticCoverageEstablished == false and
+            .truthLabelsAdded == 0 and .candidateInspected == false and
+            .baselineCompared == false and
+            .precision == null and .recall == null and .f1 == null and
+            .tripleSPlusCertified == false and
+            .status == "EXCLUDED_PATCHES_INSPECTED_NOT_SEMANTICALLY_CLEARED"' \
+            "$root/receipt.json" >/dev/null
+          echo C2_EXCLUDED_88_SHA_PINNED_PATCH_AUDIT_PASSED_NOT_CERTIFIED
+          jq -c '{changedFileEntries,coreEligibleUpperBound,excludedEntriesInspected,
+            excludedUnitTests,excludedInstrumentedTests,excludedGradleFiles,
+            auditDigest,status,truthLabelsAdded,tripleSPlusCertified}' "$root/receipt.json"
+      - name: Archive only minimized source patch audit receipts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-excluded-88-diff-audit
+          path: ${{ runner.temp }}/c2-excluded-file-audit/receipt.json
+          retention-days: 30
+          if-no-files-found: error
