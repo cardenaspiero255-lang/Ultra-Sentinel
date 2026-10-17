@@ -1,0 +1,130 @@
+name: Ultra Sentinel — C2 ten authenticated original source predicates
+# Owner-only source truth. No new candidate/baseline executions or training.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-ten-original-source-truth
+  cancel-in-progress: false
+jobs:
+  owner-ten-source-truth:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_NEXT_TEN_SOURCE_TRUTH_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted latest main without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run all checks before sealing partial truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Authenticate both immutable owner artifacts and archive hashes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-ten-originals"
+          mkdir -p "$root/previous" "$root/new"
+          for run in 38983286401 38988102205; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run-$run.json"
+            jq -e --argjson n "$run" '.id == $n and
+              .event == "issue_comment" and .status == "completed" and
+              .conclusion == "success" and .head_branch == "main" and
+              .repository.id == 1418338512 and .actor.id == 322222186' \
+              "$root/run-$run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts-$run.json"
+          done
+          jq -e '.path == ".github/workflows/c2-next-nine-source-truth-seal.yml" and
+            .head_sha == "545ddc5a92f830f8443afd0202693dc3890c9db3"' \
+            "$root/run-38983286401.json" >/dev/null
+          jq -e '.path == ".github/workflows/c2-next-pr150-negative-history-oracle.yml" and
+            .head_sha == "ac4cd9c74fadd5ea9af113b319c39dd2b404807f"' \
+            "$root/run-38988102205.json" >/dev/null
+          jq -e '[.artifacts[]|select(.id == 12082091255 and
+            .name == "ultra-sentinel-c2-next-nine-source-truth" and
+            .workflow_run.id == 38983286401 and
+            .digest == "sha256:33dd78cbe5d3dc9cec4068af7cb40ebc4595a89387d93db0739b976c06ab3efa" and
+            .expired == false)]|length == 1' \
+            "$root/artifacts-38983286401.json" >/dev/null
+          jq -e '[.artifacts[]|select(.id == 12083843392 and
+            .name == "ultra-sentinel-c2-pr150-bad-history-negative-history-source-oracle" and
+            .workflow_run.id == 38988102205 and
+            .digest == "sha256:33f1fdddfd1bebbb98ed5b787e7726f2f3469484fa958a840a0f055f46db8767" and
+            .expired == false)]|length == 1' \
+            "$root/artifacts-38988102205.json" >/dev/null
+          gh run download 38983286401 --repo "$repo" \
+            --name ultra-sentinel-c2-next-nine-source-truth --dir "$root/previous"
+          gh run download 38988102205 --repo "$repo" \
+            --name ultra-sentinel-c2-pr150-bad-history-negative-history-source-oracle --dir "$root/new"
+          test -f "$root/previous/c2-nine-source-truth.json"
+          test -f "$root/new/c2-pr150-bad-history-original.json"
+          test "$(find "$root/previous" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/new" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/previous" "$root/new" -type l | wc -l)" -eq 0
+          rm -f "$root"/run-*.json "$root"/artifacts-*.json
+      - name: Verify source witnesses and seal exactly ten real original source predicates offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-ten-originals"
+          env -i PATH="$PATH" HOME="$RUNNER_TEMP" NODE_NO_WARNINGS=1 \
+            node --experimental-permission \
+            --allow-fs-read="$GITHUB_WORKSPACE/scripts/seal-c2-next-ten-original-truth.cjs" \
+            --allow-fs-read="$GITHUB_WORKSPACE/packages/quality-gates" \
+            --allow-fs-read="$root/previous/c2-nine-source-truth.json" \
+            --allow-fs-read="$root/new/c2-pr150-bad-history-original.json" \
+            "$GITHUB_WORKSPACE/scripts/seal-c2-next-ten-original-truth.cjs" \
+            "$root/previous/c2-nine-source-truth.json" \
+            "$root/new/c2-pr150-bad-history-original.json" \
+            > "$RUNNER_TEMP/c2-ten-source-truth.json"
+          jq -e '.schema == "ultra-sentinel-c2-next-ten-original-source-truth-seal/v1" and
+            (.labels|length) == 10 and
+            .labels[0].pr == 150 and .labels[0].positive == true and
+            .labels[0].rule == "NEGATIVE_ONLY_HISTORY_HIGH_CONFIDENCE" and
+            .labels[0].line == 251 and
+            .prsWithAtLeastOneSourceScopedLabel == 8 and
+            .sourcePositiveLabels == 5 and .verifiedScopedNegativeLabels == 5 and
+            .verifiedNegativeFindingLabels == 5 and
+            .neededAdditionalPositiveLabelsAtLeast == 43 and
+            .neededAdditionalNegativeLabelsAtLeast == 43 and
+            .neededAdditionalLabelsAtLeast == 110 and
+            .benchmarkScoredLabels == 0 and
+            .includesPredictions == false and .includesBaseline == false and
+            .precision == null and .recall == null and .f1 == null and
+            .fpNonRegressionVerified == false and .tripleSPlusCertified == false and
+            .verdict == "TRUTH_CORPUS_INCOMPLETE"' "$RUNNER_TEMP/c2-ten-source-truth.json" >/dev/null
+          cat "$RUNNER_TEMP/c2-ten-source-truth.json"
+      - name: Archive only SHA-linked partial original truth, never predictions
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-next-ten-source-truth
+          path: ${{ runner.temp }}/c2-ten-source-truth.json
+          if-no-files-found: error
+          retention-days: 14
