@@ -1,0 +1,147 @@
+name: Ultra Sentinel — C2 run22 original comparison freshness defect
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-run22-source-original
+  cancel-in-progress: false
+jobs:
+  owner-authenticated-controls:
+    if: >-
+      github.ref == 'refs/heads/main' && github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' && github.event.action == 'created' &&
+        github.event.issue.number == 50 && github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_RUN22_ORIGINAL_FRESH_COMPARISON_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Trusted main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify tests and source contracts
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --abbrev-ref HEAD)" = main
+          npm run check
+      - name: Owner authenticated prior 20 labels and original Git blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-run22"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/prior"
+          gh api "/repos/$repo/actions/runs/39075155081" > "$root/run.json"
+          jq -e '.id == 39075155081 and
+            .path == ".github/workflows/c2-run21-original-negative-oracles.yml" and
+            .head_sha == "c0072240f85b324acdad3db7b54217d311cdc206" and
+            .head_branch == "main" and .status == "completed" and
+            .conclusion == "success" and .actor.id == 322222186 and
+            .repository.id == 1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39075155081/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[] | select(
+            .id == 12116887077 and
+            .name == "ultra-sentinel-c2-run21-two-original-source-negatives" and
+            .workflow_run.id == 39075155081 and .expired == false and
+            .digest == "sha256:163caab401c119a4f907034bcc973064ad1b4c3b207fe92f616b560474e26001"
+          )] | length == 1' "$root/artifacts.json" >/dev/null
+          gh run download 39075155081 --repo "$repo" \
+            --name ultra-sentinel-c2-run21-two-original-source-negatives --dir "$root/prior"
+          test -f "$root/prior/c2-run21-owner-source-truth.json"
+          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/prior" -type l | wc -l)" -eq 0
+          while IFS='|' read -r alias head blob path; do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" \
+              > "$root/source-metadata.json"
+            jq -e --arg p "$path" --arg s "$blob" \
+              '.type=="file" and .path==$p and .sha==$s and
+               .size>100 and .encoding=="base64"' "$root/source-metadata.json" >/dev/null
+            jq -r .content "$root/source-metadata.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+          done <<'IMMUTABLE_SOURCES'
+          158.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|0b5b315b2c5bb54d8c6a2713f3c7d29085209f4f|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraGeneralQueryRouter.kt
+          158-caller.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|5d271a02aa4227e07a5c352b572f6c14621e80fc|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraUnifiedAgent.kt
+          158-parser.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|febd1687ceb26a9f195413021fb0257392c0592b|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/VoiceCommandParser.kt
+          IMMUTABLE_SOURCES
+          grep -Fq 'UltraGeneralQueryRouter.classify(transcript)' "$root/158-caller.kt"
+          grep -Fq 'internal fun stripLeadingAssistantInvocation(value: String): String =' "$root/158-parser.kt"
+          rm -f "$root/158-caller.kt" "$root/158-parser.kt" \
+            "$root/run.json" "$root/artifacts.json" "$root/source-metadata.json"
+      - name: Mandatory networkless Bubblewrap and AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Execute original and mutant Kotlin
+        shell: bash
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-run22-original-comparison-oracle.sh \
+            "$RUNNER_TEMP/c2-run22"
+          test -s "$RUNNER_TEMP/c2-run22/158-witness.json"
+      - name: Append one original-source positive to the immutable prior 20
+        shell: bash
+        env:
+          OWNER_ACTOR_ID: ${{ github.actor_id }}
+        run: |
+          set -euo pipefail
+          test "$OWNER_ACTOR_ID" = 322222186
+          node - <<'NODE'
+          'use strict';
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const {presealRun22}=require('./packages/quality-gates/c2-run22-original-positive.cjs');
+          if(process.env.GITHUB_ACTIONS!=='true'||
+             process.env.GITHUB_REPOSITORY!=='cardenaspiero255-lang/Ultra-Sentinel'||
+             process.env.GITHUB_REF!=='refs/heads/main'||!/^\d+$/.test(process.env.GITHUB_RUN_ID||''))
+            throw Error('C2_RUN22_OWNER_BLOCKED');
+          const root=process.env.RUNNER_TEMP+'/c2-run21';
+          const prior=JSON.parse(fs.readFileSync(root+'/prior/c2-run21-owner-source-truth.json','utf8'));
+          const witness=JSON.parse(fs.readFileSync(root+'/158-witness.json','utf8'));
+          const preseal=presealRun22({prior,witness});
+          const receipt={...preseal,
+            schema:'ultra-sentinel-c2-run22-owner-source-truth-seal/v1',
+            status:'SOURCE_BEHAVIOR_TRUTH_PARTIAL',ownerRunId:Number(process.env.GITHUB_RUN_ID),
+            witnessDigest:crypto.createHash('sha256').update(JSON.stringify(witness)).digest('hex'),
+            sourceCIAuthenticated:true,benchmarkCertified:false,verdict:'TRUTH_CORPUS_INCOMPLETE'};
+          fs.writeFileSync(root+'/c2-run22-owner-source-truth.json',
+            JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+          jq -e '.schema=="ultra-sentinel-c2-run22-owner-source-truth-seal/v1" and
+            (.labels|length)==21 and .sourcePositiveLabels==10 and
+            .verifiedScopedNegativeLabels==11 and .neededAdditionalLabelsAtLeast==99 and
+            .benchmarkScoredLabels==0 and .precision==null and
+            .recall==null and .f1==null and .blindHoldoutCertified==false and
+            .tripleSPlusCertified==false and .sourceCIAuthenticated==true and
+            .candidatePredictionsRead==false and .baselinePredictionsRead==false' \
+            "$RUNNER_TEMP/c2-run22/c2-run22-owner-source-truth.json" >/dev/null
+      - name: Preserve audit receipts without original untrusted source bytes
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-c2-run22-original-comparison-freshness-positive
+          path: |
+            ${{ runner.temp }}/c2-run22/c2-run22-owner-source-truth.json
+            ${{ runner.temp }}/c2-run22/158-witness.json
+          retention-days: 14
+          if-no-files-found: error
