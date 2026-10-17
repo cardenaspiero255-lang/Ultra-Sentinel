@@ -79,6 +79,11 @@ jobs:
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/compare/$base...$head" \
               > "$root/compares/pr-$pr.json"
           done
+          gh run download 38974165470 --repo "$repo" \
+            --name ultra-sentinel-c2-frozen-source-universe --dir "$root/original-artifact"
+          test -f "$root/original-artifact/source-universe.tar"
+          test -f "$root/original-artifact/source-inventory.json"
+          test "$(find "$root/original-artifact" -maxdepth 1 -type l|wc -l)" -eq 0
           rm -f "$root/source-run.json" "$root/source-artifacts.json"
       - name: Read and validate every historically excluded test/Gradle patch
         shell: bash
