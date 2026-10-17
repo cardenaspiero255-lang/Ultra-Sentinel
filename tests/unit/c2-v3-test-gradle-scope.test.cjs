@@ -2,10 +2,13 @@
 const test=require('node:test'), assert=require('node:assert/strict'),crypto=require('node:crypto');
 const {analyzeV3,scopeKind}=require('../../packages/core/ultra_sentinel_scope_v3.cjs');
 const code='package test\nimport org.junit.Test\nimport org.junit.Assert.assertTrue\nclass SecurityTest { @Test fun asserts() { assertTrue(true) } }\n';
-const sha=x=>crypto.createHash('sha1').update('blob '+Buffer.byteLength(x)+'\\0').update(x).digest('hex');
-function item(path,src,patch='@@ -2,1 +2,1 @@\n-old\n+new\n'){
+const sha=x=>crypto.createHash('sha1').update('blob '+Buffer.byteLength(x)+'\0').update(x).digest('hex');
+function item(path,src){
+ const line=src.split('\n')[1];
+ const patch='@@ -2,1 +2,1 @@\n-old\n+'+line+'\n';
  return {filename:path,status:'modified',sha:sha(src),fullSource:src,additions:1,deletions:1,changes:2,patch};
 }
+
 test('v3 discovers Kotlin unit and instrumentation tests and Gradle without touching frozen core',()=>{
  assert.equal(scopeKind('app/src/test/java/a/AuthTest.kt'),'KOTLIN_UNIT_TEST');
  assert.equal(scopeKind('app/src/androidTest/java/a/AuthTest.kt'),'KOTLIN_INSTRUMENTED_TEST');
