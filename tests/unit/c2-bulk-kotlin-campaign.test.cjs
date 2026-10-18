@@ -36,3 +36,14 @@ test('owner-only exact full campaign comment selects all 106 tasks, rejects othe
  assert.match(workflow,/max-parallel: 3/);
  assert.equal((workflow.match(/MODE: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.mode \|\| \(github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' \|\| 'smoke'\) \}\}/g)||[]).length,2);
 });
+
+test('C2 campaign aggregate performs fail-closed per-candidate four-gate review',()=>{
+  const fs=require('node:fs');
+  const workflow=fs.readFileSync('.github/workflows/c2-kotlin-106-campaign.yml','utf8');
+  assert.match(workflow,/node sentinel\/scripts\/c2-review-kotlin-candidates\.cjs/);
+  assert.match(workflow,/--receipts "\$RUNNER_TEMP\/c2-received"/);
+  assert.match(workflow,/--mode "\$MODE"/);
+  assert.match(workflow,/\.admitted == 0 and \.newLabels == 0/);
+  assert.match(workflow,/\.historicalFingerprintsCompared == 0/);
+  assert.match(workflow,/name: c2-kotlin-four-gate-review/);
+});
