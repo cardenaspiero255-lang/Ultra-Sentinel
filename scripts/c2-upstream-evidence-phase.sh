@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Execute only inside the pinned upstream task image. Never production.
 set -euo pipefail
-umask 077
+# The ephemeral runner must read JUnit and SHA receipts after the container exits.
+# No tokens or secrets are mounted; the evidence bind remains isolated per task.
+umask 022
 [[ "${C2_PHASE:-}" == before || "${C2_PHASE:-}" == after ]] || exit 32
 [[ -d /evidence && -f /tests/test.sh && -f /tests/expected_tests.json ]] || exit 33
 root="$(pwd -P)"
