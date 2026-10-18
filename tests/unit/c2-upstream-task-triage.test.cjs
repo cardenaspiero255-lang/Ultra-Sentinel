@@ -46,3 +46,12 @@ test('source preflight rejects missing upstream with a safe stage code',()=>{
  assert.match(result.stderr,/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED:SOURCE_CHECK/);
  assert.doesNotMatch(result.stderr,/Error: ENOENT|stack trace/i);
 });
+
+test('pinned detekt 7212 expected manifest fits bounded size policy',()=>{
+ const {MAX_EXPECTED_TEST_BYTES,MAX_TASK_TOML_BYTES}=require('../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+ // Immutable source Git object c1a9e3504d7e94885cc176440a5420c5acbbcfe1:
+ // original expected_tests.json is 2,143,404 bytes (larger than old 2 MiB).
+ assert.ok(MAX_EXPECTED_TEST_BYTES>=2143404);
+ assert.ok(MAX_EXPECTED_TEST_BYTES<=8388608);
+ assert.equal(MAX_TASK_TOML_BYTES,65536);
+});
