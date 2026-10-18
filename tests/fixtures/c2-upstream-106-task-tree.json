@@ -1,0 +1,431 @@
+{
+  "source": "Kotlin/kotlin-swe-bench",
+  "sourceCommit": "b9025d86f7ae634901396766bd61f6d4ae6d2165",
+  "tasksTreeSha": "7e6c0a3c10c8f082b8f7a9c5efbcc51c360356a9",
+  "entries": [
+    {
+      "name": "GradleUp_shadow-1313",
+      "sha": "e3bdb5609f688960d737fc38eaeb0edcb578d6fe"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-2624",
+      "sha": "1888dcc1109e8d6d0e4fa1de445e4e83c6c4091a"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-2935",
+      "sha": "5d3b670f4922c973c7faba3bac7ee344e92e2443"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3128",
+      "sha": "7425a5e1d6532bba9d84273fc21782047c8f5d7f"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3530",
+      "sha": "24a9da8624ec9501fb4ec9602418fadf61146fad"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3810",
+      "sha": "d41598e71106823edcbaf6d935de34ac98ecd149"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3876",
+      "sha": "8b010a39a2c54bfbcf03e30fafbe9e3975f68a75"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3887",
+      "sha": "8307d2d3508521a599624f6c554f4ff1da7a3917"
+    },
+    {
+      "name": "Hannah-Sten_TeXiFy-IDEA-3920",
+      "sha": "59e1196a8ff6b5b3cd236098fa1284aa06c15419"
+    },
+    {
+      "name": "Kotlin_dataframe-1072",
+      "sha": "a13dd6edde6980364b869173ecbe758e53166fc8"
+    },
+    {
+      "name": "Kotlin_dataframe-1517",
+      "sha": "ac83596c81e7e652c791ea698b3a0f7e09c2493a"
+    },
+    {
+      "name": "Kotlin_dataframe-641",
+      "sha": "e5cd712e464c07c5ef1f2a3ea9909b121f0f2c09"
+    },
+    {
+      "name": "Kotlin_dataframe-953",
+      "sha": "a695ea6eccfd2cd66b48fb3db4f7d8fcfedd0e33"
+    },
+    {
+      "name": "Kotlin_dataframe-967",
+      "sha": "91045252014d071c52d1c42ff213a17807c83472"
+    },
+    {
+      "name": "ankidroid_Anki-Android-18903",
+      "sha": "dc06269031bbc3fe331eb39a68ae29720404f989"
+    },
+    {
+      "name": "ankidroid_Anki-Android-19384",
+      "sha": "e09e5fd48d409180e30c5763df6b3627de188ebc"
+    },
+    {
+      "name": "ankidroid_Anki-Android-19509",
+      "sha": "cc50d7a8f63f16a22e079260e6bcc4862b26c6f6"
+    },
+    {
+      "name": "ankidroid_Anki-Android-19661",
+      "sha": "2ea6f8b9cafcf6b4a1c28fc402c603f43e10953c"
+    },
+    {
+      "name": "ankidroid_Anki-Android-19982",
+      "sha": "c617689d4c95e10ca734ce0291962c45f85f6729"
+    },
+    {
+      "name": "ankidroid_Anki-Android-20250",
+      "sha": "528a5903f64c7f34045473669093bfc07201da65"
+    },
+    {
+      "name": "detekt_detekt-4205",
+      "sha": "e8955891b12ec11331aba43929fc9b31bcada941"
+    },
+    {
+      "name": "detekt_detekt-4249",
+      "sha": "beb28b3f363e2e5c9dcc04128570788158c02339"
+    },
+    {
+      "name": "detekt_detekt-4628",
+      "sha": "f9343bf1a5f773a347778ab3986ce1ab4e8e8e43"
+    },
+    {
+      "name": "detekt_detekt-4728",
+      "sha": "df9d7ee092a59b9f9a9f4bbef23f29e49c0355f1"
+    },
+    {
+      "name": "detekt_detekt-4733",
+      "sha": "d3f0f662be08958db4f9f1585becd95c61b930b0"
+    },
+    {
+      "name": "detekt_detekt-4738",
+      "sha": "de9689cdfddb880ed7b05f6ce1fa02e7a83f02b3"
+    },
+    {
+      "name": "detekt_detekt-4808",
+      "sha": "38ac273ccbc51f38f7412e0b24e0261f2c6bd1e7"
+    },
+    {
+      "name": "detekt_detekt-4818",
+      "sha": "9af67a1f29cd057895130ff7e0b2fc76fef70598"
+    },
+    {
+      "name": "detekt_detekt-4994",
+      "sha": "bf2c34d06acfd827f626a15a9e00990283acbf83"
+    },
+    {
+      "name": "detekt_detekt-5006",
+      "sha": "f9822b72c626f8af3d21d4886566cc8e738f0bd4"
+    },
+    {
+      "name": "detekt_detekt-5009",
+      "sha": "06adb70264805269dafe53dee4247ec94c8b85b9"
+    },
+    {
+      "name": "detekt_detekt-5252",
+      "sha": "c661c78c275cad6950dc9704c53928072b4a730d"
+    },
+    {
+      "name": "detekt_detekt-5352",
+      "sha": "ed8558e2b4838e5ee2a2f778663e78079779d940"
+    },
+    {
+      "name": "detekt_detekt-5459",
+      "sha": "f84858c7deb6e02929ff4ed947327920300805b3"
+    },
+    {
+      "name": "detekt_detekt-5516",
+      "sha": "6885a0a669df5619d3ee90670d557bf00dda7cb6"
+    },
+    {
+      "name": "detekt_detekt-5577",
+      "sha": "889c9d3001e733ceddd4497f9ed0ddd5fc15045d"
+    },
+    {
+      "name": "detekt_detekt-5684",
+      "sha": "3e3568bbf782914d856d2e4ce9b113c628272a7d"
+    },
+    {
+      "name": "detekt_detekt-6352",
+      "sha": "4d7de3ef2598cdd425d5b77cfc44fbc811a6c17b"
+    },
+    {
+      "name": "detekt_detekt-6443",
+      "sha": "10d57499f44129e21947fd6855dbaa36b155b052"
+    },
+    {
+      "name": "detekt_detekt-6446",
+      "sha": "83111261c98a7fa362ed42fc6b82dbf7e369643d"
+    },
+    {
+      "name": "detekt_detekt-7212",
+      "sha": "7cdeeb896119e872e824ce59faa2878446b4190f"
+    },
+    {
+      "name": "detekt_detekt-7625",
+      "sha": "d476c666f4ca6c3bb7bd2ff443927d67f69c208e"
+    },
+    {
+      "name": "detekt_detekt-7635",
+      "sha": "72e22815778d1bc0b699a5004194a3a59ffe666e"
+    },
+    {
+      "name": "detekt_detekt-7667",
+      "sha": "21211fc49e3608de5830c4a69b2aebbd15f141be"
+    },
+    {
+      "name": "detekt_detekt-7715",
+      "sha": "9443fd3d0e1fdca13e5d6b563488afe024ca26bb"
+    },
+    {
+      "name": "detekt_detekt-7718",
+      "sha": "97604eb2ee47d776b1fc0a4b2e7cf742264aab41"
+    },
+    {
+      "name": "detekt_detekt-7871",
+      "sha": "63c71b880b53c917d48d5ab29a79a391ce33bc84"
+    },
+    {
+      "name": "detekt_detekt-7888",
+      "sha": "b04498d28af8b43c7d16c446d99fa17def11fac2"
+    },
+    {
+      "name": "linreal_cascade-editor-16",
+      "sha": "7d8da1c3a6dc0abc84234c9a1209e4a1ac8525c3"
+    },
+    {
+      "name": "oss-review-toolkit_ort-10179",
+      "sha": "f37a1b1ba36a229d5b3f0b172c15fe0ac6e2150d"
+    },
+    {
+      "name": "oss-review-toolkit_ort-10691",
+      "sha": "f9c091a122cbc01c7a486842d8a5eb778e0e833f"
+    },
+    {
+      "name": "oss-review-toolkit_ort-10719",
+      "sha": "46c29317dcefb341016313ed630da2dafb064c77"
+    },
+    {
+      "name": "oss-review-toolkit_ort-11101",
+      "sha": "909698ef6de1b21cc661675a20040d6a8a86c938"
+    },
+    {
+      "name": "oss-review-toolkit_ort-5572",
+      "sha": "3bfa7aef2b88372b8f4cf57bdde317040e0428b1"
+    },
+    {
+      "name": "oss-review-toolkit_ort-5706",
+      "sha": "0360f46edc6540211fdae221838d46618ef0d4d4"
+    },
+    {
+      "name": "oss-review-toolkit_ort-6462",
+      "sha": "a51bdd72aafbb3b2e13ea2946deb71fb35679a35"
+    },
+    {
+      "name": "oss-review-toolkit_ort-7691",
+      "sha": "40e8efbf12eb2091675c4978a9f0ef2b0b7e70ed"
+    },
+    {
+      "name": "oss-review-toolkit_ort-8106",
+      "sha": "5af0954aac8bc239d4a5f9a00c8b11a83abb728f"
+    },
+    {
+      "name": "oss-review-toolkit_ort-8168",
+      "sha": "f67b6dd760ef4fd0e1d035c2ee9bff78b5c0c7c2"
+    },
+    {
+      "name": "oss-review-toolkit_ort-8741",
+      "sha": "154fb1ea6fd67568be60783bc33ada4305ffef51"
+    },
+    {
+      "name": "oss-review-toolkit_ort-8955",
+      "sha": "26f3faaf6ce907ecb8c9a775b99dc2f89017dcba"
+    },
+    {
+      "name": "pinterest_ktlint-2029",
+      "sha": "8404d0b76109eeca78372e9fa7a4aab777636b70"
+    },
+    {
+      "name": "pinterest_ktlint-2053",
+      "sha": "60c996c1c7c5d42f69cf0d06ab56bf3bd6d9903c"
+    },
+    {
+      "name": "pinterest_ktlint-2091",
+      "sha": "3accef7cc77491734b2fc97cc115b6ba389ff0fe"
+    },
+    {
+      "name": "pinterest_ktlint-2127",
+      "sha": "e0beb75edfd1d432e592d3f72dc7d3cf423b4305"
+    },
+    {
+      "name": "pinterest_ktlint-2134",
+      "sha": "87a8d6b3d815d0442f2bb73e0bb945356a4003ec"
+    },
+    {
+      "name": "pinterest_ktlint-2141",
+      "sha": "f5e8c4d2d0795836b897a0bf7c5295c2b2eb306d"
+    },
+    {
+      "name": "pinterest_ktlint-2193",
+      "sha": "9c9ada08c064ccb64e4b1a88ad606b32df2aa37c"
+    },
+    {
+      "name": "pinterest_ktlint-2216",
+      "sha": "6f1e29e95a2516b77ccb398d46ed9d3ed18aee8b"
+    },
+    {
+      "name": "pinterest_ktlint-2263",
+      "sha": "409211c0a58ca1d74e2efe9b1085a88f4c1c79ad"
+    },
+    {
+      "name": "pinterest_ktlint-2273",
+      "sha": "2978cb8c62036bbb4913d8e7fb9e693e9dc31d28"
+    },
+    {
+      "name": "pinterest_ktlint-2275",
+      "sha": "32a4cbb202cda557937c350c671372dfb7e87650"
+    },
+    {
+      "name": "pinterest_ktlint-2287",
+      "sha": "dc8bc40ce80b2eabc7b2697f387cf4d33a23d112"
+    },
+    {
+      "name": "pinterest_ktlint-2300",
+      "sha": "da7ed5655de3c86f1678ceefc9585a6d7c7e7887"
+    },
+    {
+      "name": "pinterest_ktlint-2362",
+      "sha": "42522d30dbbdfb661f41c7c505a69b31041b8eb9"
+    },
+    {
+      "name": "pinterest_ktlint-2365",
+      "sha": "2884a39297250ca396b5a63422c15679a23e6a82"
+    },
+    {
+      "name": "pinterest_ktlint-2375",
+      "sha": "b92d435548dc972895cf1ef98533cc615415f71d"
+    },
+    {
+      "name": "pinterest_ktlint-2381",
+      "sha": "bf0fbdd08eb9e212908add8c6dd658e9235e97f2"
+    },
+    {
+      "name": "pinterest_ktlint-2386",
+      "sha": "4ee66722af6cd6325be7e40855bd202d27fba46f"
+    },
+    {
+      "name": "pinterest_ktlint-2395",
+      "sha": "645a6ecc27124d3d228675063f6f840daf4dbeaa"
+    },
+    {
+      "name": "pinterest_ktlint-2400",
+      "sha": "bc298af39e62e6d0d3f153df369ffd52db0d5422"
+    },
+    {
+      "name": "pinterest_ktlint-2405",
+      "sha": "77a65a7fcbb59034396a4dbfbcb4a4a1f0904b84"
+    },
+    {
+      "name": "pinterest_ktlint-2407",
+      "sha": "4aa7fcdf3440bde9eec6b17dcec6b4bdc97c3e09"
+    },
+    {
+      "name": "pinterest_ktlint-2431",
+      "sha": "a7d85696bf53e2aa2ec7e8cd6c159ca5f7a34eed"
+    },
+    {
+      "name": "pinterest_ktlint-2432",
+      "sha": "0a813ea10db7d5dd17266fe741b178587974075b"
+    },
+    {
+      "name": "pinterest_ktlint-2442",
+      "sha": "e1c5e43b46d03bdd65c31362946a1b87ec2877dd"
+    },
+    {
+      "name": "pinterest_ktlint-2493",
+      "sha": "fc23b3cc623090d9c21868c6b7a300be2751daeb"
+    },
+    {
+      "name": "pinterest_ktlint-2505",
+      "sha": "b18aa0a97e80ea54618fd19d816d1abec2ea2e6b"
+    },
+    {
+      "name": "pinterest_ktlint-2516",
+      "sha": "ff7251137d77336d1616f7bcce4ff0c3dec0e0f9"
+    },
+    {
+      "name": "pinterest_ktlint-2541",
+      "sha": "e0553ee545b156d51d6d64c31bc6a4b027df4020"
+    },
+    {
+      "name": "pinterest_ktlint-2553",
+      "sha": "868f390d7905785eb8f4863b1a5357b7afc16441"
+    },
+    {
+      "name": "pinterest_ktlint-2554",
+      "sha": "f9da92c7ca488f69ce72fc87df1385754bec2a69"
+    },
+    {
+      "name": "pinterest_ktlint-2555",
+      "sha": "6e15333e504094512b005cc1ccc478d1b459231d"
+    },
+    {
+      "name": "pinterest_ktlint-2617",
+      "sha": "e036eda2e2fa3909e9b3d0a6d1a07d8a78c35dd5"
+    },
+    {
+      "name": "pinterest_ktlint-2715",
+      "sha": "37c09575f2f958fbad5972935adb0c86de6988b5"
+    },
+    {
+      "name": "pinterest_ktlint-2727",
+      "sha": "9c38de6eb94c9977857f730e55737f15bb648b6b"
+    },
+    {
+      "name": "pinterest_ktlint-2774",
+      "sha": "7d328918813fe7bb79c2492d3d1322e5ecd8b8fc"
+    },
+    {
+      "name": "pinterest_ktlint-2785",
+      "sha": "be7176d90a168c65afd4c8542fd690c4579f6fc3"
+    },
+    {
+      "name": "pinterest_ktlint-2823",
+      "sha": "3b4610f3d4c273b77999227698149ade6d311248"
+    },
+    {
+      "name": "pinterest_ktlint-2873",
+      "sha": "5a0c936c17dd227435498f44437e6c66a5218e15"
+    },
+    {
+      "name": "pinterest_ktlint-2891",
+      "sha": "4f538396500a5f299f244129a26f1bf9bd935c5f"
+    },
+    {
+      "name": "pinterest_ktlint-2895",
+      "sha": "644e8d54396f9057fb168c5ca37d4c7631ffa9f1"
+    },
+    {
+      "name": "pinterest_ktlint-2950",
+      "sha": "493aaaafc92017d82ff90b3a51f4f1e6a44e61a9"
+    },
+    {
+      "name": "pinterest_ktlint-2983",
+      "sha": "76b22de800be54fe201131278076198498b23dc9"
+    },
+    {
+      "name": "square_okhttp-6887",
+      "sha": "a320d69eef128e5bbe8df2e059246ab711dc45c0"
+    },
+    {
+      "name": "square_okhttp-8968",
+      "sha": "f2741d2ed854f2811d0d587fea412222b8e1a514"
+    }
+  ]
+}
