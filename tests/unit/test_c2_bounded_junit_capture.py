@@ -67,6 +67,42 @@ class BoundedOriginalJUnit(unittest.TestCase):
   self.assertLessEqual(api.MAX_XML_FILES,4096)
   self.assertLessEqual(api.MAX_TOTAL_XML_BYTES,100_663_296)
 
+ def test_full_validator_accepts_520_distinct_xml_and_still_mints_zero_labels(self):
+  before=self.base/'before'
+  after=self.base/'after'
+  before.mkdir();after.mkdir()
+  for i in range(520):
+   state='<failure/>' if i==0 else ''
+   (before/f'TEST-{i:05d}.xml').write_text(
+    f'<testsuite><testcase classname="p.T" name="m{i}">{state}</testcase></testsuite>')
+   (after/f'TEST-{i:05d}.xml').write_text(
+    f'<testsuite><testcase classname="p.T" name="m{i}"/></testsuite>')
+  manifest=self.base/'original-tests.json'
+  manifest.write_text(json.dumps({'f2p_tests':['p.T.m0'],'p2p_tests':['p.T.m1'],
+    's2p_tests':[],'n2p_tests':[]}))
+  output=self.base/'receipt.json'
+  cmd=[sys.executable,str(VALIDATOR),'--task','detekt_detekt-4628',
+       '--expected',str(manifest),'--before',str(before),'--after',str(after),
+       '--source-commit','a'*40,'--fixed-commit','b'*40,'--output',str(output)]
+  run=subprocess.run(cmd,capture_output=True,text=True,timeout=45)
+  self.assertEqual(run.returncode,0,run.stderr)
+  report=json.loads(output.read_text())
+  self.assertEqual(len(report['beforeJUnitFiles']),520)
+  self.assertEqual(len(report['afterJUnitFiles']),520)
+  self.assertEqual(report['verifiedFailToPassCount'],1)
+  self.assertFalse(report['sourceCommitProvenanceVerified'])
+  self.assertEqual(report['newPositiveLabels'],0)
+
+ def test_validator_rejects_aggregate_budget_without_silent_truncation(self):
+  api=SourceFileLoader('c2_bounded_total',str(VALIDATOR)).load_module()
+  d=self.base/'junit'
+  d.mkdir()
+  for i in range(3):
+   (d/f'TEST-{i}.xml').write_text(f'<testsuite><testcase classname="p.T" name="m{i}"/></testsuite>')
+  api.MAX_TOTAL_XML_BYTES=25
+  with self.assertRaises(ValueError):
+   api.collect_junit(d)
+
  def test_accepts_authenticated_original_expected_manifest_larger_than_two_mib(self):
   api=SourceFileLoader('c2_big_expected',str(VALIDATOR)).load_module()
   manifest=self.base/'expected_tests.json'
