@@ -60,7 +60,7 @@ function run(args){
   stage='SUMMARIZE_QUOTAS';
   const report=summarizeTasks(entries);
   stage='WRITE_REPORT';
-  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\\n',{flag:'wx',mode:0o600});
+  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
   return {status:report.status,candidates:report.candidateCount,
    tasksWithFailToPassExpectations:report.f2pDeclaredTasks,
    tasksWithNoFailToPass:report.noF2pTasks,
