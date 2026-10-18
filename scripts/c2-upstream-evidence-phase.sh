@@ -23,23 +23,7 @@ rc=$?
 set -e
 printf '%s\n' "$rc" > /evidence/original-test.exit-code
 mkdir -p /evidence/junit
-python3 - <<'PY'
-from pathlib import Path
-import hashlib,shutil
-src=Path.cwd()
-out=Path('/evidence/junit')
-count=0
-for xml in src.rglob('TEST*.xml'):
-    if xml.is_symlink() or not xml.is_file(): continue
-    if '/build/test-results/' not in xml.as_posix(): continue
-    relative=xml.relative_to(src)
-    h=hashlib.sha256(str(relative).encode()).hexdigest()[:24]
-    shutil.copyfile(xml,out/f'TEST-{h}.xml')
-    count+=1
-    if count>500:raise SystemExit('Too many JUnit reports')
-if not count:raise SystemExit('No original Gradle JUnit reports captured')
-print('C2_JUNIT_REPORTS_CAPTURED='+str(count))
-PY
+python3 /opt/c2-capture-junit.py --source "$root" --output /evidence/junit
 [[ "$rc" -eq 0 ]] || exit 40
 if [[ "$C2_PHASE" == after ]]; then
   [[ -f /logs/verifier/reward.txt && "$(cat /logs/verifier/reward.txt)" == 1 ]] || exit 41
