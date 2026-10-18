@@ -25,10 +25,10 @@ function authenticatedCandidateTree(candidates){
  // is a directory (mode 040000), and its child SHA must match upstream.
  entries.sort((a,b)=>Buffer.compare(Buffer.from(a.name),Buffer.from(b.name)));
  const raw=Buffer.concat(entries.map(({name,sha})=>Buffer.concat([
-  Buffer.from('40000 '+name+'\\0'),Buffer.from(sha,'hex')
+  Buffer.from('40000 '+name+'\0'),Buffer.from(sha,'hex')
  ])));
  const actual=crypto.createHash('sha1')
-  .update(Buffer.from('tree '+raw.length+'\\0')).update(raw).digest('hex');
+  .update(Buffer.from('tree '+raw.length+'\0')).update(raw).digest('hex');
  if(actual!==PINNED_TASKS_TREE_SHA)fail();
  return names;
 }
