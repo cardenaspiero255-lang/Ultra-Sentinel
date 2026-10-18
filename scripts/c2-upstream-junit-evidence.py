@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 
 SHA40 = re.compile(r'^[a-f0-9]{40}$')
 TASK = re.compile(r'^[A-Za-z0-9_-]+-[1-9][0-9]{0,7}$')
-TESTID = re.compile(r'^[A-Za-z_$][A-Za-z0-9_.$]*\.[^\s<>]{1,200}$')
+TESTID = re.compile(r'[A-Za-z_$][A-Za-z0-9_.$]*\.[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]{1,500}',re.DOTALL)
 CLASSES = ('f2p','p2p','s2p','n2p')
 MAX_XML_FILES = 500
 MAX_XML_BYTES = 2_097_152
@@ -63,7 +63,7 @@ def collect_junit(directory):
     if not directory.is_dir() or directory.is_symlink():abort('unsafe JUnit directory')
     xmls=sorted(directory.rglob('TEST*.xml'))
     if not xmls or len(xmls)>MAX_XML_FILES:abort('no JUnit or too many reports')
-    cases={}; hashes=[]
+    cases={}; hashes=[]; conflicts=set(); equivalents=0
     for path in xmls:
         raw=safe_file(path,MAX_XML_BYTES)
         hashes.append([str(path.relative_to(directory)),sha(raw)])
@@ -76,13 +76,26 @@ def collect_junit(directory):
             classname=e.get('classname');name=e.get('name')
             if not classname or not name:abort('JUnit testcase lacks stable name')
             ident=f'{classname}.{name}'
-            if ident in cases:abort('duplicate testcase across JUnit files')
-            if len(cases)>=MAX_TESTS:abort('excessive testcase count')
+            if not TESTID.fullmatch(ident):abort('invalid JUnit test identity')
+            if ident not in cases and ident not in conflicts and len(cases)+len(conflicts)>=MAX_TESTS:
+                abort('excessive testcase count')
             states={child.tag for child in e if child.tag in ('failure','error','skipped')}
             if len(states)>1:abort('ambiguous testcase state')
-            cases[ident]=('FAIL' if 'failure' in states or 'error' in states else
-                         'SKIP' if 'skipped' in states else 'PASS')
-    return cases,hashes
+            state=('FAIL' if 'failure' in states or 'error' in states else
+                   'SKIP' if 'skipped' in states else 'PASS')
+            if ident in conflicts:
+                continue  # once ambiguous, never restore an identity as proven
+            if ident not in cases:
+                cases[ident]=state
+            elif cases[ident]==state:
+                equivalents+=1  # same identity/state; no additional vote
+            else:
+                conflicts.add(ident)
+                del cases[ident]  # never count a contradictory observation
+    fingerprint=sha(json.dumps(sorted(conflicts),ensure_ascii=False,separators=(',',':')).encode('utf-8'))
+    return cases,hashes,{'equivalentDuplicateJUnitCount':equivalents,
+                         'conflictingJUnitIds':conflicts,
+                         'conflictingJUnitSha256':fingerprint}
 
 def evaluate(args):
     if not TASK.fullmatch(args.task):abort('invalid task')
@@ -92,8 +105,12 @@ def evaluate(args):
     reject_symlink_components(out)
     if out.exists() or out.is_symlink():abort('receipt already exists')
     groups, expected_digest=expected_tests(exp)
-    before_cases,before_files=collect_junit(before)
-    after_cases,after_files=collect_junit(after)
+    before_cases,before_files,before_meta=collect_junit(before)
+    after_cases,after_files,after_meta=collect_junit(after)
+    required={x for values in groups.values() for x in values}
+    for phase,meta in (('before',before_meta),('after',after_meta)):
+        if required.intersection(meta['conflictingJUnitIds']):
+            abort(phase+' expected testcase has conflicting JUnit states')
     for test in groups['f2p']:
         if before_cases.get(test)!='FAIL' or after_cases.get(test)!='PASS':
             abort('original f2p failure-to-pass not demonstrated')
@@ -112,6 +129,14 @@ def evaluate(args):
       'declaredAfterCommit':args.fixed_commit,
       'expectedTestsSha256':expected_digest,'beforeJUnitFiles':before_files,
       'afterJUnitFiles':after_files,
+      # Contradictions outside the declared tests never count as evidence.
+      # Keep a reproducible fingerprint without counting them as passes.
+      'beforeEquivalentDuplicateJUnitCount':before_meta['equivalentDuplicateJUnitCount'],
+      'afterEquivalentDuplicateJUnitCount':after_meta['equivalentDuplicateJUnitCount'],
+      'beforeConflictingUnscoredJUnitCount':len(before_meta['conflictingJUnitIds']),
+      'afterConflictingUnscoredJUnitCount':len(after_meta['conflictingJUnitIds']),
+      'beforeConflictingUnscoredJUnitSha256':before_meta['conflictingJUnitSha256'],
+      'afterConflictingUnscoredJUnitSha256':after_meta['conflictingJUnitSha256'],
       'verifiedFailToPassCount':len(groups['f2p']),
       'verifiedPassToPassCount':len(groups['p2p']),
       'verifiedNewOrSkippedToPassCount':len(groups['s2p'])+len(groups['n2p']),
