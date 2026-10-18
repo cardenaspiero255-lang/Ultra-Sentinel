@@ -50,6 +50,24 @@ class JUnitEvidenceTests(unittest.TestCase):
     def test_reject_when_fixed_test_still_fails(self):
         self.make_report(self.after, {'reproduces()':'failure','stillWorks()':'pass'})
         self.assertNotEqual(self.run_cli()[0].returncode,0)
+    def test_p2p_mismatch_reports_exact_original_control_and_states(self):
+        self.make_report(self.before, {'reproduces()':'failure', 'stillWorks()':'skipped'})
+        result, receipt = self.run_cli()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(receipt.exists())
+        self.assertIn('org.example.ParserTest.stillWorks()', result.stderr)
+        self.assertIn('before=SKIP', result.stderr)
+        self.assertIn('after=PASS', result.stderr)
+
+    def test_f2p_mismatch_reports_exact_expected_transition(self):
+        self.make_report(self.before, {'reproduces()':'pass', 'stillWorks()':'pass'})
+        result, receipt = self.run_cli()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(receipt.exists())
+        self.assertIn('org.example.ParserTest.reproduces()', result.stderr)
+        self.assertIn('before=PASS', result.stderr)
+        self.assertIn('after=PASS', result.stderr)
+
     def test_reject_when_control_failed(self):
         self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'error'})
         self.assertNotEqual(self.run_cli()[0].returncode,0)

@@ -111,18 +111,22 @@ def evaluate(args):
     for phase,meta in (('before',before_meta),('after',after_meta)):
         if required.intersection(meta['conflictingJUnitIds']):
             abort(phase+' expected testcase has conflicting JUnit states')
-    for test in groups['f2p']:
-        if before_cases.get(test)!='FAIL' or after_cases.get(test)!='PASS':
-            abort('original f2p failure-to-pass not demonstrated')
-    for test in groups['p2p']:
-        if before_cases.get(test)!='PASS' or after_cases.get(test)!='PASS':
-            abort('original p2p stable passing control not demonstrated')
-    for test in groups['s2p']:
-        if before_cases.get(test)!='SKIP' or after_cases.get(test)!='PASS':
-            abort('skipped-to-pass expectation not demonstrated')
-    for test in groups['n2p']:
-        if test in before_cases or after_cases.get(test)!='PASS':
-            abort('new-to-pass expectation not demonstrated')
+    # Preserve the strict original BEFORE/AFTER requirement, but identify the
+    # failing source control. JSON quoting prevents untrusted XML names from
+    # injecting raw line breaks or terminal control characters into CI logs.
+    transitions=(
+        ('f2p','FAIL','PASS','original f2p failure-to-pass not demonstrated'),
+        ('p2p','PASS','PASS','original p2p stable passing control not demonstrated'),
+        ('s2p','SKIP','PASS','skipped-to-pass expectation not demonstrated'),
+        ('n2p','MISSING','PASS','new-to-pass expectation not demonstrated')
+    )
+    for group,expected_before,expected_after,reason in transitions:
+        for test in groups[group]:
+            actual_before=before_cases.get(test,'MISSING')
+            actual_after=after_cases.get(test,'MISSING')
+            if actual_before!=expected_before or actual_after!=expected_after:
+                abort(f'{reason}: test={json.dumps(test,ensure_ascii=True)} '
+                      f'before={actual_before} after={actual_after}')
     result={
       'schema':'ultra-sentinel-c2-upstream-junit-evidence/v1',
       'task':args.task,'declaredBeforeCommit':args.source_commit,
