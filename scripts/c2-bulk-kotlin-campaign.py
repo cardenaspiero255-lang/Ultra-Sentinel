@@ -97,12 +97,19 @@ def docker_task(root,task,results,phase_script,validator,built):
   rc,log=command(['docker','build','-t',image,str(source/'environment')],timeout=2400)
   if rc:raise ValueError('task Docker build failed: '+log[-700:])
   for phase,folder in [('before',before),('after',after)]:
-   rc,log=command(['docker','run','--rm','--network','none','--cap-drop','ALL',
+   # The GitHub runner owns this private evidence directory, but the image may
+   # run as another UID with CAP_DAC_OVERRIDE dropped. Grant write+traverse
+   # on this one temporary bind mount only; restore 0700 even on failure.
+   folder.chmod(0o733)
+   try:
+    rc,log=command(['docker','run','--rm','--network','none','--cap-drop','ALL',
       '--security-opt','no-new-privileges','--pids-limit','1536','--memory','12g','--cpus','4',
       '--tmpfs','/logs:rw,nosuid,noexec,size=256m',
       '-v',f'{source / "tests"}:/tests:ro','-v',f'{source / "solution"}:/solution:ro',
       '-v',f'{phase_script}:/opt/c2-evidence-phase.sh:ro','-v',f'{folder}:/evidence:rw',
       '-e','C2_PHASE='+phase,image,'bash','/opt/c2-evidence-phase.sh'],timeout=1100)
+   finally:
+    folder.chmod(0o700)
    if rc:raise ValueError(phase+' original test failed or infra blocked: '+log[-700:])
   base_sha=(before/'commit.txt').read_text().strip()
   fix_sha=(after/'commit.txt').read_text().strip()
