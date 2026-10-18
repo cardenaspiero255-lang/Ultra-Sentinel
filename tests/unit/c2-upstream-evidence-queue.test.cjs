@@ -69,7 +69,9 @@ test('tampered index, duplicate tasks and invalid status are rejected',()=>{
   x=>x.candidates[0].status='CERTIFIED',
   x=>x.blindHoldout=true
  ]){
-  const x=fixture();a(x);
+  const baseline=fixture();
+  const x={...baseline,candidates:baseline.candidates.map(c=>({...c}))};
+  a(x);
   assert.throws(()=>buildEvidenceQueue(x),/C2_EVIDENCE_QUEUE_REJECTED/);
  }
 });
