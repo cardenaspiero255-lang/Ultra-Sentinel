@@ -78,3 +78,26 @@ test('exact complete 106 task classification is allowed but cannot certify',()=>
  assert.equal(x.admitted,0);assert.equal(x.remaining,97);
  assert.equal(x.blindHoldout,false);
 });
+
+test('offline four-gate report reads batch receipts but never manufactures labels',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {spawnSync}=require('node:child_process');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'c2-four-gate-'));
+ try{
+  const batch=path.join(root,'c2-kotlin-batch-1');
+  fs.mkdirSync(batch);
+  const r=observed('GradleUp_shadow-1313');
+  fs.writeFileSync(path.join(batch,r.task+'.json'),JSON.stringify(r));
+  const report=path.join(root,'four-gate.json');
+  const cli=path.join(__dirname,'../../scripts/c2-review-kotlin-candidates.cjs');
+  const run=spawnSync(process.execPath,[cli,'--receipts',root,'--mode','smoke','--output',report],{encoding:'utf8',timeout:20000});
+  assert.equal(run.status,0,run.stderr);
+  const result=JSON.parse(fs.readFileSync(report,'utf8'));
+  assert.equal(result.receiptsSeen,1);
+  assert.equal(result.admitted,0);
+  assert.equal(result.candidates.find(x=>x.task===r.task).detector,'DETECTOR_APPLICABILITY_UNVERIFIED');
+  const fail=spawnSync(process.execPath,[cli,'--receipts',root,'--mode','full','--output',path.join(root,'full.json')],{encoding:'utf8',timeout:20000});
+  assert.equal(fail.status,2);
+  assert.equal(fs.existsSync(path.join(root,'full.json')),false);
+ }finally{fs.rmSync(root,{recursive:true,force:true})}
+});
