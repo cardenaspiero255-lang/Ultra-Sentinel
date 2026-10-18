@@ -59,9 +59,15 @@ class JUnitEvidenceTests(unittest.TestCase):
     def test_reject_skipped_regression(self):
         self.make_report(self.before, {'reproduces()':'skipped','stillWorks()':'pass'})
         self.assertNotEqual(self.run_cli()[0].returncode,0)
-    def test_reject_duplicate_junit_result(self):
+    def test_accept_equivalent_duplicate_junit_result_without_double_counting(self):
         (self.before/'TEST-DUPLICATE.xml').write_bytes((self.before/'TEST-ParserTest.xml').read_bytes())
-        self.assertNotEqual(self.run_cli()[0].returncode,0)
+        r,o=self.run_cli()
+        self.assertEqual(r.returncode,0,r.stderr)
+        report=json.loads(o.read_text())
+        self.assertEqual(report['verifiedFailToPassCount'],1)
+        self.assertEqual(report['verifiedPassToPassCount'],1)
+        self.assertEqual(report['beforeEquivalentDuplicateJUnitCount'],2)
+        self.assertEqual(report['beforeConflictingUnscoredJUnitCount'],0)
     def test_reject_duplicate_labels_in_expected_test(self):
         d=json.loads(self.exp.read_text());d['p2p_tests']=d['f2p_tests'];self.exp.write_text(json.dumps(d))
         self.assertNotEqual(self.run_cli()[0].returncode,0)
