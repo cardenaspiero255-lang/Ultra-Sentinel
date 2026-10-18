@@ -26,7 +26,8 @@ jobs:
         github.event.action == 'created' &&
         github.event.issue.number == 50 &&
         github.event.issue.pull_request == null &&
-        github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_SMOKE_V1' &&
+        (github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_SMOKE_V1' ||
+         github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1') &&
         github.event.comment.user.id == 322222186 &&
         github.event.sender.id == 322222186))
     runs-on: ubuntu-24.04
@@ -47,7 +48,7 @@ jobs:
       - id: plan
         shell: bash
         env:
-          MODE: ${{ inputs.mode || 'smoke' }}
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' || 'smoke') }}
         run: |
           set -euo pipefail
           test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
@@ -116,7 +117,7 @@ jobs:
       - name: Produce fail-closed aggregate, zero labels until source review
         shell: bash
         env:
-          MODE: ${{ inputs.mode || 'smoke' }}
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' || 'smoke') }}
         run: |
           set -euo pipefail
           python3 sentinel/scripts/c2-bulk-kotlin-campaign.py aggregate \
