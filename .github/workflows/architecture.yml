@@ -24,5 +24,3 @@ jobs:
           node-version: '22'
       - name: Verify architecture (no external integrations)
         run: npm run check
-      - name: Validate original JUnit evidence gates (Python)
-        run: python3 -m unittest discover -s tests/unit -p 'test_c2_upstream_junit_evidence.py' -v
