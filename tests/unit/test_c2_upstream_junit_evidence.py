@@ -75,6 +75,47 @@ class JUnitEvidenceTests(unittest.TestCase):
     def test_reject_symlinked_junit(self):
         (self.before/'TEST-symlink.xml').symlink_to(self.before/'TEST-ParserTest.xml')
         self.assertNotEqual(self.run_cli()[0].returncode,0)
+    def test_s2p_requires_original_skip(self):
+        d=json.loads(self.exp.read_text())
+        d['s2p_tests']=['org.example.ParserTest.wasSkipped()']
+        self.exp.write_text(json.dumps(d))
+        self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass','wasSkipped()':'pass'})
+        self.make_report(self.after, {'reproduces()':'pass','stillWorks()':'pass','wasSkipped()':'pass'})
+        self.assertNotEqual(self.run_cli()[0].returncode,0)
+    def test_s2p_actual_skipped_before_and_pass_after(self):
+        d=json.loads(self.exp.read_text())
+        d['s2p_tests']=['org.example.ParserTest.wasSkipped()']
+        self.exp.write_text(json.dumps(d))
+        self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass','wasSkipped()':'skipped'})
+        self.make_report(self.after, {'reproduces()':'pass','stillWorks()':'pass','wasSkipped()':'pass'})
+        r,o=self.run_cli()
+        self.assertEqual(r.returncode,0,r.stderr)
+        self.assertEqual(json.loads(o.read_text())['verifiedNewOrSkippedToPassCount'],1)
+    def test_n2p_requires_absent_before(self):
+        d=json.loads(self.exp.read_text())
+        d['n2p_tests']=['org.example.ParserTest.created()']
+        self.exp.write_text(json.dumps(d))
+        self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass','created()':'failure'})
+        self.make_report(self.after, {'reproduces()':'pass','stillWorks()':'pass','created()':'pass'})
+        self.assertNotEqual(self.run_cli()[0].returncode,0)
+    def test_n2p_absent_before_and_pass_after(self):
+        d=json.loads(self.exp.read_text())
+        d['n2p_tests']=['org.example.ParserTest.created()']
+        self.exp.write_text(json.dumps(d))
+        self.make_report(self.after, {'reproduces()':'pass','stillWorks()':'pass','created()':'pass'})
+        r,o=self.run_cli()
+        self.assertEqual(r.returncode,0,r.stderr)
+        self.assertEqual(json.loads(o.read_text())['verifiedNewOrSkippedToPassCount'],1)
+    def test_reject_symlinked_input_directory(self):
+        redirect=self.p/'redirect'
+        redirect.symlink_to(self.before,target_is_directory=True)
+        self.before=redirect
+        self.assertNotEqual(self.run_cli()[0].returncode,0)
+    def test_reject_symlinked_parent_of_expected_manifest(self):
+        redirect=self.p/'redirect'
+        redirect.symlink_to(self.p,target_is_directory=True)
+        self.exp=redirect/'expected_tests.json'
+        self.assertNotEqual(self.run_cli()[0].returncode,0)
     def test_reject_reuse_existing_receipt_path(self):
         o=self.p/'receipt.json';o.write_text('existing')
         self.assertNotEqual(self.run_cli()[0].returncode,0)
