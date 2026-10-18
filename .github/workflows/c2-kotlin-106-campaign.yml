@@ -8,6 +8,8 @@ on:
         options: [smoke, full]
         required: true
         default: smoke
+  issue_comment:
+    types: [created]
 permissions:
   contents: read
 concurrency:
@@ -19,7 +21,14 @@ jobs:
       github.event.repository.id == 1418338512 &&
       github.actor_id == '322222186' &&
       github.ref == 'refs/heads/main' &&
-      github.event_name == 'workflow_dispatch'
+      ((github.event_name == 'workflow_dispatch') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_SMOKE_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
@@ -38,7 +47,7 @@ jobs:
       - id: plan
         shell: bash
         env:
-          MODE: ${{ inputs.mode }}
+          MODE: ${{ inputs.mode || 'smoke' }}
         run: |
           set -euo pipefail
           test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
@@ -107,7 +116,7 @@ jobs:
       - name: Produce fail-closed aggregate, zero labels until source review
         shell: bash
         env:
-          MODE: ${{ inputs.mode }}
+          MODE: ${{ inputs.mode || 'smoke' }}
         run: |
           set -euo pipefail
           python3 sentinel/scripts/c2-bulk-kotlin-campaign.py aggregate \
