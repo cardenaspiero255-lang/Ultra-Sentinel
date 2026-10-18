@@ -18,6 +18,11 @@ const STATUSES=Object.freeze([
  'TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED',
  'INFRA_BLOCKED','REPRODUCTION_MISMATCH','NO_DECLARED_REGRESSION'
 ]);
+const ALLOWED_RECEIPT_FIELDS=new Set([
+ 'task','status','sourceCommit','newPositiveLabels','newNegativeLabels',
+ 'candidateTransitions','receiptSha256','sourceCommitClaim','fixedCommitClaim',
+ 'reason'
+]);
 const CLAIMS=new Set([
  'rootCauseVerified','independentReviewVerified','detectorApplicabilityVerified',
  'historicalIndependenceVerified','historicalDedupVerified','admittedLabel',
@@ -41,7 +46,7 @@ function reviewCampaign(index,receipts=[],options={}){
  for(const r of receipts){
   if(!r||typeof r!=='object'||Array.isArray(r)||
     typeof r.task!=='string'||!known.has(r.task)||received.has(r.task)||
-    !STATUSES.includes(r.status)||Object.keys(r).some(k=>CLAIMS.has(k))||
+    !STATUSES.includes(r.status)||Object.keys(r).some(k=>!ALLOWED_RECEIPT_FIELDS.has(k)||CLAIMS.has(k))||
     ![undefined,0].includes(r.newPositiveLabels)||
     ![undefined,0].includes(r.newNegativeLabels)||
     (r.sourceCommit!==undefined&&r.sourceCommit!==UPSTREAM.commit)||
@@ -83,6 +88,7 @@ function reviewCampaign(index,receipts=[],options={}){
   classifications,originalBehaviorAttestations:0,
   independentlyVerifiedRootCauses:0,detectorRulesValidated:0,
   historicalFingerprintsCompared:0,admitted:0,newLabels:0,
+  newPositiveLabels:0,newNegativeLabels:0,
   historicalLabels:23,remaining:97,positiveMinimum:37,
   negativeMinimum:36,diversityMinimum:24,
   blindHoldout:false,precision:null,recall:null,f1:null,
