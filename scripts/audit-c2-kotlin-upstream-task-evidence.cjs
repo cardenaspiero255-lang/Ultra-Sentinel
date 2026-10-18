@@ -6,17 +6,22 @@ const path=require('node:path');
 const {execFileSync}=require('node:child_process');
 const {UPSTREAM}=require('../packages/quality-gates/c2-kotlin-upstream-candidate-index.cjs');
 const {auditTask,summarizeTasks}=require('../packages/quality-gates/c2-upstream-task-triage.cjs');
+// Bounded, SHA-pinned source inputs. The original Detekt 7212 manifest is
+// 2,143,404 bytes; 2 MiB rejected legitimate upstream evidence.
+const MAX_TASK_TOML_BYTES=65_536;
+const MAX_EXPECTED_TEST_BYTES=8_388_608;
 function fail(){throw Error('C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED');}
 function git(root,args){
  try{return execFileSync('git',['-C',root,...args],{encoding:'utf8',timeout:15000,maxBuffer:65536}).trim();}
  catch{fail();}
 }
-function read(root,rel){
+function read(root,rel,maxBytes){
+ if(!Number.isSafeInteger(maxBytes)||maxBytes<20||maxBytes>MAX_EXPECTED_TEST_BYTES)fail();
  const filename=path.resolve(root,rel);
  if(!filename.startsWith(root+path.sep))fail();
  let stat;
  try{stat=fs.lstatSync(filename);}catch{fail();}
- if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>2097152||stat.size<20)fail();
+ if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>maxBytes||stat.size<20)fail();
  const hash=git(root,['hash-object','--',rel]);
  const tracked=git(root,['rev-parse',`HEAD:${rel}`]);
  if(hash!==tracked||!/^[a-f0-9]{40}$/.test(hash))fail();
@@ -43,9 +48,9 @@ function run(args){
   const entries=names.map(d=>{
    if(!/^[A-Za-z0-9_-]+-[1-9][0-9]{0,7}$/.test(d.name))fail();
    stage='READ_TASK_TOML:'+d.name;
-   const toml=read(root,`tasks/${d.name}/task.toml`);
+   const toml=read(root,`tasks/${d.name}/task.toml`,MAX_TASK_TOML_BYTES);
    stage='READ_EXPECTED_TESTS:'+d.name;
-   const expected=read(root,`tasks/${d.name}/tests/expected_tests.json`);
+   const expected=read(root,`tasks/${d.name}/tests/expected_tests.json`,MAX_EXPECTED_TEST_BYTES);
    stage='PARSE_EXPECTED_TESTS:'+d.name;
    let o;try{o=JSON.parse(expected.content);}catch{fail();}
    return {name:d.name,toml:toml.content,expected:o,
@@ -79,4 +84,4 @@ if(require.main===module){
   process.exitCode=2;
  }
 }
-module.exports={run};
+module.exports={run,MAX_TASK_TOML_BYTES,MAX_EXPECTED_TEST_BYTES};
