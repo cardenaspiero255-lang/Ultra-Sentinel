@@ -36,3 +36,13 @@ test('106 tasks preserve nine-repo quotas without granting certification',()=>{
  assert.equal(s.precision,null);assert.equal(s.status,'UPSTREAM_EXPECTATIONS_TRIAGED_NOT_EXECUTED');
  assert.throws(()=>summarizeTasks(entries.slice(1)),/C2_UPSTREAM_TASK_TRIAGE_BLOCKED/);
 });
+
+test('source preflight rejects missing upstream with a safe stage code',()=>{
+ const {spawnSync}=require('node:child_process');
+ const {join}=require('node:path');
+ const script=join(__dirname,'../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+ const result=spawnSync(process.execPath,[script,'/definitely-not-real-c2-upstream','/tmp/not-a-real-c2-report.json'],{encoding:'utf8',timeout:20000});
+ assert.equal(result.status,2);
+ assert.match(result.stderr,/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED:SOURCE_CHECK/);
+ assert.doesNotMatch(result.stderr,/Error: ENOENT|stack trace/i);
+});
