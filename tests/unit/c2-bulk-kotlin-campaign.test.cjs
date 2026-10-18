@@ -21,5 +21,18 @@ test('owner issue #50 can trigger only isolated two-task smoke on main',()=>{
   assert.match(workflow,/github\.event\.sender\.id == 322222186/);
   assert.match(workflow,/ULTRA_SENTINEL_C2_KOTLIN_106_SMOKE_V1/);
   assert.match(workflow,/github\.ref == 'refs\/heads\/main'/);
-  assert.equal((workflow.match(/MODE: \$\{\{ inputs\.mode \|\| 'smoke' \}\}/g)||[]).length,2);
+  assert.equal((workflow.match(/MODE: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.mode \|\| \(github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' \|\| 'smoke'\) \}\}/g)||[]).length,2);
+});
+
+test('owner-only exact full campaign comment selects all 106 tasks, rejects other comments',()=>{
+ const fs=require('node:fs');
+ const workflow=fs.readFileSync('.github/workflows/c2-kotlin-106-campaign.yml','utf8');
+ assert.match(workflow,/github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1'/);
+ assert.match(workflow,/github\.event\.comment\.user\.id == 322222186/);
+ assert.match(workflow,/github\.event\.sender\.id == 322222186/);
+ assert.match(workflow,/github\.event\.issue\.number == 50/);
+ assert.match(workflow,/github\.ref == 'refs\/heads\/main'/);
+ assert.match(workflow,/github\.event\.repository\.id == 1418338512/);
+ assert.match(workflow,/max-parallel: 3/);
+ assert.equal((workflow.match(/MODE: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.mode \|\| \(github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' \|\| 'smoke'\) \}\}/g)||[]).length,2);
 });
