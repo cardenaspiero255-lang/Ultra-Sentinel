@@ -25,7 +25,14 @@ MAX_TESTS = 60_000
 def abort(reason):
     raise ValueError('C2_UPSTREAM_EVIDENCE_BLOCKED: '+reason)
 
+def reject_symlink_components(path):
+    absolute = path.absolute()
+    for part in (absolute, *absolute.parents):
+        if part.is_symlink():
+            abort('symlink in evidence path')
+
 def safe_file(path, maxbytes):
+    reject_symlink_components(path)
     st = path.lstat()
     if not path.is_file() or path.is_symlink() or st.st_nlink != 1 or st.st_size < 1 or st.st_size > maxbytes:
         abort('unsafe input file')
@@ -52,6 +59,7 @@ def expected_tests(path):
     return groups,sha(raw)
 
 def collect_junit(directory):
+    reject_symlink_components(directory)
     if not directory.is_dir() or directory.is_symlink():abort('unsafe JUnit directory')
     xmls=sorted(directory.rglob('TEST*.xml'))
     if not xmls or len(xmls)>MAX_XML_FILES:abort('no JUnit or too many reports')
@@ -81,6 +89,7 @@ def evaluate(args):
     if not SHA40.fullmatch(args.source_commit) or not SHA40.fullmatch(args.fixed_commit) or args.source_commit==args.fixed_commit:
         abort('unusable source/solution commit references')
     exp=Path(args.expected);before=Path(args.before);after=Path(args.after);out=Path(args.output)
+    reject_symlink_components(out)
     if out.exists() or out.is_symlink():abort('receipt already exists')
     groups, expected_digest=expected_tests(exp)
     before_cases,before_files=collect_junit(before)
@@ -91,10 +100,12 @@ def evaluate(args):
     for test in groups['p2p']:
         if before_cases.get(test)!='PASS' or after_cases.get(test)!='PASS':
             abort('original p2p stable passing control not demonstrated')
-    for cls in ('s2p','n2p'):
-        for test in groups[cls]:
-            if after_cases.get(test)!='PASS':
-                abort('new/skipped-to-pass expectation not demonstrated')
+    for test in groups['s2p']:
+        if before_cases.get(test)!='SKIP' or after_cases.get(test)!='PASS':
+            abort('skipped-to-pass expectation not demonstrated')
+    for test in groups['n2p']:
+        if test in before_cases or after_cases.get(test)!='PASS':
+            abort('new-to-pass expectation not demonstrated')
     result={
       'schema':'ultra-sentinel-c2-upstream-junit-evidence/v1',
       'task':args.task,'declaredBeforeCommit':args.source_commit,
