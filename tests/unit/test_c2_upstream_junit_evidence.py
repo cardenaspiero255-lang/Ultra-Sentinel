@@ -70,10 +70,10 @@ class JUnitEvidenceTests(unittest.TestCase):
 
     def test_original_multiline_junit_name_with_outer_indentation(self):
         d=json.loads(self.exp.read_text())
-        declared='should have style sub config with active false which is overridden\\n            in second config'
+        declared='should have style sub config with active false which is overridden\n            in second config'
         d['p2p_tests'].append('org.example.ParserTest.'+declared)
         self.exp.write_text(json.dumps(d))
-        padded='\\n            '+declared+'\\n        '
+        padded='\n            '+declared+'\n        '
         self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass',padded:'pass'})
         self.make_report(self.after, {'reproduces()':'pass','stillWorks()':'pass',padded:'pass'})
         r,o=self.run_cli()
@@ -83,7 +83,7 @@ class JUnitEvidenceTests(unittest.TestCase):
         self.assertEqual(report['newPositiveLabels'],0)
 
     def test_outer_whitespace_normalization_cannot_hide_conflicting_duplicate(self):
-        self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass','\\n stillWorks() \\n':'failure'})
+        self.make_report(self.before, {'reproduces()':'failure','stillWorks()':'pass','\n stillWorks() \n':'failure'})
         r,o=self.run_cli()
         self.assertNotEqual(r.returncode,0)
         self.assertFalse(o.exists())
