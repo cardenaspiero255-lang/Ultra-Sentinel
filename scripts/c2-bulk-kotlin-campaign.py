@@ -106,7 +106,9 @@ def docker_task(root,task,results,phase_script,validator,built):
       '--security-opt','no-new-privileges','--pids-limit','1536','--memory','12g','--cpus','4',
       '--tmpfs','/logs:rw,nosuid,noexec,size=256m',
       '-v',f'{source / "tests"}:/tests:ro','-v',f'{source / "solution"}:/solution:ro',
-      '-v',f'{phase_script}:/opt/c2-evidence-phase.sh:ro','-v',f'{folder}:/evidence:rw',
+      '-v',f'{phase_script}:/opt/c2-evidence-phase.sh:ro',
+      '-v',f'{phase_script.with_name("c2-capture-junit.py")}:/opt/c2-capture-junit.py:ro',
+      '-v',f'{folder}:/evidence:rw',
       '-e','C2_PHASE='+phase,image,'bash','/opt/c2-evidence-phase.sh'],timeout=1100)
    finally:
     folder.chmod(0o700)
@@ -148,7 +150,8 @@ def main():
   out=Path(a.output).resolve();out.mkdir(parents=True,exist_ok=True)
   script=Path(__file__).with_name('c2-upstream-evidence-phase.sh').resolve()
   validator=Path(__file__).with_name('c2-upstream-junit-evidence.py').resolve()
-  if not script.is_file() or not validator.is_file():raise SystemExit('C2_BLOCKED_MISSING_GATE')
+  capture=Path(__file__).with_name('c2-capture-junit.py').resolve()
+  if not script.is_file() or not validator.is_file() or not capture.is_file():raise SystemExit('C2_BLOCKED_MISSING_GATE')
   built=set()
   for task in tasks:
    receipt=docker_task(root,task,out,script,validator,built)

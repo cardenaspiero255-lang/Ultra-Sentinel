@@ -18,7 +18,9 @@ SHA40 = re.compile(r'^[a-f0-9]{40}$')
 TASK = re.compile(r'^[A-Za-z0-9_-]+-[1-9][0-9]{0,7}$')
 TESTID = re.compile(r'[A-Za-z_$][A-Za-z0-9_.$]*\.[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]{1,500}',re.DOTALL)
 CLASSES = ('f2p','p2p','s2p','n2p')
-MAX_XML_FILES = 500
+MAX_XML_FILES = 4096
+MAX_TOTAL_XML_BYTES = 100_663_296
+MAX_EXPECTED_BYTES = 8_388_608
 MAX_XML_BYTES = 2_097_152
 MAX_TESTS = 60_000
 
@@ -42,7 +44,7 @@ def sha(b):
     return hashlib.sha256(b).hexdigest()
 
 def expected_tests(path):
-    raw = safe_file(path, 2_097_152)
+    raw = safe_file(path, MAX_EXPECTED_BYTES)
     try: data = json.loads(raw)
     except (ValueError, UnicodeDecodeError): abort('invalid expected test manifest')
     if not isinstance(data,dict):abort('expected test manifest must be object')
@@ -63,9 +65,11 @@ def collect_junit(directory):
     if not directory.is_dir() or directory.is_symlink():abort('unsafe JUnit directory')
     xmls=sorted(directory.rglob('TEST*.xml'))
     if not xmls or len(xmls)>MAX_XML_FILES:abort('no JUnit or too many reports')
-    cases={}; hashes=[]; conflicts=set(); equivalents=0
+    cases={}; hashes=[]; conflicts=set(); equivalents=0; total_bytes=0
     for path in xmls:
         raw=safe_file(path,MAX_XML_BYTES)
+        total_bytes += len(raw)
+        if total_bytes > MAX_TOTAL_XML_BYTES:abort('excessive total JUnit XML bytes')
         hashes.append([str(path.relative_to(directory)),sha(raw)])
         if b'<!DOCTYPE' in raw.upper() or b'<!ENTITY' in raw.upper():
             abort('XML entity definitions disallowed')

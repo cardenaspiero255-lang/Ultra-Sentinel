@@ -17,3 +17,18 @@ Missing regressions, dependency outages, OOM, unavailable containers, flaky runs
 Historical baseline: **23 labels (11 positive/12 negative)**. Quota: **97 remaining** (37 positive, 36 negative, 24 diverse). The aggregator deliberately emits zero new labels, precision=null, recall=null, f1=null and tripleSPlusCertified=false regardless of observed candidate transitions. Sentry runtime events alone cannot establish source truth.
 
 Run tests: python3 -m unittest discover -s tests/unit -p test_c2_bulk_kotlin_campaign.py and npm run check. Docker reproduction must not be claimed until the owner dispatches this merged workflow and actual artifacts are inspected.
+
+## Corregir límites de JUnit sin suprimir evidencia
+
+El `smoke`/full de octubre 2026 encontró un problema real en `detekt_detekt-4628`, `4728`, `4733`: el contenedor abortaba en el archivo `TEST*.xml` número 501, antes de aplicar el validador. El límite de 500 también existía en el verificador, así que subir solo el capturador habría sido insuficiente.
+
+El nuevo capturador `scripts/c2-capture-junit.py`, montado **solo lectura** en los contenedores efímeros, inventaría el conjunto completo de informes `build/test-results/**/TEST*.xml` **antes de copiar**. Conserva nombres distintos para distintos módulos y rechaza de forma atómica, sin truncar ni emitir etiquetas, cuando supera:
+
+- **4.096 informes XML** por fase (BEFORE o AFTER).
+- **2 MiB por XML** y **96 MiB combinados** por fase.
+- **50.000 directorios** o **200.000 archivos** examinados por fase.
+- Archivos enlazados, tamaño cero, enlaces múltiples o modificaciones de tamaño durante la captura.
+
+El verificador independiente exige igualmente 4.096 XML, 2 MiB por archivo, 96 MiB acumulados y máximo 60.000 identidades de test. Acepta manifiestos originales `expected_tests.json` de hasta **8 MiB**, coherentes con el preflight de las 106 tareas; no relaja los límites de 20.000 entradas por clase ni la exigencia de transiciones esperadas. Un único informe ambiguo que contenga un test puntuado sigue bloqueando la reproducción.
+
+Los tres casos Detekt que fallaron **continúan sin reproducción verificada hasta su reejecución real bajo el nuevo HEAD**. El workflow `full` anterior no cambia retrospectivamente; su resumen y los cuatro gates siguen separando `INFRA_BLOCKED`, `REPRODUCTION_MISMATCH`, `NO_DECLARED_REGRESSION` y `TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED`. Un informe `success` del workflow no implica 106 casos correctos ni añade etiquetas.
