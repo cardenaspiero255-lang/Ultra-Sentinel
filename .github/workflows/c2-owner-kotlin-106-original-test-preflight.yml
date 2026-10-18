@@ -1,0 +1,68 @@
+name: Ultra Sentinel — C2 original Kotlin 106 test expectation preflight
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+concurrency:
+  group: ultra-sentinel-kotlin-106-expectation-preflight
+  cancel-in-progress: false
+jobs:
+  owner-source-preflight:
+    if: >-
+      github.ref == 'refs/heads/main' && github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' && github.event.action == 'created' &&
+        github.event.issue.number == 50 && github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_F2P_PREFLIGHT_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout trusted Ultra Sentinel main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          path: sentinel
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify original Sentinel checks
+        working-directory: sentinel
+        run: npm run check
+      - name: Checkout original pinned Kotlin benchmark (read-only)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Audit 106 original test manifests without running third-party source
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          node sentinel/scripts/audit-c2-kotlin-upstream-task-evidence.cjs \
+            "$GITHUB_WORKSPACE/upstream" \
+            "$RUNNER_TEMP/c2-upstream-original-106-test-preflight.json"
+          jq -e '.schema == "ultra-sentinel-c2-upstream-task-triage/v1" and
+            .candidateCount == 106 and
+            (.f2pDeclaredTasks+.noF2pTasks)==106 and
+            .verifiedOriginalRegressions == 0 and
+            .newPositiveLabels == 0 and .newNegativeLabels == 0 and
+            .benchmarkScoredLabels == 0 and
+            .tripleSPlusCertified == false and
+            .status == "UPSTREAM_EXPECTATIONS_TRIAGED_NOT_EXECUTED"' \
+            "$RUNNER_TEMP/c2-upstream-original-106-test-preflight.json" >/dev/null
+      - name: Persist SHA-anchored original test expectations as candidate evidence
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: ultra-sentinel-kotlin-106-original-test-expectation-triage
+          path: ${{ runner.temp }}/c2-upstream-original-106-test-preflight.json
+          retention-days: 14
+          if-no-files-found: error
