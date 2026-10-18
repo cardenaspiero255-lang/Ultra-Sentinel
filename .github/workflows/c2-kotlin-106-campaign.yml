@@ -125,6 +125,35 @@ jobs:
             --receipts "$RUNNER_TEMP/c2-received" \
             --mode "$MODE" \
             --output "$RUNNER_TEMP/c2-kotlin-campaign-report.json"
+      - name: Set up Node 22 for deterministic candidate-only review
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Apply four required gates, fail closed on missing or invented candidates
+        shell: bash
+        env:
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.comment.body == 'ULTRA_SENTINEL_C2_KOTLIN_106_FULL_V1' && 'full' || 'smoke') }}
+        run: |
+          set -euo pipefail
+          node sentinel/scripts/c2-review-kotlin-candidates.cjs \
+            --receipts "$RUNNER_TEMP/c2-received" \
+            --mode "$MODE" \
+            --output "$RUNNER_TEMP/c2-four-gate-review.json"
+          jq -e '.admitted == 0 and .newLabels == 0 and
+            .originalBehaviorAttestations == 0 and
+            .independentlyVerifiedRootCauses == 0 and
+            .detectorRulesValidated == 0 and
+            .historicalFingerprintsCompared == 0 and
+            .tripleSPlusCertified == false and .blindHoldout == false and
+            (.receiptsSeen + .missing == 106)' \
+            "$RUNNER_TEMP/c2-four-gate-review.json" >/dev/null
+      - if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-kotlin-four-gate-review
+          path: ${{ runner.temp }}/c2-four-gate-review.json
+          retention-days: 14
+          if-no-files-found: warn
       - if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
