@@ -75,6 +75,11 @@ def collect_junit(directory):
         for e in root.iter('testcase'):
             classname=e.get('classname');name=e.get('name')
             if not classname or not name:abort('JUnit testcase lacks stable name')
+            # Gradle/Spek may pad multiline testcase display names in JUnit
+            # XML. Trim only OUTER whitespace, never interior lines/spacing:
+            # duplicates with conflicting observed states still fail closed.
+            name=name.strip()
+            if not name:abort('JUnit testcase lacks stable name')
             ident=f'{classname}.{name}'
             if not TESTID.fullmatch(ident):abort('invalid JUnit test identity')
             if ident not in cases and ident not in conflicts and len(cases)+len(conflicts)>=MAX_TESTS:
