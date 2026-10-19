@@ -112,7 +112,17 @@ def docker_task(root,task,results,phase_script,validator,built):
       '-e','C2_PHASE='+phase,image,'bash','/opt/c2-evidence-phase.sh'],timeout=1100)
    finally:
     folder.chmod(0o700)
-   if rc:raise ValueError(phase+' original test failed or infra blocked: '+log[-700:])
+   if rc:
+    # Phase exits 40/41 happen *after* capture: original test.sh rejected
+    # the source or the upstream verifier's reward was not 1. If real JUnit
+    # was captured, this is a reproduction mismatch, not missing tooling.
+    # The XML is still untrusted and never creates any positive label here.
+    xml_dir=folder/'junit'
+    if rc in (40,41) and xml_dir.is_dir() and any(xml_dir.glob('TEST*.xml')):
+     out.update(status='REPRODUCTION_MISMATCH',
+       reason=phase.upper()+'_ORIGINAL_TEST_OR_VERIFIER_REJECTED: '+log[-700:])
+     return out
+    raise ValueError(phase+' original test failed or infra blocked: '+log[-700:])
   base_sha=(before/'commit.txt').read_text().strip()
   fix_sha=(after/'commit.txt').read_text().strip()
   if not all(re.fullmatch('[0-9a-f]{40}',s) for s in (base_sha,fix_sha)) or base_sha==fix_sha:
