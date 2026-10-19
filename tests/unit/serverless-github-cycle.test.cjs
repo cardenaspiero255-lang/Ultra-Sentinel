@@ -214,3 +214,14 @@ test('owner-only on-demand probe cannot be triggered by PR comments, other issue
  assert.match(workflow,/github\.event_name == 'workflow_dispatch'/);
  assert.doesNotMatch(workflow,/pull_request_target|contents: write|pull-requests: write/);
 });
+
+test('expected read-only alerts do not turn successful monitor into failed Actions jobs',()=>{
+ const code=fs.readFileSync(path.resolve(__dirname,
+  '../../apps/watchdog/serverless-github-cycle.cjs'),'utf8');
+ assert.doesNotMatch(code,/process\.exitCode\s*=\s*2\s*;/);
+ assert.match(code,/acknowledgeDelivery\(process\.env\.ULTRA_SENTINEL_WATCHDOG_STATE_FILE/);
+ const workflow=fs.readFileSync(path.resolve(__dirname,
+  '../../.github/workflows/serverless-github-monitor.yml'),'utf8');
+ assert.match(workflow,/checkpoint_valid=true/);
+ assert.doesNotMatch(workflow,/exit "\$result"/);
+});
