@@ -40,6 +40,22 @@ class BoundedOriginalJUnit(unittest.TestCase):
   self.assertEqual(len(list(self.output.glob('TEST-*.xml'))),520)
   self.assertIn('C2_JUNIT_REPORTS_CAPTURED=520',x.stdout)
 
+
+ def test_uploaded_junit_reports_allow_runner_read_with_different_container_uid(self):
+  # Real retry job 117906928510: upload-artifact hit EACCES on TEST-*.xml.
+  # The bind mount's parent is private to the runner; an isolated container
+  # may write with another uid, so exported JUnit files require mode 0644.
+  import stat
+  self.write_reports(2)
+  result=self.capture()
+  self.assertEqual(result.returncode,0,result.stderr)
+  reports=list(self.output.glob('TEST-*.xml'))
+  self.assertEqual(len(reports),2)
+  for xml in reports:
+   self.assertEqual(stat.S_IMODE(xml.stat().st_mode),0o644)
+   self.assertTrue(xml.read_bytes().startswith(b'<testsuite>'))
+  self.assertEqual(stat.S_IMODE(self.base.stat().st_mode),0o700)
+
  def test_fails_closed_if_report_count_exceeds_cap(self):
   self.write_reports(4097)
   x=self.capture()
