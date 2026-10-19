@@ -1,0 +1,151 @@
+name: Ultra Sentinel — C2 Detekt 6 corrected-main source replay
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-detekt-six-corrected-main
+  cancel-in-progress: false
+jobs:
+  roster:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_DETEKT_SIX_V1' &&
+        ((github.actor_id == '322222186' &&
+          github.event.comment.user.id == 322222186 &&
+          github.event.sender.id == 322222186) ||
+         (github.actor == 'chatgpt-codex-connector[bot]' &&
+          github.event.comment.user.login == 'chatgpt-codex-connector[bot]' &&
+          github.event.sender.login == 'chatgpt-codex-connector[bot]'))))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C sentinel merge-base --is-ancestor aea223a4dd6c9c6a7f6c7d65fddcca094b0eea7c HEAD
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          python3 -m unittest discover -s sentinel/tests/unit -p 'test_c2_detekt_six_replay.py' -v
+          matrix="$(python3 sentinel/scripts/c2-detekt-six-replay.py plan --upstream "$GITHUB_WORKSPACE/upstream")"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+  reproduce:
+    needs: roster
+    if: needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.roster.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Replay only 6 original Detekt tasks with corrected JUnit validator
+        env:
+          TASKS_JSON: ${{ toJSON(matrix.tasks) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C sentinel merge-base --is-ancestor aea223a4dd6c9c6a7f6c7d65fddcca094b0eea7c HEAD
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          python3 sentinel/scripts/c2-bulk-kotlin-campaign.py run-shard \
+            --upstream "$GITHUB_WORKSPACE/upstream" \
+            --tasks-json "$TASKS_JSON" \
+            --output "$RUNNER_TEMP/c2-detekt-six"
+      - name: Publish original before/after XML, commits and candidate receipts
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-detekt-six-batch-${{ matrix.id }}
+          path: ${{ runner.temp }}/c2-detekt-six
+          retention-days: 14
+          if-no-files-found: warn
+  summarize:
+    needs: [roster, reproduce]
+    if: always() && needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          pattern: c2-detekt-six-batch-*
+          path: ${{ runner.temp }}/c2-detekt-six-new
+          merge-multiple: false
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          run-id: 39214460564
+          github-token: ${{ github.token }}
+          pattern: c2-retry-batch-detekt_detekt-*
+          path: ${{ runner.temp }}/c2-detekt-six-old
+          merge-multiple: false
+      - name: Compare exact 6 original receipts, preserve certification blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C sentinel merge-base --is-ancestor aea223a4dd6c9c6a7f6c7d65fddcca094b0eea7c HEAD
+          python3 sentinel/scripts/c2-detekt-six-replay.py compare \
+            --old "$RUNNER_TEMP/c2-detekt-six-old" \
+            --new "$RUNNER_TEMP/c2-detekt-six-new" \
+            --head "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/c2-detekt-six-comparison.json"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Fail-closed independent four-gate pre-admission report
+        shell: bash
+        run: |
+          set -euo pipefail
+          node sentinel/scripts/c2-review-kotlin-candidates.cjs \
+            --receipts "$RUNNER_TEMP/c2-detekt-six-new" \
+            --mode smoke \
+            --output "$RUNNER_TEMP/c2-detekt-six-four-gate.json"
+          jq -e '.receiptsSeen == 6 and .missing == 100 and
+            .admitted == 0 and .newLabels == 0 and
+            .tripleSPlusCertified == false and .blindHoldout == false and
+            .precision == null and .recall == null and .f1 == null' \
+            "$RUNNER_TEMP/c2-detekt-six-four-gate.json" >/dev/null
+      - name: Publish comparison and four-gate reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-detekt-six-comparison-and-review
+          path: |
+            ${{ runner.temp }}/c2-detekt-six-comparison.json
+            ${{ runner.temp }}/c2-detekt-six-four-gate.json
+          retention-days: 14
+          if-no-files-found: warn
