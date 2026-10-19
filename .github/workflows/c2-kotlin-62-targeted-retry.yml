@@ -1,0 +1,145 @@
+name: Ultra Sentinel — C2 Kotlin 62 bounded original-source retries
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-kotlin-retry-62
+  cancel-in-progress: false
+jobs:
+  roster:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_RETRY_62_V1' &&
+        ((github.actor_id == '322222186' &&
+          github.event.comment.user.id == 322222186 &&
+          github.event.sender.id == 322222186) ||
+         (github.actor == 'chatgpt-codex-connector[bot]' &&
+          github.event.comment.user.login == 'chatgpt-codex-connector[bot]' &&
+          github.event.sender.login == 'chatgpt-codex-connector[bot]'))))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Verify original source workflow and run-scoped owner provenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/39168947905" |
+            jq -e '.id == 39168947905 and .status == "completed" and .conclusion == "success" and
+              .head_sha == "78acbcf4a91be55c2b38237ca2be8890440f317c" and
+              .head_branch == "main" and .repository.id == 1418338512' >/dev/null
+      - id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s sentinel/tests/unit -p 'test_c2_targeted_kotlin_retry.py' -v
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          matrix="$(python3 sentinel/scripts/c2-targeted-kotlin-retry.py plan             --upstream "$GITHUB_WORKSPACE/upstream"             --selection sentinel/tests/fixtures/c2-kotlin-retry-selection.json)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+  reproduce:
+    needs: roster
+    if: needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.roster.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Replay only selected original BEFORE and AFTER cases without network
+        env:
+          TASKS_JSON: ${{ toJSON(matrix.tasks) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          python3 sentinel/scripts/c2-bulk-kotlin-campaign.py run-shard             --upstream "$GITHUB_WORKSPACE/upstream"             --tasks-json "$TASKS_JSON"             --output "$RUNNER_TEMP/c2-retry"
+      - name: Publish original-source evidence artifacts (candidate-only)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-retry-batch-${{ matrix.id }}
+          path: ${{ runner.temp }}/c2-retry
+          retention-days: 7
+          if-no-files-found: warn
+  summarize:
+    needs: [roster, reproduce]
+    if: always() && needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          pattern: c2-retry-batch-*
+          path: ${{ runner.temp }}/c2-retry-received
+          merge-multiple: false
+      - name: Audit every original retry receipt without inventing new labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sentinel/scripts/c2-targeted-kotlin-retry.py aggregate             --upstream "$GITHUB_WORKSPACE/upstream"             --selection sentinel/tests/fixtures/c2-kotlin-retry-selection.json             --receipts "$RUNNER_TEMP/c2-retry-received"             --output "$RUNNER_TEMP/c2-retry-62-summary.json"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run four-gate pre-admission review (never mint gold labels)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node sentinel/scripts/c2-review-kotlin-candidates.cjs             --receipts "$RUNNER_TEMP/c2-retry-received"             --mode smoke             --output "$RUNNER_TEMP/c2-retry-four-gate.json"
+          jq -e '.receiptsSeen == 62 and .missing == 44 and
+            .admitted == 0 and .newLabels == 0 and
+            .blindHoldout == false and .tripleSPlusCertified == false and
+            .precision == null and .recall == null and .f1 == null'             "$RUNNER_TEMP/c2-retry-four-gate.json" >/dev/null
+      - if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-kotlin-retry-62-summary
+          path: |
+            ${{ runner.temp }}/c2-retry-62-summary.json
+            ${{ runner.temp }}/c2-retry-four-gate.json
+          retention-days: 14
+          if-no-files-found: warn
