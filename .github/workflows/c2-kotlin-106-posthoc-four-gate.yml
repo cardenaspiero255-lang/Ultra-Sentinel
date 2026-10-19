@@ -1,0 +1,79 @@
+name: Ultra Sentinel — C2 original 106 four-gate evidence reassessment
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-original-106-posthoc-review
+  cancel-in-progress: false
+jobs:
+  original-four-gates:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_REVIEW_106_V1' &&
+        github.actor_id == '322222186' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify immutable original owner campaign provenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/39168947905" |
+            jq -e '.id == 39168947905 and .status == "completed" and .conclusion == "success" and
+              .head_sha == "78acbcf4a91be55c2b38237ca2be8890440f317c" and
+              .head_branch == "main" and .repository.id == 1418338512' >/dev/null
+      - name: Download all original 26 owner-campaign batch artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          run-id: 39168947905
+          github-token: ${{ github.token }}
+          pattern: c2-kotlin-batch-*
+          path: ${{ runner.temp }}/c2-original-batches
+          merge-multiple: false
+      - name: Verify 26 batches and run all four evidence gates on exact 106 tasks
+        shell: bash
+        run: |
+          set -euo pipefail
+          batches="$(find "$RUNNER_TEMP/c2-original-batches" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+          test "$batches" -eq 26
+          node scripts/c2-review-kotlin-candidates.cjs \
+            --receipts "$RUNNER_TEMP/c2-original-batches" \
+            --mode full \
+            --output "$RUNNER_TEMP/c2-original-four-gate-review.json"
+          jq -e '.receiptsSeen == 106 and .missing == 0 and
+            .classifications.TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED == 8 and
+            .classifications.INFRA_BLOCKED == 45 and
+            .classifications.REPRODUCTION_MISMATCH == 38 and
+            .classifications.NO_DECLARED_REGRESSION == 15 and
+            .newLabels == 0 and .admitted == 0 and .historicalLabels == 23 and
+            .remaining == 97 and .tripleSPlusCertified == false and .blindHoldout == false and
+            .precision == null and .recall == null and .f1 == null' \
+            "$RUNNER_TEMP/c2-original-four-gate-review.json" >/dev/null
+      - if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-kotlin-106-original-four-gate-review
+          path: ${{ runner.temp }}/c2-original-four-gate-review.json
+          retention-days: 14
+          if-no-files-found: warn
