@@ -23,6 +23,17 @@ MAX_TOTAL_XML_BYTES = 100_663_296
 MAX_EXPECTED_BYTES = 8_388_608
 MAX_XML_BYTES = 2_097_152
 MAX_TESTS = 60_000
+# Spek's Detekt WrapperSmokeTestSpec serializes a per-instance hash suffix.
+# This exception is intentionally pinned to the one confirmed upstream
+# identity, not a general @hex stripping rule for arbitrary JUnit names.
+DETEKT_WRAPPER_CLASS = 'io.gitlab.arturbosch.detekt.formatting.WrapperSmokeTestSpec'
+DETEKT_MULTILINE_LOOP = 'for rule: io.gitlab.arturbosch.detekt.formatting.wrappers.MultilineLoop'
+DETEKT_MULTILINE_INSTANCE = re.compile(re.escape(DETEKT_MULTILINE_LOOP)+r'@[a-f0-9]{6,8}\Z')
+
+def canonical_junit_identity(classname, name):
+    if classname == DETEKT_WRAPPER_CLASS and DETEKT_MULTILINE_INSTANCE.fullmatch(name):
+        return classname+'.'+DETEKT_MULTILINE_LOOP
+    return classname+'.'+name
 
 def abort(reason):
     raise ValueError('C2_UPSTREAM_EVIDENCE_BLOCKED: '+reason)
@@ -65,7 +76,7 @@ def collect_junit(directory):
     if not directory.is_dir() or directory.is_symlink():abort('unsafe JUnit directory')
     xmls=sorted(directory.rglob('TEST*.xml'))
     if not xmls or len(xmls)>MAX_XML_FILES:abort('no JUnit or too many reports')
-    cases={}; hashes=[]; conflicts=set(); equivalents=0; total_bytes=0
+    cases={}; hashes=[]; conflicts=set(); equivalents=0; aliases={}; total_bytes=0
     for path in xmls:
         raw=safe_file(path,MAX_XML_BYTES)
         total_bytes += len(raw)
@@ -89,7 +100,8 @@ def collect_junit(directory):
             # duplicates with conflicting observed states still fail closed.
             name=name.strip()
             if not name:abort('JUnit testcase lacks stable name')
-            ident=f'{classname}.{name}'
+            raw_ident=f'{classname}.{name}'
+            ident=canonical_junit_identity(classname,name)
             if not TESTID.fullmatch(ident):abort('invalid JUnit test identity')
             if ident not in cases and ident not in conflicts and len(cases)+len(conflicts)>=MAX_TESTS:
                 abort('excessive testcase count')
@@ -99,6 +111,14 @@ def collect_junit(directory):
                    'SKIP' if 'skipped' in states else 'PASS')
             if ident in conflicts:
                 continue  # once ambiguous, never restore an identity as proven
+            if ident in aliases and aliases[ident]!=raw_ident:
+                # Distinct raw test instances can share a normalized name.
+                # Their state cannot prove a unique, original test control,
+                # even when both happened to pass. Fail closed for required IDs.
+                conflicts.add(ident)
+                cases.pop(ident,None)
+                continue
+            aliases.setdefault(ident,raw_ident)
             if ident not in cases:
                 cases[ident]=state
             elif cases[ident]==state:
