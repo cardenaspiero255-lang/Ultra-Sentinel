@@ -101,3 +101,22 @@ test('offline four-gate report reads batch receipts but never manufactures label
   assert.equal(fs.existsSync(path.join(root,'full.json')),false);
  }finally{fs.rmSync(root,{recursive:true,force:true})}
 });
+
+test('four-gate CLI rejects a symlinked receipt root before reading untrusted receipts',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {spawnSync}=require('node:child_process');
+ const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'c2-symlink-root-'));
+ try{
+  const real=path.join(tmp,'real'),link=path.join(tmp,'linked');
+  const batch=path.join(real,'c2-kotlin-batch-1');
+  fs.mkdirSync(batch,{recursive:true});
+  const task='GradleUp_shadow-1313';
+  fs.writeFileSync(path.join(batch,task+'.json'),JSON.stringify({task,status:'NO_DECLARED_REGRESSION',newPositiveLabels:0,newNegativeLabels:0}));
+  fs.symlinkSync(real,link,'dir');
+  const report=path.join(tmp,'report.json');
+  const cli=path.join(__dirname,'../../scripts/c2-review-kotlin-candidates.cjs');
+  const run=spawnSync(process.execPath,[cli,'--receipts',link,'--mode','smoke','--output',report],{encoding:'utf8',timeout:20000});
+  assert.equal(run.status,2,'receipt root symlinks must fail closed');
+  assert.equal(fs.existsSync(report),false);
+ }finally{fs.rmSync(tmp,{recursive:true,force:true})}
+});

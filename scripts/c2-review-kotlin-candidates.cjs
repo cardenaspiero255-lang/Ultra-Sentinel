@@ -15,7 +15,7 @@ function run(argv){
  if(argv.length!==6||argv[0]!=='--receipts'||argv[2]!=='--mode'||argv[4]!=='--output')fail();
  const root=argv[1],mode=argv[3],output=argv[5];
  if(!path.isAbsolute(root)||!path.isAbsolute(output)||
-    !['full','smoke'].includes(mode)||!fs.statSync(root).isDirectory()||
+    !['full','smoke'].includes(mode)||!fs.lstatSync(root).isDirectory()||
     fs.existsSync(output)||path.resolve(root)===path.resolve(output))fail();
  const listings=roster.entries.map(({name,sha})=>({
   type:'dir',name,path:'tasks/'+name,sha,
