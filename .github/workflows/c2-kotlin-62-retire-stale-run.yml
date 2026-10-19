@@ -22,22 +22,22 @@ jobs:
           dir="$RUNNER_TEMP/c2-retirement"
           mkdir -p "$dir"
           repo="$GITHUB_REPOSITORY"
-          gh api "/repos/$repo/actions/runs/39205355612" > "$dir/original-run.json"
+          gh api --allow-escape-sequences "/repos/$repo/actions/runs/39205355612" > "$dir/original-run.json"
           jq -e '.id == 39205355612 and
             .head_sha == "533d0e0350bf3f75fcc4cc9426cef6039bf6baf1" and
             .repository.id == 1418338512 and
             .actor.login == "cardenaspiero255-lang" and
             .name == "Ultra Sentinel — C2 Kotlin 62 bounded original-source retries"'             "$dir/original-run.json" >/dev/null
-          gh api "/repos/$repo/actions/runs/39205355612/jobs?per_page=100" > "$dir/original-jobs.json"
+          gh api --allow-escape-sequences "/repos/$repo/actions/runs/39205355612/jobs?per_page=100" > "$dir/original-jobs.json"
           jq -e '.total_count == 14 and
             ([.jobs[] | select(.id == 117906928510 or .id == 117906928544) |
               select(.conclusion == "failure")] | length == 2)' "$dir/original-jobs.json" >/dev/null
-          gh api "/repos/$repo/actions/runs/39205355612/artifacts?per_page=100" > "$dir/original-artifacts.json"
+          gh api --allow-escape-sequences "/repos/$repo/actions/runs/39205355612/artifacts?per_page=100" > "$dir/original-artifacts.json"
           # No original artifacts existed when the remediation was authorized.
           # If new artifacts become available, stop rather than risk unarchived loss.
           jq -e '.total_count == 0' "$dir/original-artifacts.json" >/dev/null
           for id in 117906928510 117906928544; do
-            gh api "/repos/$repo/actions/jobs/$id/logs" > "$dir/failed-job-$id.log"
+            gh api --allow-escape-sequences "/repos/$repo/actions/jobs/$id/logs" > "$dir/failed-job-$id.log"
             test -s "$dir/failed-job-$id.log"
             grep -q 'EACCES: permission denied' "$dir/failed-job-$id.log"
           done
@@ -68,7 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          current="$(gh api "/repos/$repo/actions/runs/39205355612")"
+          current="$(gh api --allow-escape-sequences "/repos/$repo/actions/runs/39205355612")"
           jq -e '.id == 39205355612 and
             .head_sha == "533d0e0350bf3f75fcc4cc9426cef6039bf6baf1" and
             .repository.id == 1418338512 and
@@ -78,5 +78,5 @@ jobs:
             echo "C2_OLD_RUN_ALREADY_COMPLETED=true"
             exit 0
           fi
-          gh api -X POST "/repos/$repo/actions/runs/39205355612/cancel" >/dev/null
+          gh api --allow-escape-sequences -X POST "/repos/$repo/actions/runs/39205355612/cancel" >/dev/null
           echo "C2_OLD_RUN_CANCEL_REQUEST_ACCEPTED=true"

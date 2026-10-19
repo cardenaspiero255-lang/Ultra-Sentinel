@@ -15,6 +15,7 @@ test('one-shot retirement archives failed original logs before cancelling only t
   assert.match(workflow,/name: c2-retired-39205355612-evidence/);
   assert.match(workflow,/\bretire:\s*\n\s*needs: archive/);
   assert.match(workflow,/result == 'success'/);
+  assert.match(workflow,/gh api --allow-escape-sequences/);
   assert.match(workflow,/\/cancel/);
   assert.doesNotMatch(workflow,/cancel-in-progress:\s*true/);
   assert.doesNotMatch(workflow,/pull_request:/);
