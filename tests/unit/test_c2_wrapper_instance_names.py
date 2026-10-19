@@ -20,6 +20,7 @@ F2P = 'org.example.ControlSpec.originalRegression'
 # See SHA256 of each original, full TEST-5ea6b4841f969da206eae943.xml.
 # The CI fixture is a reduced transcript; no synthetic label can be admitted.
 XML_SHA256 = {
+    '7625': ('433524bb75473c2fbd8778415d01a6213205d43f8591e2b270c43d6bd2db14e1', '7141cfdd81ca68019ebf9441833c1ae912e96e04153bcc1067529d69c27db08d'),
     '7635': ('d0a6c29615bdacad8b36e8910f39e426e44501eb4add3486a96ebec935a539f6', '593e34cc6b4afd6856ba19688b332657967933911ba3e127b16e58481c025519'),
     '7667': ('a97ce41f4f47b323fbed20385c1262d405d96d0af627ef0d5b2d9f77923cb59a', 'a97ce41f4f47b323fbed20385c1262d405d96d0af627ef0d5b2d9f77923cb59a'),
     '7715': ('05ce72aa102061432494789a1644a7b97de376a40164bbf4a3cbcd903dd2a16b', '05ce72aa102061432494789a1644a7b97de376a40164bbf4a3cbcd903dd2a16b'),
@@ -27,6 +28,7 @@ XML_SHA256 = {
     '7888': ('ecd7ebd805de57b34f065f91e98245670d029d184e49e8d37b7765d543d7f8b2', '9b373e9d66868aaae35ab7774852669d340977f4b6a463603e272b3d4a5cd59c'),
 }
 ORIGINAL = {
+    '7625': ('2286dfcd', '66e434e8'),
     '7635': ('5319efc0', '2eef43f5'),
     '7667': ('2d94279f', '2d94279f'),
     '7715': ('c76762', 'c76762'),
@@ -72,7 +74,7 @@ class WrapperIdentityRegression(unittest.TestCase):
           source_commit='a'*40, fixed_commit='b'*40, output=str(self.output))
         return self.gate.evaluate(args)
 
-    def test_original_five_multiline_loop_receipts_are_matched_without_new_labels(self):
+    def test_original_six_multiline_loop_receipts_are_matched_without_new_labels(self):
         for case, (pre, post) in ORIGINAL.items():
             with self.subTest(case=case):
                 self.original_pair(RULE+'@'+pre, RULE+'@'+post)
