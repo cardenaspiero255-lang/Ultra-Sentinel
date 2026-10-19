@@ -79,6 +79,11 @@ def collect_junit(directory):
         for e in root.iter('testcase'):
             classname=e.get('classname');name=e.get('name')
             if not classname or not name:abort('JUnit testcase lacks stable name')
+            # The pinned KtLint JUnit producer appends an ASCII space to a
+            # nested display class. Drop only boundary whitespace; do not
+            # collapse or rewrite internal Kotlin display-name characters.
+            classname=classname.strip()
+            if not classname:abort('JUnit testcase lacks stable name')
             # Gradle/Spek may pad multiline testcase display names in JUnit
             # XML. Trim only OUTER whitespace, never interior lines/spacing:
             # duplicates with conflicting observed states still fail closed.

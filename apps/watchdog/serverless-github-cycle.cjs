@@ -103,8 +103,9 @@ if(require.main===module){
     throw Error('STATE_CHANGED_DURING_ALERT_REPORTING');
    acknowledgeDelivery(process.env.ULTRA_SENTINEL_WATCHDOG_STATE_FILE,
     pendingDigest(r.alerts));
-   // No write to GitHub; the failed Action and durable logs surface changes.
-   process.exitCode=2;
+   // GitHub Actions warnings and durable logs report changes. A genuine
+   // alert is not a failed monitor execution; checkpoint is acknowledged.
+   // Nonzero exits remain reserved for evidence or infrastructure failures.
   }
  }).catch(e=>{
   // Never log token, private response bodies, or raw network exception strings.

@@ -131,7 +131,10 @@ jobs:
           if [ "$result" = 0 ] || [ "$result" = 2 ]; then
             echo 'checkpoint_valid=true' >> "$GITHUB_OUTPUT"
           fi
-          exit "$result"
+          if [ "$result" = 0 ] || [ "$result" = 2 ]; then
+            exit 0
+          fi
+          exit 1
       - name: Persist public-only checkpoint, even after an alert
         if: ${{ always() && steps.observe.outputs.checkpoint_valid == 'true' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
