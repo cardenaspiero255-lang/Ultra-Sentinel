@@ -83,7 +83,7 @@ jobs:
               .rawJUnitAuthenticityVerified == false and
               .sourceCommitProvenanceVerified == false and
               .tripleSPlusCertified == false and
-              .beforeNormalizedJUnitAliases | length > 90' \
+              (.beforeNormalizedJUnitAliases | length) > 90' \
               "$RUNNER_TEMP/detekt-full-xml/$task.json" >/dev/null
             jq -r '[.task,.verifiedFailToPassCount,.verifiedPassToPassCount,
               (.beforeNormalizedJUnitAliases|length),
