@@ -23,17 +23,25 @@ MAX_TOTAL_XML_BYTES = 100_663_296
 MAX_EXPECTED_BYTES = 8_388_608
 MAX_XML_BYTES = 2_097_152
 MAX_TESTS = 60_000
-# Spek's Detekt WrapperSmokeTestSpec serializes a per-instance hash suffix.
-# This exception is intentionally pinned to the one confirmed upstream
-# identity, not a general @hex stripping rule for arbitrary JUnit names.
+# Spek/Detekt emits a per-instance hex suffix for WrapperSmokeTestSpec.
+# Do NOT drop a suffix in other classes or for tests absent from the original
+# expected manifest. Canonicalization must never increase the admitted labels.
 DETEKT_WRAPPER_CLASS = 'io.gitlab.arturbosch.detekt.formatting.WrapperSmokeTestSpec'
-DETEKT_MULTILINE_LOOP = 'for rule: io.gitlab.arturbosch.detekt.formatting.wrappers.MultilineLoop'
-DETEKT_MULTILINE_INSTANCE = re.compile(re.escape(DETEKT_MULTILINE_LOOP)+r'@[a-f0-9]{6,8}\Z')
+DETEKT_WRAPPER_INSTANCE = re.compile(
+    r'(for rule: io\.gitlab\.arturbosch\.detekt\.formatting\.wrappers\.'
+    r'[A-Za-z][A-Za-z0-9_]*)@[a-f0-9]{6,8}\Z'
+)
 
-def canonical_junit_identity(classname, name):
-    if classname == DETEKT_WRAPPER_CLASS and DETEKT_MULTILINE_INSTANCE.fullmatch(name):
-        return classname+'.'+DETEKT_MULTILINE_LOOP
-    return classname+'.'+name
+def canonical_junit_identity(classname, name, declared=frozenset()):
+    raw_ident=classname+'.'+name
+    if classname!=DETEKT_WRAPPER_CLASS:
+        return raw_ident
+    match=DETEKT_WRAPPER_INSTANCE.fullmatch(name)
+    if not match:
+        return raw_ident
+    canonical=classname+'.'+match.group(1)
+    # The original source manifest is the only authority for alias selection.
+    return canonical if canonical in declared else raw_ident
 
 def abort(reason):
     raise ValueError('C2_UPSTREAM_EVIDENCE_BLOCKED: '+reason)
@@ -71,12 +79,12 @@ def expected_tests(path):
     if not groups['f2p']:abort('no original fail-to-pass test')
     return groups,sha(raw)
 
-def collect_junit(directory):
+def collect_junit(directory, declared=frozenset()):
     reject_symlink_components(directory)
     if not directory.is_dir() or directory.is_symlink():abort('unsafe JUnit directory')
     xmls=sorted(directory.rglob('TEST*.xml'))
     if not xmls or len(xmls)>MAX_XML_FILES:abort('no JUnit or too many reports')
-    cases={}; hashes=[]; conflicts=set(); equivalents=0; aliases={}; total_bytes=0
+    cases={}; hashes=[]; conflicts=set(); equivalents=0; aliases={}; normalized=[]; total_bytes=0
     for path in xmls:
         raw=safe_file(path,MAX_XML_BYTES)
         total_bytes += len(raw)
@@ -101,7 +109,7 @@ def collect_junit(directory):
             name=name.strip()
             if not name:abort('JUnit testcase lacks stable name')
             raw_ident=f'{classname}.{name}'
-            ident=canonical_junit_identity(classname,name)
+            ident=canonical_junit_identity(classname,name,declared)
             if not TESTID.fullmatch(ident):abort('invalid JUnit test identity')
             if ident not in cases and ident not in conflicts and len(cases)+len(conflicts)>=MAX_TESTS:
                 abort('excessive testcase count')
@@ -118,7 +126,10 @@ def collect_junit(directory):
                 conflicts.add(ident)
                 cases.pop(ident,None)
                 continue
-            aliases.setdefault(ident,raw_ident)
+            if ident not in aliases:
+                aliases[ident]=raw_ident
+                if ident!=raw_ident:
+                    normalized.append({'raw':raw_ident,'canonical':ident})
             if ident not in cases:
                 cases[ident]=state
             elif cases[ident]==state:
@@ -129,7 +140,8 @@ def collect_junit(directory):
     fingerprint=sha(json.dumps(sorted(conflicts),ensure_ascii=False,separators=(',',':')).encode('utf-8'))
     return cases,hashes,{'equivalentDuplicateJUnitCount':equivalents,
                          'conflictingJUnitIds':conflicts,
-                         'conflictingJUnitSha256':fingerprint}
+                         'conflictingJUnitSha256':fingerprint,
+                         'normalizedJUnitAliases':sorted(normalized,key=lambda a:(a['canonical'],a['raw']))}
 
 def evaluate(args):
     if not TASK.fullmatch(args.task):abort('invalid task')
@@ -139,9 +151,9 @@ def evaluate(args):
     reject_symlink_components(out)
     if out.exists() or out.is_symlink():abort('receipt already exists')
     groups, expected_digest=expected_tests(exp)
-    before_cases,before_files,before_meta=collect_junit(before)
-    after_cases,after_files,after_meta=collect_junit(after)
     required={x for values in groups.values() for x in values}
+    before_cases,before_files,before_meta=collect_junit(before,required)
+    after_cases,after_files,after_meta=collect_junit(after,required)
     for phase,meta in (('before',before_meta),('after',after_meta)):
         if required.intersection(meta['conflictingJUnitIds']):
             abort(phase+' expected testcase has conflicting JUnit states')
@@ -169,6 +181,10 @@ def evaluate(args):
       'afterJUnitFiles':after_files,
       # Contradictions outside the declared tests never count as evidence.
       # Keep a reproducible fingerprint without counting them as passes.
+      # Keep the full observed testcase IDs beside canonical expected IDs.
+      # Original XML files and their SHA256 digests remain unmodified.
+      'beforeNormalizedJUnitAliases':before_meta['normalizedJUnitAliases'],
+      'afterNormalizedJUnitAliases':after_meta['normalizedJUnitAliases'],
       'beforeEquivalentDuplicateJUnitCount':before_meta['equivalentDuplicateJUnitCount'],
       'afterEquivalentDuplicateJUnitCount':after_meta['equivalentDuplicateJUnitCount'],
       'beforeConflictingUnscoredJUnitCount':len(before_meta['conflictingJUnitIds']),
