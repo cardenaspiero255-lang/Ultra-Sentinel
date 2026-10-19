@@ -90,6 +90,10 @@ def collect(source, output):
                             view = view[os.write(out_fd,view):]
                     if copied != expected_size:
                         blocked()
+                    # The runner uploads these files after the isolated
+                    # container (possibly a different UID) exits. The parent
+                    # bind directory is restored to runner-only 0700.
+                    os.fchmod(out_fd,0o644)
                 finally:
                     os.close(out_fd)
             finally:
