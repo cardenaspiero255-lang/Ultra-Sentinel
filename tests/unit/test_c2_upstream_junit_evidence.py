@@ -44,6 +44,43 @@ class JUnitEvidenceTests(unittest.TestCase):
         self.assertEqual(report['newNegativeLabels'],0)
         self.assertFalse(report['rootCauseVerified'])
         self.assertEqual(report['status'],'TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED')
+
+    def test_ktlint_classname_trailing_space_matches_original_expected_identity(self):
+        """Original KtLint EditorConfigFinderTest JUnit emits a trailing class space."""
+        required='org.example.ParserTest.stillWorks()'
+        for folder,outcomes in [(self.before,{'reproduces()':'failure','stillWorks()':'pass'}),
+                                (self.after,{'reproduces()':'pass','stillWorks()':'pass'})]:
+            suite=ET.Element('testsuite')
+            for method,state in outcomes.items():
+                case=ET.SubElement(suite,'testcase',classname='org.example.ParserTest ',name=method)
+                if state!='pass':ET.SubElement(case,state)
+            ET.ElementTree(suite).write(folder/'TEST-ParserTest.xml',encoding='unicode')
+        r,o=self.run_cli()
+        self.assertEqual(r.returncode,0,r.stderr)
+        report=json.loads(o.read_text())
+        self.assertEqual(report['verifiedFailToPassCount'],1)
+        self.assertEqual(report['newPositiveLabels'],0)
+
+    def test_ktlint_trimmed_classname_conflicts_still_reject_required_control(self):
+        for folder in (self.before,self.after):
+            doc=ET.parse(folder/'TEST-ParserTest.xml')
+            node=ET.SubElement(doc.getroot(),'testcase',classname='org.example.ParserTest ',name='stillWorks()')
+            if folder==self.before:ET.SubElement(node,'failure')
+            doc.write(folder/'TEST-ParserTest.xml',encoding='unicode')
+        r,o=self.run_cli()
+        self.assertNotEqual(r.returncode,0)
+        self.assertFalse(o.exists())
+
+    def test_ktlint_internal_classname_whitespace_is_not_normalized(self):
+        for folder in (self.before,self.after):
+            doc=ET.parse(folder/'TEST-ParserTest.xml')
+            for node in doc.getroot().iter('testcase'):
+                node.set('classname','org.example.Parser Test')
+            doc.write(folder/'TEST-ParserTest.xml',encoding='unicode')
+        r,o=self.run_cli()
+        self.assertNotEqual(r.returncode,0)
+        self.assertFalse(o.exists())
+
     def test_reject_when_regression_already_passed_before(self):
         self.make_report(self.before, {'reproduces()':'pass','stillWorks()':'pass'})
         self.assertNotEqual(self.run_cli()[0].returncode,0)
