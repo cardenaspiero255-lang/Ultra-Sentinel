@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/c2-kotlin-semantic-optional.yml
       - tests/fixtures/c2-kotlin-semantic/**
+      - packages/kotlin-semantic/**
       - tests/fixtures/c2-gradle-kotlin-dsl/**
       - tests/unit/c2-kotlin-optional-semantic-executable.test.cjs
       - scripts/c2-kotlin-semantic-evidence.py
@@ -59,6 +60,7 @@ jobs:
           grep -Fqx 'distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-all.zip' upstream/gradle/wrapper/gradle-wrapper.properties
           test -f upstream/gradlew
           test -f sentinel/tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt
+          test -f sentinel/packages/kotlin-semantic/C2OptionalKotlinSemantic.kt
           test -f sentinel/tests/fixtures/c2-gradle-kotlin-dsl/build.gradle.kts
           test -f sentinel/tests/fixtures/c2-gradle-kotlin-dsl/settings.gradle.kts
       - name: Compile and run actual Kotlin compiler BindingContext symbol test
@@ -71,6 +73,7 @@ jobs:
           test -d "$dest"
           test ! -e "$dest/C2SymbolResolutionOracleTest.kt"
           cp sentinel/tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt "$dest/"
+          cp sentinel/packages/kotlin-semantic/C2OptionalKotlinSemantic.kt "$dest/"
           cd upstream
           chmod +x gradlew
           ./gradlew --no-daemon --no-configuration-cache --max-workers=2 \
