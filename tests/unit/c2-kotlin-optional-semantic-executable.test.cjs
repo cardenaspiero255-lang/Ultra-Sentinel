@@ -8,9 +8,12 @@ const read=path=>fs.readFileSync(require('node:path').join(root,path),'utf8');
 
 test('experimental semantic layer uses actual Kotlin resolved descriptor, not callee spelling',()=>{
  const kotlin=read('tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt');
- assert.match(kotlin,/getResolvedCall\(bindingContext\)/);
- assert.match(kotlin,/is ConstructorDescriptor/);
- assert.match(kotlin,/is FunctionDescriptor/);
+ const api=read('packages/kotlin-semantic/C2OptionalKotlinSemantic.kt');
+ assert.match(api,/getResolvedCall\(context\)/);
+ assert.match(api,/is ConstructorDescriptor/);
+ assert.match(api,/is FunctionDescriptor/);
+ assert.match(api,/C2SymbolKind\.UNKNOWN/);
+ assert.match(kotlin,/C2OptionalKotlinSemantic\.resolveCall\(expression, bindingContext\)/);
  assert.match(kotlin,/@KotlinCoreEnvironmentTest/);
  for(const name of ['constructorNoArg','constructorWithMessage','lowercaseHomonym',
    'uppercaseHomonym','sameNameCallable','importedAliasConstructor','unresolvedCallFailsClosed'])
