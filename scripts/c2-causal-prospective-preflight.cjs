@@ -17,7 +17,7 @@ function main(args){
  if(historical===output||candidates===output)throw Error('C2_PREFLIGHT_OUTPUT_MUST_BE_NEW');
  const h=input(historical),c=input(candidates);
  const report=screenCandidates(h,c),inventory=auditHistorical(h);
- writeFileSync(output,JSON.stringify({inventory,screening:report},null,2)+'\n',{flag:'wx',mode:0o600});
+ writeFileSync(output,JSON.stringify({historicalStatus:inventory.status,holdoutFrozen:false,newLabels:0,precision:null,inventory,screening:report},null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({historicalStatus:inventory.status,
   historicalCount:inventory.count,candidates:report.candidates.length,
   newLabels:0,holdoutFrozen:false,sssPlusCertified:false})+'\n');
