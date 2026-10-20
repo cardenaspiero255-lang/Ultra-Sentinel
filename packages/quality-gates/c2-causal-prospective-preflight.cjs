@@ -63,7 +63,7 @@ function screenCandidates(history,candidates){
    !['PUBLIC_KOTLIN_BENCH','PROSPECTIVE_GITHUB'].includes(x.source)||
    !['REVEALED','METADATA_ONLY'].includes(x.disclosure)||
    typeof x.createdAt!=='string'||
-   !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(x.createdAt)||
+   !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(x.createdAt)||
    !Number.isFinite(Date.parse(x.createdAt)))fail();
   const identity=x.repository+'#'+x.pr+'#'+x.headSha;
   let decision;
