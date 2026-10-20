@@ -67,8 +67,17 @@ def verify(symbol_xml,gradle_output,upstream_root,fixture_root):
   blocked('wrong compiler-binding-context JUnit suite')
  for field,expected in [('tests',str(len(METHODS))),('errors','0'),('failures','0'),('skipped','0')]:
   if element.get(field)!=expected:blocked('JUnit tests did not all pass: '+field)
+ # Gradle's genuine JUnit XML contains a <properties/> node and
+ # <system-out>/<system-err> nodes in addition to testcase entries.
+ # Confirmed against original upstream-run XML artifact 12241325057.
+ children=list(element)
+ metadata=('properties','system-out','system-err')
+ if any(n.tag not in ('testcase',*metadata) for n in children):
+  blocked('unexpected JUnit XML metadata')
+ if any(sum(n.tag==tag for n in children)>1 for tag in metadata):
+  blocked('ambiguous JUnit metadata')
  tests=element.findall('testcase')
- if len(tests)!=len(METHODS) or len(list(element))!=len(METHODS):
+ if len(tests)!=len(METHODS):
   blocked('extra or missing testcases')
  ids=[]
  for case in tests:
