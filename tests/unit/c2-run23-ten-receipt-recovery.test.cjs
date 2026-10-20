@@ -15,10 +15,10 @@ function witness(key){
  else if(p.pr===151)Object.assign(o,{rule:p.ruleId,line:p.line,reproducedBehavioralDefect:true,finiteHighControlPassed:true,missingRejected:true,nanRejected:true,infiniteMidSessionIncorrectlyAlerted:true});
  else if(p.pr===152)Object.assign(o,{rule:p.ruleId,line:p.line,reproducedBehavioralDefect:true,supportedPluralitySelected:true,unsupportedOnlyRejected:true,insufficientSamplesRejected:true,existingTargetPreserved:true});
  else if(p.pr===153)Object.assign(o,{rule:p.ruleId,line:p.line,reproduced:true,normalSuccessControlPassed:true,prewriteFailureControlPassed:true,failureAfterHandledReproduced:true,replayProfileStateDiverged:true,idempotentHandledControlPassed:true});
- else if(p.pr===154)Object.assign(o,{noWarningPassed:true,preventivePassed:true});
- else if(p.pr===155)Object.assign(o,{chargingPreventsDrain:true,chargingBoundaryResets:true});
- else if(p.pr===157)Object.assign(o,{unapprovedMutationBlocked:true,wrongToolBlocked:true});
- else if(p.pr===158)Object.assign(o,{boundedEvictionPassed:true});
+ else if(p.pr===154)Object.assign(o,{noWarningPassed:true,preventivePassed:true,negativeFindingLabelsEstablished:0});
+ else if(p.pr===155)Object.assign(o,{chargingPreventsDrain:true,chargingBoundaryResets:true,negativeFindingLabelsEstablished:0});
+ else if(p.pr===157)Object.assign(o,{unapprovedMutationBlocked:true,wrongToolBlocked:true,negativeFindingLabelsEstablished:0});
+ else if(p.pr===158)Object.assign(o,{boundedEvictionPassed:true,negativeFindingLabelsEstablished:0});
  return o;
 }
 function fixtures(){
