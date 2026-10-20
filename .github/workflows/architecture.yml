@@ -12,15 +12,72 @@ concurrency:
 jobs:
   structure-and-contracts:
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 35
     steps:
       - name: Checkout without persisting credentials
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Install Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
       - name: Verify architecture (no external integrations)
         run: npm run check
+
+      # This job is the existing ruleset-required check on main. Its success
+      # now DEPENDS on real compiler evidence whenever semantic inputs change.
+      - name: Determine semantic source scope from exact PR base and head
+        id: semantic-scope
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PR_BASE" =~ ^[a-f0-9]{40}$ ]] || exit 2
+          [[ "$PR_HEAD" =~ ^[a-f0-9]{40}$ ]] || exit 2
+          git cat-file -e "$PR_BASE^{commit}"
+          git cat-file -e "$PR_HEAD^{commit}"
+          git diff --name-only --diff-filter=ACDMRT -z "$PR_BASE" "$PR_HEAD" > "$RUNNER_TEMP/c2-semantic-changed-paths"
+          required=false
+          while IFS= read -r -d '' path; do
+            case "$path" in
+              .github/workflows/architecture.yml|.github/workflows/c2-kotlin-semantic-optional.yml|\
+              packages/kotlin-semantic/*|tests/fixtures/c2-kotlin-semantic/*|\
+              tests/fixtures/c2-gradle-kotlin-dsl/*|\
+              tests/unit/c2-kotlin-optional-semantic-executable.test.cjs|\
+              tests/unit/test_c2_kotlin_semantic_evidence.py|\
+              scripts/c2-kotlin-semantic-evidence.py|scripts/c2-required-semantic-gate.sh)
+                required=true ;;
+            esac
+          done < "$RUNNER_TEMP/c2-semantic-changed-paths"
+          echo "required=$required" >> "$GITHUB_OUTPUT"
+      - name: Configure pinned JDK 21 for required semantic proof
+        if: steps.semantic-scope.outputs.required == 'true'
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable original Detekt
+        if: steps.semantic-scope.outputs.required == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: detekt/detekt
+          ref: 5d9ee0d6d61e7b59d798c99611e48e4105681624
+          path: upstream
+          persist-credentials: false
+      - name: Required actual Kotlin compiler and Gradle DSL evidence
+        if: steps.semantic-scope.outputs.required == 'true'
+        shell: bash
+        run: bash scripts/c2-required-semantic-gate.sh
+      - name: Publish required compiler evidence (not certification)
+        if: always() && steps.semantic-scope.outputs.required == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-required-semantic-evidence
+          path: ${{ runner.temp }}/c2-required-semantic
+          retention-days: 14
+          if-no-files-found: warn
