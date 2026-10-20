@@ -1,0 +1,113 @@
+name: Ultra Sentinel — C2 original GameHub PR206 rule and Kotlin oracle
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-original-speech-206.yml
+      - packages/quality-gates/c2-original-speech-206.cjs
+      - tests/unit/c2-original-speech-206-actual-detector.test.cjs
+      - tests/fixtures/c2-original-speech/**
+permissions:
+  contents: read
+concurrency:
+  group: c2-original-speech-206-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  original-rule-and-kotlin-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Sentinel without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Checkout immutable original GameHub PR206 with complete ancestry
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 53cb89551d6e750d263bc0e25dde9f4d3069144f
+          fetch-depth: 0
+          path: original
+          persist-credentials: false
+      - name: Actual Sentinel Core on Git-attested original and synthetic negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/c2-original-206"
+          node packages/quality-gates/c2-original-speech-206.cjs \
+            original tests/fixtures/c2-original-speech/UltraSpeechChunker.kt \
+            "$RUNNER_TEMP/c2-original-206/core-original-detection.json"
+          jq -e '.originalSourceAndDiffVerified == true and
+            .ruleId == "TTS_UTF16_SURROGATE_SPLIT" and .line == 26 and
+            (.controls | length) == 3 and .newLabels == 0 and
+            .blindHoldout == false and .tripleSPlusCertified == false' \
+            "$RUNNER_TEMP/c2-original-206/core-original-detection.json" >/dev/null
+      - name: Setup pinned Java runtime
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout pinned Detekt Kotlin test toolchain
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: detekt/detekt
+          ref: 5d9ee0d6d61e7b59d798c99611e48e4105681624
+          path: upstream
+          persist-credentials: false
+      - name: Execute original Kotlin source with independent JUnit behavior controls
+        shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx3g
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = 5d9ee0d6d61e7b59d798c99611e48e4105681624
+          test "$(git -C original rev-parse HEAD)" = 53cb89551d6e750d263bc0e25dde9f4d3069144f
+          test "$(git -C original hash-object app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraSpeechChunker.kt)" = 6ce74fb027c0d6e3fe6cfe48d3b0b5fc1ba2497a
+          dest=upstream/detekt-rules-exceptions/src/test/kotlin/io/gitlab/arturbosch/detekt/rules/exceptions
+          test -d "$dest"
+          cp original/app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraSpeechChunker.kt "$dest/C2OriginalUpstreamSpeechSource.kt"
+          cp tests/fixtures/c2-original-speech/C2OriginalSpeechChunkerOracleTest.kt "$dest/"
+          (
+            cd upstream
+            chmod +x gradlew
+            ./gradlew --no-daemon --no-configuration-cache --max-workers=2 \
+              :detekt-rules-exceptions:test \
+              --tests com.cardenaspiero255.gamehubultra.voice.C2OriginalSpeechChunkerOracleTest
+          )
+      - name: Verify all four original Kotlin JUnit test identities and no skipped tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          xml=upstream/detekt-rules-exceptions/build/test-results/test/TEST-com.cardenaspiero255.gamehubultra.voice.C2OriginalSpeechChunkerOracleTest.xml
+          test -s "$xml"
+          cp "$xml" "$RUNNER_TEMP/c2-original-206/original-kotlin-junit.xml"
+          python3 - "$xml" <<'PY'
+          import sys,xml.etree.ElementTree as ET
+          raw=open(sys.argv[1],'rb').read()
+          assert len(raw)<250000 and b'<!DOCTYPE' not in raw.upper() and b'<!ENTITY' not in raw.upper()
+          t=ET.fromstring(raw)
+          n='com.cardenaspiero255.gamehubultra.voice.C2OriginalSpeechChunkerOracleTest'
+          assert t.tag=='testsuite' and t.get('name')==n
+          for k,v in [('tests','4'),('errors','0'),('failures','0'),('skipped','0')]:assert t.get(k)==v
+          got=t.findall('testcase')
+          expected={'originalEmojiAtHardBoundarySplitsSurrogatePair','asciiControlHasNoSplitSurrogate',
+                    'whitespaceBeforeEmojiAvoidsSurrogateSplit','smallTextControlRemainsUnchanged'}
+          assert len(got)==4 and {x.get('name','').removesuffix('()') for x in got}==expected
+          assert all(x.get('classname')==n and len(x)==0 for x in got)
+          print('C2 original GameHub Kotlin: 4/4 real JVM tests, 0 failures and 0 skipped')
+          PY
+      - name: Upload original evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-original-206-core-and-kotlin-junit
+          path: ${{ runner.temp }}/c2-original-206
+          retention-days: 14
+          if-no-files-found: warn
