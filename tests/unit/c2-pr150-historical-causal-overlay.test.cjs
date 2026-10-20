@@ -20,8 +20,10 @@ function sample(){
  independentOriginalWitnessVerifiedForThisLabel:false})),
  ...Array.from({length:20},(_,i)=>({repository:'cardenaspiero255-lang/gamehub-ultra',
  pr:151+i,headSha:hex40(i+1),blobSha:hex40(i+61),path:'src/Other'+i+'.kt',
- rule:'OTHER_RULE_'+i,line:i+1,positive:i<9,rootCauseGroup:null,
- causalFingerprint:null,evidenceSha256:null,independentOriginalWitnessVerifiedForThisLabel:false}))
+ rule:'OTHER_RULE_'+i,line:i+1,positive:i<9,
+ rootCauseGroup:i>=18?'prior_certified_'+i:null,
+ causalFingerprint:i>=18?hash('c2-cause/v1'+String.fromCharCode(0)+'cardenaspiero255-lang/gamehub-ultra'+String.fromCharCode(0)+'prior_certified_'+i):null,
+ evidenceSha256:i<7?null:hash('existing-'+i),independentOriginalWitnessVerifiedForThisLabel:false}))
  ];
  const historical={schema:'ultra-sentinel-c2-run23-historical-source-chain-audit/v1',
   repository:'cardenaspiero255-lang/gamehub-ultra',ownerRun23:39077240648,
