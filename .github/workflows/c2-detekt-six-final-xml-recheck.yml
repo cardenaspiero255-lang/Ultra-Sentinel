@@ -1,0 +1,119 @@
+name: Ultra Sentinel — C2 Detekt six new-run full JUnit XML recheck
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-sentinel-c2-detekt-six-final-xml
+  cancel-in-progress: false
+jobs:
+  full-manifests:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_DETEKT_FINAL6_V1' &&
+        github.actor_id == '322222186' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Verify original upstream and previous-run provenance
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          grep -Fq "DETEKT_WRAPPER_INSTANCE" sentinel/scripts/c2-upstream-junit-evidence.py
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/39321487604" |
+            jq -e '.id == 39321487604 and .conclusion == "success" and
+              .head_sha == "727adac81513c3b29ab6cd60b671334880a66ca9" and
+              .repository.id == 1418338512' >/dev/null
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          run-id: 39321487604
+          github-token: ${{ github.token }}
+          pattern: c2-detekt-six-batch-detekt_detekt-*
+          path: ${{ runner.temp }}/detekt-original-receipts
+          merge-multiple: false
+      - name: Revalidate all original BEFORE/AFTER XML against full expected manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/detekt-full-xml"
+          root="$RUNNER_TEMP/detekt-original-receipts"
+          for id in 7625 7635 7667 7715 7718 7888; do
+            task="detekt_detekt-$id"
+            case "$id" in
+              7625|7635|7667) batch="c2-detekt-six-batch-detekt_detekt-1";;
+              *) batch="c2-detekt-six-batch-detekt_detekt-2";;
+            esac
+            evidence="$root/$batch/evidence/$task"
+            source_sha="$(cat "$evidence/before/commit.txt")"
+            patched_sha="$(cat "$evidence/after/commit.txt")"
+            python3 sentinel/scripts/c2-upstream-junit-evidence.py \
+              --task "$task" \
+              --expected "upstream/tasks/$task/tests/expected_tests.json" \
+              --before "$evidence/before/junit" \
+              --after "$evidence/after/junit" \
+              --source-commit "$source_sha" \
+              --fixed-commit "$patched_sha" \
+              --output "$RUNNER_TEMP/detekt-full-xml/$task.json"
+            jq -e '.newPositiveLabels == 0 and .newNegativeLabels == 0 and
+              .rawJUnitAuthenticityVerified == false and
+              .sourceCommitProvenanceVerified == false and
+              .tripleSPlusCertified == false and
+              (.beforeNormalizedJUnitAliases | length) > 90' \
+              "$RUNNER_TEMP/detekt-full-xml/$task.json" >/dev/null
+            jq -r '[.task,.verifiedFailToPassCount,.verifiedPassToPassCount,
+              (.beforeNormalizedJUnitAliases|length),
+              (.afterNormalizedJUnitAliases|length)]|@tsv' \
+              "$RUNNER_TEMP/detekt-full-xml/$task.json"
+          done
+          jq -s '{
+            schema:"ultra-sentinel-c2-detekt-six-full-xml-retrospective/v1",
+            historicalSourceRun:39321487604,
+            historicalSourceSha:"727adac81513c3b29ab6cd60b671334880a66ca9",
+            upstreamCommit:"b9025d86f7ae634901396766bd61f6d4ae6d2165",
+            candidateCount:length,
+            sourceReplayed:false,originalHistoricalXMLRechecked:true,
+            historicalLabels:23,newLabels:0,blindHoldout:false,
+            precision:null,recall:null,f1:null,tripleSPlusCertified:false,
+            receipts:map({task,verifiedFailToPassCount,verifiedPassToPassCount,
+              expectedTestsSha256,beforeAliasCount:(.beforeNormalizedJUnitAliases|length),
+              afterAliasCount:(.afterNormalizedJUnitAliases|length),
+              originalAuthVerified:.rawJUnitAuthenticityVerified,
+              provenanceVerified:.sourceCommitProvenanceVerified})
+          }' "$RUNNER_TEMP"/detekt-full-xml/detekt_detekt-*.json \
+             > "$RUNNER_TEMP/detekt-full-xml/retrospective-summary.json"
+          jq -e '.candidateCount == 6 and .newLabels == 0 and
+            .blindHoldout == false and .tripleSPlusCertified == false' \
+            "$RUNNER_TEMP/detekt-full-xml/retrospective-summary.json" >/dev/null
+      - name: Retain reports with raw JUnit identities and digests
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-detekt-six-new-run-full-xml-review
+          path: ${{ runner.temp }}/detekt-full-xml
+          retention-days: 14
+          if-no-files-found: warn
