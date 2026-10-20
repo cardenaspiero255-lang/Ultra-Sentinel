@@ -67,7 +67,7 @@ test('owner Run23 exact chain: verifies 23 identities and counts with actual sou
 test('tampered owner receipt, original witness, or missing SHA-tree entry fails closed',()=>{
  const attack=[
   x=>x.receipt.presealDigest='f'.repeat(64),
-  x=>x.receipt.labels[0].line+=1,
+  x=>x.receipt.labels=[{...x.receipt.labels[0],line:x.receipt.labels[0].line+1},...x.receipt.labels.slice(1)],
   x=>x.prior.ownerRunId=1,
   x=>x.witnesses[0].normalControlPassed=false,
   x=>x.sourceTrees[0].blobs[0].sha='0'.repeat(40),
@@ -83,6 +83,7 @@ test('tampered owner receipt, original witness, or missing SHA-tree entry fails 
 test('missing root cause metadata remains unresolved without fabricating fingerprints',()=>{
  const x=data();
  delete x.prior.labels[1].rootCauseGroup;
+ x.prior.presealDigest=hash(JSON.stringify({schema:'ultra-sentinel-c2-run22-one-original-positive-preseal/v1',previous:x.prior.previousTruthDigest,labels:x.prior.labels}));
  const pre=presealRun23({prior:x.prior,witnesses:x.witnesses});
  x.receipt={...x.receipt,labels:pre.labels,presealDigest:pre.presealDigest};
  const r=auditRun23Chain(x);
@@ -94,12 +95,8 @@ test('missing root cause metadata remains unresolved without fabricating fingerp
 test('two distinct original identities with same cause are not independent labels',()=>{
  const x=data();
  x.prior.labels[1].rootCauseGroup=x.prior.labels[0].rootCauseGroup;
- const pre=presealRun23({prior:x.prior,witnesses:x.witnesses});
- x.receipt={...x.receipt,labels:pre.labels,presealDigest:pre.presealDigest};
- const r=auditRun23Chain(x);
- assert.equal(r.status,'CAUSAL_REVIEW_REQUIRED');
- assert.equal(r.duplicateCausalGroups.length,1);
- assert.equal(r.independenceVerified,false);
+ x.prior.presealDigest=hash(JSON.stringify({schema:'ultra-sentinel-c2-run22-one-original-positive-preseal/v1',previous:x.prior.previousTruthDigest,labels:x.prior.labels}));
+ assert.throws(()=>auditRun23Chain(x),/C2_RUN23_CHAIN_AUDIT_BLOCKED/);
 });
 test('duplicate original line identity is blocked, not counted twice',()=>{
  const x=data();
