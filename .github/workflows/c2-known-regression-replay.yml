@@ -45,9 +45,9 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse --abbrev-ref HEAD)" = main
-          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
-          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" != b8b6e79c1c544a9c22ea5aa0ea857881a0e1b6d9
-          test -f packages/core/c2-known-defect-regressions.cjs
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = 836f9400f42f269b80f446e89601744c59c73073
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" = 7df2a994f566ad56bdacab999fa6ba83b69e3b4d
+          test "$(git hash-object packages/core/c2-known-defect-regressions.cjs)" = 8c2fa4289d331e157b07f4e693239ac7e31cae8c
           npm run check
       - name: Verify SHA-pinned truth v3 existed before measurement
         shell: bash
