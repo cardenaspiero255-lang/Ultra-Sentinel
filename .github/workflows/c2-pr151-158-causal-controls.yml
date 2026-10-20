@@ -215,6 +215,6 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: c2-pr151-158-scoped-original-causal-evidence
-          path: ${{ runner.temp }}/c2-pr151-158/output/batch.json
+          path: ${{ runner.temp }}/c2-pr151-158/output
           retention-days: 14
           if-no-files-found: warn
