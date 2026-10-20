@@ -25,11 +25,11 @@ MAX_XML_BYTES = 2_097_152
 MAX_TESTS = 60_000
 # Spek/Detekt emits a per-instance hex suffix for WrapperSmokeTestSpec.
 # Do NOT drop a suffix in other classes or for tests absent from the original
-# expected manifest. Canonicalization must never increase the admitted labels.
+# expected manifest. Real Detekt run 39321487604 emitted @c8e99 (5 hex).\n# Canonicalization must never increase the admitted labels.
 DETEKT_WRAPPER_CLASS = 'io.gitlab.arturbosch.detekt.formatting.WrapperSmokeTestSpec'
 DETEKT_WRAPPER_INSTANCE = re.compile(
     r'(for rule: io\.gitlab\.arturbosch\.detekt\.formatting\.wrappers\.'
-    r'[A-Za-z][A-Za-z0-9_]*)@[a-f0-9]{6,8}\Z'
+    r'[A-Za-z][A-Za-z0-9_]*)@[a-f0-9]{5,8}\Z'
 )
 
 def canonical_junit_identity(classname, name, declared=frozenset()):
