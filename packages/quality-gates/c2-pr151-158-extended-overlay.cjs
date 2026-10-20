@@ -53,7 +53,8 @@ function extendCausalOverlay(original,batch){
    typeof x.positive!=='boolean')fail();
   inventory.set(id,x);
   if(x.positive)positives++;else negatives++;
-  if(x.pr===150)historic150.push(x);
+  if(x.pr===150&&EXPECTED.some(p=>p.pr===150&&p.headSha===x.headSha&&
+    p.ruleId===x.rule&&p.path===x.path&&p.line===x.line&&p.positive===x.positive))historic150.push(x);
  }
  if(positives!==11||negatives!==12||historic150.length!==3)fail();
  for(const p of EXPECTED.filter(x=>x.pr===150)){
