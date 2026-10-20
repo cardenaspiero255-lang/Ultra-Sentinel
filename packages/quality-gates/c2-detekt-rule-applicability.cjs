@@ -107,11 +107,12 @@ function patchComplete(file){
 function patchPostImageMatchesSource(patch,fullSource){
  if(typeof patch!=='string'||typeof fullSource!=='string')return false;
  const lines=fullSource.split(/\r?\n/);let cursor=0,seen=false;
- for(const raw of patch.split('\n')){
+ const rows=patch.split('\n');
+ for(const [index,raw] of rows.entries()){
   const h=/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(raw);
   if(h){cursor=Number(h[1])-1;seen=true;continue;}
   if(!seen) return false;
-  if(raw===''&&cursor>=lines.length)continue;
+  if(raw===''&&index===rows.length-1)continue; // diff's terminal LF only
   if(raw.startsWith('\\ No newline at end of file'))continue;
   if(raw.startsWith('-')&&!raw.startsWith('---'))continue;
   if(raw.startsWith('+')||raw.startsWith(' ')){
