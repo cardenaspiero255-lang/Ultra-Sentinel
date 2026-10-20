@@ -35,10 +35,13 @@ class SemanticEvidenceContract(unittest.TestCase):
   names=list(sorted(mod.METHODS)) if names is None else names
   suite=ET.Element('testsuite',name=mod.CLASS,tests=str(len(names)),
    errors='0',failures='1' if fail else '0',skipped='1' if skip else '0')
+  ET.SubElement(suite,'properties')
   for i,n in enumerate(names):
    test=ET.SubElement(suite,'testcase',classname=mod.CLASS,name=n)
    if fail and i==0:ET.SubElement(test,'failure')
    if skip and i==0:ET.SubElement(test,'skipped')
+  ET.SubElement(suite,'system-out').text=''
+  ET.SubElement(suite,'system-err').text=''
   ET.ElementTree(suite).write(self.xml,encoding='utf-8',xml_declaration=True)
  def execute(self):return mod.verify(self.xml,self.dsl,self.upstream,self.fixtures)
  def test_exact_junit_and_gradle_markers_are_evidence_only(self):
