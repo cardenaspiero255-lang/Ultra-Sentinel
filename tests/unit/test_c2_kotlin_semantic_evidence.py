@@ -24,6 +24,7 @@ class SemanticEvidenceContract(unittest.TestCase):
   self.fixtures=self.root/'repo'
   for name in [
    'tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt',
+   'packages/kotlin-semantic/C2OptionalKotlinSemantic.kt',
    'tests/fixtures/c2-gradle-kotlin-dsl/build.gradle.kts',
    'tests/fixtures/c2-gradle-kotlin-dsl/settings.gradle.kts']:
    p=self.fixtures/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text('source placeholder '+name)
