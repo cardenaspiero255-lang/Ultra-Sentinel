@@ -1,0 +1,67 @@
+name: Ultra Sentinel — C2 Detekt six immutable detector applicability
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-detekt-known-pr-rule-applicability
+  cancel-in-progress: false
+jobs:
+  six-immutable-prs:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_DETEKT_RULE_MATRIX_V1' &&
+        github.actor_id == '322222186' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Freeze current real detector code, not a mock
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = "836f9400f42f269b80f446e89601744c59c73073"
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" = "7df2a994f566ad56bdacab999fa6ba83b69e3b4d"
+          test "$(git hash-object packages/core/c2-known-defect-regressions.cjs)" = "8c2fa4289d331e157b07f4e693239ac7e31cae8c"
+          node --test tests/unit/c2-detekt-rule-applicability.test.cjs
+      - name: Fetch exact original Detekt PR compares and pinned SHA-1 Git blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node packages/quality-gates/c2-detekt-rule-applicability.cjs \
+            "$RUNNER_TEMP/c2-detekt-rule-applicability.json"
+          jq -e '.candidateCount == 6 and .sourceVerifiedCount == 6 and
+            .staticSourceCounterfactualCount == 2 and
+            (.cases | map(select(.pr == 7715 or .pr == 7888)
+              | .counterfactual.changeObserved == true) | all) and
+            .newLabels == 0 and .admittedLabels == 0 and
+            .detectorApplicabilityVerifiedCount == 0 and
+            .blindHoldout == false and .tripleSPlusCertified == false and
+            .precision == null and .recall == null and .f1 == null' \
+            "$RUNNER_TEMP/c2-detekt-rule-applicability.json" >/dev/null
+      - name: Retain exact immutable-source diagnostic, not GOLD data
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-detekt-six-rule-applicability-source-evidence
+          path: ${{ runner.temp }}/c2-detekt-rule-applicability.json
+          retention-days: 14
+          if-no-files-found: warn
