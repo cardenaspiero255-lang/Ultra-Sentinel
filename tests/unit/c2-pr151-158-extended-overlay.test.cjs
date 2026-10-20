@@ -68,7 +68,7 @@ test('adds 7 original case annotations without touching #150 or sealing any inde
  assert.equal(r.entries.filter(x=>x.pr===150&&x.positive).length,2);
  assert.equal(r.entries.filter(x=>x.pr===150&&x.rule==='UNKNOWN_12').length,1);
  assert.equal(r.entries.find(x=>x.pr===150&&x.rule==='UNKNOWN_12').causalAdjudication,null);
- assert.ok(r.entries.filter(x=>x.pr===150).every(x=>x.causalAdjudication?.independentlyCertified===false));
+ assert.ok(r.entries.filter(x=>x.pr===150&&x.causalAdjudication!==null).every(x=>x.causalAdjudication.independentlyCertified===false));
  assert.ok(r.entries.filter(x=>[154,155,157,158].includes(x.pr)).every(x=>
   x.causalAdjudication.provisionalCausalFingerprint===null));
 });
