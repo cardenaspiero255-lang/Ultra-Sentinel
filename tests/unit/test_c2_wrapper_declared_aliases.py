@@ -135,7 +135,7 @@ class DeclaredWrapperNames(unittest.TestCase):
 
  def test_other_classes_and_invalid_suffix_never_canonicalize(self):
   for cls,name in [('org.example.NotTheWrapperSpec',BASE+'PackageName@c79915a'),
-      (CLASS,BASE+'PackageName@nothex'),(CLASS,BASE+'PackageName@12345'),
+      (CLASS,BASE+'PackageName@nothex'),(CLASS,BASE+'PackageName@1234'),
       (CLASS,BASE+'PackageName@123456789'),(CLASS,BASE+'PackageName@C79915A')]:
    with self.subTest(cls=cls,name=name):
     self.write(self.before,[(REGRESSION,'FAIL'),(cls+'.'+name,'PASS')])
