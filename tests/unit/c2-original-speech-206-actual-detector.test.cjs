@@ -45,7 +45,7 @@ test('this original-source probe does not claim certified independent labels or 
  const workflow=readFileSync(join(root,'.github/workflows/c2-original-speech-206.yml'),'utf8');
  assert.match(source,/newLabels:\s*0/);
  assert.match(source,/tripleSPlusCertified:\s*false/);
- assert.match(source,/git[\s\S]*rev-parse HEAD/);
+ assert.ok(source.includes("git(originalDir,'rev-parse','HEAD')"));
  assert.match(workflow,/persist-credentials:\s*false/);
  assert.match(workflow,/contents:\s*read/);
  assert.doesNotMatch(workflow,/contents:\s*write|continue-on-error:\s*true/);
