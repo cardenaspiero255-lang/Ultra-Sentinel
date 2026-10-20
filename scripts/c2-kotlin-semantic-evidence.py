@@ -101,6 +101,7 @@ def verify(symbol_xml,gradle_output,upstream_root,fixture_root):
   blocked('Kotlin source fixture missing')
  required_files=[
   'tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt',
+  'packages/kotlin-semantic/C2OptionalKotlinSemantic.kt',
   'tests/fixtures/c2-gradle-kotlin-dsl/build.gradle.kts',
   'tests/fixtures/c2-gradle-kotlin-dsl/settings.gradle.kts'
  ]
