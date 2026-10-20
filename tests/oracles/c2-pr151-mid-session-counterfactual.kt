@@ -4,8 +4,8 @@ package com.cardenaspiero255.gamehubultra.domain
 // immutable SHA and on exactly one patched line.
 private fun raised(x: Float?): Boolean =
     AiSessionCoach.midSession(
-        SessionCoachSnapshot(timestampMillis=0,thermalHeadroom=0.1f),
-        SessionCoachSnapshot(timestampMillis=1000,thermalHeadroom=x)
+        SessionCoachSnapshot(timestampMillis=0,batteryPercent=null,thermalStatus=null,thermalHeadroom=0.1f,refreshRateHz=null,latencyMs=null),
+        SessionCoachSnapshot(timestampMillis=1000,batteryPercent=null,thermalStatus=null,thermalHeadroom=x,refreshRateHz=null,latencyMs=null)
     ).any { it.signal==SessionCoachSignal.THERMAL }
 
 fun main() {
