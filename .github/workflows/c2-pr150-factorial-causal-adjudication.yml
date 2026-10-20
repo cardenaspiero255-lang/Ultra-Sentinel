@@ -1,0 +1,134 @@
+name: Ultra Sentinel C2 PR150 original causal cross interventions
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr150-factorial-causal-adjudication.yml
+      - packages/quality-gates/c2-pr150-causal-matrix.cjs
+      - scripts/c2-pr150-causal-cross-interventions.cjs
+      - tests/oracles/c2-pr150-causal-cross-interventions.kt
+      - tests/unit/c2-pr150-causal-matrix.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-kotlin-causal-matrix:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout original PR without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full test suite
+        run: npm run check
+      - name: Authenticate immutable original PR150 Git blob
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          mkdir -p "$root"
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38982855937" > "$root/provenance.json"
+          jq -e '.id==38982855937 and .conclusion=="success" and
+            .event=="issue_comment" and .actor.id==322222186 and
+            .repository.id==1418338512 and
+            .head_sha=="05b959a8fe650a0a00e0d20f57d73cceea05c008" and
+            .path==".github/workflows/c2-next-pr150-confidence-oracle.yml"' \
+            "$root/provenance.json" >/dev/null
+          p=app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt
+          gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$p?ref=4c6912d7ca17df0669f8a0d9667f34d2f2b205a9" > "$root/original.json"
+          jq -e --arg p "$p" '.type=="file" and .path==$p and
+            .sha=="37866fd3dbfcd19d9daaf29a5e1e426391c723d4" and
+            .encoding=="base64" and .size>6000 and .size<100000' "$root/original.json" >/dev/null
+          jq -r .content "$root/original.json" | base64 --decode > "$root/original.kt"
+          test "$(git hash-object "$root/original.kt")" = 37866fd3dbfcd19d9daaf29a5e1e426391c723d4
+          node scripts/c2-pr150-causal-cross-interventions.cjs prepare "$root/original.kt" "$root/variants"
+          rm -f "$root/original.json" "$root/provenance.json" "$root/original.kt"
+      - name: Compile four original and counterfactual Kotlin test variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          for variant in original historyOnly externalOnly both; do
+            kotlinc "$root/variants/$variant/SmartRecommendationExplanation.kt" \
+              tests/oracles/c2-next-pr150-confidence-domain-abi.kt \
+              tests/oracles/c2-pr150-causal-cross-interventions.kt \
+              -include-runtime -d "$root/variants/$variant/run.jar"
+            test -s "$root/variants/$variant/run.jar"
+            chmod 0400 "$root/variants/$variant/run.jar"
+          done
+      - name: Require AppArmor and Bubblewrap networkless runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Execute real original and crossed repairs in isolated JVMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              name="$(readlink "$mount")"
+              [[ "$name" != /* && "$name" != *..* ]] || exit 2
+              mounts+=(--symlink "$name" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          for variant in original historyOnly externalOnly both; do
+            env -i PATH=/usr/bin:/bin HOME=/tmp \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              ${mounts[@]} --ro-bind "$jdk" /jdk \
+              --ro-bind "$root/variants" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar "/workspace/$variant/run.jar" \
+              > "$root/variants/$variant/result.json"
+            jq -e 'type=="object" and (keys|length)==6' "$root/variants/$variant/result.json" >/dev/null
+            echo "PR150_AUTHENTIC_SOURCE_VARIANT=$variant"
+          done
+          node scripts/c2-pr150-causal-cross-interventions.cjs verify \
+            "$root/variants" "$root/pr150-causal-adjudication.json"
+          jq -e '.schema=="ultra-sentinel-c2-pr150-factorial-causal-adjudication/v1" and
+            .originalDefectPredicates==2 and .negativeControlFailures==0 and
+            .independentRootCausesCertified==false and .independentGroupsCounted==1 and
+            .causalGuardIndependence=="SEPARABLE_GUARDS_SHARED_POLICY_FAMILY" and
+            .corpusNewLabels==0 and .precision==null and .f1==null and
+            .holdoutFrozen==false and .tripleSPlusCertified==false' \
+            "$root/pr150-causal-adjudication.json" >/dev/null
+          jq -c '{verdict,original:.testMatrix.original,
+            historyOnly:.testMatrix.historyOnly,externalOnly:.testMatrix.externalOnly,
+            both:.testMatrix.both,independentRootCausesCertified,corpusNewLabels}' \
+            "$root/pr150-causal-adjudication.json"
+          mkdir -p "$root/output"
+          cp "$root/pr150-causal-adjudication.json" "$root/output/pr150-causal-adjudication.json"
+      - name: Archive only sanitized source/behavior matrix
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr150-source-causal-cross-interventions
+          path: ${{ runner.temp }}/c2-pr150-causal/output/pr150-causal-adjudication.json
+          retention-days: 14
+          if-no-files-found: warn
