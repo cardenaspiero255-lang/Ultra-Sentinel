@@ -83,7 +83,7 @@ test('cannot relabel control 250 as positive or count independent families',()=>
  const a=sample();a.historical.entries.find(x=>x.pr===150&&x.line===250).positive=true;
  a.historical.inventorySha256=hash(JSON.stringify(a.historical.entries));
  assert.throws(()=>overlayPr150(a),/C2_PR150_HISTORICAL_OVERLAY_BLOCKED/);
- const b=sample();b.adjudication.independentRootCausesCertified=true;
+ const b=sample();b.adjudication={...b.adjudication,independentRootCausesCertified:true};
  assert.throws(()=>overlayPr150(b),/C2_PR150_HISTORICAL_OVERLAY_BLOCKED/);
 });
 test('tampered source SHA, unrelated witness and corrupt inventory digest fail closed',()=>{
@@ -92,8 +92,8 @@ test('tampered source SHA, unrelated witness and corrupt inventory digest fail c
  a=>a.recovered.entries[0].originalWitnessSha256='bogus',
  a=>a.recovered.entries[0].sourceBlobSha='f'.repeat(40),
  a=>a.recovered.entries[0].ruleId='UNRELATED',
- a=>a.adjudication.verdict='TWO_INDEPENDENT_CAUSES',
- a=>a.adjudication.testMatrix.both.negativeOnlyHistory='HIGH',
+ a=>a.adjudication={...a.adjudication,verdict:'TWO_INDEPENDENT_CAUSES'},
+ a=>a.adjudication={...a.adjudication,testMatrix:{...a.adjudication.testMatrix,both:{...a.adjudication.testMatrix.both,negativeOnlyHistory:'HIGH'}}},
  a=>a.historical.newLabels=1,
  a=>a.historical.entries.push({...a.historical.entries[0]})
  ];
