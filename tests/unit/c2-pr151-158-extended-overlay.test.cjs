@@ -81,6 +81,6 @@ test('tampering historical identity, misplaced negative or forged independent ro
  ]){
   const o=originalOverlay();mutation(o);assert.throws(()=>extendCausalOverlay(o,batch()),/C2_EXTENDED_CAUSAL_OVERLAY_BLOCKED/);
  }
- const b=batch();b.entries[0].verifiedIndependentCause=true;
+ const b=structuredClone(batch());b.entries[0].verifiedIndependentCause=true;
  assert.throws(()=>extendCausalOverlay(originalOverlay(),b),/C2_EXTENDED_CAUSAL_OVERLAY_BLOCKED/);
 });
