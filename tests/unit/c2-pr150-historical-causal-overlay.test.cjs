@@ -28,7 +28,9 @@ function sample(){
   priorOwnerRun22:39076132177,sourceRun23Attested:true,sourceBlobsVerified:23,
   count:23,positives:11,negatives:12,missingCausalGroups:entries.map(e=>
    JSON.stringify([e.pr,e.headSha,e.rule,e.path,e.line,e.positive])),
-  missingReceipts:[],duplicateIdentities:[],duplicateCausalGroups:[],
+  missingReceipts:entries.filter(e=>!e.evidenceSha256).map(e=>
+   JSON.stringify([e.pr,e.headSha,e.rule,e.path,e.line,e.positive])),
+  duplicateIdentities:[],duplicateCausalGroups:[],
   status:'CAUSAL_REVIEW_REQUIRED',entries,
   knownTrainingOnly:true,historicalEvidenceAuthenticated:false,independenceVerified:false,
   blindHoldout:false,holdoutFrozen:false,newLabels:0,
@@ -49,7 +51,7 @@ function sample(){
     path:'src/Other'+i+'.kt',line:i+1,positive:i<5,sourceHeadSha:hex40(i+1),
     sourceBlobSha:hex40(i+61),sourceRunId:38900000000+i,artifactId:12000000000+i,
     originalWitnessSha256:hash('other'+i)}))
-  ],historicalEvidenceAuthenticated:false,independenceVerified:false,
+  ],sourceRunAuthenticatedByCaller:true,historicalEvidenceAuthenticated:false,independenceVerified:false,
   holdoutFrozen:false,newLabels:0,precision:null,recall:null,f1:null,
   tripleSPlusCertified:false,
   verdict:'ORIGINAL_RECEIPTS_RECOVERED_CAUSAL_INDEPENDENCE_UNVERIFIED'};
