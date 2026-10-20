@@ -89,9 +89,9 @@ function staticCounterfactualWitness(pr,before,after){
 function patchComplete(file){
  if(!file||file.status!=='modified'||typeof file.patch!=='string'||
    file.patch.length===0||file.patch.length>320000||
-   !Number.isSafeInteger(file.additions)||file.additions<1||
+   !Number.isSafeInteger(file.additions)||file.additions<0||
    !Number.isSafeInteger(file.deletions)||file.deletions<0||
-   !Number.isSafeInteger(file.changes)||file.changes!==file.additions+file.deletions)
+   !Number.isSafeInteger(file.changes)||file.changes<1||file.changes!==file.additions+file.deletions)
   return false;
  let inHunk=false,plus=0,minus=0,blocks=0;
  for(const row of file.patch.split('\n')){
@@ -100,6 +100,27 @@ function patchComplete(file){
   else if(inHunk&&row.startsWith('-')&&!row.startsWith('---'))minus++;
  }
  return blocks>0&&plus===file.additions&&minus===file.deletions;
+}
+// Verify that every context/added line in the immutable PR hunk matches
+// the actual HEAD blob; this is essential for deletion-only diffs, where
+// Core's added-line scanner never enters its sourceMatches branch.
+function patchPostImageMatchesSource(patch,fullSource){
+ if(typeof patch!=='string'||typeof fullSource!=='string')return false;
+ const lines=fullSource.split(/\r?\n/);let cursor=0,seen=false;
+ for(const raw of patch.split('\n')){
+  const h=/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(raw);
+  if(h){cursor=Number(h[1])-1;seen=true;continue;}
+  if(!seen) return false;
+  if(raw===''&&cursor>=lines.length)continue;
+  if(raw.startsWith('\\ No newline at end of file'))continue;
+  if(raw.startsWith('-')&&!raw.startsWith('---'))continue;
+  if(raw.startsWith('+')||raw.startsWith(' ')){
+   if(lines[cursor]!==raw.slice(1))return false;
+   cursor++;continue;
+  }
+  return false;
+ }
+ return seen;
 }
 function assessTarget(target,{compare,before,after}={}, {detector=analyze}={}){
  if(!target||!Number.isSafeInteger(target.pr)||!SHA.test(target.baseSha||'')||
@@ -123,13 +144,16 @@ function assessTarget(target,{compare,before,after}={}, {detector=analyze}={}){
  const fullSource=gitBlobString(after,target.headBlob);
  const oldSource=target.focus?gitBlobString(before,target.baseBlob):null;
  const f=picked[0];
+ const deletionOnly=f.additions===0;
+ if(deletionOnly&&!patchPostImageMatchesSource(f.patch,fullSource))
+   fail('deletion-only original post-image context mismatches pinned Git blob');
  const report=detector([{
   filename:target.path,status:f.status,sha:f.sha,additions:f.additions,
   deletions:f.deletions,changes:f.changes,patch:f.patch,fullSource
  }],{sha:target.headSha,sourceScope:'KOTLIN_JVM_V3_EXPERIMENTAL'});
  if(!report||report.sha!==target.headSha||
    report.mode!=='experimental-kotlin-jvm-v3-source-scope'||
-   report.coverage?.returned!==1||report.coverage?.analyzed!==1||
+   report.coverage?.returned!==1||report.coverage?.analyzed!==(deletionOnly?0:1)||
    report.coverage?.partial!==false||report.omitted!==0||
    report.verdict==='INCOMPLETE'||!Array.isArray(report.findings))
    fail('detector source scope incomplete');
@@ -147,7 +171,8 @@ function assessTarget(target,{compare,before,after}={}, {detector=analyze}={}){
   sourceKind:'PINNED_UPSTREAM_PR_TARGET_DIFF',sourceVerified:true,
   historyDiverged:compare.status==='diverged',
   comparisonMergeBase:compare.merge_base_commit.sha,
-  partial:false,analyzedFiles:1,wholePrAnalyzed:false,
+  partial:deletionOnly,analyzedFiles:report.coverage.analyzed,wholePrAnalyzed:false,
+  limitedReason:deletionOnly?'DELETION_ONLY_NO_ADDED_LINES':null,
   coreMode:report.mode,coreVerdict:report.verdict,
   detectorFindings:findings,verifiedApplicableRuleId:null,
   detectorApplicabilityVerified:false,
@@ -161,7 +186,8 @@ function captureDetektSix(receipts,{detector=analyze}={}){
    Object.keys(receipts).length!==TARGETS.length||
    TARGETS.some(t=>!Object.hasOwn(receipts,t.pr)))fail('missing/extra source records');
  const rows=TARGETS.map(t=>assessTarget(t,receipts[t.pr],{detector}));
- if(rows.some(x=>x.partial||!x.sourceVerified||
+ if(rows.some(x=>!x.sourceVerified||
+   (x.partial&&(x.pr!==7667||x.limitedReason!=='DELETION_ONLY_NO_ADDED_LINES'))||
    (x.counterfactual.kind==='SOURCE_STATIC_CONTRAST_ONLY'&&!x.counterfactual.changeObserved)))
    fail('source-only counterfactual not demonstrated');
  return Object.freeze({
@@ -172,6 +198,8 @@ function captureDetektSix(receipts,{detector=analyze}={}){
   sentinelBaselineCommit:SENTINEL_COMMIT,
   sourceKind:'IMMUTABLE_GITHUB_PR_COMPARE_HEAD_SOURCE',
   candidateCount:6,sourceVerifiedCount:6,
+  fullyScannedTargetDiffs:rows.filter(x=>x.analyzedFiles===1).length,
+  unscannedDeletionOnly:rows.filter(x=>x.limitedReason==='DELETION_ONLY_NO_ADDED_LINES').map(x=>x.pr),
   divergentPrHistories:rows.filter(x=>x.historyDiverged).map(x=>x.pr),
   focusPrs:[7715,7888],staticSourceCounterfactualCount:2,
   detectorApplicabilityVerifiedCount:0,
@@ -185,7 +213,7 @@ function captureDetektSix(receipts,{detector=analyze}={}){
   historicalLabels:23,newLabels:0,admittedLabels:0,
   blindHoldout:false,precision:null,recall:null,f1:null,
   tripleSPlusCertified:false,
-  verdict:'SIX_SOURCE_DIFFS_VERIFIED_NO_APPLICABLE_RULE_ATTESTATION',
+  verdict:'SIX_SOURCE_DIFFS_VERIFIED_ONE_DELETION_ONLY_UNSCANNED_NO_RULE_ATTESTATION',
   limitation:'Known upstream PR diffs, not source-side detector alerts on original vulnerable commits; Kotlin static source comparison is not an independent causal execution. No detector-specific ruleId+original fault location or benign-counterfactual detections have been attested.'
  });
 }
@@ -215,6 +243,7 @@ if(require.main===module){
   console.log(JSON.stringify({
    candidates:result.candidateCount,verifiedDiffs:result.sourceVerifiedCount,
    differentBaseHistories:result.divergentPrHistories,
+   unscannedDeletionOnly:result.unscannedDeletionOnly,
    incidentalFindings:result.detectorFindingsObserved,
    provedApplicableRules:result.detectorApplicabilityVerifiedCount,
    newLabels:result.newLabels,certified:result.tripleSPlusCertified
