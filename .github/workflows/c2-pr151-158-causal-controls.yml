@@ -1,0 +1,185 @@
+name: Ultra Sentinel C2 original causal adjudication PR151 to PR158
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr151-158-causal-controls.yml
+      - packages/quality-gates/c2-pr151-158-causal-batch.cjs
+      - scripts/c2-pr151-158-causal-batch.cjs
+      - tests/unit/c2-pr151-158-causal-batch.test.cjs
+      - tests/oracles/c2-pr151-mid-session-counterfactual.kt
+      - tests/oracles/c2-pr152-refresh-counterfactual.kt
+permissions:
+  contents: read
+  actions: read
+jobs:
+  owner-original-causal-controls:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 34
+    steps:
+      - name: No-credential checkout of same repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: All architecture tests
+        run: npm run check
+      - name: Fetch immutable original owner receipt and negative counterfactual canaries
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr151-158"
+          mkdir -p "$root/receipts" "$root/negative154" "$root/negative157" "$root/results" "$root/output"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          cat > "$root/artifact-manifest.tsv" <<'META'
+          receipts|39505160347|9a40b21a0250aa6f4bbdde535ccfecc703088bc2|.github/workflows/c2-run23-ten-original-receipts.yml|12303400275|c2-run23-ten-owner-original-receipts-recovered|d53f6b164e7b25a9b38b9e097f3d5fdfdf454771da8eb6926c60d5141db53815
+          negative154|38969804193|36ec2099051a1a18d22366991553e86f5844c670|.github/workflows/c2-next-original-pr154-pr155-oracles.yml|12076406708|ultra-sentinel-c2-next-pr154-pr155-scoped-negatives|84b7e898c1fa1d2f1d5dfee6e8d0feb39de17f3067c2dea761a3a25c15d2a01c
+          negative157|38946358219|0b9ca41e3bff1219effa799a98bedde38172f579|.github/workflows/c2-next-original-pr157-pr158-oracles.yml|12066196917|ultra-sentinel-c2-next-pr157-pr158-scoped-negative-controls|9bda473d6d80e833f4e46e6893e943f551ff299d59cf3e25de0e9a05d2ef3e6a
+          META
+          while IFS='|' read -r dir run sha workflow art name digest; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/owner-run.json"
+            jq -e --argjson id "$run" --arg sha "$sha" --arg wf "$workflow" \
+              '.id==$id and .status=="completed" and .conclusion=="success" and
+                .head_sha==$sha and .path==$wf and .actor.id==322222186 and
+                .repository.id==1418338512' "$root/owner-run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/owner-artifacts.json"
+            jq -e --argjson id "$run" --argjson a "$art" --arg n "$name" \
+              --arg dg "sha256:$digest" \
+              '[.artifacts[]|select(.id==$a and .name==$n and .digest==$dg and
+                .expired==false and .workflow_run.id==$id and
+                .workflow_run.repository_id==1418338512)]|length==1' \
+              "$root/owner-artifacts.json" >/dev/null
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/$dir"
+            test "$(find "$root/$dir" -type f|wc -l)" -eq 1
+            test "$(find "$root/$dir" -type l|wc -l)" -eq 0
+            echo "CAUSAL_ORIGINAL_OWNER_EVIDENCE_AUTHENTICATED run=$run artifact=$art"
+          done < "$root/artifact-manifest.tsv"
+          test -s "$root/receipts/ten-original-receipts-recovered.json"
+          test -s "$root/negative154/c2-next-thermal-battery-negatives.json"
+          test -s "$root/negative157/c2-next-counterfactual-negative-proof.json"
+          rm -f "$root/owner-run.json" "$root/owner-artifacts.json" "$root/artifact-manifest.tsv"
+      - name: Fetch and SHA-verify original GameHub PR151 and PR152 Kotlin sources
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr151-158"
+          cat > "$root/original-sources.tsv" <<'META'
+          151|9ad983576c16c6c34d59283979d83c69ede50dce|adb11032b9b7f62f865228dfa1c27258ca3fa0df|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt
+          152|104b7dc33e4c0341cec3fca81e3c8fbe3625357f|549e3b1d619b83e59bc37b31b4860191c25528f1|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiProfileBuilder.kt
+          META
+          while IFS='|' read -r pr head blob filename; do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$filename?ref=$head" > "$root/source-meta.json"
+            jq -e --arg sha "$blob" --arg p "$filename" \
+              '.type=="file" and .path==$p and .sha==$sha and
+                .encoding=="base64" and .size>100 and .size<100000' "$root/source-meta.json" >/dev/null
+            jq -r .content "$root/source-meta.json" | base64 --decode > "$root/$pr-original.kt"
+            test "$(git hash-object "$root/$pr-original.kt")" = "$blob"
+            node scripts/c2-pr151-158-causal-batch.cjs prepare "$pr" "$root/$pr-original.kt" "$root/results/$pr"
+            rm -f "$root/$pr-original.kt" "$root/source-meta.json"
+          done < "$root/original-sources.tsv"
+          rm -f "$root/original-sources.tsv"
+      - name: Compile original and one-change counterfactual Kotlins with same ABI
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          root="$RUNNER_TEMP/c2-pr151-158"
+          for pr in 151 152; do
+            for kind in original patched; do
+              if [ "$pr" = 151 ]; then
+                kotlinc "$root/results/$pr/$kind.kt" \
+                  tests/oracles/c2-next-pr151-domain-abi.kt \
+                  tests/oracles/c2-pr151-mid-session-counterfactual.kt \
+                  -include-runtime -d "$root/results/$pr/$kind.jar"
+              else
+                kotlinc "$root/results/$pr/$kind.kt" \
+                  tests/oracles/c2-next-pr152-domain-abi.kt \
+                  tests/oracles/c2-pr152-refresh-counterfactual.kt \
+                  -include-runtime -d "$root/results/$pr/$kind.jar"
+              fi
+              test -s "$root/results/$pr/$kind.jar"
+              chmod 0400 "$root/results/$pr/$kind.jar"
+            done
+          done
+      - name: Require sandbox AppArmor and Bubblewrap without fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run source original and repaired Kotlin against identical controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr151-158"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          for pr in 151 152; do
+            for kind in original patched; do
+              env -i PATH=/usr/bin:/bin HOME=/tmp \
+                /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+                --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+                "${mounts[@]}" --ro-bind "$jdk" /jdk \
+                --ro-bind "$root/results" /workspace \
+                --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+                -- /jdk/bin/java -jar "/workspace/$pr/$kind.jar" \
+                > "$root/results/$pr/$kind.json"
+              jq -e 'type=="object" and (keys|length)==3' "$root/results/$pr/$kind.json" > /dev/null || {
+                if [ "$pr" != 152 ]; then exit 1; fi
+                jq -e 'type=="object" and (keys|length)==4' "$root/results/$pr/$kind.json" > /dev/null
+              }
+            done
+          done
+          node scripts/c2-pr151-158-causal-batch.cjs verify \
+            "$root/receipts/ten-original-receipts-recovered.json" \
+            "$root/negative154/c2-next-thermal-battery-negatives.json" \
+            "$root/negative157/c2-next-counterfactual-negative-proof.json" \
+            "$root/results" "$root/output/batch.json"
+          jq -e '.schema=="c2-run23-pr151-158-source-causal-batch/v1" and
+            .counterfactualPositivesVerified==2 and .pendingPositiveRepairs==1 and
+            .scopedNegativeControlsVerified==4 and
+            .negativeControlsMutantSensitive==4 and
+            .causalFamiliesIndependentlyCertified==0 and
+            .newLabels==0 and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false' "$root/output/batch.json" >/dev/null
+          jq -c '{positives:.counterfactualPositivesVerified,
+             negativeControls:.negativeControlsMutantSensitive,
+             pendingRepair:.pendingPositiveRepairs,
+             certifiedIndependentCauses:.causalFamiliesIndependentlyCertified,
+             newLabels:.newLabels}' "$root/output/batch.json"
+          rm -rf "$root/receipts" "$root/negative154" "$root/negative157" "$root/results"
+      - name: Archive sanitized batch, no code or untrusted artifacts
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr151-158-scoped-original-causal-evidence
+          path: ${{ runner.temp }}/c2-pr151-158/output/batch.json
+          retention-days: 14
+          if-no-files-found: warn
