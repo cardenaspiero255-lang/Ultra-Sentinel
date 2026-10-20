@@ -18,7 +18,8 @@ CLASS='io.gitlab.arturbosch.detekt.rules.exceptions.C2SymbolResolutionOracleTest
 METHODS=frozenset((
  'constructorNoArg','constructorWithMessage','lowercaseHomonym',
  'uppercaseHomonym','sameNameCallable','importedAliasConstructor',
- 'unresolvedCallFailsClosed'
+ 'unresolvedCallFailsClosed','ambiguousFunctionCallFailsClosed',
+ 'ambiguousConstructorCallFailsClosed','wrongArgumentTypeFailsClosed'
 ))
 MARKERS={
  'c2DslAssignment.txt':b'C2_REAL_GRADLE_ASSIGNMENT_PLUGIN_OK\n',
@@ -112,7 +113,7 @@ def verify(symbol_xml,gradle_output,upstream_root,fixture_root):
   'schema':'ultra-sentinel-c2-optional-kotlin-semantic-evidence/v1',
   'evidenceKind':'ORIGINAL_JVM_SYMBOL_RESOLUTION_AND_GRADLE_DSL_ASSIGNMENT',
   'upstreamRepository':'detekt/detekt','upstreamSha':head,
-  'originalJunitTestsPassed':7,'originalJunitXmlSha256':sha(raw),
+  'originalJunitTestsPassed':10,'originalJunitXmlSha256':sha(raw),
   'originalJunitTestNames':sorted(ids),
   'kotlinSymbolResolutionExecuted':True,
   'gradleDslCompilerPluginExecuted':True,
@@ -145,7 +146,7 @@ def main():
   if out.is_symlink() or out.exists():blocked('refusing to replace previous evidence')
   out.parent.mkdir(parents=True,exist_ok=True)
   out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n',encoding='utf8')
-  print(json.dumps({'tests':7,'gradleDslVerified':True,'kotlinSymbolVerified':True,
+  print(json.dumps({'tests':10,'gradleDslVerified':True,'kotlinSymbolVerified':True,
    'newLabels':0,'sentinelRuleCoverageVerified':False}))
   return 0
  except (ValueError,OSError) as e:

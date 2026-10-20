@@ -101,7 +101,7 @@ jobs:
             --gradle-output sentinel/tests/fixtures/c2-gradle-kotlin-dsl/build/c2-kotlin-semantic \
             --fixtures sentinel \
             --output "$RUNNER_TEMP/c2-kotlin-semantic/semantic-evidence.json"
-          jq -e '.originalJunitTestsPassed == 7 and
+          jq -e '.originalJunitTestsPassed == 10 and
             .gradleDslCompilerPluginExecuted == true and
             .kotlinSymbolResolutionExecuted == true and
             .newLabels == 0 and .admittedLabels == 0 and

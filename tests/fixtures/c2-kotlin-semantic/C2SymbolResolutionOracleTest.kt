@@ -101,4 +101,39 @@ class C2SymbolResolutionOracleTest(val env: KotlinCoreEnvironment) {
             """, "definitelyUnresolvedC2Call"
         )).isEqualTo("UNKNOWN")
     }
+
+
+    @Test
+    fun ambiguousFunctionCallFailsClosed() {
+        assertThat(resolve(
+            """
+            fun pick(value: CharSequence?) = Unit
+            fun pick(value: java.io.Serializable?) = Unit
+            fun test() { pick(null) }
+            """, "pick"
+        )).isEqualTo("UNKNOWN")
+    }
+
+    @Test
+    fun ambiguousConstructorCallFailsClosed() {
+        assertThat(resolve(
+            """
+            class AmbiguousTarget {
+                constructor(value: CharSequence?)
+                constructor(value: java.io.Serializable?)
+            }
+            fun test() { AmbiguousTarget(null) }
+            """, "AmbiguousTarget"
+        )).isEqualTo("UNKNOWN")
+    }
+
+    @Test
+    fun wrongArgumentTypeFailsClosed() {
+        assertThat(resolve(
+            """
+            fun typed(value: Int) = Unit
+            fun test() { typed("not an integer") }
+            """, "typed"
+        )).isEqualTo("UNKNOWN")
+    }
 }

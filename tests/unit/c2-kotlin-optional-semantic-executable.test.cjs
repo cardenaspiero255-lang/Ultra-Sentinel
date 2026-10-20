@@ -64,3 +64,37 @@ test('a future same-repository semantic PR cannot silently skip the compiler gat
  assert.match(workflow,/github\.event_name == 'workflow_dispatch' && github\.actor_id == '322222186'/);
  assert.match(workflow,/github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_SEMANTIC_V1'/);
 });
+
+
+test('compiler bridge rejects ambiguous or failed K1 calls instead of trusting candidate descriptors',()=>{
+ const bridge=read('packages/kotlin-semantic/C2OptionalKotlinSemantic.kt');
+ const oracle=read('tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt');
+ assert.match(bridge,/\.isReallySuccess\(\)/);
+ for(const testName of ['ambiguousFunctionCallFailsClosed','ambiguousConstructorCallFailsClosed','wrongArgumentTypeFailsClosed']){
+  assert.match(oracle,new RegExp('\\bfun\\s+'+testName+'\\s*\\('),testName);
+  assert.match(oracle,new RegExp('fun\\s+'+testName+'\\s*\\([\\s\\S]*?isEqualTo\\("UNKNOWN"\\)'),testName);
+ }
+ const evidence=read('scripts/c2-kotlin-semantic-evidence.py');
+ for(const testName of ['ambiguousFunctionCallFailsClosed','ambiguousConstructorCallFailsClosed','wrongArgumentTypeFailsClosed']){
+   assert.ok(evidence.includes(testName),'JUnit evidence must count '+testName);
+ }
+});
+
+
+test('protected architecture check executes pinned Kotlin compiler evidence when semantic paths change',()=>{
+ const arch=read('.github/workflows/architecture.yml');
+ const script=read('scripts/c2-required-semantic-gate.sh');
+ for(const expected of ['fetch-depth: 0','id: semantic-scope',
+    'git diff --name-only','-z',
+    'packages/kotlin-semantic/*','tests/fixtures/c2-kotlin-semantic/*',
+    '.github/workflows/architecture.yml',
+    "if: steps.semantic-scope.outputs.required == 'true'",
+    'bash scripts/c2-required-semantic-gate.sh']){
+    assert.ok(arch.includes(expected),expected);
+ }
+ for(const expected of ['git -C upstream rev-parse HEAD','C2SymbolResolutionOracleTest',
+    'c2DslAssignment c2SetterControl','c2-kotlin-semantic-evidence.py','jq -e']){
+    assert.ok(script.includes(expected),expected);
+ }
+ assert.doesNotMatch(arch,/continue-on-error:\s*true/);
+});

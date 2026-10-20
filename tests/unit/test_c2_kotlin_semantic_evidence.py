@@ -47,7 +47,7 @@ class SemanticEvidenceContract(unittest.TestCase):
  def execute(self):return mod.verify(self.xml,self.dsl,self.upstream,self.fixtures)
  def test_exact_junit_and_gradle_markers_are_evidence_only(self):
   result=self.execute()
-  self.assertEqual(result['originalJunitTestsPassed'],7)
+  self.assertEqual(result['originalJunitTestsPassed'],10)
   self.assertTrue(result['kotlinSymbolResolutionExecuted'])
   self.assertTrue(result['gradleDslCompilerPluginExecuted'])
   self.assertTrue(result['optInRequired'])
@@ -56,7 +56,7 @@ class SemanticEvidenceContract(unittest.TestCase):
   self.assertFalse(result['sentinelRuleCoverageVerified'])
  def test_no_lost_or_duplicate_oracles(self):
   for names in [list(mod.METHODS)[:-1],[*mod.METHODS,'constructorNoArg'],
-   ['constructorNoArg']*7]:
+   ['constructorNoArg']*len(mod.METHODS)]:
    self.write_xml(names)
    with self.subTest(names=len(names)),self.assertRaises(ValueError):self.execute()
  def test_errors_failures_and_skips_block_receipts(self):
