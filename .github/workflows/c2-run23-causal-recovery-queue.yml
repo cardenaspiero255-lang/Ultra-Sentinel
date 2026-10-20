@@ -1,0 +1,74 @@
+name: Ultra Sentinel C2 authenticated historic causal recovery queue
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-run23-causal-recovery-queue.yml
+      - packages/quality-gates/c2-run23-recovery-queue.cjs
+      - scripts/c2-run23-recovery-queue.cjs
+      - tests/unit/c2-run23-recovery-queue.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticated-triage:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate tests
+        run: npm run check
+      - name: Authenticate previous audited owner-source metadata and archive digest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-recovery"
+          mkdir -p "$root/source" "$root/output"
+          gh api "/repos/$repo/actions/runs/39498922958" > "$root/run.json"
+          jq -e '.id==39498922958 and .status=="completed" and .conclusion=="success" and
+            .path==".github/workflows/c2-run23-historical-source-chain.yml" and
+            .head_sha=="d3ad45763eb6e6ec9c6b7eda0767682442981ea8" and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39498922958/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(.id==12298439240 and
+            .name=="c2-run23-source-provenance-causal-audit" and
+            .digest=="sha256:d9b5f7e6dc764ef12046f47ae2ab80093b54d35300cc356ae4be415e3cd6b291" and
+            .expired==false and .workflow_run.id==39498922958 and
+            .workflow_run.repository_id==1418338512)]|length==1' "$root/artifacts.json" >/dev/null
+          gh run download 39498922958 --repo "$repo" \
+            --name c2-run23-source-provenance-causal-audit --dir "$root/source"
+          test "$(find "$root/source" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/source" -type l|wc -l)" -eq 0
+          test -s "$root/source/c2-run23-causal-audit.json"
+          node scripts/c2-run23-recovery-queue.cjs \
+            "$root/source/c2-run23-causal-audit.json" \
+            "$root/output/recovery-queue.json"
+          jq -e '.schema=="c2-run23-historical-recovery-queue/v1" and
+            .sourceLabels==23 and .causalGroupsMissing==21 and
+            .individualReceiptsMissing==10 and .bothMissing==10 and
+            (.queue|length)==21 and .admittedNewLabels==0 and
+            .benchmarkReady==false and .holdoutFrozen==false and
+            .tripleSPlusCertified==false' "$root/output/recovery-queue.json" >/dev/null
+          jq -c '{missingCauses:.causalGroupsMissing,missingReceipts:.individualReceiptsMissing,
+            recoveryQueue:[.queue[]|{pr,ruleId,path,line,priority}]}' \
+            "$root/output/recovery-queue.json"
+          rm -rf "$root/source" "$root/run.json" "$root/artifacts.json"
+      - name: Upload sanitized recovery queue
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-run23-authenticated-causal-recovery-queue
+          path: ${{ runner.temp }}/c2-recovery/output/recovery-queue.json
+          retention-days: 14
+          if-no-files-found: warn
