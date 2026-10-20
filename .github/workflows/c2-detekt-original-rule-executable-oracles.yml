@@ -133,9 +133,7 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
           name: detekt-${{ matrix.pr }}-${{ matrix.phase }}
-          path: |
-            ${{ runner.temp }}/c2-detekt-oracle
-            upstream/${{ matrix.module }}/build/test-results/test/TEST-${{ matrix.class }}.xml
+          path: ${{ runner.temp }}/c2-detekt-oracle
           retention-days: 14
           if-no-files-found: warn
   summary:
