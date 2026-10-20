@@ -110,7 +110,7 @@ class WrapperIdentityRegression(unittest.TestCase):
     def test_unrelated_class_or_nonhex_suffix_not_normalized(self):
         for cls, name in [('org.example.OtherSpec', RULE+'@5319efc0'),
                           (CLASS,RULE+'@nothex'),
-                          (CLASS,RULE+'@12345'),
+                          (CLASS,RULE+'@1234'),
                           (CLASS,RULE+'@123456789')]:
             with self.subTest(cls=cls, name=name):
                 self.report(self.before, [('org.example.ControlSpec','originalRegression','FAIL'),
