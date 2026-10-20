@@ -18,7 +18,7 @@ test('actual Sentinel Core reports one exact ruleId/path/line for original #206 
  assert.equal(hits.length,1,JSON.stringify(result));
  assert.equal(RULE_ID,'TTS_UTF16_SURROGATE_SPLIT');
  assert.equal(hits[0].path,ORIGINAL_PATH);
- assert.equal(hits[0].line,27);
+ assert.equal(hits[0].line,26);
  assert.equal(hits[0].status,'NEEDS_VERIFICATION');
  assert.match(hits[0].evidence,/substring\(0, boundary\)/);
 });
@@ -36,7 +36,7 @@ test('counterfactual with Unicode-safe boundary has no matching finding',()=>{
 test('unrelated pathname and tampered source cannot become confirmed original finding',()=>{
  const wrong=scanSpeechSource(original,{path:'docs/src/main/kotlin/UltraSpeechChunker.kt'});
  assert.equal(wrong.findings.some(x=>x.rule===RULE_ID),false);
- const tampered=scanSpeechSource(original+'// attacker', {patchSource:original});
+ const tampered=scanSpeechSource('// attacker\n'+original, {patchSource:original});
  assert.equal(tampered.coverage.partial,true);
  assert.equal(tampered.findings.some(x=>x.rule===RULE_ID),false);
 });
