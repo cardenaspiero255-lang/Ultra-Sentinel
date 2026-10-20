@@ -50,6 +50,7 @@ jobs:
             "$RUNNER_TEMP/c2-detekt-rule-applicability.json"
           jq -e '.candidateCount == 6 and .sourceVerifiedCount == 6 and
             .staticSourceCounterfactualCount == 2 and
+            .fullyScannedTargetDiffs == 5 and .unscannedDeletionOnly == [7667] and
             (.cases | map(select(.pr == 7715 or .pr == 7888)
               | .counterfactual.changeObserved == true) | all) and
             .newLabels == 0 and .admittedLabels == 0 and

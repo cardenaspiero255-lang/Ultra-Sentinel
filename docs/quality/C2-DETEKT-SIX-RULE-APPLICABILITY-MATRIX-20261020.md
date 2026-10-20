@@ -15,6 +15,8 @@
 | [#7718](https://github.com/detekt/detekt/pull/7718) | Results.kt ~L25 | Emisión SARIF sin partialFingerprints signature/v1 | Sin regla SARIF propia verificada | NOT_ATTESTED |
 | [#7888](https://github.com/detekt/detekt/pull/7888) | UnusedImport.kt ~L27–162 | additionalOperatorSet ya existía como conjunto fijo, pero no era configurable; pasa a by config(emptyList()) | Sin regla Kotlin import/operator resolver acreditada | PRIORIDAD 2 |
 
+**Límite confirmado durante la primera ejecución real:** PR #7667 tiene un diff de solo eliminaciones: 0 líneas añadidas y 9 suprimidas. El Core existente contabiliza 0 archivos analizados porque escanea líneas añadidas; la matriz conserva fuente y diff autenticados pero marca el caso DELETION_ONLY_NO_ADDED_LINES. No se declara cobertura del detector sobre ese caso, ni se transforma el resultado vacío en un control negativo o un éxito.
+
 Una regla de Detekt como ThrowingExceptionsWithoutMessageOrCause o UnusedImport NO es automáticamente una regla de Ultra Sentinel. La habilitación de rutas JVM no demuestra que el Core inspeccione símbolos Kotlin o resuelva operadores.
 
 ## Pruebas y controles contrafactuales
