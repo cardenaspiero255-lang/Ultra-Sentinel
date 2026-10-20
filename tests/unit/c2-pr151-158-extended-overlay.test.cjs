@@ -32,7 +32,7 @@ function originalOverlay(){
     independentlyCertified:false
    }:null})),
  ...Array.from({length:13},(_,i)=>({repository:'cardenaspiero255-lang/gamehub-ultra',
-  pr:300+i,headSha:String(i+1).padStart(40,'0'),
+  pr:i===12?150:300+i,headSha:String(i+1).padStart(40,'0'),
   blobSha:String(i+10).padStart(40,'0'),rule:'UNKNOWN_'+i,
   path:'app/src/Unknown.kt',line:i+1,positive:i<6,causalAdjudication:null}))
  ];
@@ -66,6 +66,8 @@ test('adds 7 original case annotations without touching #150 or sealing any inde
  assert.equal(r.precision,null);
  assert.equal(r.entries.filter(x=>x.causalAdjudication!==null).length,10);
  assert.equal(r.entries.filter(x=>x.pr===150&&x.positive).length,2);
+ assert.equal(r.entries.filter(x=>x.pr===150&&x.rule==='UNKNOWN_12').length,1);
+ assert.equal(r.entries.find(x=>x.pr===150&&x.rule==='UNKNOWN_12').causalAdjudication,null);
  assert.ok(r.entries.filter(x=>x.pr===150).every(x=>x.causalAdjudication?.independentlyCertified===false));
  assert.ok(r.entries.filter(x=>[154,155,157,158].includes(x.pr)).every(x=>
   x.causalAdjudication.provisionalCausalFingerprint===null));
