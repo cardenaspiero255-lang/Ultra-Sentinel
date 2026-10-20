@@ -1,0 +1,174 @@
+name: Ultra Sentinel — C2 Detekt #7715/#7888 actual Kotlin rule oracles
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-detekt-original-jvm-oracles
+  cancel-in-progress: false
+jobs:
+  original-rule:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_C2_DETEKT_EXECUTABLE_ORACLES_V1' &&
+        github.actor_id == '322222186' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - pr: 7715
+            phase: BEFORE
+            commit: 8a3565572208446ff769152ded9ca5bdf957f8b0
+            blob: e4325e8663f5a9c852bb3258c13e6f3625dff273
+            module: detekt-rules-exceptions
+            package: io/gitlab/arturbosch/detekt/rules/exceptions
+            oracle: C2IndependentExceptionOracleTest
+            class: io.gitlab.arturbosch.detekt.rules.exceptions.C2IndependentExceptionOracleTest
+          - pr: 7715
+            phase: AFTER
+            commit: 5d9ee0d6d61e7b59d798c99611e48e4105681624
+            blob: 7d6ba408db3764568204e2c689aff260d8ffc3f7
+            module: detekt-rules-exceptions
+            package: io/gitlab/arturbosch/detekt/rules/exceptions
+            oracle: C2IndependentExceptionOracleTest
+            class: io.gitlab.arturbosch.detekt.rules.exceptions.C2IndependentExceptionOracleTest
+          - pr: 7888
+            phase: BEFORE
+            commit: 6c8f571d886aa581b62b02964e00ef7008559e72
+            blob: ba7006f1747c8a16f24141f35d69142f57ea3862
+            module: detekt-rules-style
+            package: io/gitlab/arturbosch/detekt/rules/style
+            oracle: C2IndependentImportOracleTest
+            class: io.gitlab.arturbosch.detekt.rules.style.C2IndependentImportOracleTest
+          - pr: 7888
+            phase: AFTER
+            commit: 97e110402f4f25fccdfa0875b42300dac43dc41f
+            blob: 052f7599181c6deac16c009ca12aa091c56e0206
+            module: detekt-rules-style
+            package: io/gitlab/arturbosch/detekt/rules/style
+            oracle: C2IndependentImportOracleTest
+            class: io.gitlab.arturbosch.detekt.rules.style.C2IndependentImportOracleTest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: sentinel
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: detekt/detekt
+          ref: ${{ matrix.commit }}
+          path: upstream
+          persist-credentials: false
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify exact commit and original rule blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = "${{ matrix.commit }}"
+          case "${{ matrix.pr }}" in
+            7715) rule="ThrowingExceptionsWithoutMessageOrCause.kt" ;;
+            7888) rule="UnusedImport.kt" ;;
+            *) exit 2 ;;
+          esac
+          test "$(git -C upstream hash-object "${{ matrix.module }}/src/main/kotlin/${{ matrix.package }}/$rule")" = "${{ matrix.blob }}"
+          test -f upstream/gradlew
+          test "$(grep '^distributionUrl=' upstream/gradle/wrapper/gradle-wrapper.properties)" = \
+            'distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-all.zip'
+      - name: Inject independently authored JUnit tests into pinned original source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          source="sentinel/tests/fixtures/c2-detekt-kotlin-oracle/${{ matrix.oracle }}.kt"
+          test -f "$source"
+          dest="upstream/${{ matrix.module }}/src/test/kotlin/${{ matrix.package }}"
+          test -d "$dest"
+          test ! -e "$dest/${{ matrix.oracle }}.kt"
+          cp "$source" "$dest/${{ matrix.oracle }}.kt"
+      - name: Run original Kotlin/Detekt rule with typed JUnit controls
+        shell: bash
+        env:
+          C2_ORACLE_PHASE: ${{ matrix.phase }}
+          JAVA_TOOL_OPTIONS: -Xmx3g
+        run: |
+          set -euo pipefail
+          cd upstream
+          chmod +x gradlew
+          ./gradlew --no-daemon --no-configuration-cache --max-workers=2 \
+            ":${{ matrix.module }}:test" \
+            --tests "${{ matrix.class }}" --stacktrace
+      - name: Verify expected real JUnit testcases and retain raw original output
+        shell: bash
+        run: |
+          set -euo pipefail
+          folder="$RUNNER_TEMP/c2-detekt-oracle"
+          mkdir -p "$folder/xml"
+          report="upstream/${{ matrix.module }}/build/test-results/test/TEST-${{ matrix.class }}.xml"
+          test -s "$report"
+          cp "$report" "$folder/xml/"
+          python3 sentinel/scripts/c2-detekt-executable-oracle.py phase \
+            --pr "${{ matrix.pr }}" \
+            --phase "${{ matrix.phase }}" \
+            --source-root upstream \
+            --junit-dir "$folder/xml" \
+            --output "$folder/receipt.json"
+      - name: Publish four source-specific JUnit artifacts, including failed runs if generated
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: detekt-${{ matrix.pr }}-${{ matrix.phase }}
+          path: |
+            ${{ runner.temp }}/c2-detekt-oracle
+            upstream/${{ matrix.module }}/build/test-results/test/TEST-${{ matrix.class }}.xml
+          retention-days: 14
+          if-no-files-found: warn
+  summary:
+    needs: original-rule
+    if: needs.original-rule.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          pattern: detekt-*
+          path: ${{ runner.temp }}/original
+          merge-multiple: false
+      - name: Verify all four immutable original rule oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/c2-detekt-executable-oracle.py summary \
+            --input "$RUNNER_TEMP/original" \
+            --output "$RUNNER_TEMP/c2-detekt-executable-oracle-summary.json"
+          jq -e '.oraclePhases == 4 and .passedTests == 22 and
+            .newLabels == 0 and .admittedLabels == 0 and
+            .blindHoldout == false and .sssPlusCertified == false and
+            .sentinelRuleCoverageVerified == false and
+            .gradleDslCompilerPluginSemanticsVerified == false and
+            .precision == null and .recall == null and .f1 == null' \
+            "$RUNNER_TEMP/c2-detekt-executable-oracle-summary.json" >/dev/null
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-detekt-executable-oracle-summary
+          path: ${{ runner.temp }}/c2-detekt-executable-oracle-summary.json
+          retention-days: 14
+          if-no-files-found: error
