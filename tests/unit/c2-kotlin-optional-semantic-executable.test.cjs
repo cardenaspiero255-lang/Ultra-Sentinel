@@ -55,3 +55,12 @@ test('semantic layer does not claim causal rule IDs or gold labels',()=>{
  assert.match(verify,/kotlinSymbolResolutionExecuted/);
  assert.doesNotMatch(verify,/goldLabelsAdded/);
 });
+
+test('a future same-repository semantic PR cannot silently skip the compiler gate',()=>{
+ const workflow=read('.github/workflows/c2-kotlin-semantic-optional.yml');
+ assert.match(workflow,/github\.event\.repository\.id == 1418338512/);
+ assert.match(workflow,/github\.event\.pull_request\.head\.repo\.full_name == 'cardenaspiero255-lang\/Ultra-Sentinel'/);
+ assert.doesNotMatch(workflow,/github\.event\.pull_request\.head\.ref\s*==/);
+ assert.match(workflow,/github\.event_name == 'workflow_dispatch' && github\.actor_id == '322222186'/);
+ assert.match(workflow,/github\.event\.comment\.body == 'ULTRA_SENTINEL_C2_KOTLIN_SEMANTIC_V1'/);
+});

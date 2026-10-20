@@ -22,8 +22,7 @@ jobs:
     if: >-
       github.event.repository.id == 1418338512 &&
       ((github.event_name == 'pull_request' &&
-        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
-        github.event.pull_request.head.ref == 'feat/c2-kotlin-optional-symbol-gradle-dsl-resolver-20261020') ||
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel') ||
        (github.ref == 'refs/heads/main' &&
         ((github.event_name == 'workflow_dispatch' && github.actor_id == '322222186') ||
          (github.event_name == 'issue_comment' &&
