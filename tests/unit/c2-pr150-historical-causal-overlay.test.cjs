@@ -26,7 +26,7 @@ function sample(){
  const historical={schema:'ultra-sentinel-c2-run23-historical-source-chain-audit/v1',
   repository:'cardenaspiero255-lang/gamehub-ultra',ownerRun23:39077240648,
   priorOwnerRun22:39076132177,sourceRun23Attested:true,sourceBlobsVerified:23,
-  count:23,positives:11,negatives:12,missingCausalGroups:entries.map(e=>
+  count:23,positives:11,negatives:12,missingCausalGroups:entries.filter(e=>!e.rootCauseGroup).map(e=>
    JSON.stringify([e.pr,e.headSha,e.rule,e.path,e.line,e.positive])),
   missingReceipts:entries.filter(e=>!e.evidenceSha256).map(e=>
    JSON.stringify([e.pr,e.headSha,e.rule,e.path,e.line,e.positive])),
