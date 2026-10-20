@@ -1,0 +1,116 @@
+name: Ultra Sentinel C2 ten original historical receipts verification
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-run23-ten-original-receipts.yml
+      - packages/quality-gates/c2-run23-ten-receipt-recovery.cjs
+      - scripts/c2-run23-ten-original-receipts.cjs
+      - tests/unit/c2-run23-ten-receipt-recovery.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-ten-owner-archive-recovery:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Checkout trusted same-repo PR without saved credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run entire test suite
+        run: npm run check
+      - name: Independently authenticate Run23 recovery queue and seven original owner witness archives
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-ten-original-recovery"
+          mkdir -p "$root/queue" "$root/original" "$root/output"
+          gh api "/repos/$repo/actions/runs/39499959335" > "$root/run.json"
+          jq -e '.id==39499959335 and .status=="completed" and .conclusion=="success" and
+            .path==".github/workflows/c2-run23-causal-recovery-queue.yml" and
+            .head_sha=="9c2a2df6fb80c7c34fc08c904e3db56b9d32f3e9" and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39499959335/artifacts" > "$root/meta.json"
+          jq -e '[.artifacts[]|select(
+            .id==12300360125 and
+            .name=="c2-run23-authenticated-causal-recovery-queue" and
+            .digest=="sha256:d6a3ec7dc09ac0f0cb17b050004be15834546458b0e752ba559aa20724174b63" and
+            .expired==false and .workflow_run.id==39499959335 and
+            .workflow_run.repository_id==1418338512)]|length==1' "$root/meta.json" >/dev/null
+          gh run download 39499959335 --repo "$repo" \
+            --name c2-run23-authenticated-causal-recovery-queue --dir "$root/queue"
+          test -s "$root/queue/recovery-queue.json"
+          test "$(find "$root/queue" -maxdepth 1 -type f|wc -l)" -eq 1
+          test "$(find "$root/queue" -type l|wc -l)" -eq 0
+          node - <<'NODE' > "$root/original-manifest.tsv"
+          const {ORIGINS}=require('./packages/quality-gates/c2-run23-ten-receipt-recovery.cjs');
+          for(const o of ORIGINS)console.log([o.id,o.runId,o.runHeadSha,o.workflow,o.artifactId,
+            o.artifactName,o.archiveSha256,o.jsonFile].join('|'));
+          NODE
+          while IFS='|' read -r id runId head workflow artifactId artifactName archiveSha jsonFile; do
+            test -n "$id" && test -n "$runId" && test -n "$archiveSha"
+            gh api "/repos/$repo/actions/runs/$runId" > "$root/run.json"
+            jq -e --argjson run "$runId" --arg head "$head" --arg workflow "$workflow" \
+              '.id==$run and .status=="completed" and .conclusion=="success" and
+               .event=="issue_comment" and .path==$workflow and .head_sha==$head and
+               .head_branch=="main" and .actor.id==322222186 and
+               .repository.id==1418338512' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$runId/artifacts" > "$root/meta.json"
+            jq -e --argjson run "$runId" --argjson a "$artifactId" \
+              --arg name "$artifactName" --arg digest "sha256:$archiveSha" \
+              '[.artifacts[]|select(.id==$a and .name==$name and
+                .digest==$digest and .expired==false and
+                .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1' \
+                "$root/meta.json" >/dev/null
+            dest="$root/original/$id"
+            mkdir -p "$dest"
+            gh run download "$runId" --repo "$repo" --name "$artifactName" --dir "$dest"
+            test -s "$dest/$jsonFile"
+            test "$(find "$dest" -maxdepth 1 -type f|wc -l)" -eq 1
+            test "$(find "$dest" -type l|wc -l)" -eq 0
+            echo "ORIGINAL_RECEIPT_OWNER_RUN_VERIFIED group=$id run=$runId artifact=$artifactId"
+          done < "$root/original-manifest.tsv"
+          node scripts/c2-run23-ten-original-receipts.cjs \
+            "$root/queue/recovery-queue.json" "$root/original" \
+            "$root/output/ten-original-receipts-recovered.json"
+          jq -e '.schema=="c2-run23-ten-original-receipts-recovered/v1" and
+            .historicalSourceLabels==23 and .originalBehaviorWitnessesRecovered==10 and
+            .missingHistoricalIndividualReceiptsAfterIndependentRecovery==0 and
+            (.entries|length)==10 and
+            .unresolvedCausalGroups==21 and
+            .originalHistoricalSealAltered==false and
+            .independenceVerified==false and
+            .historicalEvidenceAuthenticated==false and
+            .holdoutFrozen==false and .newLabels==0 and
+            .precision==null and .recall==null and .f1==null and
+            .tripleSPlusCertified==false and
+            .verdict=="ORIGINAL_RECEIPTS_RECOVERED_CAUSAL_INDEPENDENCE_UNVERIFIED"' \
+            "$root/output/ten-original-receipts-recovered.json" >/dev/null
+          jq -c '{recovered:.originalBehaviorWitnessesRecovered,
+            originalLabels:.historicalSourceLabels,
+            uniqueOriginalWitnesses:([.entries[].originalWitnessSha256]|unique|length),
+            pr150:[.entries[]|select(.pr==150)|{ruleId,line,sourceRunId}],
+            unresolvedCausalGroups:.unresolvedCausalGroups,
+            independent:false,newLabels:.newLabels}' \
+            "$root/output/ten-original-receipts-recovered.json"
+          rm -rf "$root/queue" "$root/original" "$root/run.json" "$root/meta.json" "$root/original-manifest.tsv"
+      - name: Save sanitized original receipt recovery evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-run23-ten-owner-original-receipts-recovered
+          path: ${{ runner.temp }}/c2-ten-original-recovery/output/ten-original-receipts-recovered.json
+          retention-days: 14
+          if-no-files-found: warn
