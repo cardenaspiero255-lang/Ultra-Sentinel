@@ -6,7 +6,7 @@ const {ORIGINALS,NEGATIVES}=require('./c2-pr151-158-causal-batch.cjs');
 const {EXPECTED}=require('./c2-run23-ten-receipt-recovery.cjs');
 const {createHash}=require('node:crypto');
 const sha=s=>createHash('sha256').update(s).digest('hex');
-const fail=()=>{throw Error('C2_EXTENDED_CAUSAL_OVERLAY_BLOCKED');};
+const fail=()=>{const caller=(new Error().stack||'').split('\n')[2]?.trim()||'unknown';throw Error('C2_EXTENDED_CAUSAL_OVERLAY_BLOCKED @ '+caller);};
 const repo='cardenaspiero255-lang/gamehub-ultra';
 function extendCausalOverlay(original,batch){
  if(!original||original.schema!=='ultra-sentinel-c2-run23-pr150-causal-overlay/v1'||
