@@ -1,0 +1,99 @@
+name: Ultra Sentinel C2 PR150 Run23 historical causal overlay
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr150-historical-causal-overlay.yml
+      - packages/quality-gates/c2-pr150-historical-causal-overlay.cjs
+      - tests/unit/c2-pr150-historical-causal-overlay.test.cjs
+      - scripts/c2-pr150-historical-overlay.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticate-and-overlay-run23:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted same-repo code, no saved credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture suite
+        run: npm run check
+      - name: Retrieve exactly three pre-verified historical source artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr150-historical-overlay"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/source" "$root/receipts" "$root/matrix" "$root/output"
+          cat > "$root/metadata.tsv" <<'META'
+          audit|39498922958|d3ad45763eb6e6ec9c6b7eda0767682442981ea8|.github/workflows/c2-run23-historical-source-chain.yml|12298439240|c2-run23-source-provenance-causal-audit|d9b5f7e6dc764ef12046f47ae2ab80093b54d35300cc356ae4be415e3cd6b291|source|c2-run23-causal-audit.json
+          receipts|39505160347|9a40b21a0250aa6f4bbdde535ccfecc703088bc2|.github/workflows/c2-run23-ten-original-receipts.yml|12303400275|c2-run23-ten-owner-original-receipts-recovered|d53f6b164e7b25a9b38b9e097f3d5fdfdf454771da8eb6926c60d5141db53815|receipts|ten-original-receipts-recovered.json
+          matrix|39507901311|a7a65b4fc9f960ceb846a251a459cb13a5535f65|.github/workflows/c2-pr150-factorial-causal-adjudication.yml|12303258874|c2-pr150-source-causal-cross-interventions|06e3684f8308aa8f25acd4130e3f9f453623258743af87e964ad58161aeb52ae|matrix|pr150-causal-adjudication.json
+          META
+          while IFS='|' read -r label runId head workflow artifactId artifactName digest folder filename; do
+            gh api "/repos/$repo/actions/runs/$runId" > "$root/run.json"
+            jq -e --argjson id "$runId" --arg sha "$head" --arg workflow "$workflow" \
+              '.id==$id and .status=="completed" and .conclusion=="success" and
+               .event=="pull_request" and .head_sha==$sha and .path==$workflow and
+               .repository.id==1418338512 and .actor.id==322222186' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$runId/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$runId" --argjson art "$artifactId" \
+              --arg name "$artifactName" --arg digest "sha256:$digest" \
+              '[.artifacts[]|select(.id==$art and .name==$name and
+                .digest==$digest and .expired==false and
+                .workflow_run.id==$id and .workflow_run.repository_id==1418338512)]|length==1' \
+              "$root/artifacts.json" >/dev/null
+            gh run download "$runId" --repo "$repo" --name "$artifactName" --dir "$root/$folder"
+            test "$(find "$root/$folder" -maxdepth 1 -type f|wc -l)" -eq 1
+            test "$(find "$root/$folder" -type l|wc -l)" -eq 0
+            test -s "$root/$folder/$filename"
+            echo "RUN23_SOURCE_ARTIFACT_VERIFIED=$label run=$runId"
+          done < "$root/metadata.tsv"
+          node scripts/c2-pr150-historical-overlay.cjs \
+            "$root/source/c2-run23-causal-audit.json" \
+            "$root/receipts/ten-original-receipts-recovered.json" \
+            "$root/matrix/pr150-causal-adjudication.json" \
+            "$root/output/pr150-historical-causal-overlay.json"
+          jq -e '.schema=="ultra-sentinel-c2-run23-pr150-causal-overlay/v1" and
+            .originalHistoricalInventoryUnchanged==true and .count==23 and
+            .positives==11 and .negatives==12 and
+            .provisionalGroupsAdded==1 and .provisionalPositiveLabelsGrouped==2 and
+            (.provisionalAnnotations|length)==3 and
+            ([.provisionalAnnotations[]|select(.positive==true)]|length)==2 and
+            ([.provisionalAnnotations[]|select(.line==250 and
+               .positive==false and .causalStatus=="NEGATIVE_CONTROL" and
+               .provisionalCausalFingerprint==null)]|length)==1 and
+            ([.provisionalAnnotations[]|select(.line==251 or .line==252)|
+               .provisionalCausalFingerprint]|unique|length)==1 and
+            .remainingHistoricalCausesUncertified==21 and
+            .unannotatedEntriesNow==19 and
+            .historicalIndependenceProven==false and .independenceVerified==false and
+            .corpusNewLabels==0 and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false' "$root/output/pr150-historical-causal-overlay.json" >/dev/null
+          jq -c '{group:.provisionalAnnotations[0].provisionalFamily,
+            annotations:[.provisionalAnnotations[]|{ruleId,line,positive,causalStatus}],
+            originalLabels:.count,newLabels:.corpusNewLabels,
+            independentFamiliesCertified:.historicalIndependenceProven}' \
+            "$root/output/pr150-historical-causal-overlay.json"
+          rm -rf "$root/source" "$root/receipts" "$root/matrix" "$root/run.json" "$root/artifacts.json" "$root/metadata.tsv"
+      - name: Archive additive overlay (no modifications to original seals)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr150-run23-provisional-historical-causal-overlay
+          path: ${{ runner.temp }}/c2-pr150-historical-overlay/output/pr150-historical-causal-overlay.json
+          retention-days: 14
+          if-no-files-found: warn
