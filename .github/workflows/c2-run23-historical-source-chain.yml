@@ -95,7 +95,7 @@ jobs:
           node -e "process.stdout.write(JSON.stringify(require('./packages/quality-gates/c2-next-holdout.cjs').NEW_LOCK.cases))" > "$root/cases.json"
           jq -r '.[]|[.pr,.headSha]|@tsv' "$root/cases.json" | while IFS=$'\t' read -r pr head; do
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/commits/$head" > "$root/tree-input/$pr-commit.json"
-            jq -e --arg sha "$head" '.sha==$sha and .tree.sha|type=="string"' \
+            jq -e --arg sha "$head" '.sha==$sha and (.tree.sha|type)=="string"' \
               "$root/tree-input/$pr-commit.json" >/dev/null
             tree_sha="$(jq -r '.tree.sha' "$root/tree-input/$pr-commit.json")"
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/trees/$tree_sha?recursive=1" > "$root/tree-input/$pr-tree.json"
