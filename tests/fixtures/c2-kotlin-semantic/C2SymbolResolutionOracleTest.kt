@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
  */
 @KotlinCoreEnvironmentTest
 class C2SymbolResolutionOracleTest(val env: KotlinCoreEnvironment) {
-    private class SymbolProbe : Rule(Config.empty) {
+    private class SymbolProbe : Rule(Config.empty, "C2 optional Kotlin symbol identity probe") {
         val seen = mutableListOf<Pair<String, String>>()
 
         override fun visitCallExpression(expression: KtCallExpression) {
