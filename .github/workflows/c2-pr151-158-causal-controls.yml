@@ -129,6 +129,8 @@ jobs:
           test -x /usr/bin/bwrap
       - name: Run source original and repaired Kotlin against identical controls
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/c2-pr151-158"
