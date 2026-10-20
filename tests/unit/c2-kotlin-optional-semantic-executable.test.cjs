@@ -80,21 +80,21 @@ test('compiler bridge rejects ambiguous or failed K1 calls instead of trusting c
  }
 });
 
+
 test('protected architecture check executes pinned Kotlin compiler evidence when semantic paths change',()=>{
  const arch=read('.github/workflows/architecture.yml');
  const script=read('scripts/c2-required-semantic-gate.sh');
- assert.match(arch,/fetch-depth: 0/);
- assert.match(arch,/id: semantic-scope/);
- assert.match(arch,/git diff --name-only[^\\n]*-z/);
- assert.match(arch,/packages\\/kotlin-semantic\\/\\*/);
- assert.match(arch,/tests\\/fixtures\\/c2-kotlin-semantic\\/\\*/);
- assert.match(arch,/\\.github\\/workflows\\/architecture\\.yml/);
- assert.match(arch,/if: steps\\.semantic-scope\\.outputs\\.required == 'true'/);
- assert.match(arch,/bash scripts\\/c2-required-semantic-gate\\.sh/);
- assert.match(script,/git -C upstream rev-parse HEAD/);
- assert.match(script,/C2SymbolResolutionOracleTest/);
- assert.match(script,/c2DslAssignment c2SetterControl/);
- assert.match(script,/c2-kotlin-semantic-evidence\\.py/);
- assert.match(script,/jq -e/);
- assert.doesNotMatch(arch,/continue-on-error:\\s*true/);
+ for(const expected of ['fetch-depth: 0','id: semantic-scope',
+    'git diff --name-only','-z',
+    'packages/kotlin-semantic/*','tests/fixtures/c2-kotlin-semantic/*',
+    '.github/workflows/architecture.yml',
+    "if: steps.semantic-scope.outputs.required == 'true'",
+    'bash scripts/c2-required-semantic-gate.sh']){
+    assert.ok(arch.includes(expected),expected);
+ }
+ for(const expected of ['git -C upstream rev-parse HEAD','C2SymbolResolutionOracleTest',
+    'c2DslAssignment c2SetterControl','c2-kotlin-semantic-evidence.py','jq -e']){
+    assert.ok(script.includes(expected),expected);
+ }
+ assert.doesNotMatch(arch,/continue-on-error:\s*true/);
 });
