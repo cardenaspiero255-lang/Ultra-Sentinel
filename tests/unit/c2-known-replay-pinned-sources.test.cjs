@@ -11,7 +11,7 @@ const pins=[
 test('known regressions pin actual current Core and both semantic rule files, not obsolete digest',()=>{
  for(const path of pins){
   const source=readFileSync(join(root,path));
-  const digest=createHash('sha1').update('blob '+source.length+'\\0').update(source).digest('hex');
+  const digest=createHash('sha1').update('blob '+source.length+String.fromCharCode(0)).update(source).digest('hex');
   assert.ok(workflow.includes('git hash-object '+path),'missing source identity '+path);
   assert.ok(workflow.includes('= '+digest),'workflow must match current blob '+path+' '+digest);
  }
