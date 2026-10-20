@@ -6,10 +6,8 @@ import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
 import io.gitlab.arturbosch.detekt.test.lintWithContext
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import com.ultrasentinel.experimental.kotlin.C2OptionalKotlinSemantic
 import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
 import org.junit.jupiter.api.Test
 
 /**
@@ -25,14 +23,8 @@ class C2SymbolResolutionOracleTest(val env: KotlinCoreEnvironment) {
 
         override fun visitCallExpression(expression: KtCallExpression) {
             super.visitCallExpression(expression)
-            val text = expression.calleeExpression?.text ?: return
-            val descriptor = expression.getResolvedCall(bindingContext)?.resultingDescriptor
-            val category = when (descriptor) {
-                is ConstructorDescriptor -> "CONSTRUCTOR"
-                is FunctionDescriptor -> "FUNCTION"
-                else -> "UNKNOWN"
-            }
-            seen.add(text to category)
+            val result = C2OptionalKotlinSemantic.resolveCall(expression, bindingContext)
+            seen.add(result.calledName to result.kind.name)
         }
     }
 
