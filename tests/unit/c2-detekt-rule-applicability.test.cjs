@@ -120,3 +120,24 @@ test('full matrix fails closed on missing any pinned PR instead of implying comp
  assert.throws(()=>captureDetektSix({7715:{compare:e.compare,before:e.original,after:e.fixed}}),
   /DETEKT_APPLICABILITY_BLOCKED/);
 });
+
+test('source-verified deletion-only SARIF fix is explicitly unscanned, never counted as a detection',()=>{
+ const e=fixture();
+ e.target={...e.target,pr:7667,focus:false,
+   path:'detekt-report-sarif/src/main/kotlin/io/github/detekt/report/sarif/SarifOutputReport.kt'};
+ const original=blob('fun original() {\n    val unused = 1\n}\n');
+ const corrected=blob('fun original() {\n}\n');
+ e.target.baseBlob=original.sha;
+ e.target.headBlob=corrected.sha;
+ e.compare.files=[{filename:e.target.path,status:'modified',sha:corrected.sha,
+  additions:0,deletions:1,changes:1,
+  patch:'@@ -1,3 +1,2 @@\n fun original() {\n-    val unused = 1\n }\n'}];
+ const row=assessTarget(e.target,{compare:e.compare,before:original,after:corrected});
+ assert.equal(row.sourceVerified,true);
+ assert.equal(row.analyzedFiles,0);
+ assert.equal(row.partial,true);
+ assert.equal(row.limitedReason,'DELETION_ONLY_NO_ADDED_LINES');
+ assert.equal(row.verifiedApplicableRuleId,null);
+ assert.equal(row.detectorApplicabilityVerified,false);
+ assert.equal(row.newLabels,0);
+});
