@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
+import org.jetbrains.kotlin.resolve.calls.model.isReallySuccess
 
 /**
  * Optional symbol-resolution-only JVM Kotlin bridge, compiled against the
@@ -32,7 +33,10 @@ object C2OptionalKotlinSemantic {
         context: BindingContext,
     ): C2ResolvedSymbol {
         val name = expression.calleeExpression?.text ?: return C2ResolvedSymbol("", C2SymbolKind.UNKNOWN)
-        val descriptor = expression.getResolvedCall(context)?.resultingDescriptor
+        // An unsuccessful/ambiguous call may retain a tentative descriptor.
+        // Only an actually successful compiler resolution identifies a symbol.
+        val resolvedCall = expression.getResolvedCall(context)
+        val descriptor = resolvedCall?.takeIf { it.isReallySuccess() }?.resultingDescriptor
         val kind = when (descriptor) {
             is ConstructorDescriptor -> C2SymbolKind.CONSTRUCTOR
             is FunctionDescriptor -> C2SymbolKind.FUNCTION
