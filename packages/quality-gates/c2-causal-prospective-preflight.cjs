@@ -70,6 +70,8 @@ function screenCandidates(history,candidates){
   if(byIdentity.has(identity)) decision='DUPLICATE_METADATA';
   else if(x.repository.toLowerCase()==='cardenaspiero255-lang/gamehub-ultra'&&
    KNOWN_GAMEHUB.has(x.pr))decision='KNOWN_HISTORICAL_EXCLUDED';
+  else if(x.repository.toLowerCase()==='cardenaspiero255-lang/ultra-sentinel')
+   decision='SELF_EVALUATION_EXCLUDED';
   else if(x.source==='PUBLIC_KOTLIN_BENCH'||x.disclosure==='REVEALED')
    decision='DEVELOPMENT_ORACLE_REQUIRED';
   else if(Date.parse(x.createdAt)<=Date.parse(CUTOFF))decision='PRE_CUTOFF_EXCLUDED';

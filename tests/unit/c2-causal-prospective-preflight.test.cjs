@@ -75,3 +75,12 @@ test('reject stale, leaked or duplicate prospective candidates without counting 
  const stale=screenCandidates(historical(),[meta(302,'PROSPECTIVE_GITHUB','METADATA_ONLY')]);
  assert.equal(stale.candidates[0].decision,'PRE_CUTOFF_EXCLUDED');
 });
+
+test('prospective holdout rejects self-evaluation of the Ultra Sentinel repository',()=>{
+ const after=new Date(Date.parse(CUTOFF)+120000).toISOString();
+ const own={...meta(169,'PROSPECTIVE_GITHUB','METADATA_ONLY',after),
+  repository:'cardenaspiero255-lang/Ultra-Sentinel'};
+ const out=screenCandidates(historical(),[own]);
+ assert.equal(out.candidates[0].decision,'SELF_EVALUATION_EXCLUDED');
+ assert.equal(out.holdoutFrozen,false);
+});
