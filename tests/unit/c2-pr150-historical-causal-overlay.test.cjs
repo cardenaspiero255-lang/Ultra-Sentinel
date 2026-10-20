@@ -48,7 +48,7 @@ function sample(){
     artifactId:e.id==='150-251'?12083843392:12082061520,
     originalWitnessSha256:hash('receipt-'+e.id)})),
    ...Array.from({length:7},(_,i)=>({id:'other-'+i,pr:151+i,ruleId:'OTHER_RULE_'+i,
-    path:'src/Other'+i+'.kt',line:i+1,positive:i<5,sourceHeadSha:hex40(i+1),
+    path:'src/Other'+i+'.kt',line:i+1,positive:i<9,sourceHeadSha:hex40(i+1),
     sourceBlobSha:hex40(i+61),sourceRunId:38900000000+i,artifactId:12000000000+i,
     originalWitnessSha256:hash('other'+i)}))
   ],sourceRunAuthenticatedByCaller:true,historicalEvidenceAuthenticated:false,independenceVerified:false,
