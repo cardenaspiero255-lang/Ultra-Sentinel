@@ -6,6 +6,9 @@ on:
       - packages/quality-gates/c2-pr151-158-causal-batch.cjs
       - scripts/c2-pr151-158-causal-batch.cjs
       - tests/unit/c2-pr151-158-causal-batch.test.cjs
+      - tests/unit/c2-pr151-158-extended-overlay.test.cjs
+      - packages/quality-gates/c2-pr151-158-extended-overlay.cjs
+      - scripts/c2-pr151-158-extend-overlay.cjs
       - tests/oracles/c2-pr151-mid-session-counterfactual.kt
       - tests/oracles/c2-pr152-refresh-counterfactual.kt
 permissions:
