@@ -179,6 +179,36 @@ jobs:
              pendingRepair:.pendingPositiveRepairs,
              certifiedIndependentCauses:.causalFamiliesIndependentlyCertified,
              newLabels:.newLabels}' "$root/output/batch.json"
+          # Parent overlay is a read-only authenticated training artifact.
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/39509986762" > "$root/parent-run.json"
+          jq -e '.id==39509986762 and .event=="pull_request" and
+            .conclusion=="success" and .head_sha=="c7447914eb5cce35c92ec22bcb7e83028dc4935d" and
+            .path==".github/workflows/c2-pr150-historical-causal-overlay.yml" and
+            .actor.id==322222186 and .repository.id==1418338512' "$root/parent-run.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/39509986762/artifacts" > "$root/parent-artifacts.json"
+          jq -e '[.artifacts[]|select(.id==12305396043 and
+            .name=="c2-pr150-run23-provisional-historical-causal-overlay" and
+            .digest=="sha256:186904cc97bc43ff28d0eee2887e81b54a986f726d6130c52343162f9c4e6bb1" and
+            .expired==false and .workflow_run.id==39509986762 and
+            .workflow_run.repository_id==1418338512)]|length==1' "$root/parent-artifacts.json" >/dev/null
+          mkdir -p "$root/parent"
+          gh run download 39509986762 --repo cardenaspiero255-lang/Ultra-Sentinel \
+            --name c2-pr150-run23-provisional-historical-causal-overlay --dir "$root/parent"
+          test -s "$root/parent/pr150-historical-causal-overlay.json"
+          test "$(find "$root/parent" -type f|wc -l)" -eq 1
+          test "$(find "$root/parent" -type l|wc -l)" -eq 0
+          node scripts/c2-pr151-158-extend-overlay.cjs \
+            "$root/parent/pr150-historical-causal-overlay.json" \
+            "$root/output/batch.json" "$root/output/extended-overlay.json"
+          jq -e '.schema=="c2-run23-historical-extended-causal-overlay/v1" and
+            .count==23 and .positives==11 and .negatives==12 and
+            .addedSourceAnnotations==7 and .provisionalPositivesAdded==2 and
+            .positiveRepairPending==1 and .negativeControlsAdded==4 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .newLabels==0 and .holdoutFrozen==false and .precision==null and
+            .sssPlusCertified==false' "$root/output/extended-overlay.json" >/dev/null
+          rm -rf "$root/parent" "$root/parent-run.json" "$root/parent-artifacts.json"
           rm -rf "$root/receipts" "$root/negative154" "$root/negative157" "$root/results"
       - name: Archive sanitized batch, no code or untrusted artifacts
         if: always()
