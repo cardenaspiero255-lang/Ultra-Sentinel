@@ -10,3 +10,11 @@ test('RED: compile all Kotlin ABI files explicitly and bind Bubblewrap arguments
  assert.match(source, /kotlinc "\$first"/);
  assert.match(source, /--unshare-all --new-session/);
 });
+
+test('expected vulnerable Kotlin failure is handled as an if condition, not swallowed or aborted by ERR trap',()=>{
+ assert.match(source, /if run_jar "\$label-extra-original"/);
+ assert.match(source, /if run_jar 158-blanket/);
+ assert.doesNotMatch(source, /set \+e\s*\n\s*run_jar/);
+ assert.match(source, /test "\$original_exit" -ne 0/);
+ assert.match(source, /test "\$blanket_exit" -ne 0/);
+});
