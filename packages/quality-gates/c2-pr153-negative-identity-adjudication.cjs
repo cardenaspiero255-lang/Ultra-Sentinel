@@ -155,6 +155,9 @@ function adjudicatePr153Negative({history,sourceTruth}={}){
    sssPlusCertified:false,autoRepair:false,autoMerge:false,
    limitation:'Original #153:69 is a bounded safe-behavior negative with a killed callback mutant; it is not a positive cause, full-PR guarantee, blind sample or independent certification.'
   });
- }catch(e){\n  if(e?.message?.startsWith('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED'))throw e;\n  fail();\n }
+ }catch(e){
+  if(e?.message?.startsWith('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED'))throw e;
+  fail();
+ }
 }
 module.exports={adjudicatePr153Negative};
