@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {patchOriginal,adjudicateReplay,ORIGINAL_BLOB}=require('../../packages/quality-gates/c2-pr153-replay-causal.cjs');
-const source='  if (wasSessionHandled()) {\n            optimizer.restoreState(pending.key, pending.targetState)\n            optimizer.clearPendingDecision(session.sessionId)\n            return PerGameAdaptiveDecision(\n';
+const source='        if (wasSessionHandled()) {\n            optimizer.restoreState(pending.key, pending.targetState)\n            optimizer.clearPendingDecision(session.sessionId)\n            return PerGameAdaptiveDecision(\n';
 const valid={original:{normalConsistent:true,preWriteRecovered:true,
  clearFailureShowsDivergence:true,replayProfileDiverged:true,replayStateConsistent:false,
  noDuplicateEvents:true,idempotent:true},
