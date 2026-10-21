@@ -7,7 +7,7 @@
 const {createHash}=require('node:crypto');
 const {CASES}=require('./c2-run16-two-negatives.cjs');
 const {EXPECTED}=require('./c2-run23-ten-receipt-recovery.cjs');
-const fail=()=>{throw Error('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED');};
+const fail=()=>{const caller=(new Error().stack||'').split('\n')[2]||'';\n const line=caller.match(/:(\d+):\d+\)?$/)?.[1]||'unknown';\n throw Error('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED source-line='+line);};
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const is40=s=>typeof s==='string'&&/^[a-f0-9]{40}$/.test(s);
 const is64=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
@@ -150,6 +150,6 @@ function adjudicatePr153Negative({history,sourceTruth}={}){
    sssPlusCertified:false,autoRepair:false,autoMerge:false,
    limitation:'Original #153:69 is a bounded safe-behavior negative with a killed callback mutant; it is not a positive cause, full-PR guarantee, blind sample or independent certification.'
   });
- }catch(_){fail();}
+ }catch(e){\n  if(e?.message?.startsWith('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED'))throw e;\n  fail();\n }
 }
 module.exports={adjudicatePr153Negative};
