@@ -33,12 +33,15 @@ function sample(){
   }
   // Older stage seals accumulate historical labels. Additional unrelated records
   // must never be construed as evidence for the twelve target identities.
+  const remainingPositives=s.positives-
+   stages[i].receipt.labels.filter(x=>x.positive).length;
+  let added=0;
   while(stages[i].receipt.labels.length<s.total){
    const n=stages[i].receipt.labels.length;
    stages[i].receipt.labels.push({repository:REPO,pr:900+i,headSha:'a'.repeat(40),
     blobSha:sha(s.key+'other'+n).slice(0,40),
     rule:'UNRELATED_'+i+'_'+n,path:'app/src/Other'+i+'_'+n+'.kt',
-    line:n+10,positive:n<s.positives});
+    line:n+10,positive:added++<remainingPositives});
   }
   // Polarity count is deliberately not inferred from synthetic extra labels.
  }
