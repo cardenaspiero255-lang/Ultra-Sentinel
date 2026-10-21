@@ -50,9 +50,9 @@ for label in 152 154 158;do
   first="$root/UltraFrontierWorldState.kt";repaired="$root/counterfactual.kt"
  fi
  stage="compile-$label-extra-original"
- kotlinc "$first" @@ABI@@ "$oracle" -include-runtime -d "$root/$label-extra-original.jar" > "$root/$label-extra-original.compile" 2>&1
+ kotlinc "$first" ${abi[@]} "$oracle" -include-runtime -d "$root/$label-extra-original.jar" > "$root/$label-extra-original.compile" 2>&1
  stage="compile-$label-extra-fixed"
- kotlinc "$repaired" @@ABI@@ "$oracle" -include-runtime -d "$root/$label-extra-fixed.jar" > "$root/$label-extra-fixed.compile" 2>&1
+ kotlinc "$repaired" ${abi[@]} "$oracle" -include-runtime -d "$root/$label-extra-fixed.jar" > "$root/$label-extra-fixed.compile" 2>&1
 done
 stage=compile-158-blanket
 kotlinc "$root/158-blanket-clear.kt" "$root/BatteryAwareGamingEngine.kt" \
