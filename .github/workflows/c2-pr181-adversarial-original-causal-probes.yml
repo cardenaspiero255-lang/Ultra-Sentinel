@@ -1,0 +1,136 @@
+name: Ultra Sentinel C2 PR181 adversarial original Kotlin causal probes
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr181-adversarial-original-causal-probes.yml
+      - packages/quality-gates/c2-pr181-original-causal-probes.cjs
+      - scripts/c2-pr181-replay-original-three.sh
+      - scripts/c2-pr181-adjudicate.cjs
+      - tests/unit/c2-pr181-original-causal-probes.test.cjs
+      - tests/oracles/c2-pr181-*.kt
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-kotlin-interventions:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run all structural and regression checks
+        run: npm run check
+      - name: Authenticate prior receipt and immutable original GameHub Kotlin source bytes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr181"
+          mkdir -p "$root/receipt" "$root/output"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/39545846533" > "$root/run.json"
+          jq -e '.id==39545846533 and
+            .head_sha=="c5a2399c99ea5183904d0794ed3fcc492cbc945f" and
+            .path==".github/workflows/c2-twelve-historical-owner-oracles.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39545846533/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(
+            .id==12320788934 and
+            .name=="c2-twelve-original-source-receipts-reconciled" and
+            .digest=="sha256:82f8f14e0be684d7755b0ae8d4a6f7eaaea6726d8f7891fb6fe22541d29bd9e0" and
+            .expired==false and .workflow_run.id==39545846533 and
+            .workflow_run.repository_id==1418338512)]|length==1' "$root/artifacts.json" >/dev/null
+          gh run download 39545846533 --repo "$repo" \
+            --name c2-twelve-original-source-receipts-reconciled --dir "$root/receipt"
+          test "$(find "$root/receipt" -type f|wc -l)" -eq 1
+          test "$(find "$root/receipt" -type l|wc -l)" -eq 0
+          test -s "$root/receipt/reconciled-twelve-oracles.json"
+          cp "$root/receipt/reconciled-twelve-oracles.json" "$root/reconciled-twelve-oracles.json"
+          while IFS='|' read -r alias commit blob filehash path;do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$commit" \
+              > "$root/metadata.json"
+            jq -e --arg path "$path" --arg blob "$blob" '
+              .path==$path and .sha==$blob and .type=="file" and
+              .encoding=="base64" and .size>100' "$root/metadata.json" >/dev/null
+            jq -r .content "$root/metadata.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+            test "$(sha256sum "$root/$alias" | cut -d' ' -f1)" = "$filehash"
+            echo "C2_PR181_ORIGINAL_GIT_SHA256_VERIFIED=$alias"
+          done <<'PINNED_ORIGINAL_SOURCES'
+          152.kt|104b7dc33e4c0341cec3fca81e3c8fbe3625357f|ed936aa687b08cf8d964d54f9d88e68bb12344ec|f06604f1bdd7bba80d060adac49d99d9edfb38234e47a91d2f861af3997435da|app/src/main/java/com/cardenaspiero255/gamehubultra/data/AiProfileProposalStore.kt
+          151.kt|9ad983576c16c6c34d59283979d83c69ede50dce|742e440004d51743e8e4b02c40171f951edfd125|d8dbd5fadac170ed7b36c844f2480a03185046f381f64fd30feee0d20c219a70|app/src/main/java/com/cardenaspiero255/gamehubultra/data/SessionCoachSessionStore.kt
+          154.kt|858c9ce5cb6a7916d63f2348432013e49d02ba79|063787d48784fd9b579e2c9a4d5ad4bbd7ab9d7a|f9fbdbd7aabd2dffbadc4b04b31280779bd7359624c081b9e64d532d8c40f65a|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraMathEngine.kt
+          150.kt|4c6912d7ca17df0669f8a0d9667f34d2f2b205a9|f661289c8fb9d5ca59687f156923971f4cc4672d|b3147996af60bb304f65c400ca535ee07ad828921d0df870f9117d19422f49dc|app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraWakePlaybackGuard.kt
+          UltraFrontierWorldState.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|0d18a43a8e36ea3edacc2cad72071d96aa31626e|99a229e357823d65d7b04b642c9cf1ba312a35d0308da635ee38c425c8576591|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraFrontierWorldState.kt
+          BatteryAwareGamingEngine.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|8696360219231f3f1477d5ad21c93bca2197e281|cd1c9d6a1a6dfb15a67650a3b38aea3611e855b066e4f6217dd7101d6285a67b|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt
+          PINNED_ORIGINAL_SOURCES
+          rm -f "$root/run.json" "$root/artifacts.json" "$root/metadata.json"
+      - name: Enforce AppArmor and Bubblewrap for JVM sources and variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc >/dev/null
+          command -v bwrap >/dev/null
+      - name: Run original Kotlin failures, minimum repairs and additional counterfactual controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-pr181-replay-original-three.sh "$RUNNER_TEMP/c2-pr181"
+          test -s "$RUNNER_TEMP/c2-pr181/new-trials.json"
+      - name: Emit only bounded causal-probe findings and leave SSS+ blocked
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr181"
+          node scripts/c2-pr181-adjudicate.cjs \
+            "$root/reconciled-twelve-oracles.json" "$root/new-trials.json" \
+            "$root/output/pr181-source-scoped-adjudication.json"
+          jq -e '
+            .schema=="c2-pr181-three-original-causal-jvm-probes/v1" and
+            .originalReceipts==12 and .positiveOriginalReceipts==6 and
+            .negativeOriginalReceipts==6 and
+            .retestedPositive==3 and .pendingPositive==3 and .pendingNegative==6 and
+            ([.entryReviews[]|select(.originalSourceReplayed==true)]|length)==3 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .sourceLabels==23 and .newLabels==0 and
+            .historicalEvidenceAuthenticated==false and
+            .independenceVerified==false and
+            .holdoutFrozen==false and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.entryReviews[]|select(.independentRootCauseCertified!=false or
+              .causalFingerprint!=null or .eligibleForGold!=false)]|length)==0' \
+            "$root/output/pr181-source-scoped-adjudication.json" >/dev/null
+          jq -c '.entryReviews[]|{pr,line,positive,originalSourceReplayed,
+            causalIndependenceStatus,independentRootCauseCertified}' \
+            "$root/output/pr181-source-scoped-adjudication.json"
+          rm -rf "$root/receipt"
+      - name: Archive attestation only without original source or executable JARs
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr181-source-scoped-causal-probes-not-certified
+          path: ${{ runner.temp }}/c2-pr181/output/pr181-source-scoped-adjudication.json
+          retention-days: 14
+          if-no-files-found: warn
