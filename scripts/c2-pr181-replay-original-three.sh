@@ -78,11 +78,12 @@ run_jar(){
   --dir /home --chdir /workspace -- /jdk/bin/java -jar "/workspace/$name.jar"
 }
 for label in 152 154 158;do
- set +e
  stage="run-$label-extra-original"
- run_jar "$label-extra-original" > "$root/$label-extra-original.log" 2>&1
- original_exit=$?
- set -e
+ if run_jar "$label-extra-original" > "$root/$label-extra-original.log" 2>&1;then
+  original_exit=0
+ else
+  original_exit=$?
+ fi
  test "$original_exit" -ne 0
  stage="run-$label-extra-fixed"
  run_jar "$label-extra-fixed" > "$root/$label-extra-fixed.log" 2>&1
@@ -97,10 +98,11 @@ grep -Fq 'C2_PR181_MATH_UNHANDLED_EXCEPTION_GUARD_PASS' "$root/154-extra-fixed.l
 grep -Fq 'C2_PR181_FRESH_IDLE_RETAINED_PASS' "$root/158-extra-original.log"
 grep -Fq 'C2_PR181_TTL_SHOULD_USE_ORIGINAL_OBSERVATION_AGE' "$root/158-extra-original.log"
 grep -Fq 'C2_PR181_EXPIRED_SIGNAL_REJECTED_PASS' "$root/158-extra-fixed.log"
-set +e
-run_jar 158-blanket > "$root/158-blanket.log" 2>&1
-blanket_exit=$?
-set -e
+if run_jar 158-blanket > "$root/158-blanket.log" 2>&1;then
+ blanket_exit=0
+else
+ blanket_exit=$?
+fi
 test "$blanket_exit" -ne 0
 grep -Fq 'C2_PR181_WRONG_BLANKET_CLEAR_DISCARDS_STILL_FRESH_SIGNAL' "$root/158-blanket.log"
 stage=sign-probe-receipts
