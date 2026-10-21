@@ -1,0 +1,91 @@
+name: Ultra Sentinel C2 twelve historical identity evidence queue
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-twelve-historical-identity-triage.yml
+      - packages/quality-gates/c2-twelve-historical-identity-triage.cjs
+      - scripts/c2-twelve-history-triage.cjs
+      - tests/unit/c2-twelve-historical-identity-triage.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  twelve-historical-identity-queue:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate full architecture and unit suite
+        run: npm run check
+      - name: Authenticate historic exact owner run and derive all remaining identities
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-twelve"
+          mkdir -p "$root/pr179" "$root/output"
+          gh api "/repos/$repo/actions/runs/39538354430" > "$root/run.json"
+          jq -e '
+            .id==39538354430 and
+            .head_sha=="8e241e2ab2384336218c456b10ee6225dd5905f4" and
+            .path==".github/workflows/c2-pr153-negative-identity-adjudication.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39538354430/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(
+            .id==12318194179 and
+            .name=="c2-pr153-line69-provisional-negative-adjudication" and
+            .digest=="sha256:b2d41d12c8fda3e3eb9c6e640924b50dde3769236491e0d3da1b47e008aa53b2" and
+            .expired==false and .workflow_run.id==39538354430 and
+            .workflow_run.repository_id==1418338512)]|length==1' "$root/artifacts.json" >/dev/null
+          gh run download 39538354430 --repo "$repo" \
+            --name c2-pr153-line69-provisional-negative-adjudication \
+            --dir "$root/pr179"
+          test "$(find "$root/pr179" -type l|wc -l)" -eq 0
+          test "$(find "$root/pr179" -type f|wc -l)" -eq 1
+          test -s "$root/pr179/pr153-line69-adjudication.json"
+          node scripts/c2-twelve-history-triage.cjs \
+            "$root/pr179/pr153-line69-adjudication.json" \
+            "$root/output/c2-twelve-historical-identity-queue.json"
+          jq -e '
+            .schema=="c2-run23-12-pending-original-causal-adjudication-queue/v1" and
+            .pending==12 and .annotatedPrior==11 and
+            .count==23 and .positives==11 and .negatives==12 and
+            ([.queue[]|.identity]|unique|length)==12 and
+            .sourceOraclesReexecutedByThisWorkflow==0 and
+            .independentCounterfactualsExecutedByThisWorkflow==0 and
+            .independentlyAdjudicatedFromQueue==0 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .newLabels==0 and .independenceVerified==false and
+            .holdoutFrozen==false and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.queue[]|select(.conclusion!="UNVERIFIED_NOT_ADMITTED" or
+              .independentCauseCertified!=false or
+              .counterfactualDecision!="NOT_YET_REPRODUCED_AND_ADJUDICATED")]|length)==0' \
+            "$root/output/c2-twelve-historical-identity-queue.json" >/dev/null
+          jq -c '.queue[]|{pr,rule,path,line,positive,hasSealedEvidenceSha256,historicalRootCauseGroupUncertified,conclusion}' \
+            "$root/output/c2-twelve-historical-identity-queue.json"
+          rm -rf "$root/pr179" "$root/run.json" "$root/artifacts.json"
+      - name: Archive metadata only; source witness review remains pending
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-12-pending-historical-original-identity-queue
+          path: ${{ runner.temp }}/c2-twelve/output/c2-twelve-historical-identity-queue.json
+          if-no-files-found: warn
+          retention-days: 14
