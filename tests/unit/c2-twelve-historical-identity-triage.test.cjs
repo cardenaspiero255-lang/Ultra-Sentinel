@@ -14,7 +14,7 @@ function fixture(){
    repository:repo,pr:i<2?150:i===2?153:151+(i%7),
    headSha:(i+1).toString(16).padStart(40,'0'),
    blobSha:(i+30).toString(16).padStart(40,'0'),
-   path:i===11||i===12?'src/shared.kt':'src/Original'+i+'.kt',
+   path:i===11||i===12?'app/src/shared.kt':'app/src/Original'+i+'.kt',
    line:i===11?69:i===12?71:i+1,rule:'ORIGINAL_'+i,positive,
    evidenceSha256:i%3===0?null:sha('source'+i),
    rootCauseGroup:null,causalFingerprint:null,
@@ -65,8 +65,8 @@ test('RED: create exactly twelve source-specific pending adjudications and no fa
    x.provisionalFamily===null&&x.positiveCausalFingerprint===null),true);
  assert.equal(out.queue.filter(x=>x.positive).length,0);
  assert.equal(out.queue.filter(x=>!x.positive).length,12);
- assert.notEqual(out.queue.find(x=>x.line===69&&x.path==='src/shared.kt').identity,
-  out.queue.find(x=>x.line===71&&x.path==='src/shared.kt').identity);
+ assert.notEqual(out.queue.find(x=>x.line===69&&x.path==='app/src/shared.kt').identity,
+  out.queue.find(x=>x.line===71&&x.path==='app/src/shared.kt').identity);
  assert.equal(out.queue.filter(x=>x.hasSealedEvidenceSha256).length,8);
 });
 test('RED: original evidence presence never equals a verified independent counterfactual',()=>{
