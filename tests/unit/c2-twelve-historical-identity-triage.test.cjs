@@ -104,3 +104,13 @@ test('RED: reject cause-by-file, corpus edits, missing entries, inflated scores,
   assert.throws(()=>triageTwelve(obj),/C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED/);
  }
 });
+
+test('historical original root-cause strings remain untrusted but preserve Run23 NUL-domain hash',()=>{
+ const input=fixture(),entry=input.entries[11];
+ entry.rootCauseGroup='state_version_monotonicity';
+ entry.causalFingerprint=sha('c2-cause/v1\0'+repo+'\0'+entry.rootCauseGroup);
+ const r=triageTwelve(input);
+ assert.equal(r.queue.find(x=>x.identity===q(entry)).historicalRootCauseGroupUncertified,
+  'state_version_monotonicity');
+ assert.equal(r.certifiedIndependentCausesAdded,0);
+});
