@@ -7,7 +7,11 @@
  */
 const {createHash}=require('node:crypto');
 const sha=x=>createHash('sha256').update(x).digest('hex');
-const fail=()=>{throw Error('C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED');};
+const fail=()=>{
+ const caller=(new Error().stack||'').split('\n')[2]||'';
+ const line=caller.match(/:(\d+):\d+\)?$/)?.[1]||'unknown';
+ throw Error('C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED source-line='+line);
+};
 const HEX40=/^[a-f0-9]{40}$/,HEX64=/^[a-f0-9]{64}$/;
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ID=x=>JSON.stringify([x.pr,x.headSha,x.rule,x.path,x.line,x.positive]);
@@ -113,7 +117,7 @@ function triageTwelve(history){
    next:'Authenticate and replay each original oracle with its own bounded counterfactual; never infer independence or group by PR/path.'
   });
  }catch(e){
-  if(e?.message==='C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED')throw e;
+  if(e?.message?.startsWith('C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED'))throw e;
   fail();
  }
 }
