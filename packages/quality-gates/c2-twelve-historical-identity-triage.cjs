@@ -11,7 +11,7 @@ const fail=()=>{throw Error('C2_TWELVE_HISTORICAL_TRIAGE_BLOCKED');};
 const HEX40=/^[a-f0-9]{40}$/,HEX64=/^[a-f0-9]{64}$/;
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const ID=x=>JSON.stringify([x.pr,x.headSha,x.rule,x.path,x.line,x.positive]);
-const CAUSE=r=>sha('c2-cause/v1\\0'+REPO+'\\0'+r);
+const CAUSE=r=>sha('c2-cause/v1\0'+REPO+'\0'+r);
 function triageTwelve(history){
  try{
   if(!history||history.schema!=='c2-run23-pr153-line69-scoped-negative-adjudication/v1'||
@@ -87,7 +87,7 @@ function triageTwelve(history){
    independentCauseCertified:false,provisionalFamily:null,
    positiveCausalFingerprint:null,eligibleForGold:false,
    eligibleForBlindHoldout:false
-  })).sort((a,b)=>a.identity.localeCompare(b.identity,'en'));
+  }));
   // Avoid locale-dependent ordering in signed evidence.
   queue.sort((a,b)=>a.identity<b.identity?-1:a.identity>b.identity?1:0);
   return Object.freeze({
