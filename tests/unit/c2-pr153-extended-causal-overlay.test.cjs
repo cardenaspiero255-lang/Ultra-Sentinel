@@ -35,10 +35,11 @@ function sample(){
    line:x.line,positive:x.positive,causalAdjudication:initial};
  });
  const others=Array.from({length:13},(_,i)=>({
-  repository:'cardenaspiero255-lang/gamehub-ultra',pr:210+i,
+  repository:'cardenaspiero255-lang/gamehub-ultra',pr:i===0?153:210+i,
   headSha:(i+1).toString(16).padStart(40,'0'),
   blobSha:(i+20).toString(16).padStart(40,'0'),
-  rule:'UNKNOWN_'+i,path:'src/Unknown'+i+'.kt',line:i+1,positive:i<6,
+  rule:i===0?'ADAPTIVE_PROFILE_WRITE_ISOLATED_FROM_EXPLICIT_CALLBACK':'UNKNOWN_'+i,
+  path:'src/Unknown'+i+'.kt',line:i===0?69:i+1,positive:i<6,
   causalAdjudication:null
  }));
  const extended={
@@ -80,8 +81,11 @@ test('register PR153 only as provisional in historical extended view, preserving
  assert.equal(x.causalAdjudication.counterfactualStatus,'PATCH_SCOPE_VERIFIED');
  assert.match(x.causalAdjudication.provisionalCausalFingerprint,/^[a-f0-9]{64}$/);
  assert.equal(x.causalAdjudication.provisionalCausalFingerprint!==null,true);
- const allOther=r.entries.filter(x=>x.pr!==153);
- assert.deepEqual(allOther,s.extended.entries.filter(x=>x.pr!==153));
+ const allOther=r.entries.filter(x=>!(x.pr===153&&x.line===71));
+ assert.deepEqual(allOther,s.extended.entries.filter(x=>!(x.pr===153&&x.line===71)));
+ const separate153=r.entries.find(x=>x.pr===153&&x.line===69);
+ assert.equal(separate153.rule,'ADAPTIVE_PROFILE_WRITE_ISOLATED_FROM_EXPLICIT_CALLBACK');
+ assert.equal(separate153.causalAdjudication,null);
 });
 test('PR150 shared family and its negative control must remain unchanged and distinct',()=>{
  const s=sample(),r=extendPr153CausalOverlay(s);
