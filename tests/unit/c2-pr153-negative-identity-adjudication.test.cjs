@@ -106,3 +106,8 @@ test('RED: reject forged history, swapped negative source, false safety or indep
   assert.throws(()=>review(p),/C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED/);
  }
 });
+
+const {main}=require('../../scripts/c2-pr153-adjudicate-negative.cjs');
+test('CLI rejects normalized input/output alias before reading any artifact',()=>{
+ assert.throws(()=>main(['a.json','b.json','./a.json']),/C2_PR153_NEGATIVE_ADJUDICATION_OVERWRITE/);
+});
