@@ -21,7 +21,8 @@ function sample(){
    :{status:x.pr===153?'ORIGINAL_ORACLE_ONLY_COUNTERFACTUAL_PENDING':
        positive?'SCOPED_ORIGINAL_FIX_COUNTERFACTUAL_PROVISIONAL':
        'SCOPED_ORIGINAL_NEGATIVE_MUTATION_SENSITIVE_NOT_SCORABLE',
-     provisionalFamily:positive&&x.pr!==153?'PREEXISTING_'+x.pr:null,
+     provisionalFamily:positive&&x.pr!==153?
+        (x.pr===151?'THERMAL_SENSOR_NUMERIC_DOMAIN':'REFRESH_CANDIDATE_ELECTION'):null,
      provisionalCausalFingerprint:positive&&x.pr!==153?
        hash('c2-provisional-family/v1\0cardenaspiero255-lang/gamehub-ultra\0'+
          (x.pr===151?'THERMAL_SENSOR_NUMERIC_DOMAIN':'REFRESH_CANDIDATE_ELECTION')):null,
@@ -55,7 +56,7 @@ function sample(){
   blindHoldout:false,holdoutFrozen:false,
   precision:null,recall:null,f1:null,sssPlusCertified:false
  };
- return {extended,repair:adjudicateReplay(structuredClone({original,patched}))};
+ return {extended,repair:structuredClone(adjudicateReplay(structuredClone({original,patched})))};
 }
 test('register PR153 only as provisional in historical extended view, preserving all 23 identities',()=>{
  const s=sample(),before=JSON.stringify(s.extended);
