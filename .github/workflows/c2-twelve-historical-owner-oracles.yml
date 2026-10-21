@@ -85,7 +85,21 @@ jobs:
             gh run download "$run" --repo "$repo" --name "$name" \
               --dir "$root/sources/$key"
             test "$(find "$root/sources/$key" -type l|wc -l)" -eq 0
-            test "$(find "$root/sources/$key" -type f|wc -l)" -eq 1
+            case "$key" in
+              run21-negatives)
+                expected=3
+                test -s "$root/sources/$key/151-witness.json"
+                test -s "$root/sources/$key/154-witness.json" ;;
+              run22-comparison)
+                expected=2
+                test -s "$root/sources/$key/158-witness.json" ;;
+              run23-stores)
+                expected=3
+                test -s "$root/sources/$key/151-witness.json"
+                test -s "$root/sources/$key/152-witness.json" ;;
+              *) expected=1 ;;
+            esac
+            test "$(find "$root/sources/$key" -type f|wc -l)" -eq "$expected"
             test -s "$root/sources/$key/$filename"
             echo "C2_ORIGINAL_OWNER_SOURCE_AUTHENTICATED=$key run=$run"
           done < "$root/stages.tsv"
