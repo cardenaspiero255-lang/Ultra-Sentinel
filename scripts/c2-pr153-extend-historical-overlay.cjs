@@ -16,7 +16,8 @@ function main(args){
  fs.writeFileSync(dest,JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({
   verdict:report.status,count:report.count,
-  pr153:report.entries.find(x=>x.pr===153)?.causalAdjudication,
+  pr153:report.entries.find(x=>x.pr===153&&x.line===71&&
+   x.rule==='PENDING_ADAPTIVE_PROFILE_ROLLBACK_DIVERGENCE')?.causalAdjudication,
   provisionalPositiveFamilies:report.provisionalPositiveFamiliesAfter,
   independentlyCertified:report.certifiedIndependentCausesAdded,
   newLabels:0,holdoutFrozen:false
