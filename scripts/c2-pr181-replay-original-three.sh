@@ -1,14 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(realpath "$1")";repo="$(cd "$(dirname "$0")/.." && pwd)"
+stage=preconditions
+report_failure(){
+ local rc=$?
+ echo "C2_PR181_ADVERSARIAL_PROBE_FAILED stage=$stage exit=$rc" >&2
+ for f in "$root"/*.compile;do
+  if [ -f "$f" ];then
+   if grep -Eq '(error:|Exception)' "$f";then
+    echo "C2_PR181_COMPILER_DIAGNOSTIC_FILE=$(basename "$f")" >&2
+    grep -E '(error:|Exception)' "$f" | head -12 >&2 || :
+   fi
+  fi
+ done
+ exit "$rc"
+}
+trap report_failure ERR
 test "$GITHUB_ACTIONS" = true
 test "$C2_OWNER_SANDBOX" = 1
 test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
 command -v bwrap >/dev/null
 test -s "$root/reconciled-twelve-oracles.json"
+stage=baseline-152-and-151
 bash "$repo/scripts/c2-run20-owner-original-oracles.sh" "$root"
+stage=baseline-158
 bash "$repo/scripts/c2-pr158-owner-oracle.sh" "$root"
+stage=baseline-154-and-150
 bash "$repo/scripts/c2-run18-owner-original-oracles.sh" "$root"
+stage=build-overbroad-control
 python3 - "$root" <<'PY'
 from pathlib import Path
 import sys
@@ -30,9 +49,12 @@ for label in 152 154 158;do
   abi=( "$root/BatteryAwareGamingEngine.kt" "$repo/tests/oracles/c2-pr158-domain-abi.kt" "$repo/tests/oracles/c2-pr158-ai-abi.kt" )
   first="$root/UltraFrontierWorldState.kt";repaired="$root/counterfactual.kt"
  fi
+ stage="compile-$label-extra-original"
  kotlinc "$first" @@ABI@@ "$oracle" -include-runtime -d "$root/$label-extra-original.jar" > "$root/$label-extra-original.compile" 2>&1
+ stage="compile-$label-extra-fixed"
  kotlinc "$repaired" @@ABI@@ "$oracle" -include-runtime -d "$root/$label-extra-fixed.jar" > "$root/$label-extra-fixed.compile" 2>&1
 done
+stage=compile-158-blanket
 kotlinc "$root/158-blanket-clear.kt" "$root/BatteryAwareGamingEngine.kt" \
  "$repo/tests/oracles/c2-pr158-domain-abi.kt" "$repo/tests/oracles/c2-pr158-ai-abi.kt" \
  "$repo/tests/oracles/c2-pr181-ttl-fresh-idle-oracle.kt" -include-runtime \
@@ -57,12 +79,15 @@ run_jar(){
 }
 for label in 152 154 158;do
  set +e
+ stage="run-$label-extra-original"
  run_jar "$label-extra-original" > "$root/$label-extra-original.log" 2>&1
  original_exit=$?
  set -e
  test "$original_exit" -ne 0
+ stage="run-$label-extra-fixed"
  run_jar "$label-extra-fixed" > "$root/$label-extra-fixed.log" 2>&1
 done
+stage=assert-adversarial-logs
 grep -Fq 'C2_PR181_TWO_PACKAGES_INITIAL_CONTROL_PASS' "$root/152-extra-original.log"
 grep -Fq 'C2_PR181_STALE_ALPHA_SHOULD_NOT_OVERWRITE_CURRENT_PROFILE' "$root/152-extra-original.log"
 grep -Fq 'C2_PR181_INTERLEAVED_VERSION_CONTROL_PASS' "$root/152-extra-fixed.log"
@@ -78,6 +103,7 @@ blanket_exit=$?
 set -e
 test "$blanket_exit" -ne 0
 grep -Fq 'C2_PR181_WRONG_BLANKET_CLEAR_DISCARDS_STILL_FRESH_SIGNAL' "$root/158-blanket.log"
+stage=sign-probe-receipts
 python3 - "$root" <<'PY'
 from pathlib import Path
 import sys,json,hashlib
