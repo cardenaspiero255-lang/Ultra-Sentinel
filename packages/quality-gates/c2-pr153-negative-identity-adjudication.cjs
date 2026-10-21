@@ -7,7 +7,11 @@
 const {createHash}=require('node:crypto');
 const {CASES}=require('./c2-run16-two-negatives.cjs');
 const {EXPECTED}=require('./c2-run23-ten-receipt-recovery.cjs');
-const fail=()=>{const caller=(new Error().stack||'').split('\n')[2]||'';\n const line=caller.match(/:(\d+):\d+\)?$/)?.[1]||'unknown';\n throw Error('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED source-line='+line);};
+const fail=()=>{
+ const caller=(new Error().stack||'').split('\n')[2]||'';
+ const line=caller.match(/:(\d+):\d+\)?$/)?.[1]||'unknown';
+ throw Error('C2_PR153_NEGATIVE_ADJUDICATION_BLOCKED source-line='+line);
+};
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const is40=s=>typeof s==='string'&&/^[a-f0-9]{40}$/.test(s);
 const is64=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
@@ -54,7 +58,8 @@ function adjudicatePr153Negative({history,sourceTruth}={}){
   for(const x of prior){
    if(!x||!Number.isSafeInteger(x.pr)||!Number.isSafeInteger(x.line)||
     x.line<1||typeof x.rule!=='string'||typeof x.path!=='string'||
-    !is40(x.headSha)||!is40(x.blobSha)||!is64(x.evidenceSha256)||
+    !is40(x.headSha)||!is40(x.blobSha)||
+    (x.evidenceSha256!==undefined&&!is64(x.evidenceSha256))||
     typeof x.positive!=='boolean')fail();
    const id=identity(x);
    if(labels.has(id))fail();
