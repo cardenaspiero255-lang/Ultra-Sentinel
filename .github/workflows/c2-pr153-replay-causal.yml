@@ -1,0 +1,142 @@
+name: Ultra Sentinel C2 original PR153 replay repair causal oracle
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr153-replay-causal.yml
+      - packages/quality-gates/c2-pr153-replay-causal.cjs
+      - tests/unit/c2-pr153-replay-causal.test.cjs
+      - tests/oracles/c2-pr153-replay-causal.kt
+      - scripts/c2-pr153-replay-causal.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authentic-pr153-replay:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - name: Checkout read-only same-repo PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Focused and complete tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/c2-pr153-replay-causal.test.cjs
+          npm run check
+      - name: Authenticate original owner receipt and byte-identical GameHub PR153 source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr153-replay"
+          mkdir -p "$root"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/38889693623" > "$root/old-run.json"
+          jq -e '.id==38889693623 and .conclusion=="success" and
+            .event=="issue_comment" and .actor.id==322222186 and
+            .repository.id==1418338512 and
+            .path==".github/workflows/c2-next-pr153-pending-rollback-oracle.yml" and
+            .head_sha=="71aa7937625daa9945bbaf0a495a4f9073c5faaa"' "$root/old-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/38889693623/artifacts" > "$root/old-artifacts.json"
+          jq -e '[.artifacts[]|select(.id==12040619454 and
+            .name=="ultra-sentinel-c2-next-pr153-pending-replay-original-witness" and
+            .digest=="sha256:a9787a48048ea2e344fbb5bb9954f91e063cbe55551f0799f46e0c209bbd743c" and
+            .workflow_run.id==38889693623 and .workflow_run.repository_id==1418338512 and
+            .expired==false)]|length==1' "$root/old-artifacts.json" >/dev/null
+          p=app/src/main/java/com/cardenaspiero255/gamehubultra/PerGameAdaptiveRuntime.kt
+          gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$p?ref=6508cc124076b9dea437ea1efc213d3ce55d7baf" > "$root/source.json"
+          jq -e --arg p "$p" '.type=="file" and .path==$p and
+            .sha=="d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f" and
+            .encoding=="base64" and .size>5000 and .size<100000' "$root/source.json" >/dev/null
+          jq -r .content "$root/source.json" | base64 --decode > "$root/original.kt"
+          test "$(git hash-object "$root/original.kt")" = d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f
+          node scripts/c2-pr153-replay-causal.cjs prepare "$root/original.kt" "$root/variants"
+          rm -f "$root/old-run.json" "$root/old-artifacts.json" "$root/source.json" "$root/original.kt"
+      - name: Compile both original and repair Kotlin bytecode
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-pr153-replay"
+          for kind in original patched; do
+            kotlinc "$root/variants/$kind/PerGameAdaptiveRuntime.kt" \
+              tests/oracles/c2-next-pr153-domain-abi.kt \
+              tests/oracles/c2-next-pr153-data-abi.kt \
+              tests/oracles/c2-next-pr153-coroutines-abi.kt \
+              tests/oracles/c2-pr153-replay-causal.kt \
+              -include-runtime -d "$root/variants/$kind/run.jar"
+            test -s "$root/variants/$kind/run.jar"
+            chmod 0400 "$root/variants/$kind/run.jar"
+          done
+      - name: Mandatory AppArmor and Bubblewrap sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Real JVM original versus repaired replay and untouched benign controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr153-replay"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          for kind in original patched; do
+            env -i PATH=/usr/bin:/bin HOME=/tmp \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              ${mounts[@]} --ro-bind "$jdk" /jdk \
+              --ro-bind "$root/variants" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar "/workspace/$kind/run.jar" \
+              > "$root/variants/$kind/result.json"
+            jq -e 'type=="object" and (keys|length)==7' "$root/variants/$kind/result.json" >/dev/null
+            echo "PR153_ORIGINAL_SOURCE_VARIANT=$kind"
+          done
+          node scripts/c2-pr153-replay-causal.cjs verify "$root/variants" "$root/pr153-replay-adjudication.json"
+          jq -e '.schema=="c2-pr153-original-replay-cross-intervention/v1" and
+            .originalDefectObserved==true and .patchedReplayRestoresPersistedTarget==true and
+            .independentCauseCertified==false and .newHistoricalLabels==0 and
+            .holdoutFrozen==false and .precision==null and .f1==null and
+            .sssPlusCertified==false' "$root/pr153-replay-adjudication.json" >/dev/null
+          jq -c '{original:.originalAndRepairedJVMBehaviors.original,
+            patched:.originalAndRepairedJVMBehaviors.patched,
+            independentCauseCertified,newHistoricalLabels}' "$root/pr153-replay-adjudication.json"
+          mkdir -p "$root/output"
+          cp "$root/pr153-replay-adjudication.json" "$root/output/report.json"
+      - name: Archive sanitized original counterfactual report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr153-original-replay-causal-proof
+          path: ${{ runner.temp }}/c2-pr153-replay/output/report.json
+          retention-days: 14
+          if-no-files-found: warn
