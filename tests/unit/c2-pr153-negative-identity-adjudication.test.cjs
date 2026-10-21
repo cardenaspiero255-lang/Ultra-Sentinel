@@ -19,7 +19,7 @@ function fixtures(){
   return {repository:repo,pr:p.pr,headSha:p.headSha,blobSha:p.blobSha,
    rule:p.ruleId,path:p.path,line:p.line,positive,
    causalAdjudication:{status:positive?'SCOPED_ORIGINAL_FIX_COUNTERFACTUAL_PROVISIONAL':
-    'SCOPED_ORIGINAL_NEGATIVE_MUTATION_SENSITIVE_NOT_SCORABLE',
+    p.pr===150?'NEGATIVE_CONTROL':'SCOPED_ORIGINAL_NEGATIVE_MUTATION_SENSITIVE_NOT_SCORABLE',
     provisionalFamily:positive?f:null,
     provisionalCausalFingerprint:positive?family(f):null,
     independentlyCertified:false}};
