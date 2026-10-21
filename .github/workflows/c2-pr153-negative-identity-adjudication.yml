@@ -1,0 +1,99 @@
+name: Ultra Sentinel C2 PR153 line69 authenticated historical negative adjudication
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr153-negative-identity-adjudication.yml
+      - packages/quality-gates/c2-pr153-negative-identity-adjudication.cjs
+      - scripts/c2-pr153-adjudicate-negative.cjs
+      - tests/unit/c2-pr153-negative-identity-adjudication.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  pr153-negative-adjudication:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: All static and unit regression gates
+        run: npm run check
+      - name: Authenticate sealed original Run16 negative and PR178 derived historical view
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-pr153-negative"
+          mkdir -p "$root/run16" "$root/pr178" "$root/result"
+          cat > "$root/parents.tsv" <<'PARENTS'
+          run16|39067708985|f7612b326485d86aa698d024d2ecf1931923d7df|.github/workflows/c2-run16-two-original-negatives.yml|12113662602|ultra-sentinel-c2-run16-two-original-negatives|1a41eba8de90abacade6d0f561aeb4cd2b65411b59ae9d080f7eff9c4ec26988
+          pr178|39533113371|e00dd04e503599a729639b9171c235679256c99d|.github/workflows/c2-pr153-extended-causal-overlay.yml|12316571128|c2-pr153-historical-provisional-replay-overlay|0f1918ab6836870eada72a477e59334208d69298f3f42ed8557fea3945bd229f
+          PARENTS
+          while IFS='|' read -r folder run sha workflow aid name digest; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson run "$run" --arg sha "$sha" --arg workflow "$workflow" '
+              .id==$run and .head_sha==$sha and .path==$workflow and
+              .status=="completed" and .conclusion=="success" and
+              .actor.id==322222186 and .repository.id==1418338512' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson run "$run" --argjson id "$aid" --arg name "$name" --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+                .digest==$digest and .expired==false and
+                .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1' \
+              "$root/artifacts.json" >/dev/null
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/$folder"
+            test "$(find "$root/$folder" -type l | wc -l)" -eq 0
+            test "$(find "$root/$folder" -type f | wc -l)" -eq 1
+            echo "C2_PR153_NEGATIVE_AUTHENTICATED=$folder"
+          done < "$root/parents.tsv"
+          test -s "$root/run16/c2-run16-two-negatives-owner-truth.json"
+          test -s "$root/pr178/pr153-historical-extended-overlay.json"
+          node scripts/c2-pr153-adjudicate-negative.cjs \
+            "$root/pr178/pr153-historical-extended-overlay.json" \
+            "$root/run16/c2-run16-two-negatives-owner-truth.json" \
+            "$root/result/pr153-line69-adjudication.json"
+          jq -e '
+            .schema=="c2-run23-pr153-line69-scoped-negative-adjudication/v1" and
+            .count==23 and .positives==11 and .negatives==12 and
+            .adjudicatedNegativeHistoricalIdentities==1 and
+            .historicalIdentitiesWithAnnotations==11 and
+            .provisionalPositiveFamiliesAfter==4 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .newLabels==0 and .independenceVerified==false and
+            .historicalEvidenceAuthenticated==false and
+            .blindHoldout==false and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false and .autoRepair==false and .autoMerge==false and
+            ([.entries[]|select(.pr==153 and .line==69 and .positive==false and
+              .rule=="ADAPTIVE_PROFILE_WRITE_ISOLATED_FROM_EXPLICIT_CALLBACK" and
+              .causalAdjudication.status=="SCOPED_ORIGINAL_NEGATIVE_MUTATION_SENSITIVE_NOT_SCORABLE" and
+              .causalAdjudication.provisionalFamily==null and
+              .causalAdjudication.provisionalCausalFingerprint==null and
+              .causalAdjudication.independentlyCertified==false)]|length)==1 and
+            ([.entries[]|select(.pr==153 and .line==71 and .positive==true and
+              .causalAdjudication.provisionalFamily=="ADAPTIVE_PENDING_REPLAY_PROFILE_DIVERGENCE" and
+              .causalAdjudication.independentlyCertified==false)]|length)==1' \
+            "$root/result/pr153-line69-adjudication.json" >/dev/null
+          rm -rf "$root/run16" "$root/pr178" "$root/run.json" \
+            "$root/artifacts.json" "$root/parents.tsv"
+      - name: Archive derived metadata only, never Kotlin source or secrets
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr153-line69-provisional-negative-adjudication
+          path: ${{ runner.temp }}/c2-pr153-negative/result/pr153-line69-adjudication.json
+          retention-days: 14
+          if-no-files-found: warn
