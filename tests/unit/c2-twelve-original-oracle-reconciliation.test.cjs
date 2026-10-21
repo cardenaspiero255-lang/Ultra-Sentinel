@@ -7,7 +7,7 @@ const sha=x=>createHash('sha256').update(x).digest('hex');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 function sample(){
  const queue=[],stages=STAGES.map(s=>({key:s.key,receipt:{
-  schema:'ORIGINAL_OWNER_SOURCE_SEAL',ownerRunId:s.run,status:'SOURCE_BEHAVIOR_TRUTH_PARTIAL',
+  schema:s.schema,ownerRunId:s.run,status:'SOURCE_BEHAVIOR_TRUTH_PARTIAL',
   repository:REPO,sourceCIAuthenticated:true,benchmarkCertified:false,
   sourcePositiveLabels:s.positives,verifiedScopedNegativeLabels:s.negatives,
   benchmarkScoredLabels:0,tripleSPlusCertified:false,
