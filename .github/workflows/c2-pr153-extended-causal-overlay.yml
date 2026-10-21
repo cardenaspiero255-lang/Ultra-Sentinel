@@ -1,0 +1,102 @@
+name: Ultra Sentinel C2 PR153 authenticated extended historical causal overlay
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr153-extended-causal-overlay.yml
+      - packages/quality-gates/c2-pr153-extended-causal-overlay.cjs
+      - scripts/c2-pr153-extend-historical-overlay.cjs
+      - tests/unit/c2-pr153-extended-causal-overlay.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticated-pr153-historical-view:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full regression suite and causal overlays
+        run: npm run check
+      - name: Authenticate #176 historic extended view and #177 original JVM replay artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr153-extended-view"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/from176" "$root/from177" "$root/output"
+          cat > "$root/provenance.tsv" <<'META'
+          from176|39514323998|b89ae682ec86f1bd779ecd4db482f12afbeb7d94|.github/workflows/c2-pr151-158-causal-controls.yml|12306549884|c2-pr151-158-scoped-original-causal-evidence|4cf7d2d255bc37ff8c6d2f9e8effeb51ae047c62900cb667262bce6e0da59968
+          from177|39523094775|83b111f59a05a831024178dd1adfe73d2e656cb7|.github/workflows/c2-pr153-replay-causal.yml|12312576821|c2-pr153-original-replay-causal-proof|ccd2fb77b4eb2a362e715a38446c7bbc88276a2765db3790f5caaa7c6f14cb8d
+          META
+          while IFS='|' read -r folder run head wf aid aname digest; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson rid "$run" --arg h "$head" --arg workflow "$wf" \
+              '.id==$rid and .event=="pull_request" and .status=="completed" and
+               .conclusion=="success" and .head_sha==$h and .path==$workflow and
+               .actor.id==322222186 and .repository.id==1418338512' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson rid "$run" --argjson id "$aid" \
+              --arg name "$aname" --arg digest "sha256:$digest" \
+              '[.artifacts[] | select(.id==$id and .name==$name and
+               .digest==$digest and .expired==false and
+               .workflow_run.id==$rid and .workflow_run.repository_id==1418338512)] | length==1' \
+              "$root/artifacts.json" >/dev/null
+            gh run download "$run" --repo "$repo" --name "$aname" --dir "$root/$folder"
+            test "$(find "$root/$folder" -type l | wc -l)" -eq 0
+            echo "PR153_HISTORICAL_PARENT_AUTHENTICATED=$folder artifact=$aid"
+          done < "$root/provenance.tsv"
+          test -s "$root/from176/extended-overlay.json"
+          test -s "$root/from177/report.json"
+          test "$(find "$root/from176" -type f|wc -l)" -eq 2
+          test "$(find "$root/from177" -type f|wc -l)" -eq 1
+          node scripts/c2-pr153-extend-historical-overlay.cjs \
+            "$root/from176/extended-overlay.json" \
+            "$root/from177/report.json" \
+            "$root/output/pr153-historical-extended-overlay.json"
+          jq -e '.schema=="c2-run23-pr153-historical-extended-causal-overlay/v1" and
+            .count==23 and .positives==11 and .negatives==12 and
+            .originalHistoricalInventoryUnchanged==true and
+            .originalExtendedOverlayUnchanged==true and
+            .updatedProvisionalCounterfactuals==1 and
+            .provisionalPositiveFamiliesAfter==4 and
+            .pendingScopedPositiveRepairsAfter==0 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .newLabels==0 and .independenceVerified==false and
+            .holdoutFrozen==false and .precision==null and .f1==null and
+            .sssPlusCertified==false and
+            ([.entries[]|select(.pr==153 and .line==71 and .positive==true and
+             .causalAdjudication.status=="SCOPED_ORIGINAL_FIX_COUNTERFACTUAL_PROVISIONAL" and
+             .causalAdjudication.independentlyCertified==false)]|length)==1 and
+            ([.entries[]|select(.pr==150 and .positive==false and
+             .line==250 and .causalAdjudication.status=="NEGATIVE_CONTROL" and
+             .causalAdjudication.provisionalCausalFingerprint==null)]|length)==1' \
+            "$root/output/pr153-historical-extended-overlay.json" >/dev/null
+          jq -c '{count,positive:.positives,negative:.negatives,
+            newLabels,provisionalFamilies:.provisionalPositiveFamiliesAfter,
+            independent:.independenceVerified,
+            pr153:[.entries[]|select(.pr==153)|{line,rule,status:.causalAdjudication.status}]}' \
+            "$root/output/pr153-historical-extended-overlay.json"
+          rm -rf "$root/from176" "$root/from177" "$root/provenance.tsv" \
+            "$root/run.json" "$root/artifacts.json"
+      - name: Archive derived metadata, no mutable source and no secrets
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr153-historical-provisional-replay-overlay
+          path: ${{ runner.temp }}/c2-pr153-extended-view/output/pr153-historical-extended-overlay.json
+          retention-days: 14
+          if-no-files-found: warn
