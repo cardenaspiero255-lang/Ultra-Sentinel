@@ -63,7 +63,7 @@ test('register PR153 only as provisional in historical extended view, preserving
  assert.equal(r.count,23);assert.equal(r.positives,11);assert.equal(r.negatives,12);
  assert.equal(r.originalHistoricalInventoryUnchanged,true);
  assert.equal(r.newLabels,0);assert.equal(r.certifiedIndependentCausesAdded,0);
- assert.equal(r.provisionalPositiveFamiliesAfter,3);
+ assert.equal(r.provisionalPositiveFamiliesAfter,4);
  assert.equal(r.pendingScopedPositiveRepairsAfter,0);
  assert.equal(r.remainingHistoricalCausesUncertified,21);
  assert.equal(r.independenceVerified,false);assert.equal(r.holdoutFrozen,false);
