@@ -12,7 +12,7 @@ function read(file){
 function main(args){
  if(args.length!==3)throw Error('usage: c2-pr153-adjudicate-negative.cjs HISTORY.json RUN16.json OUTPUT.json');
  const [parent,source,dest]=args;
- if(new Set(args.map(resolve)).size!==3)throw Error('C2_PR153_NEGATIVE_ADJUDICATION_OVERWRITE');
+ if(new Set(args.map(file=>resolve(file))).size!==3)throw Error('C2_PR153_NEGATIVE_ADJUDICATION_OVERWRITE');
  const output=adjudicatePr153Negative({history:read(parent),sourceTruth:read(source)});
  fs.writeFileSync(dest,JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
  const row=output.entries.find(x=>x.pr===153&&x.line===69&&x.positive===false);
