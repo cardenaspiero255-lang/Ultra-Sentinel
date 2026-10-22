@@ -1,0 +1,150 @@
+name: Ultra Sentinel C2 PR189 sixteen original Kotlin source replays
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr189-sixteen-original-pilot.yml
+      - packages/quality-gates/c2-pr189-sixteen-original-replays.cjs
+      - scripts/c2-pr189-sixteen-pilot.cjs
+      - tests/unit/c2-pr189-sixteen-original-replays.test.cjs
+      - docs/quality/C2-PR189-SIXTEEN-ORIGINAL-REPLAYS.md
+permissions:
+  contents: read
+concurrency:
+  group: c2-pr189-sixteen-originals-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  roster:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: Trusted repo source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: sentinel
+          persist-credentials: false
+      - name: Immutable upstream Kotlin SWE-bench
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify unit gates, source Git tree SHA and exactly sixteen selections
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix sentinel run check
+          python3 -m unittest discover -s sentinel/tests/unit -p test_c2_bulk_kotlin_campaign.py
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          test "$(git -C upstream rev-parse HEAD:tasks)" = 7e6c0a3c10c8f082b8f7a9c5efbcc51c360356a9
+          matrix="$(node sentinel/scripts/c2-pr189-sixteen-pilot.cjs matrix)"
+          printf '%s' "$matrix" | jq -e '
+            .schema=="c2-pr189-pilot-matrix/v1" and
+            (.include|length)==10 and .originalCount==16 and .notSelectedCount==90 and
+            ([.include[].tasks[]]|length)==16 and
+            ([.include[].tasks[]]|unique|length)==16 and
+            .newLabels==0 and .blindHoldout==false' >/dev/null
+          echo "matrix=$(printf '%s' "$matrix" | jq -c '{include:.include}')" >> "$GITHUB_OUTPUT"
+  replay:
+    needs: roster
+    if: needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.roster.outputs.matrix) }}
+    steps:
+      - name: Checkout C2 runner
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: sentinel
+          persist-credentials: false
+      - name: Checkout frozen original Kotlin upstream
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlin-swe-bench
+          ref: b9025d86f7ae634901396766bd61f6d4ae6d2165
+          path: upstream
+          persist-credentials: false
+      - name: Reproduce original-before versus patched-after JUnit in isolated containers
+        shell: bash
+        env:
+          TASKS_JSON: ${{ toJSON(matrix.tasks) }}
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = b9025d86f7ae634901396766bd61f6d4ae6d2165
+          test "$(git -C upstream rev-parse HEAD:tasks)" = 7e6c0a3c10c8f082b8f7a9c5efbcc51c360356a9
+          python3 sentinel/scripts/c2-bulk-kotlin-campaign.py run-shard \
+            --upstream "$GITHUB_WORKSPACE/upstream" \
+            --tasks-json "$TASKS_JSON" --output "$RUNNER_TEMP/c2-pr189-results"
+      - name: Archive raw original JUnit and SHA-scoped receipts, never label them GOLD
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr189-${{ matrix.id }}
+          path: ${{ runner.temp }}/c2-pr189-results
+          retention-days: 21
+          if-no-files-found: warn
+  adjudicate:
+    needs: [roster, replay]
+    if: always() && needs.roster.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Read-only source checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: sentinel
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Download exactly ten isolated project shards
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          pattern: c2-pr189-*
+          path: ${{ runner.temp }}/c2-pr189-receipts
+          merge-multiple: false
+      - name: Fail closed if any original source or JUnit receipt is missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node sentinel/scripts/c2-pr189-sixteen-pilot.cjs triage \
+            "$RUNNER_TEMP/c2-pr189-receipts" \
+            "$RUNNER_TEMP/c2-pr189-sixteen-source-triage.json"
+          jq -e '
+            .schema=="c2-pr189-sixteen-original-source-candidate-replay-triage/v1" and
+            .candidateCount==16 and .remainingUntouched==90 and
+            .sourceLabels==23 and .newLabels==0 and
+            .independentlyCertifiedCausesAdded==0 and
+            .prospectiveBlindHoldout==false and .blindHoldout==false and
+            .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.candidates[]|select(.admittedLabel!=false or
+              .rootCauseIndependenceVerified!=false or
+              .blindHoldoutEligible!=false)]|length)==0 and
+            ([.counts[]]|add)==16' \
+            "$RUNNER_TEMP/c2-pr189-sixteen-source-triage.json" >/dev/null
+          jq -c '.candidates[]|{task,repository,originalReceiptStatus,nextGate}' \
+            "$RUNNER_TEMP/c2-pr189-sixteen-source-triage.json"
+      - name: Archive audit-ready classification or block unsupported claims
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr189-sixteen-original-kotlin-triage-not-certified
+          path: ${{ runner.temp }}/c2-pr189-sixteen-source-triage.json
+          retention-days: 30
+          if-no-files-found: warn
