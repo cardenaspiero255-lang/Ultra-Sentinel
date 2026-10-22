@@ -21,10 +21,15 @@ function main(args){
  const manifest=read(manifestPath,30000);
  const locked=prepareIndependentOracleQuarantine(manifest);
  const snapshots=manifest.candidates.map((c,i)=>{
+  const live=read(path.join(dir,'pr-'+i+'.json'),30000);
+  if(!live||Object.keys(live).length!==5||
+     live.repository!==c.repository||live.pr!==c.pr||live.createdAt!==c.createdAt||
+     !/^[a-f0-9]{40}$/.test(live.baseSha)||!/^[a-f0-9]{40}$/.test(live.headSha))fail();
   const baseChecks=read(path.join(dir,'candidate-'+i+'-base.json'),3000000);
   const headChecks=read(path.join(dir,'candidate-'+i+'-head.json'),3000000);
   return {
    repository:c.repository,pr:c.pr,baseSha:c.baseSha,headSha:c.headSha,
+   observedPrBaseSha:live.baseSha,observedPrHeadSha:live.headSha,
    base:{sha:c.baseSha,checks:baseChecks,fetchComplete:true},
    head:{sha:c.headSha,checks:headChecks,fetchComplete:true}
   };
