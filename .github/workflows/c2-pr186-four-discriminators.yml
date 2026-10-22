@@ -1,0 +1,188 @@
+name: Ultra Sentinel C2 PR186 four discriminative original Kotlin mechanisms
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr186-four-discriminators.yml
+      - scripts/c2-pr186-run-four.sh
+      - scripts/c2-pr187-adjudicate-discriminators.cjs
+      - scripts/c2-pr152-json-counterfactual.py
+      - scripts/c2-pr158-advanced-ttl-counterfactual.py
+      - packages/quality-gates/c2-pr186-four-causal-discriminators.cjs
+      - tests/unit/c2-pr186-four-causal-discriminators.test.cjs
+      - tests/oracles/c2-pr186-*.kt
+      - tests/oracles/c2-pr152-json-abi.kt
+      - tests/oracles/c2-run20-android-preferences-abi.kt
+      - tests/oracles/c2-run20-profile-domain-abi.kt
+      - tests/oracles/c2-pr158-domain-abi.kt
+      - tests/oracles/c2-pr158-ai-abi.kt
+      - tests/oracles/c2-run22-parser-abi.kt
+      - docs/quality/C2-PR186-FOUR-DISCRIMINATIVE-MECHANISMS.md
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regression:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm run check
+  discriminators:
+    needs: regression
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [json, rollback, thermal, query]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Fetch exact SHA-pinned GameHub originals read-only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUITE: ${{ matrix.suite }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr186/$SUITE"
+          mkdir -p "$root/output"
+          node scripts/c2-pr187-adjudicate-discriminators.cjs manifest "$SUITE" > "$root/manifest.tsv"
+          while IFS='|' read -r alias head blob checksum source;do
+            test -n "$alias"
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$source?ref=$head" > "$root/source.json"
+            jq -e --arg p "$source" --arg b "$blob" \
+              '.path==$p and .sha==$b and .type=="file" and
+               .encoding=="base64" and .size>100 and .size<1000000' "$root/source.json" >/dev/null
+            jq -r .content "$root/source.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+            if [ "$checksum" != '-' ];then
+              test "$(sha256sum "$root/$alias"|cut -d' ' -f1)" = "$checksum"
+            fi
+          done < "$root/manifest.tsv"
+          test -s "$root/original.kt"
+          rm "$root/manifest.tsv" "$root/source.json"
+      - name: Require AppArmor and Bubblewrap for isolated original Kotlin
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v bwrap >/dev/null
+          command -v kotlinc >/dev/null
+      - name: Run original / correct / wrong-fix differential experiment
+        env:
+          SUITE: ${{ matrix.suite }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-pr186-run-four.sh \
+            "$SUITE" "$RUNNER_TEMP/c2-pr186/$SUITE"
+          jq -e '.schema=="c2-pr186-discriminative-original-kotlin-source/v1" and
+            .originalGitBlobVerified==true and .normalControlPassedOnRepair==true and
+            .wrongFixKilled==true and .originalDefectObserved==true and
+            .newGoldLabels==0 and .certifiedIndependentCauseAdded==false' \
+            "$RUNNER_TEMP/c2-pr186/$SUITE/output/receipt.json" >/dev/null
+      - name: Archive receipt only, never original source/JAR
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr186-${{ matrix.suite }}
+          path: ${{ runner.temp }}/c2-pr186/${{ matrix.suite }}/output/receipt.json
+          if-no-files-found: error
+          retention-days: 14
+  consolidate:
+    needs: [regression,discriminators]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Authenticate owner historical twelve-case causal record
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr186/summary"
+          mkdir -p "$root/prior" "$root/output"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/39720489097" > "$root/run.json"
+          jq -e '.id==39720489097 and
+            .head_sha=="ff315edad0905c67abc19ff2b0b2b7f162a4aa24" and
+            .path==".github/workflows/c2-pr184-historical-causal-classification.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39720489097/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(
+            .id==12401200189 and
+            .name=="c2-pr184-all-twelve-causal-mechanism-hypotheses-not-certified" and
+            .digest=="sha256:01da653043639bdb02f2aa4d149b7de333874d70996b9d9bba5287ee12e4b5fb" and
+            .expired==false and .workflow_run.id==39720489097)]|length==1' \
+            "$root/artifacts.json" >/dev/null
+          gh run download 39720489097 --repo "$repo" \
+            --name c2-pr184-all-twelve-causal-mechanism-hypotheses-not-certified \
+            --dir "$root/prior"
+          test -s "$root/prior/pr184-scoped-causal-hypotheses.json"
+          test "$(find "$root/prior" -maxdepth 1 -type f|wc -l)" -eq 1
+          test "$(find "$root/prior" -type l|wc -l)" -eq 0
+          rm "$root/run.json" "$root/artifacts.json"
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          pattern: c2-pr186-*
+          path: ${{ runner.temp }}/c2-pr186/summary/stages
+          merge-multiple: false
+      - name: Enforce exactly four source-scoped discriminators without cause admission
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr186/summary"
+          node scripts/c2-pr187-adjudicate-discriminators.cjs consolidate \
+            "$root/prior/pr184-scoped-causal-hypotheses.json" \
+            "$root/output/four-discriminative-mechanisms-not-certified.json" \
+            "$root/stages/c2-pr186-json/receipt.json" \
+            "$root/stages/c2-pr186-rollback/receipt.json" \
+            "$root/stages/c2-pr186-thermal/receipt.json" \
+            "$root/stages/c2-pr186-query/receipt.json"
+          jq -e '.schema=="c2-pr186-four-orthogonal-source-discriminators/v1" and
+            .replayedDifferentialMechanisms==4 and .verifiedSourceInterventions==12 and
+            .allWrongFixesRejected==true and (.cases|length)==4 and
+            ([.cases[]|select(.overbroadRepairRejected!=true or
+              .independentRootCauseCertified!=false or .eligibleForGold!=false)]|length)==0 and
+            .sourceLabels==23 and .certifiedIndependentCausesAdded==0 and
+            .newLabels==0 and .causalFamilyIndependenceVerified==false and
+            .holdoutFrozen==false and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null' \
+            "$root/output/four-discriminative-mechanisms-not-certified.json" >/dev/null
+          jq -c '.cases[]|{suite,pr,line,overbroadRepairRejected,independentRootCauseCertified}' \
+            "$root/output/four-discriminative-mechanisms-not-certified.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr186-four-discriminative-source-mechanisms-not-certified
+          path: ${{ runner.temp }}/c2-pr186/summary/output/four-discriminative-mechanisms-not-certified.json
+          if-no-files-found: error
+          retention-days: 14
