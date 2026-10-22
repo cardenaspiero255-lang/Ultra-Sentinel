@@ -1,0 +1,125 @@
+name: Ultra Sentinel C2 PR185 numeric factorial original Kotlin intervention
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr185-numeric-factorial-original.yml
+      - packages/quality-gates/c2-pr185-numeric-orthogonality.cjs
+      - tests/unit/c2-pr185-numeric-orthogonality.test.cjs
+      - tests/oracles/c2-pr185-numeric-factorial-oracle.kt
+      - tests/oracles/c2-run17-battery-abi.kt
+      - scripts/c2-pr185-numeric-factorial.sh
+      - scripts/c2-pr185-adjudicate.cjs
+      - docs/quality/C2-PR185-NUMERIC-CAUSAL-FACTORS.md
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-numeric-factorial:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout read-only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate code and regression tests before fetching originals
+        run: npm run check
+      - name: Authenticate exact previous historical causal hypotheses and pinned original Kotlin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr185"
+          mkdir -p "$root/prior" "$root/output"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/39720489097" > "$root/prior-run.json"
+          jq -e '.id==39720489097 and
+            .head_sha=="ff315edad0905c67abc19ff2b0b2b7f162a4aa24" and
+            .path==".github/workflows/c2-pr184-historical-causal-classification.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/prior-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39720489097/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(
+            .id==12401200189 and
+            .name=="c2-pr184-all-twelve-causal-mechanism-hypotheses-not-certified" and
+            .digest=="sha256:01da653043639bdb02f2aa4d149b7de333874d70996b9d9bba5287ee12e4b5fb" and
+            .expired==false and .workflow_run.id==39720489097)]|length==1' "$root/artifacts.json" >/dev/null
+          gh run download 39720489097 --repo "$repo" \
+            --name c2-pr184-all-twelve-causal-mechanism-hypotheses-not-certified \
+            --dir "$root/prior"
+          test "$(find "$root/prior" -maxdepth 1 -type f|wc -l)" -eq 1
+          test "$(find "$root/prior" -type l|wc -l)" -eq 0
+          test -s "$root/prior/pr184-scoped-causal-hypotheses.json"
+          while IFS='|' read -r alias head blob sha path;do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" > "$root/source.json"
+            jq -e --arg b "$blob" --arg p "$path" '
+              .type=="file" and .sha==$b and .path==$p and .size>100 and
+              .size<1000000 and .encoding=="base64"' "$root/source.json" >/dev/null
+            jq -r .content "$root/source.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+            test "$(sha256sum "$root/$alias" | cut -d' ' -f1)" = "$sha"
+          done <<'PINNED_ORIGINALS'
+          math-original.kt|858c9ce5cb6a7916d63f2348432013e49d02ba79|063787d48784fd9b579e2c9a4d5ad4bbd7ab9d7a|f9fbdbd7aabd2dffbadc4b04b31280779bd7359624c081b9e64d532d8c40f65a|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraMathEngine.kt
+          battery-original.kt|2289f4e4cda55ddaa50f2016113ded82dc17203c|8696360219231f3f1477d5ad21c93bca2197e281|cd1c9d6a1a6dfb15a67650a3b38aea3611e855b066e4f6217dd7101d6285a67b|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt
+          PINNED_ORIGINALS
+          rm "$root/prior-run.json" "$root/artifacts.json" "$root/source.json"
+      - name: Require AppArmor Bubblewrap networkless JVM sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v bwrap >/dev/null
+          command -v kotlinc >/dev/null
+      - name: Execute 2x2 joint original Kotlin source interventions and bounded ordinary controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-pr185-numeric-factorial.sh "$RUNNER_TEMP/c2-pr185"
+          test -s "$RUNNER_TEMP/c2-pr185/output/factorial-source-evidence.json"
+      - name: Adjudicate cross effects without upgrading causal family or SSS+
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr185"
+          node scripts/c2-pr185-adjudicate.cjs \
+            "$root/prior/pr184-scoped-causal-hypotheses.json" \
+            "$root/output/factorial-source-evidence.json" \
+            "$root/output/numeric-source-causal-factorial-not-certified.json"
+          jq -e '
+            .schema=="c2-pr185-numeric-factorial-independence-boundary/v1" and
+            .status=="ORTHOGONAL_EFFECTS_DEMONSTRATED_NUMERIC_FAMILY_INDEPENDENCE_UNRESOLVED" and
+            .fourCombinationsExecuted==4 and .mathRepairHasNoObservedEffectOnBatteryOutcome==true and
+            .batteryRepairHasNoObservedEffectOnMathOutcome==true and
+            .numericMechanismSharedHypothesisStillOpen==true and
+            .causesIndependentlyCertified==0 and .allHistoricalIndependentCausesCertified==false and
+            .sourceLabels==23 and .newLabels==0 and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            (.effectMatrix|length)==4' \
+            "$root/output/numeric-source-causal-factorial-not-certified.json" >/dev/null
+          jq -c '.effectMatrix[]|{mathRepair,batteryRepair,mathGuardedSuccess,batteryPolicyRejectsNonfinite}' \
+            "$root/output/numeric-source-causal-factorial-not-certified.json"
+      - name: Archive only source-scope causal effects without historical Kotlin or jars
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr185-numeric-factorial-source-effects-not-certified
+          path: ${{ runner.temp }}/c2-pr185/output/numeric-source-causal-factorial-not-certified.json
+          retention-days: 14
+          if-no-files-found: error
