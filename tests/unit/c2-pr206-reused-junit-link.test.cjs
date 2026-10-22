@@ -30,7 +30,7 @@ const joined={
  core:{sourceRuleId:'TTS_UTF16_SURROGATE_SPLIT',originalPath:path,originalLine:26,
  originalExactRulePathLineCount:1,counterfactualSameRuleCount:0,partial:false},
  behavior:{originalHeadSha:head,originalSourceBlobSha:blob,originalSourcePath:path,
- originalRuleLine:26,sourceVersionsExecuted:2,behavioralTransitions:2,benignInputControlsPassed:6},
+ originalRuleLine:26,counterfactualSourceBlobSha:'d977d119170c6f3563532d4219c1966b6e2d755f',sourceVersionsExecuted:2,behavioralTransitions:2,benignInputControlsPassed:6},
  realUpstreamFixProven:false,independentBenignSourceLabels:0,admittedGoldLabels:0,
  falsePositiveRate:null,precision:null,recall:null,f1:null,sssPlusCertified:false
 };
