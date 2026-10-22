@@ -1,0 +1,42 @@
+{
+  "schema": "c2-four-external-pr-metadata/v1",
+  "cutoff": "2026-10-20T19:30:54Z",
+  "candidates": [
+    {
+      "repository": "ActivityWatch/aw-android",
+      "pr": 379,
+      "baseSha": "6b42711b9b7946c4e3b7925d736abedc0836537d",
+      "headSha": "bb364bb81283f67b9081e11de11e6ba1a9b81ac2",
+      "createdAt": "2026-10-22T18:32:28Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7428,
+      "baseSha": "c13364593e779add560f3413255b2f8fdc50e21a",
+      "headSha": "8affcce26ad139ecf9d163028956854ff6dfe799",
+      "createdAt": "2026-10-22T10:19:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7501,
+      "baseSha": "6d08ab550eb69efda46b9cd4616a63aedf71ccb7",
+      "headSha": "99be64d61f0a0eeefb42b3f6d268a5b248814d37",
+      "createdAt": "2026-10-21T17:33:34Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6938,
+      "baseSha": "8dcc62a077802446b93108df5ff76a6a390be3d3",
+      "headSha": "26892c801d4e7fbd12fbef7dfb04e0e1ded71c34",
+      "createdAt": "2026-10-22T09:54:39Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    }
+  ]
+}
