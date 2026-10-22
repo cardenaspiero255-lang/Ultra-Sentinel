@@ -80,7 +80,7 @@ function run(args){
  if(args[0]!=='adjudicate'||args.length!==4)throw Error('C2_PR189_ARGS_BLOCKED');
  const [_,originalRoot,retryRoot,output]=args;
  if(![originalRoot,retryRoot,output].every(path.isAbsolute)||
-  new Set([originalRoot,retryRoot,output].map(path.resolve)).size!==3||
+  new Set([originalRoot,retryRoot,output].map(x=>path.resolve(x))).size!==3||
   fs.existsSync(output))throw Error('C2_PR189_PATHS_BLOCKED');
  const original={},retry={};
  for(const c of PILOT)original[c.task]=readCandidate(originalRoot,c.task,'original');
