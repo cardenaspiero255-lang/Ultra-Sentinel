@@ -9,6 +9,7 @@ on:
       - tests/unit/c2-pr206-utf16-triple-oracle.test.cjs
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: c2-original-speech-206-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.pull_request.head.sha }}
   cancel-in-progress: false
@@ -129,6 +130,59 @@ jobs:
             "$root/output/c2-pr206-frozen-core-real-kotlin-join.json" >/dev/null
           cp "$root/output/source-provenance.json" "$RUNNER_TEMP/c2-original-206/"
           cp "$root/output/c2-pr206-frozen-core-real-kotlin-join.json" "$RUNNER_TEMP/c2-original-206/"
+      - name: Authenticate and embed previously run original Kotlin JUnit receipt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-pr206-triple"
+          mkdir -p "$root/archive"
+          gh api "/repos/$repo/actions/runs/39827001646" > "$root/archive-run.json"
+          jq -e '
+            .id==39827001646 and
+            .head_sha=="e34330964d519c194f6b56a886a48567435fba99" and
+            .path==".github/workflows/c2-pr206-utf16-triple-source-oracle.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and
+            .actor.id==322222186 and .repository.id==1418338512
+          ' "$root/archive-run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39827001646/artifacts" > "$root/artifacts.json"
+          jq -e '
+            [.artifacts[]|select(.id==12447597134 and
+              .name=="c2-pr206-original-fixed-real-kotlin-core-unscored" and
+              .digest=="sha256:5deccbf951d42fbe9b8f236911ebd6e005d466cf424d9701d69ad265f4f43030" and
+              .expired==false and .workflow_run.id==39827001646 and
+              .workflow_run.repository_id==1418338512)]|length==1
+          ' "$root/artifacts.json" >/dev/null
+          jq -e '.artifacts[]|select(.id==12447597134)' "$root/artifacts.json" > "$root/archive-artifact.json"
+          gh run download 39827001646 --repo "$repo" \
+            --name c2-pr206-original-fixed-real-kotlin-core-unscored \
+            --dir "$root/archive"
+          test "$(find "$root/archive" -type l|wc -l)" -eq 0
+          test "$(find "$root/archive" -type f|wc -l)" -eq 4
+          test -s "$root/archive/original-kotlin-junit.xml"
+          printf '%s  %s\n' \
+            ed3b6a82f9e2ffbf11d8fc54bd5512206fe471e4dd5590b2c105e5b061e72936 \
+            "$root/archive/original-kotlin-junit.xml" | sha256sum --check --status
+          node scripts/c2-pr206-reused-junit-link.cjs \
+            "$root/archive-run.json" "$root/archive-artifact.json" \
+            "$root/archive/original-kotlin-junit.xml" \
+            "$root/output/c2-pr206-frozen-core-real-kotlin-join.json" \
+            "$RUNNER_TEMP/c2-original-206/core-original-detection.json" \
+            "$RUNNER_TEMP/c2-original-206/archived-owner-junit-link.json"
+          jq -e '
+            .schema=="c2-pr206-owner-archived-original-junit-bound-to-current-kotlin-core/v1" and
+            .originalArchiveAuthenticated==true and
+            .originalSourceWitnessLinkedToCurrentCore==true and
+            .junitTests==4 and
+            .originalGameHubBlobSha=="6ce74fb027c0d6e3fe6cfe48d3b0b5fc1ba2497a" and
+            .independentBenignLabels==0 and .newGoldLabels==0 and
+            .scoredFalsePositiveRate==null and .sssPlusCertified==false
+          ' "$RUNNER_TEMP/c2-original-206/archived-owner-junit-link.json" >/dev/null
+          cp "$root/archive/original-kotlin-junit.xml" "$RUNNER_TEMP/c2-original-206/original-kotlin-junit.xml"
       - name: Upload original evidence
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
