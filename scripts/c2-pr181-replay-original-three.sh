@@ -129,5 +129,22 @@ for pr,line,original,repaired,adversarial in [
   'sourceBehaviorScoped':True,'candidatePredictionsRead':False,'baselinePredictionsRead':False
  })
 (r/'new-trials.json').write_text(json.dumps(out,sort_keys=True)+'\n')
-print('C2_PR181_THREE_ORIGINAL_JVM_REPRODUCTIONS_AND_ADVERSARIAL_CONTROLS_PASS')
+negative=[]
+for pr,line,original,mutant in [
+ (151,185,'151-original.log','151-mutant.log'),
+ (150,167,'150-original.log','150-mutant.log')
+]:
+ entries=[x for x in pr180['entries'] if x['pr']==pr and x['line']==line and x['positive']==False]
+ assert len(entries)==1,'C2_PR182_NEGATIVE_IDENTITY_AMBIGUOUS'
+ x=entries[0]
+ assert sha(original)!=sha(mutant),'C2_PR182_NEGATIVE_MUTANT_NOT_DISTINGUISHED'
+ negative.append({
+  'identity':x['identity'],'originalHeadSha':x['headSha'],'originalBlobSha':x['blobSha'],
+  'originalLogSha256':sha(original),'mutantLogSha256':sha(mutant),
+  'originalSourceUnmodified':True,'originalSafeControlPassed':True,
+  'mutantKilled':True,'sourceBehaviorScoped':True,
+  'candidatePredictionsRead':False,'baselinePredictionsRead':False
+ })
+(r/'negative-trials.json').write_text(json.dumps(negative,sort_keys=True)+'\n')
+print('C2_PR182_THREE_POSITIVE_AND_TWO_NEGATIVE_ORIGINAL_MUTANT_PROBES_PASS')
 PY

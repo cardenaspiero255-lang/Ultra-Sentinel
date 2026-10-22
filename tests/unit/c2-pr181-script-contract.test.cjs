@@ -18,3 +18,16 @@ test('expected vulnerable Kotlin failure is handled as an if condition, not swal
  assert.match(source, /test "\$original_exit" -ne 0/);
  assert.match(source, /test "\$blanket_exit" -ne 0/);
 });
+
+test('CLI must accept four distinct evidence and output paths before attempting input IO',()=>{
+ const {main}=require('../../scripts/c2-pr181-adjudicate.cjs');
+ const root='/tmp/c2-pr182-unique-input-nonexistent-';
+ assert.throws(
+  ()=>main([root+'owner.json',root+'positive.json',root+'negative.json',root+'output.json']),
+  error=>error.code==='ENOENT'
+ );
+ assert.throws(
+  ()=>main([root+'owner.json',root+'positive.json',root+'negative.json',root+'owner.json']),
+  /C2_PR181_OVERWRITE_BLOCKED/
+ );
+});

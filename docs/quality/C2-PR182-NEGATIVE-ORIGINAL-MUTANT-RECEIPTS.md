@@ -1,0 +1,9 @@
+# C2 PR #182 — corrección de trazabilidad de controles negativos de #181
+
+**Fecha:** 2026-10-22. **Problema:** el PR #181 pasó CI y se fusionó, pero una observación P2 señaló que su reporte `originalSourceReplayed=false` para todos los controles negativos era incorrecto. Dos oráculos Kotlin negativos sí se reejecutaron: GameHub **#151:185** (ID de sesión ajena) y **#150:167** (prioridad STOP sobre interrupción), con los mutantes correspondientes. El reporte de PR181 solo incluía los tres positivos; su artefacto histórico original permanece inmutable.
+
+Este PR agrega recibos explícitos y archivos de log SHA-256 para cada original y mutante negativo. El adjudicador valida que los IDs pertenezcan exactamente a las dos identidades originales esperadas, que sus HEAD y blobs sean los congelados en el recibo autenticado de Run180, que las intervenciones sobre Kotlin real se hayan ejecutado en Bubblewrap/AppArmor, y que el control seguro pase mientras el mutante sea detectado. Errores, alteraciones, swaps, falta de evidencia, digests repetidos y flags de certificación indebida bloquean el reporte.
+
+**Estado objetivo:** tres positivos reejecutados, dos negativos reejecutados, tres positivos restantes solo con recibo original y **cuatro** negativos restantes solo con recibo original (no seis). Los 23 registros históricos permanecen en 11 positivos y 12 negativos; ninguna causa positiva nueva se infiere por archivo, PR o pasar un control negativo. Cuatro familias provisionales originales, cero causas independientes adicionales certificadas, holdout no congelado y `precision`, `recall`, `f1` nulos. **SSS+ = NOT_CERTIFIED**.
+
+Esta corrección registra fielmente la evidencia. No adjudica independencia causal de las tres reproducciones positivas, no crea etiquetas GOLD y no certifica el detector.

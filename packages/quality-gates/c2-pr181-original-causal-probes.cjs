@@ -12,7 +12,8 @@ const fail=()=>{throw Error('C2_PR181_CAUSAL_PROBES_BLOCKED');};
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const TUPLE=x=>JSON.stringify([x.pr,x.headSha,x.rule,x.path,x.line,x.positive]);
 const top3=['152:41','158:114','154:100'];
-function adjudicateOriginalProbes({source,trials}={}){
+const negative2=['151:185','150:167'];
+function adjudicateOriginalProbes({source,trials,negativeTrials}={}){
  try{
   if(!source||source.schema!=='c2-run23-twelve-original-owner-oracle-reconciliation/v1'||
     source.status!=='ORIGINAL_OWNER_RECEIPTS_RECONCILED_CAUSAL_INDEPENDENCE_PENDING'||
@@ -33,7 +34,8 @@ function adjudicateOriginalProbes({source,trials}={}){
     source.recall!==null||source.f1!==null||source.sssPlusCertified!==false||
     source.autoRepair!==false||source.autoMerge!==false||
     !Array.isArray(source.entries)||source.entries.length!==12||
-    !Array.isArray(trials)||trials.length!==3)fail();
+    !Array.isArray(trials)||trials.length!==3||
+    !Array.isArray(negativeTrials)||negativeTrials.length!==2)fail();
   const original=new Map(),expected=new Set();
   for(const stage of STAGES)for(const c of stage.cases)expected.add(c.pr+':'+c.line+':'+c.rule+':'+c.positive);
   for(const e of source.entries){
@@ -60,8 +62,8 @@ function adjudicateOriginalProbes({source,trials}={}){
   const trialMap=new Map();
   for(const t of trials){
    if(!t||typeof t.identity!=='string'||trialMap.has(t.identity)||
-    !original.has(t.identity)||!top3.includes(t.identity.slice(1,18))&&
-      !top3.some(id=>{const e=original.get(t.identity);return id===e.pr+':'+e.line;})||
+    !original.has(t.identity)||
+    !top3.some(id=>{const e=original.get(t.identity);return id===e.pr+':'+e.line;})||
     t.originalHeadSha!==original.get(t.identity).headSha||
     t.originalBlobSha!==original.get(t.identity).blobSha||
     !SHA64.test(t.originalLogSha256)||!SHA64.test(t.firstRepairLogSha256)||
@@ -76,19 +78,40 @@ function adjudicateOriginalProbes({source,trials}={}){
   if(trialMap.size!==3||top3.some(key=>![...trialMap.keys()].some(identity=>{
     const e=original.get(identity);return e.pr+':'+e.line===key;
   })))fail();
+  const negativeMap=new Map();
+  for(const n of negativeTrials){
+   if(!n||typeof n.identity!=='string'||!original.has(n.identity)||
+    negativeMap.has(n.identity)||
+    !negative2.some(id=>{const e=original.get(n.identity);return id===e.pr+':'+e.line;})||
+    original.get(n.identity).positive!==false||
+    n.originalHeadSha!==original.get(n.identity).headSha||
+    n.originalBlobSha!==original.get(n.identity).blobSha||
+    !SHA64.test(n.originalLogSha256)||!SHA64.test(n.mutantLogSha256)||
+    n.originalLogSha256===n.mutantLogSha256||
+    n.originalSourceUnmodified!==true||
+    n.originalSafeControlPassed!==true||n.mutantKilled!==true||
+    n.sourceBehaviorScoped!==true||n.candidatePredictionsRead!==false||
+    n.baselinePredictionsRead!==false)fail();
+   negativeMap.set(n.identity,n);
+  }
+  if(negativeMap.size!==2||negative2.some(key=>![...negativeMap.keys()].some(identity=>{
+    const e=original.get(identity);return e.pr+':'+e.line===key;
+  })))fail();
   const entryReviews=[...original.values()].map(e=>{
-   const trial=trialMap.get(e.identity),retested=!!trial;
+   const trial=trialMap.get(e.identity),negative=negativeMap.get(e.identity);
+   const retested=!!trial||!!negative;
    return Object.freeze({
     identity:e.identity,pr:e.pr,line:e.line,rule:e.rule,
     headSha:e.headSha,blobSha:e.blobSha,positive:e.positive,
     originalOwnerRunId:e.originalOwnerRunId,
     originalEvidenceSha256:e.originalEvidenceSha256,
     originalSourceReplayed:retested,
-    sourceReplayLogSha256:trial?.originalLogSha256||null,
+    sourceReplayLogSha256:trial?.originalLogSha256||negative?.originalLogSha256||null,
     repairLogSha256:trial?.firstRepairLogSha256||null,
-    adversarialControlLogSha256:trial?.adversarialControlLogSha256||null,
-    causalIndependenceStatus:retested?
-     'CONTRAFACTUAL_REPRODUCED_FAMILY_NOT_YET_DISTINCT':
+    adversarialControlLogSha256:trial?.adversarialControlLogSha256||negative?.mutantLogSha256||null,
+    causalIndependenceStatus:trial?
+     'CONTRAFACTUAL_REPRODUCED_FAMILY_NOT_YET_DISTINCT':negative?
+     'ORIGINAL_NEGATIVE_AND_MUTANT_REPLAYED_NO_POSITIVE_CAUSE':
      'ORIGINAL_OWNER_RECEIPT_ONLY_NEW_CAUSAL_TRIAL_PENDING',
     causalFingerprint:null,independentRootCauseCertified:false,
     eligibleForGold:false,eligibleForBlindHoldout:false,
@@ -96,18 +119,18 @@ function adjudicateOriginalProbes({source,trials}={}){
    });
   }).sort((a,b)=>a.identity<b.identity?-1:a.identity>b.identity?1:0);
   return Object.freeze({
-   schema:'c2-pr181-three-original-causal-jvm-probes/v1',
-   status:'THREE_REPRODUCED_CAUSAL_INTERVENTIONS_FAMILY_INDEPENDENCE_PENDING',
+   schema:'c2-pr182-three-positive-two-negative-original-jvm-probes/v2',
+   status:'THREE_POSITIVES_TWO_NEGATIVES_SOURCE_REPLAYED_CAUSAL_INDEPENDENCE_PENDING',
    originalOwnerRun23:39077240648,previousReconciliationSha256:hash(JSON.stringify(source)),
    originalReceipts:12,positiveOriginalReceipts:6,negativeOriginalReceipts:6,
-   retestedPositive:3,pendingPositive:3,pendingNegative:6,
+   retestedPositive:3,pendingPositive:3,retestedNegative:2,pendingNegative:4,
    entryReviews,sourceLabels:23,sourcePositiveLabels:11,sourceNegativeLabels:12,
    provisionalPositiveFamiliesAfter:4,certifiedIndependentCausesAdded:0,
    remainingHistoricalCausesUncertified:21,newLabels:0,
    historicalEvidenceAuthenticated:false,independenceVerified:false,
    blindHoldout:false,holdoutFrozen:false,precision:null,recall:null,f1:null,
    sssPlusCertified:false,autoRepair:false,autoMerge:false,
-   conclusion:'Reproducible source-scoped causal interventions are NOT independently counted causes. Historical negatives are not defects and SSS+ remains NOT_CERTIFIED.'
+   conclusion:'Three positive source interventions and two mutation-sensitive original negatives were replayed. They are NOT independently certified causes. The other four negatives and three positives remain owner-receipt-only. SSS+ remains NOT_CERTIFIED.'
   });
  }catch(e){if(e?.message==='C2_PR181_CAUSAL_PROBES_BLOCKED')throw e;fail();}
 }
