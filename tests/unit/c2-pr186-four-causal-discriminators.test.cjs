@@ -66,3 +66,11 @@ test('RED: reject invented gold, false independence, duplicate suite, bad source
  for(const mutate of mutations){const d=fixture();mutate(d);
   assert.throws(()=>adjudicateFour(d),/C2_PR186_CAUSAL_EVIDENCE_BLOCKED/);}
 });
+
+test('regression: original and wrong-fix may have identical failure traces, but a repaired trace cannot',()=>{
+ const d=fixture();
+ d.receipts[0].adversarialWrongFixFailureLogSha256=d.receipts[0].originalFailureLogSha256;
+ assert.equal(adjudicateFour(d).replayedDifferentialMechanisms,4);
+ d.receipts[0].repairSuccessLogSha256=d.receipts[0].originalFailureLogSha256;
+ assert.throws(()=>adjudicateFour(d),/C2_PR186_CAUSAL_EVIDENCE_BLOCKED/);
+});
