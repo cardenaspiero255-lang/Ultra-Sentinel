@@ -144,20 +144,27 @@ jobs:
             and .status=="added" and .additions==320 and .changes==320)]|length==1' "$root/pr-files.json" >/dev/null
           jq -c '.[] | select(.filename=="app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt") |
             {filename,status,sha,additions,deletions,changes,patch}' "$root/pr-files.json" > "$root/pr-file-minimal.json"
+          jq -e '[.[] | select(.filename=="app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt"
+            and .sha=="830056400d6414a3436f8d650fadbd49fdca5f85"
+            and .status=="added")]|length==1' "$root/pr-files.json" >/dev/null
+          jq -c '.[] | select(.filename=="app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt") |
+            {filename,status,sha}' "$root/pr-files.json" > "$root/original-test-minimal.json"
           node scripts/c2-pr150-original-detector-boundary.cjs \
-            "$root/pr-minimal.json" "$root/pr-file-minimal.json" \
+            "$root/pr-minimal.json" "$root/pr-file-minimal.json" "$root/original-test-minimal.json" \
             "$root/variants/original/SmartRecommendationExplanation.kt" \
             "$root/output/pr150-original-core-boundary.json"
           jq -e '.schema=="c2-pr150-exact-source-core-negative-boundary/v1" and
             .pinnedOriginalSource==true and .coreExecutedOnSuppliedSource==true and
             .originalPrChangedFiles==21 and .targetSourceFilesAnalyzed==1 and
+            .originalTestFileMetadataIncluded==true and .contextFilesReturned==2 and
+            ([.coreFindings[]|select(.rule=="REGRESSION_TEST_COVERAGE")]|length)==0 and
             .fullPrCoverageVerified==false and
             .benign.rule=="WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE" and
             .benign.line==250 and .benign.falsePositiveScored==false and
             .negativeDetectorLabelsScored==0 and .measuredFalsePositiveRate==null and
             .newGoldLabels==0 and .precision==null and .recall==null and .f1==null and
             .sssPlusCertified==false' "$root/output/pr150-original-core-boundary.json" >/dev/null
-          rm -f "$root/pr.json" "$root/pr-minimal.json" "$root/pr-files.json" "$root/pr-file-minimal.json"
+          rm -f "$root/pr.json" "$root/pr-minimal.json" "$root/pr-files.json" "$root/pr-file-minimal.json" "$root/original-test-minimal.json"
       - name: Archive only sanitized source/behavior matrix
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
