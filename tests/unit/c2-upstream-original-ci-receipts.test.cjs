@@ -9,7 +9,7 @@ const good=()=>{
  const m=manifest(),q=prepareIndependentOracleQuarantine(m);
  const check=(headSha,name)=>({id:101,name,headSha,status:'completed',conclusion:'success',appSlug:'github-actions'});
  const snapshots=m.candidates.map((x,i)=>({
-  repository:x.repository,pr:x.pr,baseSha:x.baseSha,headSha:x.headSha,
+  repository:x.repository,pr:x.pr,baseSha:x.baseSha,headSha:x.headSha,observedPrBaseSha:x.baseSha,observedPrHeadSha:x.headSha,
   base:{sha:x.baseSha,checks:[check(x.baseSha,i===0?'Test':i===1?'check-style':i===2?'Test':'test')],fetchComplete:true},
   head:{sha:x.headSha,checks:i===0?[]:[check(x.headSha,i===1?'check-style':i===2?'Test':'test')],fetchComplete:true}
  }));
@@ -76,4 +76,22 @@ test('RED: workflow fetches base/head check-runs metadata from upstream GitHub A
  assert.match(yml,/permissions:[\s\S]*?contents: read/);
  assert.match(yml,/persist-credentials: false/);
  assert.doesNotMatch(yml,/\/pulls\/\$pr\/files|\/compare\/|gh pr diff|actions\/checkout.*external|contents: write/);
+});
+
+test('RED: a changed live PR HEAD must never replace previously pinned Git SHA or reset evidence',()=>{
+ const x=good();
+ x.receipt.snapshots[2].observedPrHeadSha='14fd033f52df1f28bfe0ce19a95247598b7150cd';
+ const result=assessOriginalUpstreamCi(x.manifest,x.receipt);
+ assert.equal(result.prHeadDriftCount,1);
+ const bw=result.evidence.find(r=>r.repository==='bitwarden/android');
+ assert.equal(bw.headMovedSincePreselection,true);
+ assert.equal(bw.frozenHeadSha,'99be64d61f0a0eeefb42b3f6d268a5b248814d37');
+ assert.equal(bw.observedLiveHeadSha,'14fd033f52df1f28bfe0ce19a95247598b7150cd');
+ assert.equal(result.truthSealed,false);
+ assert.equal(result.originalOraclesAttested,0);
+});
+test('RED: frozen original base/head Git blob identities cannot be replaced by a later live PR pointer',()=>{
+ const x=good();
+ x.receipt.snapshots[2].headSha='14fd033f52df1f28bfe0ce19a95247598b7150cd';
+ assert.throws(()=>assessOriginalUpstreamCi(x.manifest,x.receipt),/C2_UPSTREAM_ORIGINAL_CI_BLOCKED/);
 });
