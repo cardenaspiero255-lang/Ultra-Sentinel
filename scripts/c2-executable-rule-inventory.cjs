@@ -45,7 +45,7 @@ function matchOriginalOwnerReceipts(receipts){
 function main(args){
  if(args.length!==3||args.some(x=>!path.isAbsolute(x)))fail();
  const [capturePath,receiptsPath,out]=args;
- if(new Set(args.map(path.resolve)).size!==3||fs.existsSync(out))fail();
+ if(new Set(args.map(x=>path.resolve(x))).size!==3||fs.existsSync(out))fail();
  const capture=read(capturePath,250000);
  const receipts=read(receiptsPath,250000);
  const matched=matchOriginalOwnerReceipts(receipts);
