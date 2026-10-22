@@ -26,6 +26,9 @@ const STATUSES=Object.freeze([
  'TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED','INFRA_BLOCKED',
  'REPRODUCTION_MISMATCH','NO_DECLARED_REGRESSION'
 ]);
+const PREVIOUS_DEVELOPMENT_CASES=new Set([
+ 'detekt_detekt-4205','detekt_detekt-4249','GradleUp_shadow-1313'
+]);
 const RULES=Object.freeze({
  'detekt_detekt-4205':'ForbiddenMethodCall overridden-descriptor method resolution',
  'detekt_detekt-4249':'UnusedPrivateMember operator in containment binding',
@@ -103,6 +106,7 @@ function adjudicatePilot({original,retry}={}){
     originalReproductionEvidenceSha256:selected.proofDigest,
     archiveDigestSha256Claim:selected.artifactDigest,
     rootCauseMechanismHypothesis:RULES[task]||null,
+    previouslyDocumentedInDevelopmentReview:PREVIOUS_DEVELOPMENT_CASES.has(task),
     groundTruthAdmitted:false,causalIndependent:false,
     sourceCheckoutAuthenticated:false,detectorApplicabilityVerified:false,
     originalTestJUnitIntegrityIndependentlyVerified:false,
@@ -134,6 +138,8 @@ function adjudicatePilot({original,retry}={}){
    originalRunId:39168947905,retryRunId:39214460564,
    totalCandidates:16,originalReproductionsAccountedFor:16,selectedRepeatRuns:6,
    otherCandidatesUntouched:90,repositoryCount:9,
+   previouslyReviewedDevelopmentCandidates:records.filter(x=>x.previouslyDocumentedInDevelopmentReview).length,
+   newlyReproducedAfterHistoricalRetry:records.filter(x=>x.selectedEvidenceRun==='retry').length,
    classifications,records,unknownCausalLabelsToAdmit:9,
    exactDuplicateTaskIdentities:0,
    historicalRootCauseDedupVerified:false,
