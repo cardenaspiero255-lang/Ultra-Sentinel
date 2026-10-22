@@ -14,14 +14,15 @@ function read(file,maxBytes){
  return fs.readFileSync(file,'utf8');
 }
 function main(argv){
- if(argv.length!==4)throw Error('usage: cli META.json FILE.json ORIGINAL.kt OUT.json');
- const [meta,patch,original,out]=argv;
+ if(argv.length!==5)throw Error('usage: cli META.json FILE.json TEST.json ORIGINAL.kt OUT.json');
+ const [meta,patch,testFile,original,out]=argv;
  const inputs=[meta,patch,original,out].map(x=>path.resolve(x));
  if(inputs.some((x,i)=>!path.isAbsolute(argv[i])||inputs.indexOf(x)!==i)||
     fs.existsSync(out))throw Error('C2_PR150_DETECTOR_UNSAFE_IO');
  const result=capturePr150OriginalDetectorBoundary({
   pr:JSON.parse(read(meta,6000)),
   target:JSON.parse(read(patch,100000)),
+  originalTest:JSON.parse(read(testFile,3000)),
   source:read(original,160000),
   expectedSourceBlob:EXPECTED_BLOB,expectedSourceLines:320
  });
