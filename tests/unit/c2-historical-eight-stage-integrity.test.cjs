@@ -38,11 +38,11 @@ test('RED: changed historical evidence SHA in a later stage must block',()=>{
  const x=make();x.stages[5].labels[0].evidenceSha256=sha(777,64);
  assert.throws(()=>crosscheckHistoricalChain(x.stages,x.audit),/C2_HISTORICAL_CHAIN_REJECTED/);
 });
-test('RED: removed or reordered stage inventory cannot silently pass',()=>{
- for(const mutation of ['drop','reorder']){
+test('RED: missing or substituted historic identity cannot silently pass',()=>{
+ for(const mutation of ['drop','substitute']){
   const x=make();
   if(mutation==='drop')x.stages[3].labels.splice(1,1);
-  else x.stages[2].labels.reverse();
+  else x.stages[2].labels[0]=structuredClone(x.stages[2].labels.at(-1));
   assert.throws(()=>crosscheckHistoricalChain(x.stages,x.audit),/C2_HISTORICAL_CHAIN_REJECTED/);
  }
 });
