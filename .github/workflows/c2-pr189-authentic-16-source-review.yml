@@ -71,6 +71,8 @@ jobs:
             .schema=="c2-pr189-sixteen-original-upstream-evidence-triage/v1" and
             .totalCandidates==16 and .selectedRepeatRuns==6 and
             .otherCandidatesUntouched==90 and .repositoryCount==9 and
+            .previouslyReviewedDevelopmentCandidates==3 and
+            .newlyReproducedAfterHistoricalRetry==6 and
             (.records|length)==16 and
             .classifications.TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED==9 and
             .classifications.INFRA_BLOCKED==2 and
