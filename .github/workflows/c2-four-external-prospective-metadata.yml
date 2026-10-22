@@ -1,0 +1,96 @@
+name: C2 candidate metadata only - verify four prospectively unseen external Git PR identities
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-four-external-prospective-metadata.yml
+      - packages/quality-gates/c2-four-prospective-metadata.cjs
+      - tests/unit/c2-four-prospective-metadata.test.cjs
+      - docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json
+permissions:
+  contents: read
+jobs:
+  attest-external-pr-metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout unprivileged Sentinel metadata only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify complete architecture and adversarial parser suite
+        run: npm run check
+      - name: Write strict four-repo candidate manifest without reading PR titles, source or predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-four-metadata"
+          mkdir -p "$root/output"
+          node - "$root/candidates.tsv" "$root/output/preseal-readiness.json" <<'NODE'
+          const fs=require('node:fs');
+          const {prevalidateProspectiveMetadata}=require('./packages/quality-gates/c2-four-prospective-metadata.cjs');
+          const d=JSON.parse(fs.readFileSync('./docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json','utf8'));
+          const audit=prevalidateProspectiveMetadata(d);
+          if(audit.count!==4||audit.potentialDefectsConfirmed!==0||audit.cohortFrozen!==false||audit.blindHoldout!==false)
+           throw Error('C2_EXTERNAL_METADATA_BLOCKED');
+          fs.writeFileSync(process.argv[2],audit.candidates.map(x=>[
+            x.repository,x.pr,x.baseSha,x.headSha,x.createdAt].join('|')).join('\n')+'\n',{flag:'wx',mode:0o600});
+          // Sanitize report. No candidate source, diff, PR text or detector finding is fetched.
+          fs.writeFileSync(process.argv[3],JSON.stringify({
+            schema:audit.schema,status:audit.status,count:audit.count,
+            uniqueRepositories:audit.uniqueRepositories,metadataSha256:audit.metadataSha256,
+            gitHubApiAuthenticatedByThisModule:false,coreInspectedCandidatePatches:false,
+            potentialDefectsConfirmed:0,independenceVerified:false,
+            cohortFrozen:false,blindHoldout:false,scoredNegatives:0,
+            newGoldLabels:0,falsePositiveRate:null,precision:null,recall:null,f1:null,
+            sssPlusCertified:false
+          },null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+      - name: Authenticate candidate metadata only against original read-only GitHub API
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-four-metadata"
+          count=0
+          while IFS='|' read -r repo pr base head created; do
+            test -n "$repo" && test -n "$pr" && test -n "$head" && test -n "$base"
+            # Candidate metadata only: do not query files, PR diff, code or review comments.
+            gh api "/repos/$repo/pulls/$pr" --jq '{
+              repository:.base.repo.full_name,
+              number:.number,createdAt:.created_at,
+              baseSha:.base.sha,headSha:.head.sha
+            }' > "$root/original-pr.json"
+            jq -e --arg repo "$repo" --argjson pr "$pr" --arg base "$base" \
+              --arg head "$head" --arg created "$created" \
+              '.repository==$repo and .number==$pr and
+               .baseSha==$base and .headSha==$head and .createdAt==$created' \
+              "$root/original-pr.json" >/dev/null
+            count=$((count+1))
+          done < "$root/candidates.tsv"
+          test "$count" -eq 4
+          jq -e '.count==4 and .uniqueRepositories==4 and
+            .cohortFrozen==false and .blindHoldout==false and
+            .potentialDefectsConfirmed==0 and .newGoldLabels==0 and
+            .precision==null and .recall==null and .f1==null' \
+            "$root/output/preseal-readiness.json" >/dev/null
+          rm -f "$root/candidates.tsv" "$root/original-pr.json"
+          echo "C2_EXTERNAL_PR_METADATA_ONLY_ATTESTED count=4 sourceOrPatchRead=false truthLabels=0"
+      - name: Archive only deterministic metadata digest and unscored eligibility
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-four-real-external-pr-metadata-unfrozen
+          path: ${{ runner.temp }}/c2-four-metadata/output/preseal-readiness.json
+          retention-days: 14
+          if-no-files-found: warn
