@@ -1,0 +1,153 @@
+name: Ultra Sentinel C2 PR186 four source-level crossed causal probes
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr186-four-source-cross.yml
+      - packages/quality-gates/c2-pr186-four-cross-adjudication.cjs
+      - scripts/c2-pr186-cross.sh
+      - scripts/c2-pr186-adjudicate.cjs
+      - scripts/c2-pr152-json-counterfactual.py
+      - scripts/c2-pr158-advanced-ttl-counterfactual.py
+      - tests/oracles/c2-pr186-*.kt
+      - tests/oracles/c2-run22-parser-abi.kt
+      - tests/oracles/c2-run20-android-preferences-abi.kt
+      - tests/oracles/c2-pr158-ai-abi.kt
+      - tests/unit/c2-pr186-four-cross.test.cjs
+      - docs/quality/C2-PR186-FOUR-MECHANISMS.md
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regression:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm run check
+  cross:
+    needs: regression
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [json-query, rollback-ttl]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Authenticate original GitHub Kotlin blobs at historical frozen HEADs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr186/$SUITE"
+          mkdir -p "$root/output"
+          if [ "$SUITE" = json-query ];then
+            cat > "$root/sources" <<'SOURCE_LIST'
+          json-original.kt|104b7dc33e4c0341cec3fca81e3c8fbe3625357f|886c104effd553cd60f8222bfb05b8505fe7c4b8|642d4f0a991bdcbe78c1be408fe49de9b04b72255f345fa59a8f7054cd72b4d2|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraResearchJsonCodec.kt
+          query-original.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|0b5b315b2c5bb54d8c6a2713f3c7d29085209f4f|-|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraGeneralQueryRouter.kt
+          SOURCE_LIST
+          else
+            cat > "$root/sources" <<'SOURCE_LIST'
+          rollback-original.kt|104b7dc33e4c0341cec3fca81e3c8fbe3625357f|ed936aa687b08cf8d964d54f9d88e68bb12344ec|f06604f1bdd7bba80d060adac49d99d9edfb38234e47a91d2f861af3997435da|app/src/main/java/com/cardenaspiero255/gamehubultra/data/AiProfileProposalStore.kt
+          ttl-original.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|0d18a43a8e36ea3edacc2cad72071d96aa31626e|99a229e357823d65d7b04b642c9cf1ba312a35d0308da635ee38c425c8576591|app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraFrontierWorldState.kt
+          battery-original.kt|9d8572afedc634ac07dae58a0da326ea62bdc1da|8696360219231f3f1477d5ad21c93bca2197e281|cd1c9d6a1a6dfb15a67650a3b38aea3611e855b066e4f6217dd7101d6285a67b|app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt
+          SOURCE_LIST
+          fi
+          count=0
+          while IFS='|' read -r alias head blob digest source;do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$source?ref=$head" > "$root/meta.json"
+            jq -e --arg b "$blob" --arg p "$source" '.type=="file" and
+              .path==$p and .sha==$b and .encoding=="base64" and
+              .size>100 and .size<1000000' "$root/meta.json" >/dev/null
+            jq -r .content "$root/meta.json" | base64 --decode > "$root/$alias"
+            test "$(git hash-object "$root/$alias")" = "$blob"
+            if [ "$digest" != '-' ];then
+              test "$(sha256sum "$root/$alias"|cut -d' ' -f1)" = "$digest"
+            fi
+            count=$((count+1))
+          done < "$root/sources"
+          if [ "$SUITE" = json-query ];then test "$count" = 2
+          else test "$count" = 3;fi
+          rm "$root/meta.json" "$root/sources"
+      - name: Enforce AppArmor and Bubblewrap networkless Kotlin execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq \
+            bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc >/dev/null
+          command -v bwrap >/dev/null
+      - name: Execute four unmodified/repaired joint Kotlin combinations
+        shell: bash
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          C2_OWNER_SANDBOX=1 bash scripts/c2-pr186-cross.sh "$RUNNER_TEMP/c2-pr186/$SUITE" "$SUITE"
+          test -s "$RUNNER_TEMP/c2-pr186/$SUITE/output/proof.json"
+      - name: Preserve only source-effect receipts, no JAR or GitHub source
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr186-${{ matrix.suite }}
+          path: ${{ runner.temp }}/c2-pr186/${{ matrix.suite }}/output/proof.json
+          if-no-files-found: error
+          retention-days: 14
+  consolidate:
+    needs: [regression, cross]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          pattern: c2-pr186-*
+          path: ${{ runner.temp }}/c2-pr186/summary/stages
+          merge-multiple: false
+      - name: Reconcile eight execution-log hashes and refuse new causal-family certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr186/summary"
+          mkdir -p "$root"
+          node scripts/c2-pr186-adjudicate.cjs \
+            "$root/stages/c2-pr186-json-query/proof.json" \
+            "$root/stages/c2-pr186-rollback-ttl/proof.json" \
+            "$root/summary.json"
+          jq -e '
+            .schema=="c2-pr186-four-mechanism-orthogonal-source-evidence/v1" and
+            .status=="FOUR_SOURCE_INTERVENTIONS_ORTHOGONAL_FAMILY_INDEPENDENCE_NOT_CERTIFIED" and
+            .originalKotlinJointRuns==8 and .orthogonalSourceBehaviors==4 and
+            .independentlyDistinctCausalFamiliesCertified==0 and
+            .causesCertifiedAsIndependent==false and .sourceLabels==23 and
+            .newLabels==0 and .sssPlusCertified==false and .blindHoldout==false and
+            .precision==null and .recall==null and .f1==null' "$root/summary.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr186-four-orthogonal-causal-effects-not-certified
+          path: ${{ runner.temp }}/c2-pr186/summary/summary.json
+          retention-days: 14
+          if-no-files-found: error
