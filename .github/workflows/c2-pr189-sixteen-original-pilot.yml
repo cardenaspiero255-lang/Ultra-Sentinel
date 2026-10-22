@@ -10,7 +10,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: c2-pr189-sixteen-originals-${{ github.event.pull_request.number }}
+  group: c2-pr189-sixteen-originals-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
   cancel-in-progress: false
 jobs:
   roster:
