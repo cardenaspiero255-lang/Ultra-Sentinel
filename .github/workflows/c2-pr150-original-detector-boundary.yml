@@ -1,0 +1,177 @@
+name: Ultra Sentinel C2 PR150 real source causal rerun and Core negative capture
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr150-original-detector-boundary.yml
+      - packages/quality-gates/c2-pr150-original-detector-boundary.cjs
+      - scripts/c2-pr150-original-detector-boundary.cjs
+      - tests/unit/c2-pr150-original-detector-boundary.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-kotlin-causal-matrix:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout original PR without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full test suite
+        run: npm run check
+      - name: Authenticate immutable original PR150 Git blob
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          mkdir -p "$root"
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/38982855937" > "$root/provenance.json"
+          jq -e '.id==38982855937 and .conclusion=="success" and
+            .event=="issue_comment" and .actor.id==322222186 and
+            .repository.id==1418338512 and
+            .head_sha=="05b959a8fe650a0a00e0d20f57d73cceea05c008" and
+            .path==".github/workflows/c2-next-pr150-confidence-oracle.yml"' \
+            "$root/provenance.json" >/dev/null
+          p=app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt
+          gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$p?ref=4c6912d7ca17df0669f8a0d9667f34d2f2b205a9" > "$root/original.json"
+          jq -e --arg p "$p" '.type=="file" and .path==$p and
+            .sha=="37866fd3dbfcd19d9daaf29a5e1e426391c723d4" and
+            .encoding=="base64" and .size>6000 and .size<100000' "$root/original.json" >/dev/null
+          jq -r .content "$root/original.json" | base64 --decode > "$root/original.kt"
+          test "$(git hash-object "$root/original.kt")" = 37866fd3dbfcd19d9daaf29a5e1e426391c723d4
+          node scripts/c2-pr150-causal-cross-interventions.cjs prepare "$root/original.kt" "$root/variants"
+          rm -f "$root/original.json" "$root/provenance.json" "$root/original.kt"
+      - name: Compile four original and counterfactual Kotlin test variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          for variant in original historyOnly externalOnly both; do
+            kotlinc "$root/variants/$variant/SmartRecommendationExplanation.kt" \
+              tests/oracles/c2-next-pr150-confidence-domain-abi.kt \
+              tests/oracles/c2-pr150-causal-cross-interventions.kt \
+              -include-runtime -d "$root/variants/$variant/run.jar"
+            test -s "$root/variants/$variant/run.jar"
+            chmod 0400 "$root/variants/$variant/run.jar"
+          done
+      - name: Require AppArmor and Bubblewrap networkless runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Execute real original and crossed repairs in isolated JVMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              name="$(readlink "$mount")"
+              [[ "$name" != /* && "$name" != *..* ]] || exit 2
+              mounts+=(--symlink "$name" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          for variant in original historyOnly externalOnly both; do
+            env -i PATH=/usr/bin:/bin HOME=/tmp \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              ${mounts[@]} --ro-bind "$jdk" /jdk \
+              --ro-bind "$root/variants" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar "/workspace/$variant/run.jar" \
+              > "$root/variants/$variant/result.json"
+            jq -e 'type=="object" and (keys|length)==6' "$root/variants/$variant/result.json" >/dev/null
+            echo "PR150_AUTHENTIC_SOURCE_VARIANT=$variant"
+          done
+          node scripts/c2-pr150-causal-cross-interventions.cjs verify \
+            "$root/variants" "$root/pr150-causal-adjudication.json"
+          jq -e '.schema=="ultra-sentinel-c2-pr150-factorial-causal-adjudication/v1" and
+            .originalDefectPredicates==2 and .negativeControlFailures==0 and
+            .independentRootCausesCertified==false and .independentGroupsCounted==1 and
+            .causalGuardIndependence=="SEPARABLE_GUARDS_SHARED_POLICY_FAMILY" and
+            .corpusNewLabels==0 and .precision==null and .f1==null and
+            .holdoutFrozen==false and .tripleSPlusCertified==false' \
+            "$root/pr150-causal-adjudication.json" >/dev/null
+          jq -c '{verdict,original:.testMatrix.original,
+            historyOnly:.testMatrix.historyOnly,externalOnly:.testMatrix.externalOnly,
+            both:.testMatrix.both,independentRootCausesCertified,corpusNewLabels}' \
+            "$root/pr150-causal-adjudication.json"
+          mkdir -p "$root/output"
+          cp "$root/pr150-causal-adjudication.json" "$root/output/pr150-causal-adjudication.json"
+      - name: Capture authentic original PR150 Core prediction on benign line 250
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/gamehub-ultra
+          root="$RUNNER_TEMP/c2-pr150-causal"
+          gh api "/repos/$repo/pulls/150" > "$root/pr.json"
+          jq -e '.number==150 and .head.sha=="4c6912d7ca17df0669f8a0d9667f34d2f2b205a9" and
+            .base.sha=="74c5fb9697b2855a1395c9562c2f9b74df9c34c1" and
+            .changed_files==21' "$root/pr.json" >/dev/null
+          jq -c '{number,head:{sha:.head.sha},base:{sha:.base.sha},changed_files}' "$root/pr.json" > "$root/pr-minimal.json"
+          gh api "/repos/$repo/pulls/150/files?per_page=100" > "$root/pr-files.json"
+          test "$(jq 'length' "$root/pr-files.json")" -eq 21
+          jq -e '[.[] | select(.filename=="app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt"
+            and .sha=="37866fd3dbfcd19d9daaf29a5e1e426391c723d4"
+            and .status=="added" and .additions==320 and .changes==320)]|length==1' "$root/pr-files.json" >/dev/null
+          jq -c '.[] | select(.filename=="app/src/main/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanation.kt") |
+            {filename,status,sha,additions,deletions,changes,patch}' "$root/pr-files.json" > "$root/pr-file-minimal.json"
+          jq -e '[.[] | select(.filename=="app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt"
+            and .sha=="830056400d6414a3436f8d650fadbd49fdca5f85"
+            and .status=="added")]|length==1' "$root/pr-files.json" >/dev/null
+          jq -c '.[] | select(.filename=="app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt") |
+            {filename,status,sha}' "$root/pr-files.json" > "$root/original-test-minimal.json"
+          node scripts/c2-pr150-original-detector-boundary.cjs \
+            "$root/pr-minimal.json" "$root/pr-file-minimal.json" "$root/original-test-minimal.json" \
+            "$root/variants/original/SmartRecommendationExplanation.kt" \
+            "$root/output/pr150-original-core-boundary.json"
+          jq -e '.schema=="c2-pr150-exact-source-core-negative-boundary/v1" and
+            .pinnedOriginalSource==true and .coreExecutedOnSuppliedSource==true and
+            .originalPrChangedFiles==21 and .targetSourceFilesAnalyzed==1 and
+            .originalTestFileMetadataIncluded==true and .contextFilesReturned==2 and
+            ([.coreFindings[]|select(.rule=="REGRESSION_TEST_COVERAGE")]|length)==0 and
+            .fullPrCoverageVerified==false and
+            .benign.rule=="WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE" and
+            .benign.line==250 and .benign.falsePositiveScored==false and
+            .negativeDetectorLabelsScored==0 and .measuredFalsePositiveRate==null and
+            .newGoldLabels==0 and .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false' "$root/output/pr150-original-core-boundary.json" >/dev/null
+          rm -f "$root/pr.json" "$root/pr-minimal.json" "$root/pr-files.json" "$root/pr-file-minimal.json" "$root/original-test-minimal.json"
+      - name: Archive only sanitized source/behavior matrix
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr150-real-original-causal-and-core-negative
+          path: |
+            ${{ runner.temp }}/c2-pr150-causal/output/pr150-causal-adjudication.json
+            ${{ runner.temp }}/c2-pr150-causal/output/pr150-original-core-boundary.json
+          retention-days: 14
+          if-no-files-found: warn
