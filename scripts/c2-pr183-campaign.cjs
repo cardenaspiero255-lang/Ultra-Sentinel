@@ -85,10 +85,9 @@ function main(argv){
   write(output,seal(id,root));return;
  }
  if(mode==='combine'&&args.length===7){
-  const [prior,folder,output,...rest]=args;
-  // The 5 receipts are required from disk, not caller-supplied JSON strings.
-  if(rest.length!==4)abort('args');
-  const files=[folder,...rest];
+  const [prior,output,...files]=args;
+  // Five immutable suite witnesses, one per original Kotlin runner.
+  if(files.length!==5)abort('args');
   if(new Set([prior,output,...files].map(p=>path.resolve(p))).size!==7)abort('path alias');
   const out=combine(prior,files);
   write(output,out);
