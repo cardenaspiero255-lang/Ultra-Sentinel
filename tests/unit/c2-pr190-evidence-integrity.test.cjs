@@ -29,6 +29,7 @@ function fixture(){
     const sourceCommit='a'.repeat(40), fixedCommit='b'.repeat(40);
     const proof={schema:'ultra-sentinel-c2-upstream-junit-evidence/v1',
      task,declaredBeforeCommit:sourceCommit,declaredAfterCommit:fixedCommit,
+     verifiedFailToPassCount:1,
      beforeJUnitFiles:[[name,digest(xml)]],afterJUnitFiles:[[name,digest(updated)]]};
     const proofFile=path.join(evidence,'original-transitions.json');
     const bytes=Buffer.from(JSON.stringify(proof)+'\n');
@@ -83,6 +84,36 @@ test('RED: symlinked original JUnit must block source evidence triage',()=>{
   const orig=path.join(t.evidence,'before','junit',name);
   fs.renameSync(orig,orig+'.real');
   fs.symlinkSync(orig+'.real',orig);
+  assert.throws(()=>triage(t.artifacts,t.output),/C2_PR189_RECEIPT_LOADING_BLOCKED/);
+ }finally{t.close();}
+});
+
+test('RED: modified candidateTransitions cannot overstate or understate the SHA-attested JUnit transitions',()=>{
+ for(const value of [0,2,20000,'1',null]){
+  const t=fixture();try{
+   const shard=pilotMatrix().include[0].id;
+   const receiptFile=path.join(t.artifacts,'c2-pr189-'+shard,t.chosen+'.json');
+   const receipt=JSON.parse(fs.readFileSync(receiptFile,'utf8'));
+   receipt.candidateTransitions=value;
+   fs.writeFileSync(receiptFile,JSON.stringify(receipt)+'\n');
+   assert.throws(()=>triage(t.artifacts,t.output),/C2_PR189_RECEIPT_LOADING_BLOCKED/);
+   assert.equal(fs.existsSync(t.output),false);
+  }finally{t.close();}
+ }
+});
+
+test('RED: changing signed proof transition count with matching updated SHA cannot overstate results',()=>{
+ const t=fixture();try{
+  const shard=pilotMatrix().include[0].id;
+  const receiptFile=path.join(t.artifacts,'c2-pr189-'+shard,t.chosen+'.json');
+  const proofFile=path.join(t.evidence,'original-transitions.json');
+  const receipt=JSON.parse(fs.readFileSync(receiptFile,'utf8'));
+  const proof=JSON.parse(fs.readFileSync(proofFile,'utf8'));
+  proof.verifiedFailToPassCount=2;
+  const bytes=Buffer.from(JSON.stringify(proof)+'\n');
+  fs.writeFileSync(proofFile,bytes);
+  receipt.receiptSha256=digest(bytes);
+  fs.writeFileSync(receiptFile,JSON.stringify(receipt)+'\n');
   assert.throws(()=>triage(t.artifacts,t.output),/C2_PR189_RECEIPT_LOADING_BLOCKED/);
  }finally{t.close();}
 });
