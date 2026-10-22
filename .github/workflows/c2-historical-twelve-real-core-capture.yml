@@ -6,7 +6,7 @@ on:
       - packages/quality-gates/c2-historical-twelve-core-capture.cjs
       - scripts/c2-historical-twelve-core-capture.cjs
       - tests/unit/c2-historical-twelve-core-capture.test.cjs
-ssions:
+permissions:
   contents: read
   actions: read
 jobs:
@@ -155,17 +155,7 @@ jobs:
             jq -e --argjson n "$(jq -r .changed_files "$root/pr-manifests/$pr-pr.json")" 'type=="array" and length==$n' "$root/pr-manifests/$pr-files.json" >/dev/null
           done
           jq -r '.entries[]|[.pr,.line,.path,.headSha,.blobSha]|@tsv' "$root/output/reconciled-twelve-oracles.json" |
-            while IFS=
-        if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
-        with:
-          name: c2-twelve-original-core-prediction-receipts-unscored
-          path: |
-            ${{ runner.temp }}/c2-twelve-oracles/output/reconciled-twelve-oracles.json
-            ${{ runner.temp }}/c2-twelve-oracles/output/twelve-original-frozen-core-capture.json
-          retention-days: 14
-          if-no-files-found: warn
-\t' read -r pr line src sha blob; do
+            while IFS=$'\t' read -r pr line src sha blob; do
               [[ "$pr" =~ ^[0-9]+$ && "$line" =~ ^[0-9]+$ ]] || exit 6
               [[ "$src" == app/src/main/* && "$src" == *.kt && "$src" != *..* ]] || exit 7
               jq -e --arg head "$sha" '.head.sha==$head' "$root/pr-manifests/$pr-pr.json" >/dev/null
@@ -203,7 +193,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-twelve-original-source-receipts-reconciled
-          path: ${{ runner.temp }}/c2-twelve-oracles/output/reconciled-twelve-oracles.json
+          name: c2-twelve-original-core-prediction-receipts-unscored
+          path: |
+            ${{ runner.temp }}/c2-twelve-oracles/output/reconciled-twelve-oracles.json
+            ${{ runner.temp }}/c2-twelve-oracles/output/twelve-original-frozen-core-capture.json
           retention-days: 14
           if-no-files-found: warn
