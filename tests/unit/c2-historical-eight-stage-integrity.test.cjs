@@ -97,7 +97,7 @@ test('RED: missing, duplicated, or repurposed historical receipt must reject its
   if(scenario==='duplicate') x.recovery.entries[9]={...x.recovery.entries[0]};
   if(scenario==='wrong-pol') x.recovery.entries[0].positive=!x.recovery.entries[0].positive;
   if(scenario==='wrong-source') x.recovery.entries[0].sourceBlobSha=sha(999,40);
-  if(scenario==='invent-evidence') x.audit.entries[0].evidenceSha256=sha(999,64);
+  if(scenario==='invent-evidence') x.audit.entries[13].evidenceSha256=sha(999,64);
   if(scenario==='missing') x.recovery.entries.pop();
   assert.throws(()=>linkRecoveredOriginalReceipts(x.audit,x.recovery),
    /C2_HISTORICAL_CHAIN_REJECTED/);
