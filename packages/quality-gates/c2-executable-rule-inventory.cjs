@@ -48,7 +48,7 @@ function buildExecutableRuleInventory(){
    const row=lines[i];
    const expression=meta.implementation==='direct'?
     /\bput\(\s*'([A-Z][A-Z0-9_]{2,100})'/g:
-    /\bemit\(\s*(?:anchor|evidenceLine|cut\+1|denialLine|\{line:newsLine\+1,text:lines\[newsLine\]\})\s*,\s*'([A-Z][A-Z0-9_]{2,100})'/g;
+    /\bemit\(\s*(?:anchor|wikiAnchor|evidenceLine|cut\+1|denialLine|\{line:newsLine\+1,text:lines\[newsLine\]\})\s*,\s*'([A-Z][A-Z0-9_]{2,100})'/g;
    for(const match of row.matchAll(expression)){
     rules.push(Object.freeze({
      rule:match[1],implementation:meta.implementation,
