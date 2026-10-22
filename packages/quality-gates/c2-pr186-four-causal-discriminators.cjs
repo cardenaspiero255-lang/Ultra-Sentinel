@@ -11,7 +11,7 @@ const CASES=Object.freeze([
   suite:'json',pr:152,line:110,key:'JSON_ARRAY_TERMINATION_HYPOTHESIS',
   intervention:'Scope scanner to sourceIds bracket matching outside JSON strings; reject greedily including another array.',
   sources:[src('original.kt',head152,'886c104effd553cd60f8222bfb05b8505fe7c4b8',
-   '642d4f0a991bdcbe78c1be408fe49da9b04b72255f345fa59a8f7054cd72b4d2',
+   '642d4f0a991bdcbe78c1be408fe49de9b04b72255f345fa59a8f7054cd72b4d2',
    'app/src/main/java/com/cardenaspiero255/gamehubultra/ai/UltraResearchJsonCodec.kt')]
  }),
  Object.freeze({
