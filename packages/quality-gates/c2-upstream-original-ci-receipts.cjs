@@ -15,7 +15,7 @@ const status=new Set(['queued','in_progress','completed','waiting','pending','re
 const digest=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const STATUS_KEYS=['sha','checks','fetchComplete'];
 const CHECK_KEYS=['id','name','headSha','status','conclusion','appSlug'];
-const ROW_KEYS=['repository','pr','baseSha','headSha','base','head'];
+const ROW_KEYS=['repository','pr','baseSha','headSha','observedPrBaseSha','observedPrHeadSha','base','head'];
 const DOC_KEYS=['schema','selectionSha256','snapshots'];
 function validateChecks(scope,expected){
  if(!eq(scope,STATUS_KEYS)||scope.sha!==expected||!HASH40.test(scope.sha)||
@@ -53,11 +53,11 @@ function assessOriginalUpstreamCi(metadata,doc){
     !Array.isArray(doc.snapshots)||doc.snapshots.length!==4)fail();
  const slots=new Map(metadata.candidates.map(v=>[v.repository.toLowerCase()+'#'+v.pr,v]));
  const seen=new Set(),reports=[];
- let noHeadChecks=0,comparableNativeChecks=0,comparableTestChecks=0;
+ let noHeadChecks=0,comparableNativeChecks=0,comparableTestChecks=0;\n let prHeadDriftCount=0,prBaseDriftCount=0;
  for(const v of doc.snapshots){
   if(!eq(v,ROW_KEYS)||typeof v.repository!=='string'||
      !Number.isSafeInteger(v.pr)||v.pr<1||
-     !HASH40.test(v.baseSha)||!HASH40.test(v.headSha))fail();
+     !HASH40.test(v.baseSha)||!HASH40.test(v.headSha)||\n     !HASH40.test(v.observedPrBaseSha)||!HASH40.test(v.observedPrHeadSha))fail();
   const key=v.repository.toLowerCase()+'#'+v.pr,expected=slots.get(key);
   if(!expected||seen.has(key)||v.repository!==expected.repository||
      v.baseSha!==expected.baseSha||v.headSha!==expected.headSha)fail();
@@ -97,7 +97,7 @@ function assessOriginalUpstreamCi(metadata,doc){
   candidateSourceRead:false,candidatePredictionsRead:false,baselinePredictionsRead:false,
   gitHubApiAuthenticatedByThisModule:false,
   upstreamCiMetadataPairsAttestedByCaller:reports.length,
-  candidates:reports.length,noHeadChecks,
+  candidates:reports.length,noHeadChecks,prHeadDriftCount,prBaseDriftCount,
   comparableNativeChecks,comparableTestChecks,
   nativeChecksAreCausalOracles:false,ciChecksSufficientForTruth:false,
   evidence:Object.freeze(reports),
