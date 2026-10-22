@@ -1,8 +1,61 @@
 #!/usr/bin/env node
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
+const {createHash}=require('node:crypto');
 const {pilotMatrix,adjudicatePilot}=require('../packages/quality-gates/c2-pr189-sixteen-original-replays.cjs');
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+const POSITIVE='TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED';
+const XML_NAME=/^TEST-[0-9a-f]{24}\.xml$/;
+const SHA256=/^[0-9a-f]{64}$/;
 function fail(){throw Error('C2_PR189_RECEIPT_LOADING_BLOCKED');}
+function safeDirectory(location){
+ const stat=fs.lstatSync(location);
+ if(!stat.isDirectory()||stat.isSymbolicLink())fail();
+}
+function safeRead(location,maxBytes){
+ const stat=fs.lstatSync(location);
+ if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
+  stat.size<1||stat.size>maxBytes)fail();
+ return fs.readFileSync(location);
+}
+// These SHA checks authenticate integrity WITHIN the downloaded workflow artifact.
+// They do not claim independent upstream checkout, patch or root-cause provenance.
+function verifyJUnitEvidence(shardDir,receipt){
+ if(receipt.status!==POSITIVE)return;
+ const evidenceRoot=path.join(shardDir,'evidence');
+ const taskDir=path.join(evidenceRoot,receipt.task);
+ safeDirectory(evidenceRoot);safeDirectory(taskDir);
+ const proofBytes=safeRead(path.join(taskDir,'original-transitions.json'),1_000_000);
+ if(!SHA256.test(receipt.receiptSha256||'')||
+    sha256(proofBytes)!==receipt.receiptSha256)fail();
+ const proof=JSON.parse(proofBytes.toString('utf8'));
+ if(!proof||Array.isArray(proof)||typeof proof!=='object'||
+  proof.schema!=='ultra-sentinel-c2-upstream-junit-evidence/v1'||
+  proof.task!==receipt.task||proof.status&&proof.status!==POSITIVE||
+  proof.declaredBeforeCommit!==receipt.sourceCommitClaim||
+  proof.declaredAfterCommit!==receipt.fixedCommitClaim)fail();
+ for(const phase of ['before','after']){
+  const source=path.join(taskDir,phase);
+  safeDirectory(source);
+  const junit=path.join(source,'junit');
+  safeDirectory(junit);
+  const index=proof[phase+'JUnitFiles'];
+  if(!Array.isArray(index)||index.length===0||index.length>4096)fail();
+  const expected=new Set();
+  let totalBytes=0;
+  for(const entry of index){
+   if(!Array.isArray(entry)||entry.length!==2||
+      !XML_NAME.test(entry[0])||!SHA256.test(entry[1])||expected.has(entry[0]))fail();
+   expected.add(entry[0]);
+   const data=safeRead(path.join(junit,entry[0]),2_097_152);
+   totalBytes+=data.length;
+   if(totalBytes>100_663_296||sha256(data)!==entry[1])fail();
+  }
+  const actual=fs.readdirSync(junit,{withFileTypes:true});
+  if(actual.length!==expected.size||
+    actual.some(item=>!expected.has(item.name)||!item.isFile()||item.isSymbolicLink()))fail();
+ }
+}
 function triage(artifactRoot,output){
  if(!path.isAbsolute(artifactRoot)||!path.isAbsolute(output)||
   path.resolve(artifactRoot)===path.resolve(output)||fs.existsSync(output))fail();
@@ -25,6 +78,7 @@ function triage(artifactRoot,output){
    if(meta.nlink!==1||meta.size<25||meta.size>20000)fail();
    const receipt=JSON.parse(fs.readFileSync(file,'utf8'));
    if(!receipt||item.name!==receipt.task+'.json')fail();
+   verifyJUnitEvidence(location,receipt);
    receipts.push(receipt);
   }
  }
