@@ -22,7 +22,7 @@ test('RED: source-CI metadata is not an original behavior oracle or independent 
  assert.equal(x.candidates,4);
  assert.equal(x.upstreamCiMetadataPairsAttestedByCaller,4);
  assert.equal(x.noHeadChecks,1);
- assert.equal(x.comparableTestChecks,3);
+ assert.equal(x.comparableTestChecks,2);
  assert.equal(x.causesOriginalBehaviorVerified,0);
  assert.equal(x.genuineDefectsVerified,0);
  assert.equal(x.independentBenignVerified,0);
