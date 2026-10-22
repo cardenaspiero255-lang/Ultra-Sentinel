@@ -1,0 +1,103 @@
+name: C2 frozen Core rule inventory and authentic benign controls
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-executable-rule-inventory.yml
+      - packages/quality-gates/c2-executable-rule-inventory.cjs
+      - scripts/c2-executable-rule-inventory.cjs
+      - tests/unit/c2-executable-rule-inventory.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify-executable-rule-inventory:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Use Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify full tests before reading original benign evidence
+        run: npm run check
+      - name: Authenticate exact archived original-source and Core execution receipts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-rule-inventory"
+          mkdir -p "$root/archive" "$root/output"
+          gh api "/repos/$repo/actions/runs/39817571622" > "$root/run.json"
+          jq -e '
+            .id==39817571622 and
+            .head_sha=="f6c63cfbe50c87993d295784eeb2b0df9091005c" and
+            .path==".github/workflows/c2-historical-twelve-real-core-capture.yml" and
+            .event=="pull_request" and .status=="completed" and .conclusion=="success" and
+            .repository.id==1418338512 and .actor.id==322222186
+          ' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39817571622/artifacts" > "$root/artifacts.json"
+          jq -e '
+            [.artifacts[]|select(
+              .id==12443326034 and
+              .name=="c2-twelve-original-core-prediction-receipts-unscored" and
+              .digest=="sha256:e4063305507ea32d882cbfa86fc3c7a368a13b4013d7999e1c4ef486aeea9f89" and
+              .expired==false and .workflow_run.id==39817571622 and
+              .workflow_run.repository_id==1418338512
+            )]|length==1
+          ' "$root/artifacts.json" >/dev/null
+          gh run download 39817571622 --repo "$repo" \
+            --name c2-twelve-original-core-prediction-receipts-unscored \
+            --dir "$root/archive"
+          test "$(find "$root/archive" -type l|wc -l)" -eq 0
+          test "$(find "$root/archive" -type f|wc -l)" -eq 2
+          test -s "$root/archive/reconciled-twelve-oracles.json"
+          test -s "$root/archive/twelve-original-frozen-core-capture.json"
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Build audited rule inventory and replay known authentic benign control results
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-rule-inventory"
+          node scripts/c2-executable-rule-inventory.cjs \
+            "$root/archive/twelve-original-frozen-core-capture.json" \
+            "$root/archive/reconciled-twelve-oracles.json" \
+            "$root/output/c2-executable-rule-inventory.json"
+          jq -e '
+            .schema=="c2-core-rule-inventory-owner-controls/v1" and
+            .inventory.ruleCount==17 and
+            .inventory.byImplementation.direct==10 and
+            .inventory.byImplementation.semantic==4 and
+            .inventory.byImplementation.regression==3 and
+            ([.inventory.rules[].rule]|unique|length)==17 and
+            .inventory.detectorSourceShaPinned==true and
+            .benign.authenticNegativeSourceOraclesInArchive==6 and
+            .benign.coreSourceExecutions==6 and
+            .benign.outOfRuleVocabulary==6 and
+            .benign.exactRulePathLineMatches==0 and
+            .benign.ruleSpecificBenignCasesScored==0 and
+            .benign.trueNegativesScored==0 and .benign.falsePositivesScored==0 and
+            .benign.falsePositiveRate==null and
+            .certification.newGold==0 and
+            .certification.precision==null and .certification.recall==null and
+            .certification.f1==null and .certification.holdoutFrozen==false and
+            .certification.sssPlusCertified==false
+          ' "$root/output/c2-executable-rule-inventory.json" >/dev/null
+          rm -rf "$root/archive"
+      - name: Upload integrity-and-applicability findings, without copying sources
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-executable-rule-inventory-authentic-benign-unscored
+          path: ${{ runner.temp }}/c2-rule-inventory/output/c2-executable-rule-inventory.json
+          retention-days: 14
+          if-no-files-found: warn
