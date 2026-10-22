@@ -66,3 +66,24 @@ test('RED: no fake certification even if a candidate set has diversity but zero 
  assert.equal(x.precision,null);
  assert.equal(x.sssPlusCertified,false);
 });
+
+test('RED: metadata-only CLI writes one fail-closed unscored preseal report, no truth/predictions',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {main}=require('../../scripts/c2-prospective-preseal-readiness.cjs');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'c2-preseal-'));
+ try{
+  const input=path.join(dir,'in.json'),output=path.join(dir,'out.json');
+  fs.writeFileSync(input,JSON.stringify({schema:'c2-prospective-metadata-input/v1',
+   historical:history(),candidates:[candidate('different-owner/new-library',509)]}));
+  main([input,output]);
+  const report=JSON.parse(fs.readFileSync(output,'utf8'));
+  assert.equal(report.candidateProposals,1);
+  assert.equal(report.cohortMetadataFrozen,false);
+  assert.equal(report.precision,null);
+  assert.equal(report.negativeFindingLabelsAdmitted,0);
+  assert.throws(()=>main([input,output]),/PROSPECTIVE_PRESEAL_BLOCKED/);
+  fs.writeFileSync(input,JSON.stringify({schema:'c2-prospective-metadata-input/v1',
+   historical:history(),candidates:[],predictions:[]}));
+  assert.throws(()=>main([input,path.join(dir,'bad.json')]),/PROSPECTIVE_PRESEAL_BLOCKED/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
