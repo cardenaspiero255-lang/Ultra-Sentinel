@@ -1,0 +1,120 @@
+name: Ultra Sentinel C2 PR189 original sixteen source and retry evidence
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr189-authentic-16-source-review.yml
+      - packages/quality-gates/c2-pr189-pilot-16-adjudication.cjs
+      - scripts/c2-pr189-review-pilot-16.cjs
+      - tests/unit/c2-pr189-pilot-16-adjudication.test.cjs
+      - docs/quality/C2-PR189-SIXTEEN-ORIGINAL-KOTLIN-ADJUDICATION.md
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticate-sixteen:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run full architecture and adversarial tests
+        run: npm run check
+      - name: Authenticate both original owner-run identities and all twelve artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr189"
+          mkdir -p "$root/39168947905" "$root/39214460564" "$root/report"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          while IFS='|' read -r run sha path;do
+            gh api "/repos/$repo/actions/runs/$run" |
+              jq -e --argjson id "$run" --arg s "$sha" --arg p "$path" '
+                .id==$id and .head_sha==$s and .path==$p and
+                .event=="issue_comment" and .head_branch=="main" and
+                .status=="completed" and .conclusion=="success" and
+                .actor.id==322222186 and .repository.id==1418338512' >/dev/null
+          done <<'PINNED_RUNS'
+          39168947905|78acbcf4a91be55c2b38237ca2be8890440f317c|.github/workflows/c2-kotlin-106-campaign.yml
+          39214460564|9eed20624b66447079adc634bb5ce2e409480a63|.github/workflows/c2-kotlin-62-targeted-retry.yml
+          PINNED_RUNS
+          node scripts/c2-pr189-review-pilot-16.cjs manifest > "$root/manifest.tsv"
+          test "$(wc -l < "$root/manifest.tsv")" -eq 12
+          while IFS='|' read -r run artifact id digest;do
+            gh api "/repos/$repo/actions/runs/$run/artifacts?per_page=100" |
+              jq -e --argjson id "$id" --arg n "$artifact" --arg d "$digest" '
+                [.artifacts[]|select(.id==$id and .name==$n and
+                .digest==$d and .expired==false)]|length==1' >/dev/null
+            mkdir -p "$root/$run/$artifact"
+            gh run download "$run" --repo "$repo" --name "$artifact" \
+              --dir "$root/$run/$artifact"
+            test "$(find "$root/$run/$artifact" -type l | wc -l)" -eq 0
+          done < "$root/manifest.tsv"
+      - name: Reinspect sixteen BEFORE/AFTER source receipts and all JUnit SHA indices
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr189"
+          node scripts/c2-pr189-review-pilot-16.cjs adjudicate \
+            "$root/39168947905" "$root/39214460564" \
+            "$root/report/sixteen-original-evidence.json"
+          jq -e '
+            .schema=="c2-pr189-sixteen-original-upstream-evidence-triage/v1" and
+            .totalCandidates==16 and .selectedRepeatRuns==6 and
+            .otherCandidatesUntouched==90 and .repositoryCount==9 and
+            .previouslyReviewedDevelopmentCandidates==3 and
+            .newlyReproducedAfterHistoricalRetry==6 and
+            (.records|length)==16 and
+            .classifications.TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED==9 and
+            .classifications.INFRA_BLOCKED==2 and
+            .classifications.REPRODUCTION_MISMATCH==1 and
+            .classifications.NO_DECLARED_REGRESSION==4 and
+            .exactDuplicateTaskIdentities==0 and
+            .historicalRootCauseDedupVerified==false and
+            .newPositiveLabels==0 and .newNegativeLabels==0 and
+            .independentlyVerifiedCausalFamiliesAdded==0 and
+            .blindHoldout==false and .tripleSPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.records[]|select(.groundTruthAdmitted!=false or
+              .causalIndependent!=false or .detectorApplicabilityVerified!=false or
+              .historicalRootCauseDedupVerified!=false)]|length)==0' \
+            "$root/report/sixteen-original-evidence.json" >/dev/null
+      - name: Verify actual merged upstream PR base references for nine source transitions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr189"
+          jq -r '.records[]|select(.status=="TRANSITIONS_OBSERVED_PROVENANCE_REVIEW_REQUIRED")|
+            [.task,.sourceOriginalPrBaseShaClaim]|join("|")' \
+            "$root/report/sixteen-original-evidence.json" > "$root/pinned-pr-bases.tsv"
+          test "$(wc -l < "$root/pinned-pr-bases.tsv")" -eq 9
+          while IFS='|' read -r task sha;do
+            case "$task" in
+              detekt_detekt-*) repo=detekt/detekt;;
+              pinterest_ktlint-*) repo=ktlint/ktlint;;
+              GradleUp_shadow-*) repo=GradleUp/shadow;;
+              *) exit 2;;
+            esac
+            pr="$(printf '%s\n' "$task" | awk -F- '{print $NF}')"
+            gh api "/repos/$repo/pulls/$pr" |
+              jq -e --arg s "$sha" '.base.sha==$s and .merged_at!=null' >/dev/null
+          done < "$root/pinned-pr-bases.tsv"
+          echo C2_PR189_NINE_UPSTREAM_BASE_SHA_REFS_MATCH_PASS
+      - name: Archive only noncertifying sixteen-source-evidence triage
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr189-sixteen-original-retries-not-gold
+          path: ${{ runner.temp }}/c2-pr189/report/sixteen-original-evidence.json
+          retention-days: 30
+          if-no-files-found: error
