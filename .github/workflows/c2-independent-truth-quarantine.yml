@@ -1,0 +1,119 @@
+name: C2 isolated prospective original-truth intake boundary (metadata only)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-independent-truth-quarantine.yml
+      - packages/quality-gates/c2-independent-oracle-quarantine.cjs
+      - tests/unit/c2-independent-oracle-quarantine.test.cjs
+      - docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json
+permissions:
+  contents: read
+jobs:
+  verify-selection-before-original-source-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Sentinel only; never candidate source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Pin Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture and adversarial gate suite
+        run: npm run check
+      - name: Prepare source-free selection commitment and four oracle slots
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-independent-oracle-quarantine"
+          mkdir -p "$root/output"
+          node - "$root/pointers.tsv" "$root/output/selection-commitment.json" <<'NODE'
+          const fs=require('node:fs');
+          const {prepareIndependentOracleQuarantine}=require('./packages/quality-gates/c2-independent-oracle-quarantine.cjs');
+          const x=JSON.parse(fs.readFileSync('docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json','utf8'));
+          const report=prepareIndependentOracleQuarantine(x);
+          if(report.candidateCount!==4||report.sourceBlobsPinned!==true||
+             report.candidateSourceRead!==false||report.truthSealed!==false||
+             report.genuineDefectsVerified!==0||report.holdoutFrozen!==false)
+           throw Error('C2_INDEPENDENT_ORACLE_QUARANTINE_BLOCKED');
+          fs.writeFileSync(process.argv[2],x.candidates.map(c=>[
+            c.repository,c.pr,c.baseSha,c.headSha,c.createdAt].join('|')).join('\n')+'\n',{flag:'wx',mode:0o600});
+          fs.writeFileSync(process.argv[3],JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+      - name: Authenticate immutable original Git commit trees without source or patch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-independent-oracle-quarantine"
+          : > "$root/git-tree-metadata.jsonl"
+          count=0
+          while IFS='|' read -r repo pr base head created; do
+            test -n "$repo" && test -n "$pr" && test -n "$base" && test -n "$head"
+            # PR metadata only. No issue, title, contents, tests, patch or predictions.
+            gh api "/repos/$repo/pulls/$pr" --jq '{
+              repository:.base.repo.full_name,pr:.number,createdAt:.created_at,
+              baseSha:.base.sha,headSha:.head.sha,headRepository:.head.repo.full_name
+            }' > "$root/original-pr-metadata.json"
+            jq -e --arg repo "$repo" --argjson pr "$pr" \
+              --arg base "$base" --arg head "$head" --arg created "$created" \
+              '.repository==$repo and .pr==$pr and .baseSha==$base and
+               .headSha==$head and .createdAt==$created and
+               (.headRepository|type=="string") and
+               (.headRepository|test("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"))' \
+              "$root/original-pr-metadata.json" >/dev/null
+            head_repo="$(jq -r '.headRepository' "$root/original-pr-metadata.json")"
+            # Git objects, not source blobs; the API response is reduced to tree SHA only.
+            gh api "/repos/$repo/git/commits/$base" --jq '{sha:.sha,treeSha:.tree.sha}' > "$root/base-tree.json"
+            gh api "/repos/$head_repo/git/commits/$head" --jq '{sha:.sha,treeSha:.tree.sha}' > "$root/head-tree.json"
+            jq -e --arg sha "$base" '.sha==$sha and (.treeSha|test("^[a-f0-9]{40}$"))' "$root/base-tree.json" >/dev/null
+            jq -e --arg sha "$head" '.sha==$sha and (.treeSha|test("^[a-f0-9]{40}$"))' "$root/head-tree.json" >/dev/null
+            jq -cn --arg repo "$repo" --argjson pr "$pr" \
+              --arg baseSha "$base" --arg headSha "$head" \
+              --arg baseTree "$(jq -r '.treeSha' "$root/base-tree.json")" \
+              --arg headTree "$(jq -r '.treeSha' "$root/head-tree.json")" \
+              '{repository:$repo,pr:$pr,baseSha:$baseSha,headSha:$headSha,baseTreeSha:$baseTree,headTreeSha:$headTree}' \
+              >> "$root/git-tree-metadata.jsonl"
+            count=$((count+1))
+          done < "$root/pointers.tsv"
+          test "$count" -eq 4
+          test "$(wc -l < "$root/git-tree-metadata.jsonl")" -eq 4
+          # Hash a canonical set; do not publish actual source or truth.
+          jq -sc 'sort_by(.repository,.pr)' "$root/git-tree-metadata.jsonl" > "$root/git-tree-metadata.canonical.json"
+          sha256sum "$root/git-tree-metadata.canonical.json" | awk '{print $1}' > "$root/tree-metadata-sha256.txt"
+          jq -e '.candidateCount==4 and .emitterCount==17 and
+            .sourceBlobsPinned==true and .candidateSourceRead==false and
+            .candidatePredictionsRead==false and .originalOraclesAttested==0 and
+            .genuineDefectsVerified==0 and .truthSealed==false and
+            .holdoutFrozen==false and .precision==null and .sssPlusCertified==false' \
+            "$root/output/selection-commitment.json" >/dev/null
+          jq -n --arg treeMetadataSha256 "$(cat "$root/tree-metadata-sha256.txt")" \
+            --arg selectionSha256 "$(jq -r '.selectionSha256' "$root/output/selection-commitment.json")" \
+            '{schema:"c2-quarantined-git-tree-attestation/v1",
+              gitTreeMetadataAuthenticatedByOwnerJob:true,selectionSha256:$selectionSha256,
+              gitTreeMetadataSha256:$treeMetadataSha256,candidates:4,
+              originalOracleTruthAuthenticated:false,trainingSeparationAttested:false,
+              detectorPredictionsRead:false,truthSealed:false,holdoutFrozen:false,
+              newGoldLabels:0,precision:null,recall:null,f1:null,sssPlusCertified:false}' \
+            > "$root/output/git-tree-attestation.json"
+          rm -f "$root/original-pr-metadata.json" "$root/base-tree.json" "$root/head-tree.json" \
+            "$root/git-tree-metadata.jsonl" "$root/git-tree-metadata.canonical.json" \
+            "$root/pointers.tsv" "$root/tree-metadata-sha256.txt"
+          echo 'C2_QUARANTINED_SELECTION_METADATA_VERIFIED_4_NO_SOURCE_NO_LABELS'
+      - name: Archive only original-tree hashes and zero-truth commitment
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-independent-original-truth-quarantine-unscored
+          path: ${{ runner.temp }}/c2-independent-oracle-quarantine/output
+          retention-days: 30
+          if-no-files-found: warn
