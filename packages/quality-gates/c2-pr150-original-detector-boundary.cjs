@@ -9,6 +9,8 @@ const {analyze}=require('../core/ultra_sentinel_core.cjs');
 const {ORIGINAL_HEAD,SOURCE_PATH,EXPECTED_BLOB}=require('./c2-pr150-causal-matrix.cjs');
 const BASE='74c5fb9697b2855a1395c9562c2f9b74df9c34c1';
 const BENIGN='WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE';
+const TEST_PATH='app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt';
+const TEST_SHA='830056400d6414a3436f8d650fadbd49fdca5f85';
 const fail=()=>{throw Error('C2_PR150_DETECTOR_BOUNDARY_BLOCKED');};
 const blob=source=>{
  const bytes=Buffer.from(source,'utf8');
@@ -19,7 +21,7 @@ function strict(value,keys){
  Object.keys(value).length===keys.length&&keys.every(k=>Object.hasOwn(value,k));
 }
 function capture(input,synthetic){
- const keys=['source','expectedSourceBlob','expectedSourceLines','pr','target'];
+ const keys=['source','expectedSourceBlob','expectedSourceLines','pr','target','originalTest'];
  if(!strict(input,keys)||typeof input.source!=='string'||input.source.includes('\0')||
     Buffer.byteLength(input.source,'utf8')>160000||
     !/^[a-f0-9]{40}$/.test(input.expectedSourceBlob||'')||
@@ -29,6 +31,9 @@ function capture(input,synthetic){
     input.pr.number!==150||input.pr.changed_files!==21||
     input.pr.head.sha!==ORIGINAL_HEAD||input.pr.base.sha!==BASE||
     !strict(input.target,['filename','status','sha','additions','deletions','changes','patch'])||
+    !strict(input.originalTest,['filename','status','sha'])||
+    input.originalTest.filename!==TEST_PATH||
+    input.originalTest.status!=='added'||input.originalTest.sha!==TEST_SHA||
     input.target.filename!==SOURCE_PATH||input.target.status!=='added'||
     input.target.sha!==input.expectedSourceBlob||
     input.target.changes!==input.expectedSourceLines||
@@ -49,9 +54,14 @@ function capture(input,synthetic){
   additions:input.expectedSourceLines,deletions:0,
   changes:input.expectedSourceLines,patch:input.target.patch,
   fullSource:input.source
+ },{
+  // This ORIGINAL PR also adds a GitHub-listed test file. Its immutable
+  // filename and blob metadata prevents the Core from inventing a missing-
+  // tests alert when performing a targeted production-file capture.
+  filename:TEST_PATH,status:'added',sha:TEST_SHA
  }],{sha:ORIGINAL_HEAD});
  if(result.sha!==ORIGINAL_HEAD||result.coverage.partial||
-    result.coverage.returned!==1||result.coverage.analyzed!==1||
+    result.coverage.returned!==2||result.coverage.analyzed!==1||
     result.omitted!==0||!Array.isArray(result.findings))fail();
  const originalTuple={rule:BENIGN,path:SOURCE_PATH,line:250};
  const exact=result.findings.filter(f=>
@@ -68,7 +78,8 @@ function capture(input,synthetic){
   originalSourcePath:SOURCE_PATH,originalSourceBlobSha:input.expectedSourceBlob,
   sourceMatchesSuppliedBlob:true,pinnedOriginalSource:!synthetic,
   originalPrChangedFiles:21,fullPrCoverageVerified:false,
-  targetSourceFilesAnalyzed:1,
+  targetSourceFilesAnalyzed:1,contextFilesReturned:2,
+  originalTestFileMetadataIncluded:true,
   coreExecutedOnSuppliedSource:true,coreVersion:result.version,
   coreVerdict:result.verdict,coreFindings:findings,
   benign:{
