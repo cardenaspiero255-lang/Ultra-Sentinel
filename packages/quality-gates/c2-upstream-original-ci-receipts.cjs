@@ -6,7 +6,7 @@
 const {createHash}=require('node:crypto');
 const {prepareIndependentOracleQuarantine}=require('./c2-independent-oracle-quarantine.cjs');
 const HASH40=/^[a-f0-9]{40}$/;
-const fail=()=>{throw Error('C2_UPSTREAM_ORIGINAL_CI_BLOCKED');};
+const fail=(stage='INVALID_INPUT')=>{throw Error('C2_UPSTREAM_ORIGINAL_CI_BLOCKED:'+stage);};
 const eq=(a,k)=>a!==null&&typeof a==='object'&&!Array.isArray(a)&&
  Object.keys(a).length===k.length&&k.every(x=>Object.hasOwn(a,x));
 const conclusion=new Set(['success','failure','neutral','cancelled','skipped','timed_out',
@@ -20,7 +20,7 @@ const DOC_KEYS=['schema','selectionSha256','snapshots'];
 function validateChecks(scope,expected){
  if(!eq(scope,STATUS_KEYS)||scope.sha!==expected||!HASH40.test(scope.sha)||
     scope.fetchComplete!==true||!Array.isArray(scope.checks)||
-    scope.checks.length>2000)fail();
+    scope.checks.length>2000)fail('SOURCE_CHECKS_SHAPE');
  const seen=new Set();
  let testNames=new Map(),nativeNames=new Map();
  let successes=0,errors=0,untested=0;
@@ -31,7 +31,7 @@ function validateChecks(scope,expected){
      typeof c.appSlug!=='string'||!/^[a-z0-9][a-z0-9-]{0,100}$/.test(c.appSlug)||
      c.headSha!==expected||!status.has(c.status)||!conclusion.has(c.conclusion)||
      (c.status==='completed'&&c.conclusion===null)||
-     (c.status!=='completed'&&c.conclusion!==null)||seen.has(c.id))fail();
+     (c.status!=='completed'&&c.conclusion!==null)||seen.has(c.id))fail('SOURCE_CHECK_RECORD');
   seen.add(c.id);
   const key=c.appSlug+'\u0000'+c.name;
   const isTest=/^(?:test(?:\b|[ (/-])|unit[ /-]?test\b|instrumentation[ /-]?test\b)/i.test(c.name);
@@ -47,10 +47,10 @@ function validateChecks(scope,expected){
 }
 function assessOriginalUpstreamCi(metadata,doc){
  let locked;
- try{locked=prepareIndependentOracleQuarantine(metadata)}catch{fail();}
+ try{locked=prepareIndependentOracleQuarantine(metadata)}catch{fail('PRESELECTION_COMMITMENT');}
  if(!eq(doc,DOC_KEYS)||doc.schema!=='c2-independent-upstream-source-ci-input/v1'||
     doc.selectionSha256!==locked.selectionSha256||
-    !Array.isArray(doc.snapshots)||doc.snapshots.length!==4)fail();
+    !Array.isArray(doc.snapshots)||doc.snapshots.length!==4)fail('SNAPSHOT_ENVELOPE');
  const slots=new Map(metadata.candidates.map(v=>[v.repository.toLowerCase()+'#'+v.pr,v]));
  const seen=new Set(),reports=[];
  let noHeadChecks=0,comparableNativeChecks=0,comparableTestChecks=0;
@@ -59,10 +59,10 @@ function assessOriginalUpstreamCi(metadata,doc){
   if(!eq(v,ROW_KEYS)||typeof v.repository!=='string'||
      !Number.isSafeInteger(v.pr)||v.pr<1||
      !HASH40.test(v.baseSha)||!HASH40.test(v.headSha)||
-     !HASH40.test(v.observedPrBaseSha)||!HASH40.test(v.observedPrHeadSha))fail();
+     !HASH40.test(v.observedPrBaseSha)||!HASH40.test(v.observedPrHeadSha))fail('SOURCE_POINTER_SHAPE');
   const key=v.repository.toLowerCase()+'#'+v.pr,expected=slots.get(key);
   if(!expected||seen.has(key)||v.repository!==expected.repository||
-     v.baseSha!==expected.baseSha||v.headSha!==expected.headSha)fail();
+     v.baseSha!==expected.baseSha||v.headSha!==expected.headSha)fail('SOURCE_POINTER_MISMATCH');
   seen.add(key);
   if(v.observedPrHeadSha!==v.headSha)prHeadDriftCount++;
   if(v.observedPrBaseSha!==v.baseSha)prBaseDriftCount++;
@@ -94,7 +94,7 @@ function assessOriginalUpstreamCi(metadata,doc){
    receiptMetadataDigest:digest({base:base.canonical,head:head.canonical})
   }));
  }
- if(seen.size!==4)fail();
+ if(seen.size!==4)fail('FOUR_SOURCE_COUNT');
  reports.sort((a,b)=>(a.repository+'#'+a.pr).localeCompare(b.repository+'#'+b.pr));
  return Object.freeze({
   schema:'c2-four-upstream-native-ci-not-causal-receipts/v1',
