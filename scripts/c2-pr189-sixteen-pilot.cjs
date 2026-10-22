@@ -33,7 +33,11 @@ function verifyJUnitEvidence(shardDir,receipt){
   proof.schema!=='ultra-sentinel-c2-upstream-junit-evidence/v1'||
   proof.task!==receipt.task||proof.status&&proof.status!==POSITIVE||
   proof.declaredBeforeCommit!==receipt.sourceCommitClaim||
-  proof.declaredAfterCommit!==receipt.fixedCommitClaim)fail();
+  proof.declaredAfterCommit!==receipt.fixedCommitClaim||
+  !Number.isSafeInteger(proof.verifiedFailToPassCount)||
+  proof.verifiedFailToPassCount<1||proof.verifiedFailToPassCount>20000||
+  !Number.isSafeInteger(receipt.candidateTransitions)||
+  receipt.candidateTransitions!==proof.verifiedFailToPassCount)fail();
  for(const phase of ['before','after']){
   const source=path.join(taskDir,phase);
   safeDirectory(source);
