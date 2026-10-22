@@ -11,7 +11,7 @@ function read(file){
 function main(args){
  if(args.length!==4)throw Error('usage: c2-pr181-adjudicate.cjs ORIGINAL_RECEIPTS POSITIVE_TRIALS NEGATIVE_TRIALS OUTPUT');
  const [source,trials,negatives,destination]=args;
- if(new Set(args.map(x=>path.resolve(x))).size!==3)
+ if(new Set(args.map(x=>path.resolve(x))).size!==4)
    throw Error('C2_PR181_OVERWRITE_BLOCKED');
  const out=adjudicateOriginalProbes({source:read(source),trials:read(trials),negativeTrials:read(negatives)});
  fs.writeFileSync(destination,JSON.stringify(out,null,2)+'\n',{flag:'wx',mode:0o600});
