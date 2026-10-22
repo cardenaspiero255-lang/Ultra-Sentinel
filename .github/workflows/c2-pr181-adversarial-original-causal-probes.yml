@@ -98,6 +98,7 @@ jobs:
           set -euo pipefail
           C2_OWNER_SANDBOX=1 bash scripts/c2-pr181-replay-original-three.sh "$RUNNER_TEMP/c2-pr181"
           test -s "$RUNNER_TEMP/c2-pr181/new-trials.json"
+          test -s "$RUNNER_TEMP/c2-pr181/negative-trials.json"
       - name: Emit only bounded causal-probe findings and leave SSS+ blocked
         shell: bash
         run: |
@@ -105,13 +106,18 @@ jobs:
           root="$RUNNER_TEMP/c2-pr181"
           node scripts/c2-pr181-adjudicate.cjs \
             "$root/reconciled-twelve-oracles.json" "$root/new-trials.json" \
+            "$root/negative-trials.json" \
             "$root/output/pr181-source-scoped-adjudication.json"
           jq -e '
-            .schema=="c2-pr181-three-original-causal-jvm-probes/v1" and
+            .schema=="c2-pr182-three-positive-two-negative-original-jvm-probes/v2" and
             .originalReceipts==12 and .positiveOriginalReceipts==6 and
             .negativeOriginalReceipts==6 and
-            .retestedPositive==3 and .pendingPositive==3 and .pendingNegative==6 and
-            ([.entryReviews[]|select(.originalSourceReplayed==true)]|length)==3 and
+            .retestedPositive==3 and .pendingPositive==3 and
+            .retestedNegative==2 and .pendingNegative==4 and
+            ([.entryReviews[]|select(.originalSourceReplayed==true)]|length)==5 and
+            ([.entryReviews[]|select(.positive==false and .originalSourceReplayed==true and
+              .causalIndependenceStatus=="ORIGINAL_NEGATIVE_AND_MUTANT_REPLAYED_NO_POSITIVE_CAUSE" and
+              .sourceReplayLogSha256!=null and .adversarialControlLogSha256!=null)]|length)==2 and
             .certifiedIndependentCausesAdded==0 and
             .remainingHistoricalCausesUncertified==21 and
             .sourceLabels==23 and .newLabels==0 and
@@ -123,7 +129,8 @@ jobs:
               .causalFingerprint!=null or .eligibleForGold!=false)]|length)==0' \
             "$root/output/pr181-source-scoped-adjudication.json" >/dev/null
           jq -c '.entryReviews[]|{pr,line,positive,originalSourceReplayed,
-            causalIndependenceStatus,independentRootCauseCertified}' \
+            causalIndependenceStatus,independentRootCauseCertified,
+            sourceReplayLogSha256,adversarialControlLogSha256}' \
             "$root/output/pr181-source-scoped-adjudication.json"
           rm -rf "$root/receipt"
       - name: Archive attestation only without original source or executable JARs
