@@ -72,7 +72,7 @@ test('RED: a self-reported original oracle is only an untrusted receipt, never t
 });
 test('RED: content-independent owner workflow must verify GitHub trees and never read candidate patches',()=>{
  const y=fs.readFileSync(path.join(__dirname,'../../.github/workflows/c2-independent-truth-quarantine.yml'),'utf8');
- assert.match(y,/gh api "\/repos\/\$repo\/git\/commits\/\$head"/);
+ assert.match(y,/gh api "\/repos\/\$head_repo\/git\/commits\/\$head"/);
  assert.match(y,/gh api "\/repos\/\$repo\/git\/commits\/\$base"/);
  assert.match(y,/github\.token/);
  assert.match(y,/persist-credentials: false/);
