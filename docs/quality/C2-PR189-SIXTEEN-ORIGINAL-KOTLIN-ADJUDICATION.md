@@ -13,6 +13,8 @@ La campaña conserva los hashes ZIP originales de **10 artefactos** y **2 de rei
 | Infraestructura bloqueada (2) | TeXiFy #2624; OkHttp #6887 | Reintentar solo tras identificar dependencias/entorno original |
 | Discrepancia (1) | cascade-editor #16 | No inferir prueba original al faltar la transición esperada |
 
+**Control de novedad:** tres casos ya figuraban en la matriz de revisión técnica previa `C2-EIGHT-KOTLIN-UPSTREAM-ROOT-CAUSE-MATRIX-20261019.md`: Detekt #4205, Detekt #4249 y Shadow #1313. No son descubrimientos nuevos. Los otros **seis cambios de estado positivos** proceden de la campaña de reintentos: cuatro Detekt y dos Ktlint. Estos seis también pertenecían al inventario público de 106 tareas; no se califican como etiquetas ni fuentes inéditas.
+
 Los resultados de Detekt/Ktlint/Shadow son **nueve identidades de PR** sin repetición exacta; esto NO significa nueve defectos independientes. Las seis reglas de Detekt describen falsos positivos de detectores concretos; Ktlint #2029/#2091 afecta mensajes/comportamiento CLI, y Shadow #1313 afecta la exclusión de archivos reubicados. Tampoco está probado que el motor de Ultra Sentinel implemente o necesite esas reglas.
 
 ### Orden de adjudicación causal posterior
