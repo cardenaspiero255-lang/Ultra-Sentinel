@@ -95,3 +95,8 @@ test('RED: frozen original base/head Git blob identities cannot be replaced by a
  x.receipt.snapshots[2].headSha='14fd033f52df1f28bfe0ce19a95247598b7150cd';
  assert.throws(()=>assessOriginalUpstreamCi(x.manifest,x.receipt),/C2_UPSTREAM_ORIGINAL_CI_BLOCKED/);
 });
+
+test('RED: invoked upstream CI CLI module must parse under the same Node as the full suite',()=>{
+ const mod=require('../../scripts/c2-upstream-original-ci-receipts.cjs');
+ assert.equal(typeof mod.main,'function');
+});
