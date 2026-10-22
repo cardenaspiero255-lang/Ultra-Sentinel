@@ -42,6 +42,7 @@ function main(argv){
    source:read(path.join(sourceDir,x.pr+'-'+x.line+'.kt'),160000),
    pr:unit.pr,files:unit.files};
  });
+ process.stderr.write('C2_HISTORICAL_SOURCE_CASES_FETCHED='+cases.length+'\\n');
  const result=auditTwelveBundle(receipt,cases);
  fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({
@@ -52,6 +53,6 @@ function main(argv){
  })+'\n');
 }
 if(require.main===module){try{main(process.argv.slice(2));}catch(e){
- process.stderr.write('C2_HISTORICAL_CORE_CAPTURE_BLOCKED '+String(e.message||e).slice(0,160)+'\n');
+ process.stderr.write('C2_HISTORICAL_CORE_CAPTURE_BLOCKED '+String(e.stack||e.message||e).slice(0,2500)+'\n');
  process.exitCode=2;}}
 module.exports={main};
