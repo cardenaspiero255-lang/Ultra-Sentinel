@@ -67,6 +67,11 @@ test('RED: authenticate 16 exact identities, 9 observed source transitions, 2 in
  assert.equal(out.historicalLabels,23);assert.equal(out.additionalTargetLowerBound,97);
  assert.equal(out.newPositiveLabels,0);assert.equal(out.newNegativeLabels,0);
  assert.equal(out.unknownCausalLabelsToAdmit,9);
+ assert.equal(out.previouslyReviewedDevelopmentCandidates,3);
+ assert.equal(out.newlyReproducedAfterHistoricalRetry,6);
+ assert.deepEqual(out.records.filter(x=>x.previouslyDocumentedInDevelopmentReview).map(x=>x.task),
+  ['detekt_detekt-4205','detekt_detekt-4249','GradleUp_shadow-1313']);
+
  assert.equal(out.blindHoldout,false);assert.equal(out.tripleSPlusCertified,false);
  assert.equal(out.precision,null);assert.equal(out.recall,null);assert.equal(out.f1,null);
 });
