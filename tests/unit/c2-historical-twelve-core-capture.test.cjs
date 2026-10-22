@@ -71,3 +71,10 @@ test('RED: aggregate exactly twelve development records, no independent causes o
  assert.equal(report.f1,null);assert.equal(report.measuredFalsePositiveRate,null);
  assert.equal(report.blindHoldoutFrozen,false);assert.equal(report.sssPlusCertified,false);
 });
+
+test('RED: CI must compact full GitHub PR response before the strict 6KB CLI provenance input',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const workflow=fs.readFileSync(path.join(__dirname,'../../.github/workflows/c2-historical-twelve-real-core-capture.yml'),'utf8');
+ assert.match(workflow,/jq -c '\{number,changed_files,head:\{sha:\.head\.sha\}\}'/);
+ assert.match(workflow,/mv "\$root\/pr-manifests\/\$pr-meta\.json" "\$root\/pr-manifests\/\$pr-pr\.json"/);
+});
