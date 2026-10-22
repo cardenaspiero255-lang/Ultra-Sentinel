@@ -100,3 +100,11 @@ test('RED: invoked upstream CI CLI module must parse under the same Node as the 
  const mod=require('../../scripts/c2-upstream-original-ci-receipts.cjs');
  assert.equal(typeof mod.main,'function');
 });
+
+test('RED: CLI must pass authenticated observed live PR pointers alongside frozen base/head commits',()=>{
+ const script=fs.readFileSync(path.join(__dirname,'../../scripts/c2-upstream-original-ci-receipts.cjs'),'utf8');
+ assert.match(script,/pr-'\+i\+'\.json/);
+ assert.match(script,/observedPrBaseSha:live\.baseSha/);
+ assert.match(script,/observedPrHeadSha:live\.headSha/);
+ assert.doesNotMatch(script,/baseSha:live\.baseSha,headSha:live\.headSha/);
+});
