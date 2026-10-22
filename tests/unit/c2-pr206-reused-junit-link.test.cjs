@@ -64,3 +64,17 @@ test('RED: JUnit bytes, 4-case oracle or missing source identity cannot be forge
  x=>{x.artifact.expired=true;},
  ]){const d=good();modify(d);assert.throws(()=>verifyJUnitLink(d),/C2_REUSED_JUNIT_LINK_BLOCKED/);}
 });
+
+test('RED: PR206 workflow authenticates original owner-run artifact, actual JUnit bytes and attaches linked evidence',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const yml=fs.readFileSync(path.resolve(__dirname,'../../.github/workflows/c2-pr206-utf16-triple-source-oracle.yml'),'utf8');
+ assert.match(yml,/actions: read/);
+ assert.match(yml,/actions\/runs\/39827001646/);
+ assert.match(yml,/12447597134/);
+ assert.match(yml,/5deccbf951d42fbe9b8f236911ebd6e005d466cf424d9701d69ad265f4f43030/);
+ assert.match(yml,/ed3b6a82f9e2ffbf11d8fc54bd5512206fe471e4dd5590b2c105e5b061e72936/);
+ assert.match(yml,/gh run download 39827001646/);
+ assert.match(yml,/scripts\/c2-pr206-reused-junit-link\.cjs/);
+ assert.match(yml,/original-kotlin-junit\.xml/);
+ assert.doesNotMatch(yml,/contents: write|continue-on-error: true/);
+});
