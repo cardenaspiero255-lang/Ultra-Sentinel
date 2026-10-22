@@ -6,6 +6,7 @@ on:
       - packages/quality-gates/c2-pr185-numeric-orthogonality.cjs
       - tests/unit/c2-pr185-numeric-orthogonality.test.cjs
       - tests/oracles/c2-pr185-numeric-factorial-oracle.kt
+      - tests/oracles/c2-run17-battery-abi.kt
       - scripts/c2-pr185-numeric-factorial.sh
       - scripts/c2-pr185-adjudicate.cjs
       - docs/quality/C2-PR185-NUMERIC-CAUSAL-FACTORS.md
