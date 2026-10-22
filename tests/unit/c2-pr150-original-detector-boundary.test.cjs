@@ -12,6 +12,7 @@ const patch='@@ -0,0 +1,4 @@\n'+source.trimEnd().split('\n').map(x=>'+'+x).join(
 function fixture(){
  return {source,expectedSourceBlob:blob(source),expectedSourceLines:4,
   pr:{number:150,head:{sha},base:{sha:base},changed_files:21},
+  originalTest:{filename:'app/src/test/java/com/cardenaspiero255/gamehubultra/domain/SmartRecommendationExplanationFactoryTest.kt',status:'added',sha:'830056400d6414a3436f8d650fadbd49fdca5f85'},
   target:{filename:file,status:'added',sha:blob(source),additions:4,deletions:0,changes:4,patch}};
 }
 test('RED: genuine Core executes on the exact SHA-bound source and joins only rule/path/line',()=>{
@@ -21,6 +22,9 @@ test('RED: genuine Core executes on the exact SHA-bound source and joins only ru
  assert.equal(result.originalPrChangedFiles,21);
  assert.equal(result.fullPrCoverageVerified,false);
  assert.equal(result.coreExecutedOnSuppliedSource,true);
+ assert.equal(result.originalTestFileMetadataIncluded,true);
+ assert.equal(result.contextFilesReturned,2);
+ assert.equal(result.coreFindings.some(f=>f.rule==='REGRESSION_TEST_COVERAGE'),false);
  assert.equal(result.benign.rule,'WEAK_EXTERNAL_EVIDENCE_DOWNGRADES_CONFIDENCE');
  assert.equal(result.benign.path,file);
  assert.equal(result.benign.line,250);
@@ -47,6 +51,9 @@ test('RED: tampered source, patch, source SHA or original PR identity fail close
   x=>{x.target.additions=5;},
   x=>{x.expectedSourceBlob='0'.repeat(40);},
   x=>{x.target.filename='../unsafe.kt';},
+  x=>{x.originalTest.sha='0'.repeat(40);},
+  x=>{x.originalTest.status='removed';},
+  x=>{delete x.originalTest;},
   x=>{x.source=x.source.replace('good','bad');}
  ];
  for(const mutate of changes){
