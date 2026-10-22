@@ -73,7 +73,13 @@ function adjudicateFour({parent,receipts}={}){
    const parts=['sourceOriginalSha256','repairedSha256','wrongFixSha256',
     'originalFailureLogSha256','repairSuccessLogSha256','adversarialWrongFixFailureLogSha256'];
    const hashes=parts.map(p=>receipt[p]);
-   if(hashes.some(x=>!H64.test(x))||new Set(hashes).size!==hashes.length)fail();
+   const codeHashes=hashes.slice(0,3),logs=hashes.slice(3);
+   // The original and an intentionally wrong repair may fail with identical
+   // output bytes. This is valid when the *source variants* are distinct and
+   // success output differs from the observed failures.
+   if(hashes.some(x=>!H64.test(x))||new Set(codeHashes).size!==3||
+    logs.some(x=>codeHashes.includes(x))||
+    logs[1]===logs[0]||logs[1]===logs[2])fail();
    const corresponding=parent.positiveHypotheses.filter(x=>
     x.pr===c.pr&&x.line===c.line&&x.sharedHypothesisKey===c.key&&
     x.independentlyCertified===false);
