@@ -37,7 +37,7 @@ function main(args){
  process.stdout.write(JSON.stringify({candidateCount:summary.candidates,
   sourceCiCandidatesWithoutHeadChecks:summary.noHeadChecks,
   comparableNativeCheckNames:summary.comparableNativeChecks,
-  comparableTestCheckNames:summary.comparableTestChecks,
+  comparableTestCheckNames:summary.comparableTestChecks,\n  liveHeadDrifts:summary.prHeadDriftCount,
   independentlyAttestedOriginalOracles:summary.originalOraclesAttested,
   newGoldLabels:summary.newGoldLabels,certified:summary.sssPlusCertified})+'\n');
 }
