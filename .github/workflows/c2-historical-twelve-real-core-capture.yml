@@ -153,6 +153,8 @@ jobs:
             gh api "/repos/$origin/pulls/$pr/files?per_page=100" > "$root/pr-manifests/$pr-files.json"
             jq -e --argjson p "$pr" '.number==$p and .changed_files>0 and .changed_files<=100' "$root/pr-manifests/$pr-pr.json" >/dev/null
             jq -e --argjson n "$(jq -r .changed_files "$root/pr-manifests/$pr-pr.json")" 'type=="array" and length==$n' "$root/pr-manifests/$pr-files.json" >/dev/null
+            jq -c '{number,changed_files,head:{sha:.head.sha}}' "$root/pr-manifests/$pr-pr.json" > "$root/pr-manifests/$pr-meta.json"
+            mv "$root/pr-manifests/$pr-meta.json" "$root/pr-manifests/$pr-pr.json"
           done
           jq -r '.entries[]|[.pr,.line,.path,.headSha,.blobSha]|@tsv' "$root/output/reconciled-twelve-oracles.json" |
             while IFS=$'\t' read -r pr line src sha blob; do
