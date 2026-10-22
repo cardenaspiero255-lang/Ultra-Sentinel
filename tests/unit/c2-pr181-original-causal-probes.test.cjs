@@ -41,19 +41,38 @@ function input(){
    firstRepairPassed:true,adversarialControlPassed:true,
    sourceBehaviorScoped:true,candidatePredictionsRead:false,baselinePredictionsRead:false};
  });
- return {source,trials};
+ const negativeTrials=[{pr:151,line:185},{pr:150,line:167}].map((id,i)=>{
+  const x=entries.find(x=>x.pr===id.pr&&x.line===id.line);
+  return {identity:x.identity,originalHeadSha:x.headSha,originalBlobSha:x.blobSha,
+   originalLogSha256:h('negative-original'+i),
+   mutantLogSha256:h('negative-mutant'+i),
+   originalSourceUnmodified:true,originalSafeControlPassed:true,
+   mutantKilled:true,sourceBehaviorScoped:true,candidatePredictionsRead:false,
+   baselinePredictionsRead:false};
+ });
+ return {source,trials,negativeTrials};
 }
 test('RED: independent JVM experiments annotate first three without admitting distinct causes',()=>{
  const x=input(),before=JSON.stringify(x);
  const out=adjudicateOriginalProbes(structuredClone(x));
  assert.equal(JSON.stringify(x),before);
- assert.equal(out.status,'THREE_REPRODUCED_CAUSAL_INTERVENTIONS_FAMILY_INDEPENDENCE_PENDING');
+ assert.equal(out.status,'THREE_POSITIVES_TWO_NEGATIVES_SOURCE_REPLAYED_CAUSAL_INDEPENDENCE_PENDING');
  assert.equal(out.originalReceipts,12);assert.equal(out.positiveOriginalReceipts,6);
  assert.equal(out.negativeOriginalReceipts,6);assert.equal(out.retestedPositive,3);
- assert.equal(out.pendingPositive,3);assert.equal(out.pendingNegative,6);
+ assert.equal(out.pendingPositive,3);assert.equal(out.pendingNegative,4);
+ assert.equal(out.retestedNegative,2);
  assert.equal(out.entryReviews.length,12);
- assert.equal(out.entryReviews.filter(x=>x.originalSourceReplayed).length,3);
+ assert.equal(out.entryReviews.filter(x=>x.originalSourceReplayed).length,5);
  assert.equal(out.entryReviews.filter(x=>x.causalIndependenceStatus==='CONTRAFACTUAL_REPRODUCED_FAMILY_NOT_YET_DISTINCT').length,3);
+ const twoNegatives=out.entryReviews.filter(x=>!x.positive&&x.originalSourceReplayed);
+ assert.deepEqual(twoNegatives.map(x=>x.pr+':'+x.line).sort(),['150:167','151:185']);
+ for(const control of twoNegatives){
+  assert.equal(control.causalIndependenceStatus,'ORIGINAL_NEGATIVE_AND_MUTANT_REPLAYED_NO_POSITIVE_CAUSE');
+  assert.match(control.sourceReplayLogSha256,/^[a-f0-9]{64}$/);
+  assert.match(control.adversarialControlLogSha256,/^[a-f0-9]{64}$/);
+  assert.equal(control.repairLogSha256,null);
+  assert.equal(control.independentRootCauseCertified,false);
+ }
  assert.equal(out.entryReviews.filter(x=>x.independentRootCauseCertified).length,0);
  assert.equal(out.certifiedIndependentCausesAdded,0);
  assert.equal(out.newLabels,0);assert.equal(out.sssPlusCertified,false);
@@ -83,7 +102,15 @@ test('RED: reject fabricated proof, swapped original identities, pr-level confla
   x=>{x.trials[0].originalSourceUnmodified=false;},
   x=>{x.trials[0].originalLogSha256='bad';},
   x=>{x.trials[0].candidatePredictionsRead=true;},
-  x=>{x.trials.pop();}
+  x=>{x.trials.pop();},
+  x=>{x.negativeTrials.pop();},
+  x=>{x.negativeTrials[0].mutantLogSha256='bad';},
+  x=>{x.negativeTrials[0].originalSafeControlPassed=false;},
+  x=>{x.negativeTrials[0].mutantKilled=false;},
+  x=>{x.negativeTrials[0].identity=x.negativeTrials[1].identity;},
+  x=>{x.negativeTrials[0].originalHeadSha='0'.repeat(40);},
+  x=>{x.negativeTrials[0].candidatePredictionsRead=true;},
+  x=>{x.negativeTrials.push({...x.negativeTrials[0]});}
  ];
  for(const attack of attacks){const x=input();attack(x);
   assert.throws(()=>adjudicateOriginalProbes(x),/C2_PR181_CAUSAL_PROBES_BLOCKED/);
