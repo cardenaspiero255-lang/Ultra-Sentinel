@@ -46,3 +46,12 @@ test('RED: metadata hash order independent, no source or oracle calls in evaluat
  assert.equal(a.cohortFrozen,false);
  assert.equal(a.independenceVerified,false);
 });
+
+test('RED: owner workflow uses read-only GitHub API for precise base/head/created-at metadata, without source or diff downloads',()=>{
+ const yml=fs.readFileSync(path.resolve(__dirname,'../../.github/workflows/c2-four-external-prospective-metadata.yml'),'utf8');
+ assert.match(yml,/gh api "\/repos\/\$repo\/pulls\/\$pr"/);
+ assert.match(yml,/persist-credentials: false/);
+ assert.match(yml,/permissions:[\s\S]*?contents: read/);
+ assert.match(yml,/candidate metadata only/i);
+ assert.doesNotMatch(yml,/\/pulls\/\$pr\/files|\/compare\/|gh pr diff|contents: write|pull-requests: write/);
+});
