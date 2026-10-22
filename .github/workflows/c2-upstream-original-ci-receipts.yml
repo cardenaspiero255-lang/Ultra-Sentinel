@@ -63,10 +63,19 @@ jobs:
                 baseSha:.base.sha,headSha:.head.sha}' > "$root/pinned-pr.json"
             jq -e --arg repo "$repo" --argjson pr "$pr" \
               --arg base "$base" --arg head "$head" --arg created "$created" \
-              '.repository==$repo and .pr==$pr and .baseSha==$base and
-               .headSha==$head and .createdAt==$created' "$root/pinned-pr.json" >/dev/null
+              '.repository==$repo and .pr==$pr and
+               .createdAt==$created and
+               (.baseSha|test("^[a-f0-9]{40}$")) and
+               (.headSha|test("^[a-f0-9]{40}$"))' "$root/pinned-pr.json" >/dev/null
+            # The live PR may move AFTER preregistration. Never substitute
+            # its new SHA for the original preselected Git objects.
+            cp "$root/pinned-pr.json" "$root/pr-$idx.json"
             for stage in base head; do
               if [ "$stage" = base ]; then sha="$base"; else sha="$head"; fi
+              # Verify the ORIGINAL frozen Git object still exists, even if
+              # the external PR has a newer live HEAD. No source blob opened.
+              frozen="$(gh api "/repos/$repo/git/commits/$sha" --jq '.sha')"
+              test "$frozen" = "$sha"
               # Check-run metadata, NOT JUnit/CI logs or candidate source. Fetch every page.
               gh api --paginate "/repos/$repo/commits/$sha/check-runs?per_page=100" --jq \
                 '.check_runs[]|{id,name,headSha:.head_sha,status,conclusion,appSlug:.app.slug}' \
