@@ -1,0 +1,203 @@
+name: Ultra Sentinel C2 12 real original-source Core diagnostic (unscored)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-historical-twelve-real-core-capture.yml
+      - packages/quality-gates/c2-historical-twelve-core-capture.cjs
+      - scripts/c2-historical-twelve-core-capture.cjs
+      - tests/unit/c2-historical-twelve-core-capture.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticate-historical-oracle-chain:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Use Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run complete static and adversarial unit checks
+        run: npm run check
+      - name: Authenticate exact twelve-case queue and eight original owner-run proofs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-twelve-oracles"
+          mkdir -p "$root/queue" "$root/sources" "$root/output"
+          gh api "/repos/$repo/actions/runs/39544945791" > "$root/run.json"
+          jq -e '
+            .id==39544945791 and
+            .head_sha=="c36851d3375d03efd95b2825495bbf5c4c0c249a" and
+            .path==".github/workflows/c2-twelve-historical-identity-triage.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39544945791/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(.id==12321306801 and
+            .name=="c2-12-pending-historical-original-identity-queue" and
+            .digest=="sha256:d624c356df1d93c61156167e56784df934be942b02e46a1abd26ed5fb40e784c" and
+            .expired==false and .workflow_run.id==39544945791 and
+            .workflow_run.repository_id==1418338512)]|length==1' \
+            "$root/artifacts.json" >/dev/null
+          gh run download 39544945791 --repo "$repo" \
+            --name c2-12-pending-historical-original-identity-queue \
+            --dir "$root/queue"
+          test "$(find "$root/queue" -type l|wc -l)" -eq 0
+          test "$(find "$root/queue" -type f|wc -l)" -eq 1
+          test -s "$root/queue/c2-twelve-historical-identity-queue.json"
+          node - "$root/stages.tsv" <<'NODE'
+          const fs=require('node:fs');
+          const {STAGES}=require('./packages/quality-gates/c2-twelve-original-oracle-reconciliation.cjs');
+          if(STAGES.length!==8||STAGES.flatMap(x=>x.cases).length!==12)
+           throw Error('C2_TWELVE_STAGE_MANIFEST_BLOCKED');
+          fs.writeFileSync(process.argv[2],STAGES.map(x=>[
+           x.key,x.run,x.head,x.workflow,x.artifact,x.name,x.digest,x.file
+          ].join('|')).join('\n')+'\n',{flag:'wx',mode:0o600});
+          NODE
+          while IFS='|' read -r key run sha workflow artifact name digest filename; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson run "$run" --arg sha "$sha" --arg workflow "$workflow" '
+              .id==$run and .head_sha==$sha and .path==$workflow and
+              .event=="issue_comment" and .status=="completed" and
+              .conclusion=="success" and .actor.id==322222186 and
+              .repository.id==1418338512' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson run "$run" --argjson id "$artifact" --arg name "$name" \
+              --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+                .digest==$digest and .expired==false and
+                .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1' \
+              "$root/artifacts.json" >/dev/null
+            mkdir -p "$root/sources/$key"
+            gh run download "$run" --repo "$repo" --name "$name" \
+              --dir "$root/sources/$key"
+            test "$(find "$root/sources/$key" -type l|wc -l)" -eq 0
+            case "$key" in
+              run21-negatives)
+                expected=3
+                test -s "$root/sources/$key/151-witness.json"
+                test -s "$root/sources/$key/154-witness.json" ;;
+              run22-comparison)
+                expected=2
+                test -s "$root/sources/$key/158-witness.json" ;;
+              run23-stores)
+                expected=3
+                test -s "$root/sources/$key/151-witness.json"
+                test -s "$root/sources/$key/152-witness.json" ;;
+              *) expected=1 ;;
+            esac
+            test "$(find "$root/sources/$key" -type f|wc -l)" -eq "$expected"
+            test -s "$root/sources/$key/$filename"
+            echo "C2_ORIGINAL_OWNER_SOURCE_AUTHENTICATED=$key run=$run"
+          done < "$root/stages.tsv"
+          node scripts/c2-twelve-reconcile-owner-oracles.cjs \
+            "$root/queue/c2-twelve-historical-identity-queue.json" \
+            "$root/sources" "$root/output/reconciled-twelve-oracles.json"
+          jq -e '
+            .schema=="c2-run23-twelve-original-owner-oracle-reconciliation/v1" and
+            .ownerOriginalOraclesReconciled==12 and
+            .ownerSourceStagesReconciled==8 and
+            .positiveSourceReceiptsReconciled==6 and
+            .negativeSourceReceiptsReconciled==6 and
+            .counterfactualJVMExecutionsThisRun==0 and
+            .causalIndependenceAdjudicationsAdded==0 and
+            .remainingWithoutIndependentCausalAssessment==12 and
+            .sourceLabels==23 and .sourcePositiveLabels==11 and
+            .sourceNegativeLabels==12 and
+            .certifiedIndependentCausesAdded==0 and
+            .remainingHistoricalCausesUncertified==21 and
+            .newLabels==0 and .independenceVerified==false and
+            .holdoutFrozen==false and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.entries[]|.identity]|unique|length)==12 and
+            ([.entries[]|select(.causalIndependenceStatus!="REQUIRES_INDEPENDENT_INTERVENTION" or
+              .independentlyCertified!=false or .scoringAdmitted!=false)]|length)==0' \
+            "$root/output/reconciled-twelve-oracles.json" >/dev/null
+          jq -c '.entries[]|{pr,line,rule,positive,originalOwnerRunId,
+            causalIndependenceStatus,admittedNewCause}' \
+            "$root/output/reconciled-twelve-oracles.json"
+          rm -rf "$root/queue" "$root/sources" "$root/stages.tsv" "$root/run.json" "$root/artifacts.json"
+      - name: SHA-verify frozen detector Core sources before reading historical labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git hash-object packages/core/ultra_sentinel_core.cjs)" = 836f9400f42f269b80f446e89601744c59c73073
+          test "$(git hash-object packages/core/c2-semantic-patterns.cjs)" = 7df2a994f566ad56bdacab999fa6ba83b69e3b4d
+          test "$(git hash-object packages/core/c2-known-defect-regressions.cjs)" = 8c2fa4289d331e157b07f4e693239ac7e31cae8c
+      - name: Fetch 12 authentic GitHub source files and 6 original PR diffs (read-only)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          origin=cardenaspiero255-lang/gamehub-ultra
+          root="$RUNNER_TEMP/c2-twelve-oracles"
+          mkdir -p "$root/pr-manifests" "$root/original-src"
+          jq -r '[.entries[].pr]|unique|.[]' "$root/output/reconciled-twelve-oracles.json" | while read -r pr; do
+            [[ "$pr" =~ ^[0-9]+$ ]] || exit 5
+            gh api "/repos/$origin/pulls/$pr" > "$root/pr-manifests/$pr-pr.json"
+            gh api "/repos/$origin/pulls/$pr/files?per_page=100" > "$root/pr-manifests/$pr-files.json"
+            jq -e --argjson p "$pr" '.number==$p and .changed_files>0 and .changed_files<=100' "$root/pr-manifests/$pr-pr.json" >/dev/null
+            jq -e --argjson n "$(jq -r .changed_files "$root/pr-manifests/$pr-pr.json")" 'type=="array" and length==$n' "$root/pr-manifests/$pr-files.json" >/dev/null
+            jq -c '{number,changed_files,head:{sha:.head.sha}}' "$root/pr-manifests/$pr-pr.json" > "$root/pr-manifests/$pr-meta.json"
+            mv "$root/pr-manifests/$pr-meta.json" "$root/pr-manifests/$pr-pr.json"
+          done
+          jq -r '.entries[]|[.pr,.line,.path,.headSha,.blobSha]|@tsv' "$root/output/reconciled-twelve-oracles.json" |
+            while IFS=$'\t' read -r pr line src sha blob; do
+              [[ "$pr" =~ ^[0-9]+$ && "$line" =~ ^[0-9]+$ ]] || exit 6
+              [[ "$src" == app/src/main/* && "$src" == *.kt && "$src" != *..* ]] || exit 7
+              jq -e --arg head "$sha" '.head.sha==$head' "$root/pr-manifests/$pr-pr.json" >/dev/null
+              gh api "/repos/$origin/contents/$src?ref=$sha" > "$root/source-meta.json"
+              jq -e --arg b "$blob" --arg p "$src" '.type=="file" and .sha==$b and .path==$p and .encoding=="base64" and .size>0 and .size<=160000' "$root/source-meta.json" >/dev/null
+              jq -r '.content' "$root/source-meta.json" | base64 --decode > "$root/original-src/$pr-$line.kt"
+              test "$(git hash-object "$root/original-src/$pr-$line.kt")" = "$blob"
+            done
+          rm -f "$root/source-meta.json"
+      - name: Run frozen real Core on exact original source and write UNSCORED identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-twelve-oracles"
+          node scripts/c2-historical-twelve-core-capture.cjs \
+            "$root/output/reconciled-twelve-oracles.json" \
+            "$root/pr-manifests" "$root/original-src" \
+            "$root/output/twelve-original-frozen-core-capture.json"
+          jq -e '.schema=="c2-12-historical-exact-source-frozen-core-capture/v1" and
+            .count==12 and .positives==6 and .negatives==6 and
+            .sourceGitBlobAttested==12 and .coreExecutions>=0 and
+            .originalOwnerOracleReceiptsReused==true and
+            .causalIndependenceNewlyCertified==0 and .scoredNegatives==0 and
+            .scoredPositives==0 and .newGoldLabels==0 and
+            .measuredFalsePositiveRate==null and .precision==null and
+            .recall==null and .f1==null and .blindHoldoutFrozen==false and
+            .sssPlusCertified==false and
+            ([.claims[]|select(.scoredNegative!=false or .certified!=false)]|length)==0' \
+            "$root/output/twelve-original-frozen-core-capture.json" >/dev/null
+          jq -c '.claims[]|{pr:.target.pr,line:.target.line,rule:.target.rule,
+            positive:.labelPolarity,changeStatus,coreExecuted,
+            exactRulePathLineMatches,scoredNegative}' "$root/output/twelve-original-frozen-core-capture.json"
+          rm -rf "$root/pr-manifests" "$root/original-src"
+      - name: Archive readonly causal review metadata; never secrets or source
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-twelve-original-core-prediction-receipts-unscored
+          path: |
+            ${{ runner.temp }}/c2-twelve-oracles/output/reconciled-twelve-oracles.json
+            ${{ runner.temp }}/c2-twelve-oracles/output/twelve-original-frozen-core-capture.json
+          retention-days: 14
+          if-no-files-found: warn
