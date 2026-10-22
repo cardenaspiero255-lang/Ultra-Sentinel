@@ -1,0 +1,139 @@
+name: C2 PR206 real Kotlin original and derived fix with benign controls
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr206-utf16-triple-source-oracle.yml
+      - packages/quality-gates/c2-pr206-utf16-triple-oracle.cjs
+      - scripts/c2-pr206-utf16-triple-oracle.cjs
+      - tests/oracles/c2-pr206-utf16-real-triple.kt
+      - tests/unit/c2-pr206-utf16-triple-oracle.test.cjs
+permissions:
+  contents: read
+concurrency:
+  group: c2-original-speech-206-${{ github.event.pull_request.number || github.run_id }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+jobs:
+  original-rule-and-kotlin-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Sentinel without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Checkout immutable original GameHub PR206 with complete ancestry
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 53cb89551d6e750d263bc0e25dde9f4d3069144f
+          fetch-depth: 0
+          path: original
+          persist-credentials: false
+      - name: Actual Sentinel Core on Git-attested original and synthetic negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/c2-original-206"
+          node packages/quality-gates/c2-original-speech-206.cjs \
+            original tests/fixtures/c2-original-speech/UltraSpeechChunker.kt \
+            "$RUNNER_TEMP/c2-original-206/core-original-detection.json"
+          jq -e '.originalSourceAndDiffVerified == true and
+            .ruleId == "TTS_UTF16_SURROGATE_SPLIT" and .line == 26 and
+            (.controls | length) == 3 and .newLabels == 0 and
+            .blindHoldout == false and .tripleSPlusCertified == false' \
+            "$RUNNER_TEMP/c2-original-206/core-original-detection.json" >/dev/null
+      - name: Setup pinned Java runtime
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Compile original and exact derived counterfactual Kotlin JVMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr206-triple"
+          mkdir -p "$root/original" "$root/counterfactual" "$root/build" "$root/output"
+          cp original/app/src/main/java/com/cardenaspiero255/gamehubultra/voice/UltraSpeechChunker.kt "$root/original/UltraSpeechChunker.kt"
+          test "$(git hash-object "$root/original/UltraSpeechChunker.kt")" = 6ce74fb027c0d6e3fe6cfe48d3b0b5fc1ba2497a
+          cmp "$root/original/UltraSpeechChunker.kt" tests/fixtures/c2-original-speech/UltraSpeechChunker.kt
+          node scripts/c2-pr206-utf16-triple-oracle.cjs prepare "$root/original/UltraSpeechChunker.kt" "$root/counterfactual/UltraSpeechChunker.kt" "$root/output/source-provenance.json"
+          jq -e '.counterfactualUpstreamCommitCertified==false and .changedSites==3 and .newGoldLabels==0' "$root/output/source-provenance.json" >/dev/null
+          command -v kotlinc
+          kotlinc "$root/original/UltraSpeechChunker.kt" tests/oracles/c2-pr206-utf16-real-triple.kt -include-runtime -d "$root/build/original.jar"
+          kotlinc "$root/counterfactual/UltraSpeechChunker.kt" tests/oracles/c2-pr206-utf16-real-triple.kt -include-runtime -d "$root/build/counterfactual.jar"
+          test -s "$root/build/original.jar" && test -s "$root/build/counterfactual.jar"
+      - name: Run both real JVMs with Bubblewrap and AppArmor without network
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          root="$RUNNER_TEMP/c2-pr206-triple"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java" && test -x /usr/bin/bwrap
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          for variant in original counterfactual; do
+            env -i PATH=/usr/bin:/bin HOME=/tmp \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$root/build" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar "/workspace/$variant.jar" "$variant" > "$root/output/$variant.json"
+            jq -e --arg v "$variant" \
+              '.schema=="c2-pr206-utf16-real-kotlin-runtime/v1" and .variant==$v and
+              .asciiBenign==true and .whitespaceBenign==true and .shortBenign==true and
+              .countIndependentBenignLabels==0 and .boundary32Broken==($v=="original") and
+              .boundary800Broken==($v=="original")' "$root/output/$variant.json" >/dev/null
+          done
+      - name: Join original JVM outcomes, benign inputs and frozen Core alert identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr206-triple"
+          node scripts/c2-pr206-utf16-triple-oracle.cjs adjudicate \
+            "$root/original/UltraSpeechChunker.kt" "$root/counterfactual/UltraSpeechChunker.kt" \
+            "$root/output/original.json" "$root/output/counterfactual.json" \
+            "$root/output/c2-pr206-frozen-core-real-kotlin-join.json"
+          jq -e '.schema=="c2-pr206-original-counterfactual-jvm-joined-core/v1" and
+            .core.originalExactRulePathLineCount==1 and .core.originalLine==26 and
+            .core.counterfactualSameRuleCount==0 and .behavior.behavioralTransitions==2 and
+            .behavior.benignInputControlsPassed==6 and .realUpstreamFixProven==false and
+            .independentBenignSourceLabels==0 and .scoredFalsePositives==0 and
+            .falsePositiveRate==null and .precision==null and .recall==null and
+            .f1==null and .admittedGoldLabels==0 and .sssPlusCertified==false' \
+            "$root/output/c2-pr206-frozen-core-real-kotlin-join.json" >/dev/null
+          cp "$root/output/source-provenance.json" "$RUNNER_TEMP/c2-original-206/"
+          cp "$root/output/c2-pr206-frozen-core-real-kotlin-join.json" "$RUNNER_TEMP/c2-original-206/"
+      - name: Upload original evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr206-original-fixed-real-kotlin-core-unscored
+          path: ${{ runner.temp }}/c2-original-206
+          retention-days: 14
+          if-no-files-found: warn
