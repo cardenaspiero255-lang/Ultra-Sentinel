@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {crosscheckHistoricalChain}=require('../../packages/quality-gates/c2-historical-eight-stage-integrity.cjs');
+const {crosscheckHistoricalChain,linkRecoveredOriginalReceipts}=require('../../packages/quality-gates/c2-historical-eight-stage-integrity.cjs');
 const sha=(n,length)=>n.toString(16).padStart(length,'0');
 function make(){
  const labels=Array.from({length:23},(_,i)=>({
@@ -26,7 +26,7 @@ test('RED: authentic archive sequence can be crosschecked without pretending to 
  assert.equal(r.positives,11);
  assert.equal(r.negatives,12);
  assert.equal(r.originalIndividualEvidenceReceipts,13);
- assert.equal(r.remainingWithoutOriginalReceipt,10);
+ assert.equal(r.missingEmbeddedRun23ReceiptFields,10);
  assert.equal(r.independenceVerified,false);
  assert.equal(r.historicalEvidenceAuthenticated,false);
  assert.equal(r.scoredNegativeLabels,0);
@@ -59,4 +59,51 @@ test('RED: historical receiptless entries must not be invented into scored negat
  }
  const x=make();x.audit.entries[20].evidenceSha256=sha(2222,64);
  assert.throws(()=>crosscheckHistoricalChain(x.stages,x.audit),/C2_HISTORICAL_CHAIN_REJECTED/);
+});
+
+function recoveredFixture(){
+ const {stages,audit}=make();
+ const entries=audit.entries.filter(x=>!x.evidenceSha256).map((x,i)=>({
+  pr:x.pr,sourceHeadSha:x.headSha,sourceBlobSha:x.blobSha,
+  ruleId:x.rule,path:x.path,line:x.line,positive:x.positive,
+  sourceRunId:i+100,artifactId:i+200,artifactSha256:sha(i+300,64),
+  originalWitnessSha256:sha(i+400,64),
+  status:'ORIGINAL_BEHAVIOR_RECEIPT_RECOVERED_CAUSAL_ADJUDICATION_PENDING'
+ }));
+ return {stages,audit,recovery:{
+  historicalSourceLabels:23,originalBehaviorWitnessesRecovered:10,
+  missingHistoricalIndividualReceiptsAfterIndependentRecovery:0,
+  originalHistoricalSealAltered:false,unresolvedCausalGroups:21,
+  historicalEvidenceAuthenticated:false,independenceVerified:false,
+  newLabels:0,precision:null,recall:null,f1:null,
+  entries}};
+}
+test('RED: link all ten missing Run23 hashes to original receipts, never to GOLD or scored negatives',()=>{
+ const x=recoveredFixture();
+ const summary=crosscheckHistoricalChain(x.stages,x.audit);
+ const linked=linkRecoveredOriginalReceipts(x.audit,x.recovery);
+ assert.equal(summary.missingEmbeddedRun23ReceiptFields,10);
+ assert.equal(linked.linkedOriginalSourceReceipts,10);
+ assert.equal(linked.uniqueWitnesses,10);
+ assert.equal(linked.unlinkedHistoricalIdentities,0);
+ assert.equal(linked.independenceVerified,false);
+ assert.equal(linked.scoredNegativeLabels,0);
+ assert.equal(linked.precision,null);
+});
+test('RED: missing, duplicated, or repurposed historical receipt must reject its external link',()=>{
+ const bad=['duplicate','wrong-pol','wrong-source','invent-evidence','missing'];
+ for(const scenario of bad){
+  const x=recoveredFixture();
+  if(scenario==='duplicate') x.recovery.entries[9]={...x.recovery.entries[0]};
+  if(scenario==='wrong-pol') x.recovery.entries[0].positive=!x.recovery.entries[0].positive;
+  if(scenario==='wrong-source') x.recovery.entries[0].sourceBlobSha=sha(999,40);
+  if(scenario==='invent-evidence') x.audit.entries[0].evidenceSha256=sha(999,64);
+  if(scenario==='missing') x.recovery.entries.pop();
+  assert.throws(()=>linkRecoveredOriginalReceipts(x.audit,x.recovery),
+   /C2_HISTORICAL_CHAIN_REJECTED/);
+ }
+});
+test('RED: recovered witnesses cannot be promoted to independent truth by claiming a flag',()=>{
+ const x=recoveredFixture();x.recovery.independenceVerified=true;
+ assert.throws(()=>linkRecoveredOriginalReceipts(x.audit,x.recovery),/C2_HISTORICAL_CHAIN_REJECTED/);
 });
