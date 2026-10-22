@@ -20,7 +20,7 @@ function fixture(){
   schema:'c2-pr186-discriminative-original-kotlin-source/v1',suite:c.suite,
   identityKey:c.pr+':'+c.line,mechanismHypothesisKey:c.key,
   originalGitBlobVerified:true,
-  sourceOriginalSha256:c.sourceSha256||sha('original-'+i),
+  sourceOriginalSha256:c.sources[0].sourceSha256||sha('original-'+i),
   repairedSha256:sha('repaired-'+i),wrongFixSha256:sha('wrong-'+i),
   originalFailureLogSha256:sha('failure-'+i),
   repairSuccessLogSha256:sha('passing-'+i),
