@@ -64,6 +64,8 @@ function assessOriginalUpstreamCi(metadata,doc){
   if(!expected||seen.has(key)||v.repository!==expected.repository||
      v.baseSha!==expected.baseSha||v.headSha!==expected.headSha)fail();
   seen.add(key);
+  if(v.observedPrHeadSha!==v.headSha)prHeadDriftCount++;
+  if(v.observedPrBaseSha!==v.baseSha)prBaseDriftCount++;
   const base=validateChecks(v.base,v.baseSha);
   const head=validateChecks(v.head,v.headSha);
   const commonNative=[...head.nativeNames].filter(([name])=>base.nativeNames.has(name));
@@ -77,6 +79,10 @@ function assessOriginalUpstreamCi(metadata,doc){
   else if(commonNative.length)state='NON_TEST_CHECK_METADATA_COMPARABLE_NOT_BEHAVIOR';
   reports.push(Object.freeze({
    repository:v.repository,pr:v.pr,
+   frozenBaseSha:v.baseSha,frozenHeadSha:v.headSha,
+   observedLiveBaseSha:v.observedPrBaseSha,observedLiveHeadSha:v.observedPrHeadSha,
+   headMovedSincePreselection:v.observedPrHeadSha!==v.headSha,
+   baseMovedSincePreselection:v.observedPrBaseSha!==v.baseSha,
    baseCheckCount:base.count,headCheckCount:head.count,
    baseSuccessChecks:base.successes,headSuccessChecks:head.successes,
    headNonSuccessOrIncompleteChecks:head.errors,
