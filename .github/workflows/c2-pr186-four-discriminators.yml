@@ -4,7 +4,7 @@ on:
     paths:
       - .github/workflows/c2-pr186-four-discriminators.yml
       - scripts/c2-pr186-run-four.sh
-      - scripts/c2-pr186-adjudicate.cjs
+      - scripts/c2-pr187-adjudicate-discriminators.cjs
       - scripts/c2-pr152-json-counterfactual.py
       - scripts/c2-pr158-advanced-ttl-counterfactual.py
       - packages/quality-gates/c2-pr186-four-causal-discriminators.cjs
@@ -60,7 +60,7 @@ jobs:
           umask 077
           root="$RUNNER_TEMP/c2-pr186/$SUITE"
           mkdir -p "$root/output"
-          node scripts/c2-pr186-adjudicate.cjs manifest "$SUITE" > "$root/manifest.tsv"
+          node scripts/c2-pr187-adjudicate-discriminators.cjs manifest "$SUITE" > "$root/manifest.tsv"
           while IFS='|' read -r alias head blob checksum source;do
             test -n "$alias"
             gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$source?ref=$head" > "$root/source.json"
@@ -161,7 +161,7 @@ jobs:
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/c2-pr186/summary"
-          node scripts/c2-pr186-adjudicate.cjs consolidate \
+          node scripts/c2-pr187-adjudicate-discriminators.cjs consolidate \
             "$root/prior/pr184-scoped-causal-hypotheses.json" \
             "$root/output/four-discriminative-mechanisms-not-certified.json" \
             "$root/stages/c2-pr186-json/receipt.json" \
