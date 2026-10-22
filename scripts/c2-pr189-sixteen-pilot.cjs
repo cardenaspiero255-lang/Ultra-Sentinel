@@ -9,14 +9,14 @@ const XML_NAME=/^TEST-[0-9a-f]{24}\.xml$/;
 const SHA256=/^[0-9a-f]{64}$/;
 function fail(){throw Error('C2_PR189_RECEIPT_LOADING_BLOCKED');}
 function safeDirectory(location){
- const stat=fs.lstatSync(location);
+ let stat;try{stat=fs.lstatSync(location);}catch{fail();}
  if(!stat.isDirectory()||stat.isSymbolicLink())fail();
 }
 function safeRead(location,maxBytes){
- const stat=fs.lstatSync(location);
+ let stat;try{stat=fs.lstatSync(location);}catch{fail();}
  if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
   stat.size<1||stat.size>maxBytes)fail();
- return fs.readFileSync(location);
+ try{return fs.readFileSync(location);}catch{fail();}
 }
 // These SHA checks authenticate integrity WITHIN the downloaded workflow artifact.
 // They do not claim independent upstream checkout, patch or root-cause provenance.
