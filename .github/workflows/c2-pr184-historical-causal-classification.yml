@@ -1,0 +1,90 @@
+name: Ultra Sentinel C2 PR184 twelve causal hypotheses fail-closed classification
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr184-historical-causal-classification.yml
+      - packages/quality-gates/c2-pr184-historical-causal-hypotheses.cjs
+      - scripts/c2-pr184-classify.cjs
+      - tests/unit/c2-pr184-historical-causal-hypotheses.test.cjs
+      - docs/quality/C2-PR184-CAUSAL-TRIAGE.md
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticated-classification:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run all structure and adversarial regression tests
+        run: npm run check
+      - name: Authenticate the complete original Kotlin replay proof from GitHub
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr184"
+          mkdir -p "$root/prior" "$root/output"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          gh api "/repos/$repo/actions/runs/39719546587" > "$root/run.json"
+          jq -e '.id==39719546587 and
+            .head_sha=="0eaa3ec3a86cf8b913dd44b0b049909993907fc0" and
+            .path==".github/workflows/c2-pr183-seven-original-oracles.yml" and
+            .event=="pull_request" and .status=="completed" and
+            .conclusion=="success" and .actor.id==322222186 and
+            .repository.id==1418338512' "$root/run.json" >/dev/null
+          gh api "/repos/$repo/actions/runs/39719546587/artifacts" > "$root/artifacts.json"
+          jq -e '[.artifacts[]|select(
+            .id==12400472561 and
+            .name=="c2-pr183-all-twelve-original-source-replays-not-certified" and
+            .digest=="sha256:36e2de8c11c0ac580f379b869c2e558975bdfc245d97bf0c067c9d1b431dc861" and
+            .expired==false and .workflow_run.id==39719546587)]|length==1' "$root/artifacts.json" >/dev/null
+          gh run download 39719546587 --repo "$repo" \
+            --name c2-pr183-all-twelve-original-source-replays-not-certified \
+            --dir "$root/prior"
+          test "$(find "$root/prior" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root/prior" -type l | wc -l)" -eq 0
+          test -s "$root/prior/pr183-twelve-source-replays.json"
+          rm "$root/run.json" "$root/artifacts.json"
+      - name: Classify twelve scopes and five candidate mechanism buckets without certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-pr184"
+          node scripts/c2-pr184-classify.cjs \
+            "$root/prior/pr183-twelve-source-replays.json" \
+            "$root/output/pr184-scoped-causal-hypotheses.json"
+          jq -e '
+            .schema=="c2-pr184-all-twelve-causal-mechanism-triage-v1" and
+            .sourceIdentitiesReviewed==12 and .sourceReplaysAuthenticated==12 and
+            (.positiveHypotheses|length)==6 and (.negativeControls|length)==6 and
+            .provisionalMechanismCandidateBuckets==5 and
+            ([.positiveHypotheses[]|select(.sharedHypothesisKey=="NONFINITE_NUMERIC_BOUNDARY_SHARED_HYPOTHESIS")]|length)==2 and
+            .familiesCertifiedFromThisAdjudication==0 and
+            .independentlyDistinctRootCausesAccredited==0 and
+            .positivePredictionsScored==0 and .newLabels==0 and
+            .causalIndependenceVerified==false and .sssPlusCertified==false and
+            .holdoutFrozen==false and .blindHoldout==false and
+            .precision==null and .recall==null and .f1==null and
+            ([.positiveHypotheses[]|select(.independentlyCertified!=false)]|length)==0 and
+            ([.negativeControls[]|select(.independentRootCauseCertified!=false)]|length)==0' \
+            "$root/output/pr184-scoped-causal-hypotheses.json" >/dev/null
+          jq -c '.positiveHypotheses[]|{pr,line,sharedHypothesisKey,independentlyCertified}' \
+            "$root/output/pr184-scoped-causal-hypotheses.json"
+      - name: Preserve signed-provenance causal hypotheses only
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-pr184-all-twelve-causal-mechanism-hypotheses-not-certified
+          path: ${{ runner.temp }}/c2-pr184/output/pr184-scoped-causal-hypotheses.json
+          retention-days: 14
+          if-no-files-found: error
