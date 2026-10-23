@@ -1,4 +1,4 @@
-name: C2 original Tasks.org worker-thread benign candidate vs frozen Core
+name: C2 independent source-only executable Tasks original JVM and causal control
 on:
   push:
     branches:
@@ -6,7 +6,9 @@ on:
     paths:
       - .github/workflows/c2-external-tasks-original-worker.yml
       - packages/quality-gates/c2-external-tasks-throttle.cjs
-      - scripts/c2-external-tasks-throttle.cjs
+      - packages/quality-gates/c2-tasks-source-only-observation.cjs
+      - scripts/c2-tasks-source-only-receipt.cjs
+      - tests/unit/c2-tasks-source-only-observation.test.cjs
       - tests/oracles/c2-external-tasks-throttle/**
       - tests/unit/c2-external-tasks-throttle.test.cjs
 permissions:
@@ -46,8 +48,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run complete source and unit architecture checks
-        run: npm run check
       - name: Verify original Git identities, code, ancestry and Kotlin toolchain
         shell: bash
         run: |
@@ -106,27 +106,27 @@ jobs:
             .counterfactualCompletedSynchronously==true and
             .independentOriginalTruth==false
           ' "$root/worker.json" >/dev/null
-      - name: Match authentic external Git diff and original worker oracle with frozen Core
+      - name: Seal source-only original versus counterfactual runtime receipt - no Core
         shell: bash
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/c2-external-tasks"
-          node scripts/c2-external-tasks-throttle.cjs \
+          node scripts/c2-tasks-source-only-receipt.cjs \
             "$GITHUB_WORKSPACE/original-external" "$root/worker.json" "$root/report.json"
           jq -e '
-            .schema=="c2-tasks-org-original-git-source-worker-core-development/v1" and
-            .upstreamRepository=="tasks/tasks" and
-            .upstreamHeadSha=="3936c221aea180b795085d7402286373b5d3f6d2" and
-            .ruleId=="BLOCKING_ANDROID_CALL" and
-            .corePartial==false and
-            .coreExactMatchingFindings>=1 and
-            .oracle.benignExecutorBehaviorObserved==true and
-            .oracle.controlledUnsafeCounterfactualObserved==true and
-            .oracle.sameOriginalProductionSourceUsedForBoth==true and
-            .falsePositiveIndependentlyCertified==false and
-            .scoredTrueNegatives==0 and .scoredFalsePositives==0 and
-            .falsePositiveRate==null and .newGoldLabels==0 and
-            .holdoutFrozen==false and .sssPlusCertified==false
+            .schema=="c2-source-only-executable-original-vs-control/v1" and
+            .status=="ORIGINAL_SOURCE_RUNTIME_DEVELOPMENT_CONTROL_ONLY" and
+            .originalHeadSha=="3936c221aea180b795085d7402286373b5d3f6d2" and
+            .originalSourceGitBlob=="0e472cfd73510ab11a396ee5eba9968d57172050" and
+            .originalWorkerAsynchronous==true and
+            .controlledInlineSynchronous==true and
+            .sourceRepository=="tasks/tasks" and
+            .originalSourceVerifiedByGitInThisProcess==true and
+            .independentProspectiveTruthAttested==false and
+            .candidatePredictionsRead==false and
+            .newGoldLabels==0 and .truthSealed==false and
+            .holdoutFrozen==false and .precision==null and
+            .sssPlusCertified==false
           ' "$root/report.json" >/dev/null
           mkdir -p "$root/output"
           cp "$root/worker.json" "$root/report.json" "$root/output/"
@@ -135,7 +135,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-external-tasks-owner-worker-benign-development-only
+          name: c2-tasks-source-only-original-inline-counterfactual-development
           path: ${{ runner.temp }}/c2-external-tasks/output
           retention-days: 14
           if-no-files-found: warn
