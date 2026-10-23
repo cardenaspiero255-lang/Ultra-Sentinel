@@ -11,12 +11,17 @@ test -d "$root" && test ! -L "$root"
 mkdir -p "$root/output"
 fetch(){
  local tag="$1" head="$2" blob="$3" path="$4" sum="$5"
- gh api "/repos/cardenaspiero255-lang/gamehub-ultra/contents/$path?ref=$head" > "$root/meta.json"
- jq -e --arg b "$blob" --arg p "$path" '.type=="file" and .path==$p and .sha==$b and .encoding=="base64" and .size>100 and .size<1000000' "$root/meta.json" >/dev/null
+ # Authenticate exact Git tree entry and Git blob without moving branch refs.
+ gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/trees/$head?recursive=1" > "$root/tree.json"
+ jq -e --arg p "$path" --arg b "$blob" '
+  .truncated==false and ([.tree[]|select(.path==$p and .type=="blob" and .sha==$b)]|length)==1
+ ' "$root/tree.json" >/dev/null
+ gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/blobs/$blob" > "$root/meta.json"
+ jq -e --arg b "$blob" '.sha==$b and .encoding=="base64" and .size>100 and .size<1000000' "$root/meta.json" >/dev/null
  jq -r .content "$root/meta.json" | base64 --decode > "$root/$tag-original.kt"
  test "$(git hash-object "$root/$tag-original.kt")" = "$blob"
  if [ "$sum" != - ];then test "$(sha256sum "$root/$tag-original.kt"|cut -d' ' -f1)" = "$sum";fi
- rm -f "$root/meta.json"
+ rm -f "$root/meta.json" "$root/tree.json"
 }
 fetch adaptive 6508cc124076b9dea437ea1efc213d3ce55d7baf d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f app/src/main/java/com/cardenaspiero255/gamehubultra/PerGameAdaptiveRuntime.kt -
 fetch store 104b7dc33e4c0341cec3c8fbe3625357f ed936aa687b08cf8d964d54f9d88e68bb12344ec app/src/main/java/com/cardenaspiero255/gamehubultra/data/AiProfileProposalStore.kt f06604f1bdd7bba80d060adac49d99d9edfb38234e47a91d2f861af3997435da
