@@ -1,0 +1,131 @@
+name: C2 REAL original Kotlin ten JVM causal campaign
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-real-causal-jvm-campaign.yml
+      - scripts/c2-live-causal-campaign.sh
+      - scripts/c2-live-thermal-evidence.cjs
+      - scripts/c2-real-causal-campaign-consolidate.cjs
+      - packages/quality-gates/c2-real-causal-campaign.cjs
+      - tests/unit/c2-real-causal-campaign.test.cjs
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-real-causal-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  original-jvm:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [confidence, thermal, numeric]
+    steps:
+      - name: Checkout without stored token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: All regression and architecture checks
+        run: npm run check
+      - name: Require AppArmor Bubblewrap networkless isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v bwrap
+      - name: Run exact original Kotlin variants and benign controls
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C2_OWNER_SANDBOX: "1"
+          SUITE: ${{ matrix.suite }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-real-campaign/$SUITE"
+          mkdir -p "$root"
+          bash scripts/c2-live-causal-campaign.sh "$SUITE" "$root"
+          test -s "$root/output/evidence.json"
+          mkdir -p "$RUNNER_TEMP/c2-real-artifacts"
+          cp "$root/output/evidence.json" "$RUNNER_TEMP/c2-real-artifacts/evidence.json"
+          rm -rf "$root"
+      - name: Preserve sanitized source-scope execution receipts only
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-real-causal-${{ matrix.suite }}
+          path: ${{ runner.temp }}/c2-real-artifacts/evidence.json
+          retention-days: 14
+          if-no-files-found: error
+  adjudicate:
+    needs: [original-jvm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          pattern: c2-real-causal-*
+          path: ${{ runner.temp }}/c2-real-adjudication/inputs
+          merge-multiple: false
+      - name: Admit only genuine expected ten source-level JVM results
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-real-adjudication"
+          mkdir -p "$root/output"
+          test "$(find "$root/inputs" -type f|wc -l)" -eq 3
+          test "$(find "$root/inputs" -type l|wc -l)" -eq 0
+          node scripts/c2-real-causal-campaign-consolidate.cjs \
+            "$root/inputs/c2-real-causal-numeric/evidence.json" \
+            "$root/inputs/c2-real-causal-confidence/evidence.json" \
+            "$root/inputs/c2-real-causal-thermal/evidence.json" \
+            "$root/output/source-kotlin-causal-campaign.json"
+          jq -e '
+            .schema=="c2-original-kotlin-real-causal-campaign/v1" and
+            .originalKotlinJvmVariantExecutions==10 and
+            .confirmedRepairLocalEffects==5 and
+            .historicalRootCauseAssignmentsResolved==0 and
+            .historicalRootCauseAssignmentsStillPending==21 and
+            .externalGoldLabelsCreated==0 and
+            .nextcloudCandidateSourceReleased==false and
+            .detectorPredictionsRead==false and
+            .holdoutFrozen==false and .sssPlusCertified==false and
+            .precision==null and .recall==null and .f1==null
+          ' "$root/output/source-kotlin-causal-campaign.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-real-kotlin-causal-campaign-21-unresolved
+          path: ${{ runner.temp }}/c2-real-adjudication/output/source-kotlin-causal-campaign.json
+          retention-days: 30
+          if-no-files-found: error
