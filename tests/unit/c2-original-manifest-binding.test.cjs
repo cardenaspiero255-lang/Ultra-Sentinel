@@ -57,3 +57,23 @@ test('RED P2: valid but unrelated owner archives must fail, not merely pass leng
   assert.throws(()=>bindHistoricalLedgerToOriginalOwnerManifest(x),/C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED/);
  }
 });
+
+test('RED P2: original owner manifest Git blobs are immutable when source identities are reauthenticated',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const {createHash}=require('node:crypto');
+ const root=path.join(__dirname,'../..');
+ const workflow=fs.readFileSync(path.join(root,'.github/workflows/c2-historical-23-ledger.yml'),'utf8');
+ const pinned={
+  'packages/quality-gates/c2-twelve-original-oracle-reconciliation.cjs':'f8e12475887a960c233efde0aac67e75e21fe272',
+  'packages/quality-gates/c2-run23-ten-receipt-recovery.cjs':'e1c242ecbc08d2f4fbedeed7a33eb987f630f19f'
+ };
+ for(const [name,original] of Object.entries(pinned)){
+  const bytes=fs.readFileSync(path.join(root,name));
+  const blob=createHash('sha1').update(Buffer.concat([
+   Buffer.from('blob '+bytes.length+'\\0'),bytes
+  ])).digest('hex');
+  assert.equal(blob,original,'Original historical stage/run archives must not change without explicit adjudication');
+  assert.ok(workflow.includes('git hash-object '+name),'Owner workflow must pin actual historical Git blob');
+  assert.ok(workflow.includes(original),'Owner workflow must compare immutable original history blob');
+ }
+});
