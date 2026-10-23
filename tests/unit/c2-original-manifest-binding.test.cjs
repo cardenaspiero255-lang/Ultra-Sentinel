@@ -70,7 +70,7 @@ test('RED P2: original owner manifest Git blobs are immutable when source identi
  for(const [name,original] of Object.entries(pinned)){
   const bytes=fs.readFileSync(path.join(root,name));
   const blob=createHash('sha1').update(Buffer.concat([
-   Buffer.from('blob '+bytes.length+'\\0'),bytes
+   Buffer.from('blob '+bytes.length+'\0'),bytes
   ])).digest('hex');
   assert.equal(blob,original,'Original historical stage/run archives must not change without explicit adjudication');
   assert.ok(workflow.includes('git hash-object '+name),'Owner workflow must pin actual historical Git blob');
