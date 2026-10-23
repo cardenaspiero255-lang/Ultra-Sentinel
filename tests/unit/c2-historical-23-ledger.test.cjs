@@ -15,7 +15,7 @@ function fixture(){
  }));
  for(let i=0;i<2;i++){
   entries[i].rootCauseGroup='historical_provisional_'+i;
-  entries[i].causalFingerprint=createHash('sha256').update('c2-cause/v1\\0'+repo+'\\0'+entries[i].rootCauseGroup).digest('hex');
+  entries[i].causalFingerprint=createHash('sha256').update('c2-cause/v1\0'+repo+'\0'+entries[i].rootCauseGroup).digest('hex');
  }
  const audit={schema:'ultra-sentinel-c2-run23-historical-source-chain-audit/v1',
   repository:repo,count:23,positives:11,negatives:12,
