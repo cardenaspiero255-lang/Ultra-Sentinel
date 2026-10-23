@@ -37,6 +37,9 @@ jobs:
           repo=cardenaspiero255-lang/Ultra-Sentinel
           root="$RUNNER_TEMP/c2-full-historical-23"
           mkdir -p "$root/inputs" "$root/output"
+          # Freeze the original stage and recovered-run manifests themselves.
+          test "$(git hash-object packages/quality-gates/c2-twelve-original-oracle-reconciliation.cjs)" = "f8e12475887a960c233efde0aac67e75e21fe272"
+          test "$(git hash-object packages/quality-gates/c2-run23-ten-receipt-recovery.cjs)" = "e1c242ecbc08d2f4fbedeed7a33eb987f630f19f"
           # These are immutable prior GitHub owner artifacts; never use a moving latest run.
           cat > "$root/derived.tsv" <<'ROWS'
           audit|39498507463|e779435e7cf5b10ce8fd0b45ac468ce0ca1a5fb0|.github/workflows/c2-run23-historical-source-chain.yml|12298808223|c2-run23-source-provenance-causal-audit|f404c0c6464cb8a5187e4b050064da23872f36886ae31f2a1b64431428562abc|c2-run23-causal-audit.json
