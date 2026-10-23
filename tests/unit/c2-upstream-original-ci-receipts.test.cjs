@@ -108,3 +108,26 @@ test('RED: CLI must pass authenticated observed live PR pointers alongside froze
  assert.match(script,/observedPrHeadSha:live\.headSha/);
  assert.doesNotMatch(script,/baseSha:live\.baseSha,headSha:live\.headSha/);
 });
+
+
+test('P1 regression: provenance receipts use trusted base code and reject collaborator PRs',()=>{
+ const yml=fs.readFileSync(path.join(__dirname,'../../.github/workflows/c2-upstream-original-ci-receipts.yml'),'utf8');
+ assert.match(yml,/github\.actor\s*==\s*'cardenaspiero255-lang'/);
+ assert.match(yml,/github\.event\.pull_request\.user\.login\s*==\s*'cardenaspiero255-lang'/);
+ assert.match(yml,/ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+});
+test('P2 regression: skipped checks count as non-successful without inventing truth',()=>{
+ const {manifest,receipt}=good();
+ receipt.snapshots[1].head.checks.push({
+  id:102,name:'Test skipped',headSha:receipt.snapshots[1].headSha,
+  status:'completed',conclusion:'skipped',appSlug:'github-actions'
+ });
+ const result=assessOriginalUpstreamCi(manifest,receipt);
+ const row=result.evidence.find(e=>e.repository==='LawnchairLauncher/lawnchair');
+ assert.equal(row.headCheckCount,2);
+ assert.equal(row.headSuccessChecks,1);
+ assert.equal(row.headNonSuccessOrIncompleteChecks,1);
+ assert.equal(result.originalOraclesAttested,0);
+ assert.equal(result.newGoldLabels,0);
+ assert.equal(result.truthSealed,false);
+});
