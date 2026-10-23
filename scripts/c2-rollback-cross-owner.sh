@@ -35,7 +35,7 @@ fetch(){
  rm -f "$root/meta.json" "$root/tree.json" "$root/commit.json"
 }
 fetch adaptive 6508cc124076b9dea437ea1efc213d3ce55d7baf d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f app/src/main/java/com/cardenaspiero255/gamehubultra/PerGameAdaptiveRuntime.kt -
-fetch store 104b7dc33e4c0341cec3c8fbe3625357f ed936aa687b08cf8d964d54f9d88e68bb12344ec app/src/main/java/com/cardenaspiero255/gamehubultra/data/AiProfileProposalStore.kt f06604f1bdd7bba80d060adac49d99d9edfb38234e47a91d2f861af3997435da
+fetch store 104b7dc33e4c0341cec3fca81e3c8fbe3625357f ed936aa687b08cf8d964d54f9d88e68bb12344ec app/src/main/java/com/cardenaspiero255/gamehubultra/data/AiProfileProposalStore.kt f06604f1bdd7bba80d060adac49d99d9edfb38234e47a91d2f861af3997435da
 fetch negative 6508cc124076b9dea437ea1efc213d3ce55d7baf 18911c26a9afaf051fda0e9ea14cdaccf943a47b app/src/main/java/com/cardenaspiero255/gamehubultra/data/GameStateOwnershipContracts.kt 8e136084412a57074f3c3a5ce8d7e209cef8274f79a752b5d1dc957447f7ee15
 node - "$root" <<'NODE'
 const fs=require('node:fs'),p=require('node:path');
@@ -123,7 +123,7 @@ const item=s=>({
 const data={schema:'c2-original-rollback-cross-jvm-input/v1',
  source:[
  {id:'153:71',head:'6508cc124076b9dea437ea1efc213d3ce55d7baf',blob:'d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f',repairSha256:H('adaptive-repaired.kt')},
- {id:'152:41',head:'104b7dc33e4c0341cec3c8fbe3625357f',blob:'ed936aa687b08cf8d964d54f9d88e68bb12344ec',repairSha256:H('store-repaired.kt')},
+ {id:'152:41',head:'104b7dc33e4c0341cec3fca81e3c8fbe3625357f',blob:'ed936aa687b08cf8d964d54f9d88e68bb12344ec',repairSha256:H('store-repaired.kt')},
  {id:'153:69',head:'6508cc124076b9dea437ea1efc213d3ce55d7baf',blob:'18911c26a9afaf051fda0e9ea14cdaccf943a47b',sourceSha256:H('negative-original.kt')}
  ],adaptive:item('adaptive'),store:item('store'),
  negative:{
@@ -133,7 +133,6 @@ const data={schema:'c2-original-rollback-cross-jvm-input/v1',
  },sourceBlobsAuthenticated:true,sandboxEnforced:true,
  candidateSourceRead:false,detectorPredictionsRead:false,newGoldLabels:0};
 const {adjudicateRollbackCross}=require('./packages/quality-gates/c2-rollback-cross-owner.cjs');
-console.log('C2_SAFE_GATE_INPUT '+JSON.stringify({sources:data.source,sourceBlobsAuthenticated:data.sourceBlobsAuthenticated,sandboxEnforced:data.sandboxEnforced,candidateSourceRead:data.candidateSourceRead,detectorPredictionsRead:data.detectorPredictionsRead,newGoldLabels:data.newGoldLabels}));
 const output=adjudicateRollbackCross(data);
 fs.writeFileSync(p.join(root,'output','rollback-cross.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
 process.stdout.write(JSON.stringify({realJvm:6,controls:0,certifiedFamilies:0,gold:0,evidenceSha256:output.evidenceSha256})+'\n');
