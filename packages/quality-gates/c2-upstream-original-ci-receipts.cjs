@@ -85,7 +85,7 @@ function assessOriginalUpstreamCi(metadata,doc){
    baseMovedSincePreselection:v.observedPrBaseSha!==v.baseSha,
    baseCheckCount:base.count,headCheckCount:head.count,
    baseSuccessChecks:base.successes,headSuccessChecks:head.successes,
-   headNonSuccessOrIncompleteChecks:head.errors,
+   headNonSuccessOrIncompleteChecks:head.errors+head.untested,
    comparableNativeCheckNames:commonNative.length,
    comparableTestCheckNames:commonTest.length,
    checkReportStatus:state,
