@@ -1,0 +1,140 @@
+name: C2 owner full twenty-three historical receipts and causal blockade
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  actions: read
+jobs:
+  authenticate-development-provenance-without-unblinding:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'cardenaspiero255-lang'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted main with no stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Configure Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run complete architecture and history regression tests
+        run: npm run check
+      - name: Authenticate archived original receipts and original 15 owner witnesses by GitHub API
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-full-historical-23"
+          mkdir -p "$root/inputs" "$root/output"
+          # These are immutable prior GitHub owner artifacts; never use a moving latest run.
+          cat > "$root/derived.tsv" <<'ROWS'
+          audit|39498507463|e779435e7cf5b10ce8fd0b45ac468ce0ca1a5fb0|.github/workflows/c2-run23-historical-source-chain.yml|12298808223|c2-run23-source-provenance-causal-audit|f404c0c6464cb8a5187e4b050064da23872f36886ae31f2a1b64431428562abc|c2-run23-causal-audit.json
+          queue|39544945791|c36851d3375d03efd95b2825495bbf5c4c0c249a|.github/workflows/c2-twelve-historical-identity-triage.yml|12321306801|c2-12-pending-historical-original-identity-queue|d624c356df1d93c61156167e56784df934be942b02e46a1abd26ed5fb40e784c|c2-twelve-historical-identity-queue.json
+          recovery|39504873407|b9184184987a2fefa5afac38de4526847f9101ec|.github/workflows/c2-run23-ten-original-receipts.yml|12301669735|c2-run23-ten-owner-original-receipts-recovered|0f326b7ea21f2f7bde788183792a8e4e1fed7174a49cac00829b0291842c9c12|ten-original-receipts-recovered.json
+          ROWS
+          # Reauthenticate all original witness run IDs, HEADs and archive hashes
+          # used by the 12 archived and 10 recovered identities.
+          node - "$root/original.tsv" <<'NODE'
+          const fs=require('node:fs');
+          const {STAGES}=require('./packages/quality-gates/c2-twelve-original-oracle-reconciliation.cjs');
+          const {ORIGINS}=require('./packages/quality-gates/c2-run23-ten-receipt-recovery.cjs');
+          if(STAGES.length!==8||STAGES.flatMap(s=>s.cases).length!==12||
+             ORIGINS.length!==7||ORIGINS.flatMap(s=>s.ids).length!==10)
+           throw Error('C2_SOURCE_HISTORY_COUNT_MISMATCH');
+          const rows=[
+           ...STAGES.map(s=>['STAGE',s.key,s.run,s.head,s.workflow,s.artifact,s.name,s.digest]),
+           ...ORIGINS.map(s=>['ORIGIN',s.id,s.runId,s.runHeadSha,s.workflow,s.artifactId,s.artifactName,s.archiveSha256])
+          ];
+          fs.writeFileSync(process.argv[2],rows.map(x=>x.join('|')).join('\n')+'\n',{flag:'wx',mode:0o600});
+          NODE
+          # Check historical source-run/ZIP metadata under immutable SHA.
+          while IFS='|' read -r category key run head workflow artifact name digest; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson run "$run" --arg head "$head" --arg workflow "$workflow" '
+              .id==$run and .head_sha==$head and .path==$workflow and
+              .event=="issue_comment" and .head_branch=="main" and
+              .status=="completed" and .conclusion=="success" and
+              .actor.id==322222186 and .repository.id==1418338512
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson run "$run" --argjson id "$artifact" \
+              --arg name "$name" --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+               .digest==$digest and .expired==false and
+               .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1
+            ' "$root/artifacts.json" >/dev/null
+            echo "C2_ORIGINAL_WITNESS_AUTHENTICATED category=$category key=$key run=$run"
+          done < "$root/original.tsv"
+          # Compare the 3 actual derived run artifacts and download exact ZIP content.
+          while IFS='|' read -r key run head workflow artifact name digest file; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson run "$run" --arg head "$head" --arg workflow "$workflow" '
+              .id==$run and .head_sha==$head and .path==$workflow and
+              .event=="pull_request" and .status=="completed" and
+              .conclusion=="success" and .actor.id==322222186 and
+              .repository.id==1418338512
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson run "$run" --argjson id "$artifact" \
+              --arg name "$name" --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+               .digest==$digest and .expired==false and
+               .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1
+            ' "$root/artifacts.json" >/dev/null
+            mkdir -p "$root/inputs/$key"
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/inputs/$key"
+            test "$(find "$root/inputs/$key" -type f | wc -l)" -eq 1
+            test "$(find "$root/inputs/$key" -type l | wc -l)" -eq 0
+            test -s "$root/inputs/$key/$file"
+          done < "$root/derived.tsv"
+          node scripts/c2-historical-23-ledger.cjs \
+            "$root/inputs/audit/c2-run23-causal-audit.json" \
+            "$root/inputs/queue/c2-twelve-historical-identity-queue.json" \
+            "$root/inputs/recovery/ten-original-receipts-recovered.json" \
+            "$root/output/c2-full-historical-development-ledger.json"
+          jq -e '
+            .schema=="c2-historical-23-traceability-ledger/v1" and
+            .historicalIdentities==23 and .positives==11 and .negatives==12 and
+            .queueMatchedEmbeddedReceipts==12 and .recoveredExternalReceiptLinks==10 and
+            .residualEmbeddedReceipts==1 and .unresolvedCausalAssignments==21 and
+            .verifiedIndependentCausalFamilies==0 and .newGoldLabels==0 and
+            .nextcloudSourceReleaseAuthorized==false and
+            .candidateSourceInspected==false and .candidatePredictionsRead==false and
+            .holdoutFrozen==false and .precision==null and .recall==null and
+            .f1==null and .sssPlusCertified==false
+          ' "$root/output/c2-full-historical-development-ledger.json" >/dev/null
+          jq -n --arg ledger "$(jq -r .ledgerSha256 "$root/output/c2-full-historical-development-ledger.json")" '{
+            schema:"c2-full-23-original-receipts-owner-api-attestation/v1",
+            originalWitnessOwnerRunsReauthenticated:15,
+            originalWitnessRunArtifactsReauthenticated:15,
+            archivedDerivedRunsAndArtifactsReauthenticated:3,
+            linkedHistoryIdentities:23,
+            canonicalLedgerSha256:$ledger,
+            contentZipOriginalDigestsRecomputedHere:false,
+            originalKotlinReexecutedHere:false,
+            causalIndependenceCertified:false,
+            nextcloudSourceReleased:false,
+            newGoldLabels:0,holdoutFrozen:false,
+            precision:null,recall:null,f1:null,sssPlusCertified:false
+          }' > "$root/output/authenticated-original-run-metadata.json"
+          rm -rf "$root/inputs" "$root/original.tsv" "$root/derived.tsv" \
+            "$root/run.json" "$root/artifacts.json"
+      - name: Preserve sanitized original-run metadata and zero-label causal ledger
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-full-23-historical-owner-receipts-unscored
+          path: ${{ runner.temp }}/c2-full-historical-23/output
+          retention-days: 30
+          if-no-files-found: warn
