@@ -27,7 +27,21 @@ function adjudicateRollbackCross(data){
    data.source[0].repairSha256===data.source[1].repairSha256||
    data.sourceBlobsAuthenticated!==true||data.sandboxEnforced!==true||
    data.candidateSourceRead!==false||data.detectorPredictionsRead!==false||
-   data.newGoldLabels!==0)fail();
+   data.newGoldLabels!==0){
+    console.error('C2_SOURCE_GATE_DIAGNOSTIC '+JSON.stringify({
+      validSchema:data?.schema==='c2-original-rollback-cross-jvm-input/v1',
+      sourceCount:data?.source?.length,
+      tupleMisses:data?.source?.map((v,i)=>Object.entries(sources[i]).filter(([k,w])=>v?.[k]!==w).map(([k])=>k)),
+      repairShaValid:data?.source?.slice(0,2).map(v=>SHA(v.repairSha256)),
+      repairShaDistinct:data?.source?.[0]?.repairSha256!==data?.source?.[1]?.repairSha256,
+      sourceBlobsAuthenticated:data?.sourceBlobsAuthenticated,
+      sandboxEnforced:data?.sandboxEnforced,
+      candidateSourceRead:data?.candidateSourceRead,
+      detectorPredictionsRead:data?.detectorPredictionsRead,
+      newGoldLabels:data?.newGoldLabels
+    }));
+    fail();
+   }
   const a=data.adaptive,s=data.store,n=data.negative;
   if(!a||!s||!n)fail();
   const replay=adjudicateReplay({original:a.original,patched:a.repaired});
