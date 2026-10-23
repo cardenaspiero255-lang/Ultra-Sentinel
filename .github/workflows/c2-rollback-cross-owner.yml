@@ -1,0 +1,73 @@
+name: C2 original rollback cross PR153 PR152 and PR153 benign mutant
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-rollback-cross-owner.yml
+      - packages/quality-gates/c2-rollback-cross-owner.cjs
+      - scripts/c2-rollback-cross-owner.sh
+      - tests/oracles/c2-rollback-152-store-cross.kt
+      - tests/unit/c2-rollback-cross-owner.test.cjs
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-rollback-source-jvms:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.login == 'cardenaspiero255-lang'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout without credential persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Focused and full RED GREEN regression suite
+        run: |
+          set -euo pipefail
+          node --test tests/unit/c2-rollback-cross-owner.test.cjs
+          npm run check
+      - name: Enforce AppArmor and Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v bwrap
+      - name: Compile and execute original/patch/benign mutant Kotlin with frozen source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C2_OWNER_SANDBOX: '1'
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-rollback-cross"
+          mkdir -p "$root"
+          bash scripts/c2-rollback-cross-owner.sh "$root"
+          jq -e '.schema=="c2-rollback-153-152-original-cross-verified/v1" and
+           .originalKotlinJvmExecutions==6 and .matrix|length==4' "$root/output/rollback-cross.json" >/dev/null
+          jq -e '.negative153Line69Validated==true and
+           .familiesIndependentlyCertified==0 and .historicalCausesClosed==0 and
+           .newGoldLabels==0 and .candidateSourceRead==false and
+           .precision==null and .sssPlusCertified==false' "$root/output/rollback-cross.json" >/dev/null
+          rm -f "$root"/*.kt "$root"/*.jar "$root"/*.compile "$root"/*.log
+      - name: Preserve sanitized source effect evidence only
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-rollback-original-six-jvm-not-certified
+          path: ${{ runner.temp }}/c2-rollback-cross/output/rollback-cross.json
+          retention-days: 30
+          if-no-files-found: error
