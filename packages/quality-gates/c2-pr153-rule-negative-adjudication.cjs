@@ -32,7 +32,7 @@ function adjudicatePr153AndRuleScopedNegatives({prior,replay}={}){
    prior.sourceRepository!=='cardenaspiero255-lang/gamehub-ultra'||
    prior.historicalIdentityCount!==23||prior.historicalPositiveCount===0||
    prior.historicalPositives!==11||prior.historicalNegatives!==12||
-   prior.previouslyUngrouped!==16||prior.previousExperimentallyGrouped!==5||
+   prior.previouslyUngrouped!==16||prior.previouslyExperimentallyGrouped!==5||
    prior.additionalExperimentallyGroupedPositives!==4||prior.remainingUngrouped!==12||
    prior.independentCausalAssignmentsStillPending!==21||
    prior.verifiedIndependentCausalFamilies!==0||
