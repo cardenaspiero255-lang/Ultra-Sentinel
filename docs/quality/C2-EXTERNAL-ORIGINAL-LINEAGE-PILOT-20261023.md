@@ -11,6 +11,7 @@ Date: 2026-10-23. Read-only, source-free PRE-admission gate for one of four prer
 - Strict four-entry manifest, no added or altered keys, source disclosures or spurious independence assertions.
 - Exact Git SHA disjointness from eight original GameHub development PR base/head commits; and repository identity exclusion for all known GameHub, Ultra Sentinel, Tasks.org, AnkiDroid and public Kotlin development sources.
 - An owner-only workflow on immutable main commit reauthenticates the selected Nextcloud original base/head Git objects and tree pointers through GitHub, without reading source, issues, patches, tests or predictions.
+- It also authenticates all 15 distinct original HEAD/base Git commit objects from the eight GameHub historical PRs, hashes their tree inventory and rejects exact external-vs-training Git tree reuse. This still does NOT establish causal-family independence.
 - The SHA-256 commitment is an audit digest, not an authenticity signature nor source-release authorization.
 
 ## Real blockers
