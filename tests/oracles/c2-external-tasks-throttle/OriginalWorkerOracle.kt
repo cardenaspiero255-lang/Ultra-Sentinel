@@ -1,6 +1,7 @@
 package org.tasks.notifications
 
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -48,6 +49,21 @@ fun main() {
     val elapsed = (System.nanoTime() - secondStart) / 1_000_000L
     allComplete.set(true)
     worker.shutdownNow()
+
+    // Controlled counterfactual, NOT a purported upstream fix: exactly the
+    // same immutable original Throttle.kt is used, but callback executor
+    // intentionally executes inline on the calling thread. This distinguishes
+    // default background-worker behavior from the real blocking risk of
+    // replacing a worker with a direct executor.
+    val controlledCaller = Thread.currentThread()
+    val controlledInlineExecuted = AtomicBoolean(false)
+    val direct = Throttle(
+        ratePerPeriod = 1, periodMillis = 350,
+        tag = "C2-CONTROL-INLINE", executor = Executor { it.run() }
+    )
+    direct.run { controlledInlineExecuted.set(Thread.currentThread() === controlledCaller) }
+    val inlineSynchronous = controlledInlineExecuted.get()
+    check(inlineSynchronous)
     check(returnedBefore && firstWorker.get() !== caller &&
       secondWorker.get() !== caller && firstWorker.get() === secondWorker.get() &&
       elapsed >= 100L && elapsed <= 3000L)
@@ -59,5 +75,8 @@ fun main() {
       "\"defaultSleeperElapsedMillis\":$elapsed," +
       "\"allTasksComplete\":${allComplete.get()}," +
       "\"abiStubsForAndroidAndCoroutine\":true," +
+      "\"counterfactualSameOriginalProductionSource\":true," +
+      "\"counterfactualExecutedOnCaller\":${controlledInlineExecuted.get()}," +
+      "\"counterfactualCompletedSynchronously\":$inlineSynchronous," +
       "\"independentOriginalTruth\":false}")
 }
