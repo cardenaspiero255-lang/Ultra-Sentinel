@@ -72,3 +72,17 @@ test('RED: trusted owner-main workflow only reauthenticates Git commit/tree meta
  assert.doesNotMatch(wf,/^  pull_request:/m);
  assert.doesNotMatch(wf,/\/pulls\/\$pr\/files|\/compare\/|gh pr diff|checkout.*external|candidate_predictions|contents: write/);
 });
+
+test('RED P1: lineage attestation must rerun on every owner push to main, even when only training lock or imported dependencies change',()=>{
+ const wf=fs.readFileSync(path.join(__dirname,'../../.github/workflows/c2-external-lineage-pilot.yml'),'utf8');
+ const triggers=wf.split(/^permissions:/m)[0];
+ assert.match(triggers,/^on:\s*\n\s*push:\s*\n\s*branches:\s*\n\s*- main\s*$/m);
+ assert.doesNotMatch(triggers,/^\s*(?:paths|paths-ignore|branches-ignore):/m,
+  'Filtering the push event leaves previous lineage receipts stale when training sources change');
+ const implementation=fs.readFileSync(path.join(__dirname,'../../packages/quality-gates/c2-external-lineage-pilot.cjs'),'utf8');
+ assert.match(implementation,/require\('\.\/c2-next-holdout\.cjs'\)/);
+ assert.match(implementation,/require\('\.\/c2-independent-oracle-quarantine\.cjs'\)/);
+ assert.match(wf,/github\.actor == 'cardenaspiero255-lang'/);
+ assert.match(wf,/github\.event_name == 'push'/);
+ assert.match(wf,/github\.ref == 'refs\/heads\/main'/);
+});
