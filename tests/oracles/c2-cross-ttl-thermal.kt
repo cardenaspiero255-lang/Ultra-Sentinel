@@ -21,6 +21,7 @@ fun main(args:Array<String>){
  check(thermalSafe==thermalFix) {"C2_CROSS_THERMAL_WRONG_EFFECT"}
  check(alert(0.85f) && !alert(Float.NaN)) {"C2_CROSS_THERMAL_BENIGN_BROKEN"}
  UltraFrontierWorldStateRegistry.clear()
+ println("C2_CROSS_SUITE ttl-thermal")
  println("C2_CROSS_NORMAL_CONTROLS_PASS")
  println("C2_CROSS_VECTOR mode=$mode first=$ttlSafe second=$thermalSafe")
 }
