@@ -9,7 +9,7 @@ const {createHash}=require('node:crypto');
 const REPO='cardenaspiero255-lang/gamehub-ultra';
 const H40=/^[0-9a-f]{40}$/,H64=/^[0-9a-f]{64}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,110}$/;
-const digest=x=>createHash('sha256').update(x).digest('hex');
+const digest=x=>createHash('sha256').update(typeof x==='string'?x:JSON.stringify(x)).digest('hex');
 const fail=()=>{throw Error('C2_HISTORICAL_23_LEDGER_BLOCKED');};
 const has=(x,k)=>Object.hasOwn(x,k);
 const identity=x=>JSON.stringify([x.pr,x.headSha,x.rule,x.path,x.line,x.positive]);
