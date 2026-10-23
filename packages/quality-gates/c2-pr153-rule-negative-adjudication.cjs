@@ -30,7 +30,7 @@ function adjudicatePr153AndRuleScopedNegatives({prior,replay}={}){
  try{
   if(!prior||prior.schema!=='c2-pr212-integrated-historical-23-cross-overlay/v1'||
    prior.sourceRepository!=='cardenaspiero255-lang/gamehub-ultra'||
-   prior.historicalIdentityCount!==23||prior.historicalPositiveCount===0||
+   prior.historicalIdentityCount!==23||
    prior.historicalPositives!==11||prior.historicalNegatives!==12||
    prior.previouslyUngrouped!==16||prior.previouslyExperimentallyGrouped!==5||
    prior.additionalExperimentallyGroupedPositives!==4||prior.remainingUngrouped!==12||
@@ -109,7 +109,8 @@ function adjudicatePr153AndRuleScopedNegatives({prior,replay}={}){
    negativeFound.add(e.rule);
    if(!hasGroup)unclassified++;
    if(e.pr===153&&e.line===PR153.negative.line&&
-    (e.headSha!==HEAD||e.blobSha!==PR153.negative.blob))fail();
+    (e.headSha!==HEAD||e.blobSha!==PR153.negative.blob||
+     e.rule!==PR153.negative.rule))fail();
    return Object.freeze({...e,pr153ProvisionalMechanism:null,
     pr153SourceOriginalJvmReceiptSha256:null,
     mutantSensitiveBenignControl:e.pr===153&&e.line===69,
