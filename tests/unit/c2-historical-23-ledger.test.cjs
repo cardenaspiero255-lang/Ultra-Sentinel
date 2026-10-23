@@ -1,5 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
+const {createHash}=require('node:crypto');
 const {reconcileFullHistoricalDevelopmentLedger}=require('../../packages/quality-gates/c2-historical-23-ledger.cjs');
 const h40=n=>n.toString(16).padStart(40,'0');
 const h64=n=>n.toString(16).padStart(64,'0');
@@ -12,6 +13,10 @@ function fixture(){
    evidenceSha256:i<13?h64(1000+i):null,
    rootCauseGroup:null,causalFingerprint:null
  }));
+ for(let i=0;i<2;i++){
+  entries[i].rootCauseGroup='historical_provisional_'+i;
+  entries[i].causalFingerprint=createHash('sha256').update('c2-cause/v1\\0'+repo+'\\0'+entries[i].rootCauseGroup).digest('hex');
+ }
  const audit={schema:'ultra-sentinel-c2-run23-historical-source-chain-audit/v1',
   repository:repo,count:23,positives:11,negatives:12,
   sourceBlobsVerified:23,historicalEvidenceAuthenticated:false,
