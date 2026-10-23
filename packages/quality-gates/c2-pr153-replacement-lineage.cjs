@@ -10,7 +10,7 @@ const artifact={id:12501326370,name:'c2-rollback-original-six-jvm-not-certified'
 const originalArtifact=12040619454;
 const sources=[
  {id:'153:71',head:'6508cc124076b9dea437ea1efc213d3ce55d7baf',blob:'d8708fd6245cea2e8dab4404ef5bfb7e682e1a6f'},
- {id:'152:41',head:'104b7dc33e4c0341cec3c8fbe3625357f',blob:'ed936aa687b08cf8d964d54f9d88e68bb12344ec'},
+ {id:'152:41',head:'104b7dc33e4c0341cec3fca81e3c8fbe3625357f',blob:'ed936aa687b08cf8d964d54f9d88e68bb12344ec'},
  {id:'153:69',head:'6508cc124076b9dea437ea1efc213d3ce55d7baf',blob:'18911c26a9afaf051fda0e9ea14cdaccf943a47b'}
 ];
 function attestReplacementLineage({oldRun,oldArtifacts,newRun,newArtifacts,replay}={}){
