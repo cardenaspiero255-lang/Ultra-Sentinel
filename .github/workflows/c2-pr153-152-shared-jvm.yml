@@ -1,0 +1,86 @@
+name: C2 PR153 PR152 real shared JVM rollback integration
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr153-152-shared-jvm.yml
+      - packages/quality-gates/c2-shared-pr153-pr152-adjudication.cjs
+      - scripts/c2-shared-pr153-pr152-original-jvm.sh
+      - scripts/c2-shared-pr153-pr152-receipt.cjs
+      - tests/oracles/c2-pr153-152-shared-*.kt
+      - tests/unit/c2-shared-pr153-pr152-adjudication.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-pr153-pr152-shared-jvm:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Shared-original-JVM TDD and full architecture gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/c2-shared-pr153-pr152-adjudication.test.cjs
+          npm run check
+      - name: Enforce mandatory AppArmor and Bubblewrap isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v bwrap
+      - name: Four true original Kotlin pairs in one program graph with shared version store
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C2_OWNER_SANDBOX: '1'
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-shared-pr153-pr152"
+          mkdir -p "$root"
+          bash scripts/c2-shared-pr153-pr152-original-jvm.sh "$root"
+          jq -e '
+            .schema=="c2-shared-original-153-152-interaction/v1" and
+            .originalKotlinSharedJvmExecutions==4 and
+            .separateJVMResultReusedAsSharedEvidence==false and
+            .localRepairNoninterferenceDemonstrated==true and
+            .coupledReplayRequiresBothGuards==true and
+            .staleStoreBlocksOtherwiseFixedReplay==true and
+            .globalIndependentCausalFamiliesCertified==0 and
+            .independentAssignmentCountClosed==0 and
+            .externalGoldLabels==0 and
+            .productionAndroidIntegrationCertified==false and
+            .truthSealed==false and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false
+          ' "$root/output/shared-original-kotlin-interaction.json" >/dev/null
+          rm -f "$root"/*.kt "$root"/*.jar "$root"/*.log "$root"/*.compile
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: success()
+        with:
+          name: c2-pr153-pr152-actual-shared-jvm-interaction-no-causal-cert
+          path: ${{ runner.temp }}/c2-shared-pr153-pr152/output/shared-original-kotlin-interaction.json
+          if-no-files-found: error
+          retention-days: 30
