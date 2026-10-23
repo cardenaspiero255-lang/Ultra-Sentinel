@@ -12,6 +12,7 @@ mkdir -p "$root/output"
 fetch(){
  local tag="$1" head="$2" blob="$3" path="$4" sum="$5"
  # Authenticate exact Git tree entry and Git blob without moving branch refs.
+ echo "C2_SOURCE_AUTH_BEGIN tag=$tag commit=$head"
  gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/commits/$head" > "$root/commit.json"
  local tree
  tree="$(jq -er --arg sha "$head" 'select(.sha==$sha) | .tree.sha | select(test("^[a-f0-9]{40}$"))' "$root/commit.json")"
