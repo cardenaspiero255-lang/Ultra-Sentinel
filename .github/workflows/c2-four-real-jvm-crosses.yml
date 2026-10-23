@@ -1,0 +1,108 @@
+name: C2 four authentic two-module Kotlin factorial causal crosses
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-four-real-jvm-crosses.yml
+      - packages/quality-gates/c2-four-direct-jvm-crosses.cjs
+      - scripts/c2-four-real-jvm-crosses.sh
+      - tests/oracles/c2-cross-*.kt
+      - tests/unit/c2-four-direct-jvm-crosses.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-kotlin-pair:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [ttl-thermal, query-confidence, json-confidence, refresh-battery]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture and RED GREEN unit suite
+        run: npm run check
+      - name: Enforce mandatory no-network user namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v bwrap
+      - name: Run 4 real original Kotlin source variant combinations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C2_OWNER_SANDBOX: '1'
+          SUITE: ${{ matrix.suite }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-direct-real-jvm/$SUITE"
+          mkdir -p "$root"
+          bash scripts/c2-four-real-jvm-crosses.sh "$SUITE" "$root"
+          test -s "$root/output/receipt.json"
+          mkdir -p "$RUNNER_TEMP/c2-pair-receipt"
+          cp "$root/output/receipt.json" "$RUNNER_TEMP/c2-pair-receipt/receipt.json"
+          rm -rf "$root"
+      - name: Archive sanitized receipt without Kotlin or JAR
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-real-pair-${{ matrix.suite }}
+          path: ${{ runner.temp }}/c2-pair-receipt/receipt.json
+          retention-days: 30
+          if-no-files-found: error
+  adjudicate:
+    needs: [original-kotlin-pair]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          pattern: c2-real-pair-*
+          path: ${{ runner.temp }}/c2-real-pair-inputs
+          merge-multiple: false
+      - name: Validate observed four 2x2 experiment receipts, never certify GOLD
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-real-pair-inputs"
+          test "$(find "$root" -type f|wc -l)" -eq 4
+          test "$(find "$root" -type l|wc -l)" -eq 0
+          mkdir -p "$RUNNER_TEMP/c2-real-pair-output"
+          node scripts/c2-four-real-jvm-adjudicate.cjs             "$root/c2-real-pair-ttl-thermal/receipt.json"             "$root/c2-real-pair-query-confidence/receipt.json"             "$root/c2-real-pair-json-confidence/receipt.json"             "$root/c2-real-pair-refresh-battery/receipt.json"             "$RUNNER_TEMP/c2-real-pair-output/causal-evidence.json"
+          jq -e '.schema=="c2-four-direct-original-kotlin-causal-crosses/v1" and
+            .realJointKotlinJvmExecutions==16 and .scopedNoninterferencePairs==4 and
+            .causalFamiliesIndependentlyCertified==0 and .externalGoldLabelsCreated==0 and
+            .sssPlusCertified==false and .precision==null and .recall==null and .f1==null'             "$RUNNER_TEMP/c2-real-pair-output/causal-evidence.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-four-genuine-jvm-pairs-causal-families-uncertified
+          path: ${{ runner.temp }}/c2-real-pair-output/causal-evidence.json
+          retention-days: 30
+          if-no-files-found: error
