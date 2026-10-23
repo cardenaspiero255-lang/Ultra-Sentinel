@@ -23,6 +23,7 @@ fun main(args:Array<String>){
   measuredGood=emptyMap(),acceptedFeedback=emptyMap(),knownBad=emptyMap(),
   thermalHot=false,lowBattery=false,memoryPressure=false,storagePressure=false)
  check(positive.confidence==RecommendationConfidenceBand.HIGH)
+ println("C2_CROSS_SUITE query-confidence")
  println("C2_CROSS_NORMAL_CONTROLS_PASS")
  println("C2_CROSS_VECTOR mode=$mode first=$querySafe second=$confidenceSafe")
 }
