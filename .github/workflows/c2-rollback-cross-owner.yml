@@ -57,7 +57,7 @@ jobs:
           mkdir -p "$root"
           bash scripts/c2-rollback-cross-owner.sh "$root"
           jq -e '.schema=="c2-rollback-153-152-original-cross-verified/v1" and
-           .originalKotlinJvmExecutions==6 and .matrix|length==4' "$root/output/rollback-cross.json" >/dev/null
+           .originalKotlinJvmExecutions==6 and (.matrix|length)==4' "$root/output/rollback-cross.json" >/dev/null
           jq -e '.negative153Line69Validated==true and
            .familiesIndependentlyCertified==0 and .historicalCausesClosed==0 and
            .newGoldLabels==0 and .candidateSourceRead==false and
