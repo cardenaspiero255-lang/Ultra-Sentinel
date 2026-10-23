@@ -108,6 +108,7 @@ for mode in 00 01 10 11;do
   > "$root/$mode.log" 2>&1 || {
    grep -E 'Exception|C2_CROSS' "$root/$mode.log"|head -14 >&2 || :;exit 2;
   }
+ grep -Fxq "C2_CROSS_SUITE $suite" "$root/$mode.log"
  grep -Fxq C2_CROSS_NORMAL_CONTROLS_PASS "$root/$mode.log"
  a=false;c=false
  case "$mode" in 10|11) a=true;;esac
