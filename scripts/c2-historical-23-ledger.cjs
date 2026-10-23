@@ -14,18 +14,18 @@ function read(file){
  return JSON.parse(fs.readFileSync(file,'utf8'));
 }
 function main(args){
- if(args.length!==4||args.some(p=>!path.isAbsolute(p))||
-    new Set(args).size!==4||fs.existsSync(args[3]))
+ if(args.length!==5||args.some(p=>!path.isAbsolute(p))||
+    new Set(args).size!==5||fs.existsSync(args[4]))
   throw Error('C2_HISTORICAL_LEDGER_INVALID_PATHS');
  const report=reconcileFullHistoricalDevelopmentLedger({
   audit:read(args[0]),pending:read(args[1]),recovered:read(args[2])
  });
- const bound=bindHistoricalLedgerToOriginalOwnerManifest(report);
+ const bound=bindHistoricalLedgerToOriginalOwnerManifest(report,read(args[3]));
  const output={...report,originalStageCasesBound:bound.originalStageCasesBound,
   originalRecoveredCasesBound:bound.originalRecoveredCasesBound,
   ownerOriginalManifestBindingSha256:bound.manifestBindingSha256,
   originalManifestAuthenticatedByThisProcess:false};
- fs.writeFileSync(args[3],JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
+ fs.writeFileSync(args[4],JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({status:report.status,
   historicalIdentities:report.historicalIdentities,
   recovered:report.recoveredExternalReceiptLinks,
