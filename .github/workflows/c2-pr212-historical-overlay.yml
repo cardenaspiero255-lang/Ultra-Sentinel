@@ -1,0 +1,89 @@
+name: C2 PR212 authenticated 23 historical source causal overlay
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr212-historical-overlay.yml
+      - packages/quality-gates/c2-pr212-historical-overlay.cjs
+      - scripts/c2-pr212-historical-overlay.cjs
+      - tests/unit/c2-pr212-historical-overlay.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-23-cross-merge:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture check and TDD
+        run: |
+          node --test tests/unit/c2-pr212-historical-overlay.test.cjs
+          npm run check
+      - name: Pin authenticated owner original 23 identity overlay and 16 JVM receipts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          root="$RUNNER_TEMP/c2-pr212-traceability"
+          mkdir -p "$root/inputs" "$root/output"
+          cat > "$root/sources.tsv" <<'PINS'
+          prior|39974373171|ce6119245a13c5e588487fcc8d0349e6e6441f78|.github/workflows/c2-causal-evidence-overlay.yml|12510576452|c2-twenty-three-causal-five-provisional-sixteen-unclassified|3f45ff5f67148faffdbbf17522191238e6f901dc2ab32c0153568fa905019155|historical-provisional-causal-overlay.json
+          cross|39974373062|ce6119245a13c5e588487fcc8d0349e6e6441f78|.github/workflows/c2-four-real-jvm-crosses.yml|12509968833|c2-four-genuine-jvm-pairs-causal-families-uncertified|57b8e30bf17c57c36e3cdf01fb2e1d9f32ab25fa42a9f12c67dc39d820ca78e4|causal-evidence.json
+          PINS
+          while IFS='|' read -r key run head workflow artifact name digest filename;do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson id "$run" --arg head "$head" --arg wf "$workflow" '
+              .id==$id and .head_sha==$head and .path==$wf and .event=="push" and
+              .status=="completed" and .conclusion=="success" and
+              .actor.id==322222186 and .repository.id==1418338512
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$artifact" --argjson run "$run" --arg name "$name" --arg hash "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+                .digest==$hash and .expired==false and .workflow_run.id==$run and
+                .workflow_run.repository_id==1418338512)]|length==1
+            ' "$root/artifacts.json" >/dev/null
+            mkdir -p "$root/inputs/$key"
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/inputs/$key"
+            test "$(find "$root/inputs/$key" -type f|wc -l)" = 1
+            test "$(find "$root/inputs/$key" -type l|wc -l)" = 0
+            test -s "$root/inputs/$key/$filename"
+            echo "C2_HISTORICAL_PRIOR_RECEIPT_AUTHENTICATED $key"
+          done < "$root/sources.tsv"
+          node scripts/c2-pr212-historical-overlay.cjs             "$root/inputs/prior/historical-provisional-causal-overlay.json"             "$root/inputs/cross/causal-evidence.json"             "$root/output/pr212-historical-causal-overlay.json"
+          jq -e '
+            .schema=="c2-pr212-integrated-historical-23-cross-overlay/v1" and
+            .historicalIdentityCount==23 and .historicalPositives==11 and
+            .historicalNegatives==12 and .additionalExperimentallyGroupedPositives==4 and
+            .remainingUngrouped==12 and
+            .independentCausalAssignmentsStillPending==21 and
+            .verifiedIndependentCausalFamilies==0 and
+            .externalGoldLabelsCreated==0 and .scoredNegatives==0 and
+            .candidateSourceRead==false and .detectorPredictionsRead==false and
+            .holdoutFrozen==false and .precision==null and .recall==null and
+            .f1==null and .sssPlusCertified==false
+          ' "$root/output/pr212-historical-causal-overlay.json" >/dev/null
+          rm -rf "$root/inputs" "$root/run.json" "$root/artifacts.json" "$root/sources.tsv"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-original-23-nine-provisional-twelve-ungrouped-21-uncertified
+          path: ${{ runner.temp }}/c2-pr212-traceability/output/pr212-historical-causal-overlay.json
+          retention-days: 30
+          if-no-files-found: error
