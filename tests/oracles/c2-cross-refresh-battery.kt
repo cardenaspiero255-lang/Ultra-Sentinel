@@ -15,6 +15,7 @@ fun main(args:Array<String>){
  check((normal.drainPercentPerHour?:0f)>20f && normal.recommendation==BatteryGamingRecommendation.BALANCED)
  val batterySafe=runCatching{BatteryAwareGamingPolicy(highDrainPercentPerHour=Float.POSITIVE_INFINITY)}.isFailure
  check(batterySafe==batteryFix) {"C2_CROSS_BATTERY_WRONG_EFFECT"}
+ println("C2_CROSS_SUITE refresh-battery")
  println("C2_CROSS_NORMAL_CONTROLS_PASS")
  println("C2_CROSS_VECTOR mode=$mode first=$refreshSafe second=$batterySafe")
 }
