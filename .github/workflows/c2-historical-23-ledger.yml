@@ -71,6 +71,23 @@ jobs:
               .actor.id==322222186 and .repository.id==1418338512
             ' "$root/run.json" >/dev/null
             gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            if [ "$category" = ORIGIN ] && [ "$key" = rollback ]; then
+              test "$run" = 38889693623
+              test "$artifact" = 12040619454
+              jq -e '.total_count==0 and (.artifacts|length)==0' "$root/artifacts.json" >/dev/null
+              cp "$root/run.json" "$root/old-run.json"
+              cp "$root/artifacts.json" "$root/old-artifacts.json"
+              gh api "/repos/$repo/actions/runs/39952600537" > "$root/fresh-run.json"
+              gh api "/repos/$repo/actions/runs/39952600537/artifacts" > "$root/fresh-artifacts.json"
+              mkdir -p "$root/fresh-replay"
+              gh run download 39952600537 --repo "$repo" --name c2-rollback-original-six-jvm-not-certified --dir "$root/fresh-replay"
+              test "$(find "$root/fresh-replay" -type f|wc -l)" -eq 1
+              test "$(find "$root/fresh-replay" -type l|wc -l)" -eq 0
+              test -s "$root/fresh-replay/rollback-cross.json"
+              node scripts/c2-pr153-replacement-lineage.cjs "$root/old-run.json" "$root/old-artifacts.json" "$root/fresh-run.json" "$root/fresh-artifacts.json" "$root/fresh-replay/rollback-cross.json" "$root/output/c2-pr153-lost-original-reproduced-lineage.json"
+              echo "C2_ORIGINAL_ZIP_ABSENT_NEW_REPLAY_SEPARATE run=$run"
+              continue
+            fi
             jq -e --argjson run "$run" --argjson id "$artifact" \
               --arg name "$name" --arg digest "sha256:$digest" '
               [.artifacts[]|select(.id==$id and .name==$name and
@@ -129,11 +146,16 @@ jobs:
             .holdoutFrozen==false and .precision==null and .recall==null and
             .f1==null and .sssPlusCertified==false
           ' "$root/output/c2-full-historical-development-ledger.json" >/dev/null
+          test -s "$root/output/c2-pr153-lost-original-reproduced-lineage.json"
+          jq -e '.originalArtifactCurrentlyAvailable==false and .freshOriginalSourceJVMReproduced==true and .causalFamiliesCertified==0' "$root/output/c2-pr153-lost-original-reproduced-lineage.json" >/dev/null
           jq -n --arg ledger "$(jq -r .ledgerSha256 "$root/output/c2-full-historical-development-ledger.json")" \
             --arg binding "$(jq -r .ownerOriginalManifestBindingSha256 "$root/output/c2-full-historical-development-ledger.json")" '{
             schema:"c2-full-23-original-receipts-owner-api-attestation/v1",
             originalWitnessOwnerRunsReauthenticated:15,
-            originalWitnessRunArtifactsReauthenticated:15,
+            originalWitnessRunArtifactsReauthenticated:14,
+            oneOriginalWitnessArtifactUnavailable:true,
+            newlyReproducedPr153OriginalSourceWitnesses:1,
+            originalArchiveBytesRecovered:false,
             archivedDerivedRunsAndArtifactsReauthenticated:3,
             linkedHistoryIdentities:23,
             canonicalLedgerSha256:$ledger,
