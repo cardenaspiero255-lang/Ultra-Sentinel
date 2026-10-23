@@ -110,11 +110,14 @@ test('RED: CLI must pass authenticated observed live PR pointers alongside froze
 });
 
 
-test('P1 regression: provenance receipts use trusted base code and reject collaborator PRs',()=>{
+test('P1 regression: verified receipts only originate from owner push to main, never PR code',()=>{
  const yml=fs.readFileSync(path.join(__dirname,'../../.github/workflows/c2-upstream-original-ci-receipts.yml'),'utf8');
+ assert.match(yml,/on:\n  push:\n    branches:\n      - main/);
+ assert.doesNotMatch(yml,/^  pull_request:/m);
+ assert.match(yml,/github\.event_name\s*==\s*'push'/);
+ assert.match(yml,/github\.ref\s*==\s*'refs\/heads\/main'/);
  assert.match(yml,/github\.actor\s*==\s*'cardenaspiero255-lang'/);
- assert.match(yml,/github\.event\.pull_request\.user\.login\s*==\s*'cardenaspiero255-lang'/);
- assert.match(yml,/ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+ assert.match(yml,/ref:\s*\$\{\{\s*github\.sha\s*\}\}/);
 });
 test('P2 regression: skipped checks count as non-successful without inventing truth',()=>{
  const {manifest,receipt}=good();
