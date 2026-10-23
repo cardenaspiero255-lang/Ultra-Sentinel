@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const {classifyWorkerObservation,verifyPinnedTasksSource}=require('../../packages/quality-gates/c2-external-tasks-throttle.cjs');
 const runtime=()=>({schema:'c2-tasks-throttle-external-jvm/v1',
  productionSourceExecuted:true,executorThreadIsNotCaller:true,
