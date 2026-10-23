@@ -1,0 +1,92 @@
+name: C2 historical causal grouping from executed original JVM evidence
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-causal-evidence-overlay.yml
+      - packages/quality-gates/c2-causal-evidence-overlay.cjs
+      - scripts/c2-causal-evidence-overlay.cjs
+      - tests/unit/c2-causal-evidence-overlay.test.cjs
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  actions: read
+jobs:
+  owner-causal-evidence-adjudication:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full TDD and architecture checks
+        run: npm run check
+      - name: Authenticate exact historical owner run and real 10-variant Kotlin run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-causal-overlay"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/original" "$root/experiment" "$root/output"
+          cat > "$root/pins.tsv" <<'PINNED'
+          original|39909354486|.github/workflows/c2-historical-23-ledger.yml|12482082828|c2-full-23-historical-owner-receipts-unscored|123a2b9ea4d71e348309b0ca662ceab26ae868120a2746cef68bc25636f5dbb9
+          experiment|39909354430|.github/workflows/c2-real-causal-jvm-campaign.yml|12481674765|c2-real-kotlin-causal-campaign-21-unresolved|208482571a41cab8ca4fd56071f9cc49e292b2838a0831850eafc9d489a6c34f
+          PINNED
+          while IFS='|' read -r kind run workflow artifact name digest; do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson id "$run" --arg wf "$workflow"               --arg sha "3f083b3eaa757dd4dbc0a2390a6278912ca24ca1" '
+              .id==$id and .head_sha==$sha and .path==$wf and
+              .event=="push" and .status=="completed" and
+              .conclusion=="success" and .actor.id==322222186 and
+              .repository.id==1418338512
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$artifact" --argjson run "$run"               --arg name "$name" --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+               .digest==$digest and .expired==false and
+               .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1
+            ' "$root/artifacts.json" >/dev/null
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/$kind"
+            test "$(find "$root/$kind" -type l|wc -l)" -eq 0
+          done < "$root/pins.tsv"
+          test "$(find "$root/original" -type f|wc -l)" -eq 2
+          test "$(find "$root/experiment" -type f|wc -l)" -eq 1
+          test -s "$root/original/c2-full-historical-development-ledger.json"
+          test -s "$root/experiment/source-kotlin-causal-campaign.json"
+          node scripts/c2-causal-evidence-overlay.cjs             "$root/original/c2-full-historical-development-ledger.json"             "$root/experiment/source-kotlin-causal-campaign.json"             "$root/output/historical-provisional-causal-overlay.json"
+          jq -e '
+            .schema=="c2-historical-development-causal-evidence-overlay/v1" and
+            .historicalIdentitiesPreserved==23 and
+            .originalWithoutProvisionalMechanism==21 and
+            .newProvisionalAssignmentsSupportedByExecutedJVM==5 and
+            .remainingWithoutProvisionalMechanism==16 and
+            .stillWithoutIndependentCausalCertification==21 and
+            .independentCausalFamiliesCertified==0 and
+            .externalGoldLabelsCreated==0 and
+            .externalSourceReleasePermitted==false and
+            .detectorPredictionsRead==false and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false
+          ' "$root/output/historical-provisional-causal-overlay.json"
+          rm -rf "$root/original" "$root/experiment" "$root/pins.tsv"             "$root/run.json" "$root/artifacts.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-twenty-three-causal-five-provisional-sixteen-unclassified
+          path: ${{ runner.temp }}/c2-causal-overlay/output/historical-provisional-causal-overlay.json
+          retention-days: 30
+          if-no-files-found: error
