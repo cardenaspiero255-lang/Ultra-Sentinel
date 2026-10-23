@@ -1,0 +1,149 @@
+name: C2 trusted source-free external original training-lineage preflight
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  verify-source-free-pilot-and-lineage-barriers:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'cardenaspiero255-lang'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact trusted owner-main commit without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run all architecture and fail-closed regression tests
+        run: npm run check
+      - name: Seal deterministic source-free pilot and training SHA metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-external-lineage-pilot"
+          mkdir -p "$root/output"
+          node scripts/c2-external-lineage-pilot.cjs "$root/output/pilot-unscored.json"
+          jq -e '
+            .schema=="c2-external-lineage-source-free-pilot/v1" and
+            .pilot.repository=="nextcloud/talk-android" and
+            .pilot.pr==6938 and
+            .trainingCommitShaOverlap==0 and .trainingRepositoryOverlap==0 and
+            .sourceCodeReleasePermitted==false and
+            .trainingSourceLineageCertified==false and
+            .causalFamilyExclusionCertified==false and
+            .historical23AuthenticatedByThisModule==false and
+            .candidateSourceRead==false and .candidatePredictionsRead==false and
+            .originalSourceOraclesExecuted==0 and .newGoldLabels==0 and
+            .truthSealed==false and .holdoutFrozen==false and
+            .precision==null and .recall==null and .f1==null and
+            .sssPlusCertified==false
+          ' "$root/output/pilot-unscored.json" >/dev/null
+      - name: Authenticate original pinned Git objects without code, patches or tests
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-external-lineage-pilot"
+          repo=nextcloud/talk-android
+          pr=6938
+          original_base=8dcc62a077802446b93108df5ff76a6a390be3d3
+          original_head=26892c801d4e7fbd12fbef7dfb04e0e1ded71c34
+          created=2026-10-22T09:54:39Z
+          gh api "/repos/$repo/pulls/$pr" --jq '{
+            repository:.base.repo.full_name,pr:.number,createdAt:.created_at,
+            liveBase:.base.sha,liveHead:.head.sha,headRepository:.head.repo.full_name
+          }' > "$root/live-metadata.json"
+          jq -e --arg repo "$repo" --arg created "$created" --argjson pr "$pr" '
+            .repository==$repo and .createdAt==$created and .pr==$pr and
+            (.headRepository|type=="string") and
+            (.headRepository|test("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"))
+          ' "$root/live-metadata.json" >/dev/null
+          head_repo="$(jq -r .headRepository "$root/live-metadata.json")"
+          gh api "/repos/$repo/git/commits/$original_base" \
+            --jq '{sha:.sha,tree:.tree.sha}' > "$root/base.json"
+          gh api "/repos/$head_repo/git/commits/$original_head" \
+            --jq '{sha:.sha,tree:.tree.sha}' > "$root/head.json"
+          jq -e --arg sha "$original_base" '
+            .sha==$sha and (.tree|test("^[a-f0-9]{40}$"))
+          ' "$root/base.json" >/dev/null
+          jq -e --arg sha "$original_head" '
+            .sha==$sha and (.tree|test("^[a-f0-9]{40}$"))
+          ' "$root/head.json" >/dev/null
+          # Source-free SHA-tree overlap screening against all 15 distinct
+          # original HEAD/base commits of the eight known GameHub training PRs.
+          node - "$root/historical-commits.txt" <<'NODE'
+          const fs=require('node:fs');
+          const {NEW_LOCK}=require('./packages/quality-gates/c2-next-holdout.cjs');
+          if(NEW_LOCK.repository!=='cardenaspiero255-lang/gamehub-ultra'||
+             NEW_LOCK.cases.length!==8)process.exit(2);
+          const commits=[...new Set(NEW_LOCK.cases.flatMap(x=>[x.baseSha,x.headSha]))].sort();
+          if(commits.length!==15||commits.some(s=>!/^[a-f0-9]{40}$/.test(s)))process.exit(2);
+          fs.writeFileSync(process.argv[2],commits.join('\n')+'\n',{flag:'wx',mode:0o600});
+          NODE
+          : > "$root/historical-trees.jsonl"
+          while IFS= read -r history_sha; do
+            gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/commits/$history_sha" \
+              --jq '{sha:.sha,treeSha:.tree.sha}' > "$root/history-single.json"
+            jq -e --arg sha "$history_sha" '
+              .sha==$sha and (.treeSha|test("^[a-f0-9]{40}$"))
+            ' "$root/history-single.json" >/dev/null
+            cat "$root/history-single.json" >> "$root/historical-trees.jsonl"
+          done < "$root/historical-commits.txt"
+          jq -sc 'sort_by(.sha)' "$root/historical-trees.jsonl" > "$root/historical-trees.json"
+          test "$(jq length "$root/historical-trees.json")" -eq 15
+          if jq -e --arg baseTree "$(jq -r .tree "$root/base.json")" \
+               --arg headTree "$(jq -r .tree "$root/head.json")" '
+               any(.[]; .treeSha==$baseTree or .treeSha==$headTree)
+             ' "$root/historical-trees.json" >/dev/null; then
+            echo "C2_TRAINING_TREE_OVERLAP_BLOCKED" >&2
+            exit 2
+          fi
+          history_digest="$(sha256sum "$root/historical-trees.json" | awk '{print $1}')"
+          # Metadata/commit/tree nonidentity is NOT causal or family exclusion.
+          jq -n --arg repo "$repo" --argjson pr "$pr" \
+            --arg base "$original_base" --arg head "$original_head" \
+            --arg baseTree "$(jq -r .tree "$root/base.json")" \
+            --arg headTree "$(jq -r .tree "$root/head.json")" \
+            --arg liveHead "$(jq -r .liveHead "$root/live-metadata.json")" \
+            --arg commitment "$(jq -r .commitmentSha256 "$root/output/pilot-unscored.json")" \
+            --arg historyDigest "$history_digest" \
+            '{
+              schema:"c2-external-pilot-original-git-objects-unscored/v1",
+              repository:$repo,pr:$pr,originalBaseSha:$base,originalHeadSha:$head,
+              originalBaseTreeSha:$baseTree,originalHeadTreeSha:$headTree,
+              observedLiveHeadSha:$liveHead,liveHeadMoved:($liveHead!=$head),
+              selectionCommitmentSha256:$commitment,
+              exactOriginalGitObjectsReauthenticated:true,
+              knownHistoricalGitObjectsReauthenticated:15,
+              historicalOriginalGitTreeInventoryDigest:$historyDigest,
+              trainingTreeShaOverlap:0,
+              trainingSourceCausalIndependenceVerified:false,
+              candidateSourceRead:false,originalOracleExecuted:false,
+              sourceReleasePermitted:false,truthSealed:false,holdoutFrozen:false,
+              labelsAdded:0,precision:null,recall:null,f1:null,sssPlusCertified:false
+            }' > "$root/output/github-original-git-objects-unscored.json"
+          rm -f "$root/live-metadata.json" "$root/base.json" "$root/head.json" \
+            "$root/historical-commits.txt" "$root/historical-trees.jsonl" \
+            "$root/historical-trees.json" "$root/history-single.json"
+      - name: Archive only source-free authenticated identity receipts
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-original-external-pilot-lineage-unscored
+          path: ${{ runner.temp }}/c2-external-lineage-pilot/output
+          retention-days: 30
+          if-no-files-found: warn
