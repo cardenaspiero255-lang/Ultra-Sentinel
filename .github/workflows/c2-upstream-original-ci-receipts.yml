@@ -16,13 +16,16 @@ jobs:
     if: >-
       github.event.repository.id == 1418338512 &&
       github.event_name == 'pull_request' &&
+      github.actor == 'cardenaspiero255-lang' &&
+      github.event.pull_request.user.login == 'cardenaspiero255-lang' &&
       github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
     runs-on: ubuntu-24.04
     timeout-minutes: 16
     steps:
-      - name: Checkout trusted auditor, not candidate external sources
+      - name: Checkout trusted base SHA, never pull-request supplied scripts
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
       - name: Setup pinned Node.js 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
