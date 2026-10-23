@@ -28,8 +28,22 @@ function fixture(){
   residualEmbeddedReceipts:1,newGoldLabels:0,
   nextcloudSourceReleaseAuthorized:false,entries:rows};
 }
+
+function proofsFor(report){
+ return report.entries.filter(e=>e.witnessCategory==='RUN23_ARCHIVED_AND_12_QUEUE').map(e=>{
+  const stage=STAGES.find(s=>s.cases.some(c=>
+   c.pr===e.pr&&c.line===e.line&&c.rule===e.rule&&c.positive===e.positive));
+  assert.ok(stage);
+  return {pr:e.pr,line:e.line,rule:e.rule,positive:e.positive,
+   headSha:e.headSha,blobSha:e.blobSha,path:e.path,
+   evidenceSha256:e.originalEvidenceSha256,
+   originalOwnerRunId:stage.run,originalArchiveDigestSha256:stage.digest};
+ });
+}
+
 test('RED P2: bind each of 22 identities to the exact existing original stage or recovered owner artifact',()=>{
- const proof=bindHistoricalLedgerToOriginalOwnerManifest(fixture());
+ const sample=fixture();
+ const proof=bindHistoricalLedgerToOriginalOwnerManifest(sample,proofsFor(sample));
  assert.equal(proof.schema,'c2-historical-23-original-manifest-binding/v1');
  assert.equal(proof.originalStageCasesBound,12);
  assert.equal(proof.originalRecoveredCasesBound,10);
@@ -54,7 +68,8 @@ test('RED P2: valid but unrelated owner archives must fail, not merely pass leng
  ];
  for(const mutate of mutations){
   const x=fixture();mutate(x);
-  assert.throws(()=>bindHistoricalLedgerToOriginalOwnerManifest(x),/C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED/);
+  const original=fixture();
+  assert.throws(()=>bindHistoricalLedgerToOriginalOwnerManifest(x,proofsFor(original)),/C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED/);
  }
 });
 
@@ -76,4 +91,23 @@ test('RED P2: original owner manifest Git blobs are immutable when source identi
   assert.ok(workflow.includes('git hash-object '+name),'Owner workflow must pin actual historical Git blob');
   assert.ok(workflow.includes(original),'Owner workflow must compare immutable original history blob');
  }
+});
+
+test('RED P2: original stage content must match the complete source tuple, not only rule, PR and line',()=>{
+ const mutate=[
+  x=>{x.entries[0].headSha='c'.repeat(40)},
+  x=>{x.entries[0].blobSha='c'.repeat(40)},
+  x=>{x.entries[0].path='app/another.kt'},
+  x=>{x.entries[0].originalEvidenceSha256='c'.repeat(64)}
+ ];
+ for(const change of mutate){
+  const report=fixture(),original=proofsFor(report);
+  change(report);
+  assert.throws(()=>bindHistoricalLedgerToOriginalOwnerManifest(report,original),
+   /C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED/);
+ }
+ const report=fixture(),proof=proofsFor(report);
+ proof[0].originalOwnerRunId=12345;
+ assert.throws(()=>bindHistoricalLedgerToOriginalOwnerManifest(report,proof),
+  /C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED/);
 });
