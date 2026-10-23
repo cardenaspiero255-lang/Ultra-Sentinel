@@ -20,7 +20,7 @@ function fixture(){
  for(let i=0;i<18;i++){
   const pr=200+i,headSha=(400+i).toString(16).padStart(40,'0'),
    blobSha=(500+i).toString(16).padStart(40,'0'),path='app/source'+i+'.kt',
-   rule='HISTORICAL_'+i,line=20+i,positive:i<6;
+   rule='HISTORICAL_'+i,line=20+i,positive=i<6;
   entries.push({pr,line,rule,headSha,blobSha,path,positive,
    identity:JSON.stringify([pr,headSha,rule,path,line,positive]),
    originalProvisionalRootCauseGroup:i<2?'existing_provisional_'+i:null,
