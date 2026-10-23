@@ -4,6 +4,8 @@
 const fs=require('node:fs'),path=require('node:path');
 const {reconcileFullHistoricalDevelopmentLedger}=
  require('../packages/quality-gates/c2-historical-23-ledger.cjs');
+const {bindHistoricalLedgerToOriginalOwnerManifest}=
+ require('../packages/quality-gates/c2-original-manifest-binding.cjs');
 function read(file){
  if(!path.isAbsolute(file))throw Error('C2_HISTORICAL_LEDGER_UNSAFE_PATH');
  const stat=fs.lstatSync(file);
@@ -18,7 +20,12 @@ function main(args){
  const report=reconcileFullHistoricalDevelopmentLedger({
   audit:read(args[0]),pending:read(args[1]),recovered:read(args[2])
  });
- fs.writeFileSync(args[3],JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
+ const bound=bindHistoricalLedgerToOriginalOwnerManifest(report);
+ const output={...report,originalStageCasesBound:bound.originalStageCasesBound,
+  originalRecoveredCasesBound:bound.originalRecoveredCasesBound,
+  ownerOriginalManifestBindingSha256:bound.manifestBindingSha256,
+  originalManifestAuthenticatedByThisProcess:false};
+ fs.writeFileSync(args[3],JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({status:report.status,
   historicalIdentities:report.historicalIdentities,
   recovered:report.recoveredExternalReceiptLinks,
