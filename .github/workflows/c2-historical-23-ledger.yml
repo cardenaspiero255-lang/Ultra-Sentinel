@@ -56,13 +56,13 @@ jobs:
              ORIGINS.length!==7||ORIGINS.flatMap(s=>s.ids).length!==10)
            throw Error('C2_SOURCE_HISTORY_COUNT_MISMATCH');
           const rows=[
-           ...STAGES.map(s=>['STAGE',s.key,s.run,s.head,s.workflow,s.artifact,s.name,s.digest]),
-           ...ORIGINS.map(s=>['ORIGIN',s.id,s.runId,s.runHeadSha,s.workflow,s.artifactId,s.artifactName,s.archiveSha256])
+           ...STAGES.map(s=>['STAGE',s.key,s.run,s.head,s.workflow,s.artifact,s.name,s.digest,s.file]),
+           ...ORIGINS.map(s=>['ORIGIN',s.id,s.runId,s.runHeadSha,s.workflow,s.artifactId,s.artifactName,s.archiveSha256,s.jsonFile])
           ];
           fs.writeFileSync(process.argv[2],rows.map(x=>x.join('|')).join('\n')+'\n',{flag:'wx',mode:0o600});
           NODE
           # Check historical source-run/ZIP metadata under immutable SHA.
-          while IFS='|' read -r category key run head workflow artifact name digest; do
+          while IFS='|' read -r category key run head workflow artifact name digest filename; do
             gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
             jq -e --argjson run "$run" --arg head "$head" --arg workflow "$workflow" '
               .id==$run and .head_sha==$head and .path==$workflow and
@@ -77,6 +77,13 @@ jobs:
                .digest==$digest and .expired==false and
                .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1
             ' "$root/artifacts.json" >/dev/null
+            if [ "$category" = STAGE ]; then
+              mkdir -p "$root/original-stages/$key"
+              gh run download "$run" --repo "$repo" --name "$name" \
+                --dir "$root/original-stages/$key"
+              test -s "$root/original-stages/$key/$filename"
+              test "$(find "$root/original-stages/$key" -type l | wc -l)" -eq 0
+            fi
             echo "C2_ORIGINAL_WITNESS_AUTHENTICATED category=$category key=$key run=$run"
           done < "$root/original.tsv"
           # Compare the 3 actual derived run artifacts and download exact ZIP content.
@@ -101,10 +108,13 @@ jobs:
             test "$(find "$root/inputs/$key" -type l | wc -l)" -eq 0
             test -s "$root/inputs/$key/$file"
           done < "$root/derived.tsv"
+          node scripts/c2-extract-twelve-stage-source-proofs.cjs \
+            "$root/original-stages" "$root/inputs/stage-source-proofs.json"
           node scripts/c2-historical-23-ledger.cjs \
             "$root/inputs/audit/c2-run23-causal-audit.json" \
             "$root/inputs/queue/c2-twelve-historical-identity-queue.json" \
             "$root/inputs/recovery/ten-original-receipts-recovered.json" \
+            "$root/inputs/stage-source-proofs.json" \
             "$root/output/c2-full-historical-development-ledger.json"
           jq -e '
             .schema=="c2-historical-23-traceability-ledger/v1" and
@@ -136,7 +146,7 @@ jobs:
             newGoldLabels:0,holdoutFrozen:false,
             precision:null,recall:null,f1:null,sssPlusCertified:false
           }' > "$root/output/authenticated-original-run-metadata.json"
-          rm -rf "$root/inputs" "$root/original.tsv" "$root/derived.tsv" \
+          rm -rf "$root/inputs" "$root/original-stages" "$root/original.tsv" "$root/derived.tsv" \
             "$root/run.json" "$root/artifacts.json"
       - name: Preserve sanitized original-run metadata and zero-label causal ledger
         if: always()
