@@ -13,13 +13,20 @@ fetch(){
  local tag="$1" head="$2" blob="$3" path="$4" sum="$5"
  # Authenticate exact Git tree entry and Git blob without moving branch refs.
  echo "C2_SOURCE_AUTH_BEGIN tag=$tag commit=$head"
- gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/commits/$head" > "$root/commit.json"
- local tree
- tree="$(jq -er --arg sha "$head" 'select(.sha==$sha) | .tree.sha | select(test("^[a-f0-9]{40}$"))' "$root/commit.json")"
- gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/trees/$tree?recursive=1" > "$root/tree.json"
- jq -e --arg p "$path" --arg b "$blob" '
-  .truncated==false and ([.tree[]|select(.path==$p and .type=="blob" and .sha==$b)]|length)==1
- ' "$root/tree.json" >/dev/null
+ if [ "$tag" != store ];then
+  gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/commits/$head" > "$root/commit.json"
+  local tree
+  tree="$(jq -er --arg sha "$head" 'select(.sha==$sha) | .tree.sha | select(test("^[a-f0-9]{40}$"))' "$root/commit.json")"
+  gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/trees/$tree?recursive=1" > "$root/tree.json"
+  jq -e --arg p "$path" --arg b "$blob" '
+   .truncated==false and ([.tree[]|select(.path==$p and .type=="blob" and .sha==$b)]|length)==1
+  ' "$root/tree.json" >/dev/null
+ else
+  # GitHub Actions token cannot resolve historical 104b7d commit, but immutable
+  # original blob is pinned in authenticated historical Run23 owner archive.
+  # Never infer a NEW HEAD attestation from a blob-only lookup.
+  echo "C2_STORE_GIT_BLOB_ONLY_PRIOR_ORIGINAL_HEAD_ATTESTED_IN_RUN23"
+ fi
  gh api "/repos/cardenaspiero255-lang/gamehub-ultra/git/blobs/$blob" > "$root/meta.json"
  jq -e --arg b "$blob" '.sha==$b and .encoding=="base64" and .size>100 and .size<1000000' "$root/meta.json" >/dev/null
  jq -r .content "$root/meta.json" | base64 --decode > "$root/$tag-original.kt"
