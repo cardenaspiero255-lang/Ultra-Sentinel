@@ -15,6 +15,7 @@ fun main(args:Array<String>){
   thermalHot=false,lowBattery=false,memoryPressure=false,storagePressure=false)
  val confidenceSafe=answer.confidence==RecommendationConfidenceBand.MEDIUM
  check(confidenceSafe==confidenceFix) {"C2_CROSS_CONFIDENCE_WRONG_EFFECT"}
+ println("C2_CROSS_SUITE json-confidence")
  println("C2_CROSS_NORMAL_CONTROLS_PASS")
  println("C2_CROSS_VECTOR mode=$mode first=$jsonSafe second=$confidenceSafe")
 }
