@@ -133,6 +133,7 @@ const data={schema:'c2-original-rollback-cross-jvm-input/v1',
  },sourceBlobsAuthenticated:true,sandboxEnforced:true,
  candidateSourceRead:false,detectorPredictionsRead:false,newGoldLabels:0};
 const {adjudicateRollbackCross}=require('./packages/quality-gates/c2-rollback-cross-owner.cjs');
+console.log('C2_SAFE_GATE_INPUT '+JSON.stringify({sources:data.source,sourceBlobsAuthenticated:data.sourceBlobsAuthenticated,sandboxEnforced:data.sandboxEnforced,candidateSourceRead:data.candidateSourceRead,detectorPredictionsRead:data.detectorPredictionsRead,newGoldLabels:data.newGoldLabels}));
 const output=adjudicateRollbackCross(data);
 fs.writeFileSync(p.join(root,'output','rollback-cross.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx',mode:0o600});
 process.stdout.write(JSON.stringify({realJvm:6,controls:0,certifiedFamilies:0,gold:0,evidenceSha256:output.evidenceSha256})+'\n');
