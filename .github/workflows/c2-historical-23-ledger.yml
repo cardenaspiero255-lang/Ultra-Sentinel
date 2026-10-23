@@ -108,19 +108,24 @@ jobs:
             .historicalIdentities==23 and .positives==11 and .negatives==12 and
             .queueMatchedEmbeddedReceipts==12 and .recoveredExternalReceiptLinks==10 and
             .residualEmbeddedReceipts==1 and .unresolvedCausalAssignments==21 and
+            .originalStageCasesBound==12 and .originalRecoveredCasesBound==10 and
+            (.ownerOriginalManifestBindingSha256|test("^[a-f0-9]{64}$")) and
             .verifiedIndependentCausalFamilies==0 and .newGoldLabels==0 and
             .nextcloudSourceReleaseAuthorized==false and
             .candidateSourceInspected==false and .candidatePredictionsRead==false and
             .holdoutFrozen==false and .precision==null and .recall==null and
             .f1==null and .sssPlusCertified==false
           ' "$root/output/c2-full-historical-development-ledger.json" >/dev/null
-          jq -n --arg ledger "$(jq -r .ledgerSha256 "$root/output/c2-full-historical-development-ledger.json")" '{
+          jq -n --arg ledger "$(jq -r .ledgerSha256 "$root/output/c2-full-historical-development-ledger.json")" \
+            --arg binding "$(jq -r .ownerOriginalManifestBindingSha256 "$root/output/c2-full-historical-development-ledger.json")" '{
             schema:"c2-full-23-original-receipts-owner-api-attestation/v1",
             originalWitnessOwnerRunsReauthenticated:15,
             originalWitnessRunArtifactsReauthenticated:15,
             archivedDerivedRunsAndArtifactsReauthenticated:3,
             linkedHistoryIdentities:23,
             canonicalLedgerSha256:$ledger,
+            ownerOriginalManifestBindingSha256:$binding,
+            recoveredPerIdentitySourceManifestBindingChecked:22,
             contentZipOriginalDigestsRecomputedHere:false,
             originalKotlinReexecutedHere:false,
             causalIndependenceCertified:false,
