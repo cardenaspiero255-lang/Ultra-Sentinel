@@ -17,7 +17,8 @@ function gitBlob(text){
 const KEYS=['schema','productionSourceExecuted','executorThreadIsNotCaller',
  'callerReturnedBeforeWorkerCompletion','secondCallbackOnExecutorThread',
  'defaultSleeperElapsedMillis','allTasksComplete','abiStubsForAndroidAndCoroutine',
- 'independentOriginalTruth'];
+ 'counterfactualSameOriginalProductionSource','counterfactualExecutedOnCaller',
+ 'counterfactualCompletedSynchronously','independentOriginalTruth'];
 function classifyWorkerObservation(x){
  if(!x||typeof x!=='object'||Array.isArray(x)||
     Object.keys(x).length!==KEYS.length||KEYS.some(k=>!Object.hasOwn(x,k))||
@@ -29,10 +30,15 @@ function classifyWorkerObservation(x){
     !Number.isSafeInteger(x.defaultSleeperElapsedMillis)||
     x.defaultSleeperElapsedMillis<100||x.defaultSleeperElapsedMillis>3000||
     x.allTasksComplete!==true||x.abiStubsForAndroidAndCoroutine!==true||
+    x.counterfactualSameOriginalProductionSource!==true||
+    x.counterfactualExecutedOnCaller!==true||
+    x.counterfactualCompletedSynchronously!==true||
     x.independentOriginalTruth!==false)BLOCKED();
  return Object.freeze({
   benignExecutorBehaviorObserved:true,separateExecutorWorker:true,
   runtimeOriginalProductionSourceWithABIStubs:true,
+  controlledUnsafeCounterfactualObserved:true,
+  sameOriginalProductionSourceUsedForBoth:true,
   independentOriginalTruth:false,independentBenignOracle:false,
   scoredNegativeLabels:0,scoredFalsePositiveRate:null,
   newGoldLabels:0,precision:null,recall:null,f1:null,

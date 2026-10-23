@@ -1,12 +1,15 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const {classifyWorkerObservation,verifyPinnedTasksSource}=require('../../packages/quality-gates/c2-external-tasks-throttle.cjs');
 const runtime=()=>({schema:'c2-tasks-throttle-external-jvm/v1',
  productionSourceExecuted:true,executorThreadIsNotCaller:true,
  callerReturnedBeforeWorkerCompletion:true,
  secondCallbackOnExecutorThread:true,defaultSleeperElapsedMillis:250,
  allTasksComplete:true,abiStubsForAndroidAndCoroutine:true,
+ counterfactualSameOriginalProductionSource:true,
+ counterfactualExecutedOnCaller:true,counterfactualCompletedSynchronously:true,
  independentOriginalTruth:false});
 test('RED: real original-thread control is a development-only rule-specific benign candidate, never a scored TN or FP',()=>{
  const r=classifyWorkerObservation(runtime());
@@ -35,4 +38,32 @@ test('RED: genuine upstream source and diff must be pinned, no fabricated HEAD o
   sourceGitBlob:'f'.repeat(40),externalGitHead:'3936c221aea180b795085d7402286373b5d3f6d2',
   observation:runtime()
  }),/C2_TASKS_EXTERNAL_BLOCKED/);
+});
+
+test('RED: both original and controlled counterfactual execute under same authentic Kotlin source',()=>{
+ const r=classifyWorkerObservation(runtime());
+ assert.equal(r.benignExecutorBehaviorObserved,true);
+ assert.equal(r.controlledUnsafeCounterfactualObserved,true);
+ assert.equal(r.sameOriginalProductionSourceUsedForBoth,true);
+ assert.equal(r.independentOriginalTruth,false);
+ assert.equal(r.scoredNegativeLabels,0);
+});
+test('RED: fail closed when synchronous counterfactual is missing or falsely attested',()=>{
+ for(const key of ['counterfactualSameOriginalProductionSource',
+  'counterfactualExecutedOnCaller','counterfactualCompletedSynchronously']){
+  const x=runtime();x[key]=false;
+  assert.throws(()=>classifyWorkerObservation(x),/C2_TASKS_EXTERNAL_BLOCKED/);
+ }
+});
+test('RED: real original worker has a causally discriminating executor control and no automatic labels',()=>{
+ const oracle=fs.readFileSync(require('node:path').join(__dirname,
+  '../oracles/c2-external-tasks-throttle/OriginalWorkerOracle.kt'),'utf8');
+ const workflow=fs.readFileSync(require('node:path').join(__dirname,
+  '../../.github/workflows/c2-external-tasks-original-worker.yml'),'utf8');
+ assert.match(oracle,/Executor\s*\{\s*it\.run\(\)\s*\}/);
+ assert.match(oracle,/counterfactualExecutedOnCaller/);
+ assert.match(workflow,/counterfactualExecutedOnCaller/);
+ assert.match(workflow,/github\.event_name == 'push'/);
+ assert.match(workflow,/github\.actor == 'cardenaspiero255-lang'/);
+ assert.doesNotMatch(workflow,/^  pull_request:/m);
 });
