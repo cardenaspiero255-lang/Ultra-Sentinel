@@ -3,12 +3,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - .github/workflows/c2-external-lineage-pilot.yml
-      - packages/quality-gates/c2-external-lineage-pilot.cjs
-      - scripts/c2-external-lineage-pilot.cjs
-      - tests/unit/c2-external-lineage-pilot.test.cjs
-      - docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json
 permissions:
   contents: read
   pull-requests: read
