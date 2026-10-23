@@ -9,14 +9,15 @@ const {STAGES}=require('./c2-twelve-original-oracle-reconciliation.cjs');
 const {ORIGINS,EXPECTED}=require('./c2-run23-ten-receipt-recovery.cjs');
 const fail=()=>{throw Error('C2_ORIGINAL_OWNER_MANIFEST_BINDING_BLOCKED');};
 const hex40=/^[a-f0-9]{40}$/,hex64=/^[a-f0-9]{64}$/;
-function bindHistoricalLedgerToOriginalOwnerManifest(report){
+function bindHistoricalLedgerToOriginalOwnerManifest(report,originalStageProofs){
  if(!report||report.schema!=='c2-historical-23-traceability-ledger/v1'||
   report.historicalIdentities!==23||report.queueMatchedEmbeddedReceipts!==12||
   report.recoveredExternalReceiptLinks!==10||report.residualEmbeddedReceipts!==1||
   report.newGoldLabels!==0||report.nextcloudSourceReleaseAuthorized!==false||
   !Array.isArray(report.entries)||report.entries.length!==23||
-  STAGES.length!==8||ORIGINS.length!==7||EXPECTED.length!==10)fail();
- const stages=new Map(),expected=new Map(),originById=new Map();
+  STAGES.length!==8||ORIGINS.length!==7||EXPECTED.length!==10||
+  !Array.isArray(originalStageProofs)||originalStageProofs.length!==12)fail();
+ const stages=new Map(),expected=new Map(),originById=new Map(),stageProofs=new Map();
  const key=e=>JSON.stringify([e.pr,e.line,e.rule,e.positive]);
  for(const stage of STAGES){
   if(!Number.isSafeInteger(stage.run)||stage.run<1||!hex64.test(stage.digest)||
@@ -40,6 +41,19 @@ function bindHistoricalLedgerToOriginalOwnerManifest(report){
   expected.set(k,e);
  }
  if(stages.size!==12||originById.size!==10||expected.size!==10)fail();
+ for(const proof of originalStageProofs){
+  if(!proof||typeof proof!=='object'||!Number.isSafeInteger(proof.pr)||
+   !Number.isSafeInteger(proof.line)||proof.line<1||
+   typeof proof.rule!=='string'||typeof proof.positive!=='boolean'||
+   !hex40.test(proof.headSha)||!hex40.test(proof.blobSha)||
+   typeof proof.path!=='string'||!proof.path.startsWith('app/')||
+   !hex64.test(proof.evidenceSha256))fail();
+  const k=key(proof),stage=stages.get(k);
+  if(!stage||stageProofs.has(k)||proof.originalOwnerRunId!==stage.run||
+   proof.originalArchiveDigestSha256!==stage.digest)fail();
+  stageProofs.set(k,proof);
+ }
+ if(stageProofs.size!==12)fail();
  let stageCount=0,recoveryCount=0,residualCount=0;
  const seen=new Set(),mapped=[];
  for(const e of report.entries){
@@ -52,8 +66,10 @@ function bindHistoricalLedgerToOriginalOwnerManifest(report){
   if(seen.has(id))fail();seen.add(id);
   const k=key(e);
   if(e.witnessCategory==='RUN23_ARCHIVED_AND_12_QUEUE'){
-   const s=stages.get(k);
-   if(!s||!hex64.test(e.originalEvidenceSha256)||e.sourceRunId!==null)fail();
+   const s=stages.get(k),proof=stageProofs.get(k);
+   if(!s||!proof||!hex64.test(e.originalEvidenceSha256)||e.sourceRunId!==null||
+     e.headSha!==proof.headSha||e.blobSha!==proof.blobSha||
+     e.path!==proof.path||e.originalEvidenceSha256!==proof.evidenceSha256)fail();
    mapped.push([id,'ORIGINAL_STAGE',s.run,s.artifact,s.digest]);
    stageCount++;
   }else if(e.witnessCategory==='RECOVERED_ORIGINAL_WITNESS'){
