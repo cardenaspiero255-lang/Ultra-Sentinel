@@ -1,6 +1,8 @@
 name: C2 original external source CI provenance only - four blinded PRs
 on:
-  pull_request:
+  push:
+    branches:
+      - main
     paths:
       - .github/workflows/c2-upstream-original-ci-receipts.yml
       - packages/quality-gates/c2-upstream-original-ci-receipts.cjs
@@ -15,17 +17,16 @@ jobs:
   verify-upstream-original-ci-without-unblinding:
     if: >-
       github.event.repository.id == 1418338512 &&
-      github.event_name == 'pull_request' &&
-      github.actor == 'cardenaspiero255-lang' &&
-      github.event.pull_request.user.login == 'cardenaspiero255-lang' &&
-      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'cardenaspiero255-lang'
     runs-on: ubuntu-24.04
     timeout-minutes: 16
     steps:
-      - name: Checkout trusted base SHA, never pull-request supplied scripts
+      - name: Checkout immutable trusted main push SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - name: Setup pinned Node.js 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
