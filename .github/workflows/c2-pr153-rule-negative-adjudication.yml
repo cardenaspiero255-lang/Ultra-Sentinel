@@ -1,0 +1,95 @@
+name: C2 original PR153 replay and frozen Core negative eligibility
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-pr153-rule-negative-adjudication.yml
+      - packages/quality-gates/c2-pr153-rule-negative-adjudication.cjs
+      - scripts/c2-pr153-rule-negative-adjudication.cjs
+      - tests/unit/c2-pr153-rule-negative-adjudication.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-source-scope-adjudication:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: TDD focused test then full architecture checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/c2-pr153-rule-negative-adjudication.test.cjs
+          npm run check
+      - name: Authenticate original 23 historical identities and six JVM PR153 replay
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-pr153-rule-negatives"
+          repo=cardenaspiero255-lang/Ultra-Sentinel
+          mkdir -p "$root/inputs" "$root/output"
+          cat > "$root/owner-receipts.tsv" <<'PINS'
+          historical|39977403840|918d4a0abc9f5da19914c5db8d137f887624ff10|.github/workflows/c2-pr212-historical-overlay.yml|push|12511283983|c2-original-23-nine-provisional-twelve-ungrouped-21-uncertified|01eca3cf5236e6a6bdeec59614b0c321b0ca3e16155681a41046bf3f83a1d3da|pr212-historical-causal-overlay.json
+          replay|39952600537|f1e65032d65e84907b8f2d52fcaa7b1610d4ba0b|.github/workflows/c2-rollback-cross-owner.yml|pull_request|12501326370|c2-rollback-original-six-jvm-not-certified|0cc4fdcb3c672ddfe6f6aeba35fd63cff5a909f79b1105aa9d7c34cb1532c910|rollback-cross.json
+          PINS
+          while IFS='|' read -r kind run head workflow event artifact name digest filename;do
+            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
+            jq -e --argjson run "$run" --arg head "$head" --arg wf "$workflow" --arg ev "$event" '
+              .id==$run and .head_sha==$head and .path==$wf and
+              .event==$ev and .status=="completed" and .conclusion=="success" and
+              .repository.id==1418338512 and .actor.id==322222186
+            ' "$root/run.json" >/dev/null
+            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            jq -e --argjson id "$artifact" --argjson run "$run" --arg name "$name" --arg digest "sha256:$digest" '
+              [.artifacts[]|select(.id==$id and .name==$name and
+                .digest==$digest and .expired==false and
+                .workflow_run.id==$run and .workflow_run.repository_id==1418338512)]|length==1
+            ' "$root/artifacts.json" >/dev/null
+            mkdir -p "$root/inputs/$kind"
+            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/inputs/$kind"
+            test "$(find "$root/inputs/$kind" -type f|wc -l)" -eq 1
+            test "$(find "$root/inputs/$kind" -type l|wc -l)" -eq 0
+            test -s "$root/inputs/$kind/$filename"
+            echo "C2_OWNER_JVM_ORIGINAL_RECEIPT_REAUTHENTICATED $kind"
+          done < "$root/owner-receipts.tsv"
+          node scripts/c2-pr153-rule-negative-adjudication.cjs             "$root/inputs/historical/pr212-historical-causal-overlay.json"             "$root/inputs/replay/rollback-cross.json"             "$root/output/pr153-causal-negative-rule-scope.json"
+          jq -e '
+            .schema=="c2-pr153-development-mechanism-and-negative-rule-scope/v1" and
+            .historicalCount==23 and .historicalPositiveCount==11 and
+            .historicalNegativeCount==12 and .newProvisionalPositiveAssignments==1 and
+            .remainingWithoutProvisionalMechanism==11 and
+            .originalSafeControlsOutsideActiveRuleVocabulary==12 and
+            .implementedRuleCount==17 and .ruleSpecificNegativeCasesScored==0 and
+            .trueNegativesScored==0 and .falsePositivesScored==0 and
+            .causalIndependenceAssignmentsStillPending==21 and
+            .certifiedIndependentFamilies==0 and .newExternalGoldLabels==0 and
+            .detectorPredictionsRead==false and .candidateSourceRead==false and
+            .sourceReleaseAuthorized==false and .truthSealed==false and
+            .holdoutFrozen==false and .precision==null and .recall==null and
+            .f1==null and .falsePositiveRate==null and .sssPlusCertified==false
+          ' "$root/output/pr153-causal-negative-rule-scope.json" >/dev/null
+          rm -rf "$root/inputs" "$root/owner-receipts.tsv" "$root/run.json" "$root/artifacts.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-pr153-one-provisional-twelve-rule-ineligible-benign
+          path: ${{ runner.temp }}/c2-pr153-rule-negatives/output/pr153-causal-negative-rule-scope.json
+          retention-days: 30
+          if-no-files-found: error
