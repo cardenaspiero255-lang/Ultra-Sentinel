@@ -66,6 +66,8 @@ test('RED: trusted owner-main workflow only reauthenticates Git commit/tree meta
  assert.match(wf,/github\.actor == 'cardenaspiero255-lang'/);
  assert.match(wf,/ref: \$\{\{ github\.sha \}\}/);
  assert.match(wf,/git\/commits\/\$original_head/);
+ assert.match(wf,/git\/commits\/\$history_sha/);
+ assert.match(wf,/trainingTreeShaOverlap/);
  assert.match(wf,/scripts\/c2-external-lineage-pilot\.cjs/);
  assert.doesNotMatch(wf,/^  pull_request:/m);
  assert.doesNotMatch(wf,/\/pulls\/\$pr\/files|\/compare\/|gh pr diff|checkout.*external|candidate_predictions|contents: write/);
