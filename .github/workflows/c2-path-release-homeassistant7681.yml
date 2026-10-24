@@ -1,0 +1,234 @@
+name: C2 historical frozen Core path gate and owner release Home Assistant 7681 (NO GOLD)
+# Candidate PR source is never executed or submitted to Core in this workflow.
+# PR files API includes patch but ONLY path/blob metadata is preserved and emitted.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-path-release-homeassistant7681.yml
+      - packages/quality-gates/c2-reusable-frozen-source-screen.cjs
+      - packages/quality-gates/c2-owner-source-release.cjs
+      - tests/unit/c2-reusable-frozen-source-screen.test.cjs
+      - tests/unit/c2-owner-source-release-open-pr.test.cjs
+      - docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-HOMEASSISTANT7681-20261024.json
+      - docs/quality/C2-HOMEASSISTANT7681-PATH-ONLY-PRESEAL-20261024.json
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-frozen-core-homeassistant7681-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  frozen-source-free-precheck:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512) ||
+       github.event_name == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full suite and source-free 17-rule historic Core contract
+        run: npm run check
+      - name: Validate 1 actual eligible production path without source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const {screenFrozenSourceMetadata}=require('./packages/quality-gates/c2-reusable-frozen-source-screen.cjs');
+          const x=screenFrozenSourceMetadata({
+            roster:require('./docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json'),
+            exposures:require('./docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json'),
+            previousDispositions:[
+              require('./docs/quality/C2-LAWNCHAIR7428-OWNER-RELEASED-DISPOSITION-20261024.json'),
+              require('./docs/quality/C2-BITWARDEN7499-OWNER-RELEASED-DISPOSITION-20261024.json')],
+            preseal:require('./docs/quality/C2-HOMEASSISTANT7681-PATH-ONLY-PRESEAL-20261024.json')
+          });
+          if(x.productionEligibleFiles!==1||x.exactRuleMatched||x.newGoldLabels||x.sourceReleaseGranted)
+            throw Error('C2_FROZEN_PATH_PREFILTER_BLOCKED');
+          console.log('C2_PRE_RELEASE_FROZEN_PATHS_ELIGIBLE_RULE_UNVERIFIED');
+          NODE
+  owner-introduction-check:
+    needs: [frozen-source-free-precheck]
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    outputs:
+      introduced: ${{ steps.guard.outputs.introduced }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: One-time request gate, skip harmlessly on subsequent main pushes
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3 ] &&
+            git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+              grep -Fxq 'docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-HOMEASSISTANT7681-20261024.json'; then
+            echo 'introduced=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'introduced=false' >> "$GITHUB_OUTPUT"
+          fi
+  owner-authorized-one-source-read:
+    needs: [frozen-source-free-precheck, owner-introduction-check]
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186' &&
+      needs.owner-introduction-check.outputs.introduced == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require exact introducing owner merge and immutably pinned historical rule blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3
+          git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+            grep -Fxq 'docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-HOMEASSISTANT7681-20261024.json'
+          test "$(git rev-parse 547938ed88804e25bbabecf74a3c3d91b74cf1a4:packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git rev-parse 547938ed88804e25bbabecf74a3c3d91b74cf1a4:packages/core/c2-semantic-patterns.cjs)" = 7df2a994f566ad56bdacab999fa6ba83b69e3b4d
+          test "$(git rev-parse 547938ed88804e25bbabecf74a3c3d91b74cf1a4:packages/core/c2-known-defect-regressions.cjs)" = 8c2fa4289d331e157b07f4e693239ac7e31cae8c
+      - name: Get PR metadata and only changed path/blob scope (discard all patches)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-homeassistant7681"
+          mkdir -m 700 "$root"
+          gh api '/repos/home-assistant/android/pulls/7681' |
+            jq -e '{number,created_at,state,base:{sha:.base.sha,repo:{full_name:.base.repo.full_name}},head:{sha:.head.sha}}' > "$root/api.json"
+          gh api '/repos/home-assistant/android/pulls/7681/files?per_page=100' |
+            jq -e '[.[] | {filename,status,sha,additions,deletions,changes}]' > "$root/files.json"
+          node - "$root/api.json" "$root/files.json" "$root/release.json" "$root/scope.json" <<'NODE'
+          const fs=require('node:fs');
+          const {validateOwnerRelease}=require('./packages/quality-gates/c2-owner-source-release.cjs');
+          const {screenFrozenSourceMetadata}=require('./packages/quality-gates/c2-reusable-frozen-source-screen.cjs');
+          const snapshot=require('./docs/quality/C2-HOMEASSISTANT7681-PATH-ONLY-PRESEAL-20261024.json');
+          const roster=require('./docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
+          const exposures=require('./docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json');
+          const request=require('./docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-HOMEASSISTANT7681-20261024.json');
+          const lawnchair=require('./docs/quality/C2-LAWNCHAIR7428-OWNER-RELEASED-DISPOSITION-20261024.json');
+          const files=JSON.parse(fs.readFileSync(process.argv[3],'utf8'));
+          if(files.length!==2)throw Error('C2_TRUNCATED_PATHS');
+          const sorted=x=>JSON.stringify(x.sort((a,b)=>a.filename.localeCompare(b.filename)));
+          if(sorted(files)!==sorted([...snapshot.paths]))throw Error('C2_SCOPE_GITHUB_API_MISMATCH');
+          const prefilter=screenFrozenSourceMetadata({roster,exposures,
+            previousDispositions:[lawnchair,require('./docs/quality/C2-BITWARDEN7499-OWNER-RELEASED-DISPOSITION-20261024.json')],
+            preseal:snapshot});
+          if(prefilter.productionEligibleFiles!==1)throw Error('C2_NO_FROZEN_CORE_PRODUCTION_SCOPE');
+          const event={repositoryId:Number(process.env.GITHUB_REPOSITORY_ID),
+            actorId:Number(process.env.GITHUB_ACTOR_ID),ref:process.env.GITHUB_REF,
+            eventName:process.env.GITHUB_EVENT_NAME,headCommit:process.env.GITHUB_SHA};
+          const api=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const release=validateOwnerRelease({roster,exposures,request,api,event});
+          if(!release.sourceReadPermitted||release.truthSealed||release.newGoldLabels)
+            throw Error('C2_OWNER_SOURCE_RELEASE_BLOCKED');
+          fs.writeFileSync(process.argv[4],JSON.stringify(release,null,2)+'\n',{flag:'wx',mode:0o600});
+          fs.writeFileSync(process.argv[5],JSON.stringify({...prefilter,
+            sourceReadPermitted:true,readPermitReason:'OWNER_ONLY_EXACT_SHA_SOURCE_TRIAGE',
+            exactRuleMatched:false,sourceOracleAuthenticated:false,newGoldLabels:0,
+            truthSealed:false},null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+          (cd "$root" && sha256sum release.json scope.json > SHA256SUMS)
+          rm -f "$root/api.json" "$root/files.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-homeassistant7681-source-path-read-authorization-NOT-GOLD
+          path: ${{ runner.temp }}/c2-homeassistant7681/
+          if-no-files-found: error
+          retention-days: 30
+  independent-path-identity-attestor:
+    needs: [owner-authorized-one-source-read]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: c2-homeassistant7681-source-path-read-authorization-NOT-GOLD
+          path: ${{ runner.temp }}/c2-homeassistant7681-proof
+      - name: Verify SHA256/owner run/PR pointers and independently reacquire both frozen source blob pointers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-homeassistant7681-proof"
+          test "$(find "$root" -maxdepth 1 -type f | wc -l)" -eq 3
+          test "$(find "$root" -type l | wc -l)" -eq 0
+          (cd "$root" && sha256sum -c SHA256SUMS)
+          jq -e '.candidate.pr==7681 and .newGoldLabels==0 and
+            .originalGithubGitProvenanceAuthenticated==false and
+            .sourceReadPermitted==true and .truthSealed==false' "$root/release.json" >/dev/null
+          jq -e '.productionEligibleFiles==1 and .testFiles==1 and
+            .exactRuleMatched==false and .sourceOracleAuthenticated==false and
+            .newGoldLabels==0 and .truthSealed==false' "$root/scope.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
+            jq -e --arg sha "$GITHUB_SHA" --argjson id "$GITHUB_RUN_ID" '
+              .id==$id and .head_sha==$sha and .repository.id==1418338512 and
+              .actor.id==322222186 and .head_branch=="main" and .event=="push"' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" |
+            jq -e --argjson id "$GITHUB_RUN_ID" '
+              [.artifacts[]|select(.name=="c2-homeassistant7681-source-path-read-authorization-NOT-GOLD" and
+                .workflow_run.id==$id and .workflow_run.repository_id==1418338512 and
+                .expired==false and (.digest|test("^sha256:[a-f0-9]{64}$")))]|length==1' >/dev/null
+          gh api '/repos/home-assistant/android/pulls/7681' |
+            jq -e '.number==7681 and .created_at=="2026-10-22T20:46:35Z" and
+              .base.repo.full_name=="home-assistant/android" and
+              .base.sha=="c0457ffd2353bff63eceafd2a82ca0f505a70e10" and
+              .head.sha=="dbf2056e4a9cab37c6b766fe22afda687119033e"' >/dev/null
+          gh api '/repos/home-assistant/android/git/commits/c0457ffd2353bff63eceafd2a82ca0f505a70e10' |
+            jq -e '.sha=="c0457ffd2353bff63eceafd2a82ca0f505a70e10" and
+              (.tree.sha|test("^[a-f0-9]{40}$"))' >/dev/null
+          gh api '/repos/dlip9663/android/git/commits/dbf2056e4a9cab37c6b766fe22afda687119033e' |
+            jq -e '.sha=="dbf2056e4a9cab37c6b766fe22afda687119033e" and
+              (.tree.sha|test("^[a-f0-9]{40}$"))' >/dev/null
+          gh api '/repos/home-assistant/android/pulls/7681/files?per_page=100' |
+            jq -e '[.[]|{filename,status,sha,additions,deletions,changes}]' > "$RUNNER_TEMP/independent-files.json"
+          node - "$RUNNER_TEMP/independent-files.json" <<'NODE'
+          const fs=require('node:fs');
+          const expected=require('./docs/quality/C2-HOMEASSISTANT7681-PATH-ONLY-PRESEAL-20261024.json').paths;
+          const actual=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const sorted=x=>JSON.stringify(x.sort((a,b)=>a.filename.localeCompare(b.filename)));
+          if(actual.length!==2||sorted(actual)!==sorted([...expected]))throw Error('C2_INDEPENDENT_PATH_BLOB_DRIFT');
+          NODE
+          echo 'C2_HOMEASSISTANT7681_OWNER_AND_PATH_BLOBS_AUTHENTICATED_NOT_GOLD_NO_ORACLE'

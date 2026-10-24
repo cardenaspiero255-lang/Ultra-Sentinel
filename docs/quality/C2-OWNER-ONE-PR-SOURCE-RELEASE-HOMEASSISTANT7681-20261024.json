@@ -1,0 +1,29 @@
+{
+  "schema": "c2-owner-one-source-release-request/v1",
+  "scope": "EXACT_ONE_PUBLIC_EXTERNAL_PR_SOURCE_TRIAGE_ONLY",
+  "ownerApproval": "ALLOW_ONE_SOURCE_READ_NO_PREDICTIONS",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "exposureLedger": "docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json",
+  "selectionPolicy": "Source-free filter: one app/src/main Kotlin production path plus one upstream src/test Kotlin file; source-file Git blobs and commit identities pinned; no diff/title/prediction inspected, exclude all ten known source-exposed PRs.",
+  "candidate": {
+    "repository": "home-assistant/android",
+    "pr": 7681,
+    "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+    "headSha": "dbf2056e4a9cab37c6b766fe22afda687119033e",
+    "createdAt": "2026-10-22T20:46:35Z"
+  },
+  "ownerGithubActorId": 322222186,
+  "ownerRepositoryId": 1418338512,
+  "sourceInspectedAtRequest": false,
+  "candidatePredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "sourceReleaseAuthenticated": false,
+  "trainingIndependenceCertified": false,
+  "causalIndependenceCertified": false,
+  "oracleAuthenticated": false,
+  "ruleCompatibilityAuthenticated": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "sssPlusCertified": false,
+  "note": "Owner-only protected-main single-source-read grant; no external source execution, no model prediction, no approved upstream-fix claim, no truth labels. Separate independent attestation must follow."
+}
