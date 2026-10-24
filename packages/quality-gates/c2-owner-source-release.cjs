@@ -45,7 +45,7 @@ function validateOwnerRelease({roster,exposures,request,api,event}={}){
    !HEX40.test(event.headCommit))blocked();
   if(!api||api.number!==c.pr||api.created_at!==c.createdAt||
    api.base?.sha!==c.baseSha||api.base?.repo?.full_name!==c.repository||
-   api.head?.sha!==c.headSha||api.state!=='closed')blocked();
+   api.head?.sha!==c.headSha||!['closed','open'].includes(api.state))blocked();
   if(!roster||roster.schema!=='c2-bulk-source-candidate-manifest/v1'||
    roster.candidates?.length!==169||roster.cutoff!=='2026-10-20T19:30:54Z')blocked();
   planC2BulkIntake(roster);
