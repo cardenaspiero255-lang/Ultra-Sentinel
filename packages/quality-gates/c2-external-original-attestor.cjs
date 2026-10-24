@@ -70,7 +70,7 @@ function attestTasksExternalDevelopmentWitness({originalWorkerBytes,producerRepo
   testOracleKind:'SAME_ORIGINAL_SOURCE_ASYNCHRONOUS_VS_INLINE',
   realUpstreamFixReproduced:false,
   originalUpstreamJUnitExecuted:false,
-  originalPRIdentityAuthenticated:false,
+  originalPrIdentityAuthenticated:false,
   independentRunnerProvenanceCertified:false,
   causalFamilyIndependenceCertified:false,
   trainingExcludedAsKnownDevelopment:true,
