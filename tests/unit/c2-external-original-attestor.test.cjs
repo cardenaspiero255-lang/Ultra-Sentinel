@@ -52,6 +52,8 @@ test('known real external Tasks source witness can be re-attested without becomi
  assert.equal(x.originalWorkerDigestVerified,true);
  assert.equal(x.sourceDigestCrossChecked,true);
  assert.equal(x.externalPrNumber,null);
+ assert.equal(x.originalPrIdentityAuthenticated,false);
+ assert.equal(Object.hasOwn(x,'originalPRIdentityAuthenticated'),false);
  assert.equal(x.candidatePredictionsRead,false);
  assert.equal(x.newGoldLabels,0);
  assert.equal(x.remaining,111);
