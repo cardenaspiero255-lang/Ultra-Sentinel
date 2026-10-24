@@ -1,0 +1,59 @@
+{
+  "schema": "c2-source-disclosure-quarantine/v1",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "poolSize": 169,
+  "disclosures": [
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23430,
+      "reason": "RUBY_DANGERFILE_NOT_IN_17_RULES"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23432,
+      "reason": "GPS_EXIF_PRIVACY_BEHAVIOR_HAS_NO_FROZEN_RULE"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7661,
+      "reason": "RENOVATE_GITHUB_ACTION_UPDATE_WITHOUT_ORIGINAL_ORACLE"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7662,
+      "reason": "WEAR_DNS_FALLBACK_EXCEPTION_NOT_IN_FROZEN_RULES"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7664,
+      "reason": "WORKFLOW_ACTION_SHA_UPDATE_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7666,
+      "reason": "WEBSOCKET_RECONNECTION_POLICY_NOT_IN_FROZEN_RULES"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7672,
+      "reason": "WORKFLOW_ACTION_SHA_UPDATE_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7676,
+      "reason": "LOCATION_SEND_QUEUE_ORDERING_NOT_IN_FROZEN_RULES"
+    }
+  ],
+  "disclosedTo": "DEVELOPMENT_ORACLE_TRIAGE",
+  "sourceReleasePermittedByPriorSeal": false,
+  "allDisclosuresQuarantined": true,
+  "originalBehaviorAuthenticated": false,
+  "originalFixBenignJUnitExecuted": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "admittedToBlindHoldout": false,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "tripleSPlusCertified": false,
+  "limitation": "Inspection preceded an authenticated source-release gate; exposed candidates are excluded from untouched holdout and cannot be promoted to GOLD. Maintain 161 others metadata-only."
+}
