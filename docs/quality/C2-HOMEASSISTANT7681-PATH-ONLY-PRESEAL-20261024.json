@@ -1,0 +1,44 @@
+{
+  "schema": "c2-owner-source-only-route-screen/v1",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "baseRosterCount": 169,
+  "alreadyExposed": 10,
+  "remainingBeforeSourceRead": 159,
+  "selectionBasis": "Among metadata-only checked PRs, single Kotlin app/src/main source plus one test; SHA matches frozen manifest; selection without seeing PR title/patch or model predictions",
+  "candidate": {
+    "repository": "home-assistant/android",
+    "pr": 7681,
+    "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+    "headSha": "dbf2056e4a9cab37c6b766fe22afda687119033e",
+    "createdAt": "2026-10-22T20:46:35Z"
+  },
+  "paths": [
+    {
+      "filename": "app/src/main/kotlin/io/homeassistant/companion/android/frontend/js/FrontendJsBridge.kt",
+      "status": "modified",
+      "sha": "20cf04c4bddd2bf415697f3f9be55bd4545ffad3",
+      "additions": 21,
+      "deletions": 3,
+      "changes": 24
+    },
+    {
+      "filename": "app/src/test/kotlin/io/homeassistant/companion/android/frontend/js/FrontendJsBridgeTest.kt",
+      "status": "modified",
+      "sha": "f8bca3e1f174f80d42cc01e6f293270d5314cf03",
+      "additions": 59,
+      "deletions": 0,
+      "changes": 59
+    }
+  ],
+  "originalSourceInspected": false,
+  "diffRead": false,
+  "ownerReleaseGranted": false,
+  "exactRuleVerified": false,
+  "trainingIndependenceVerified": false,
+  "sourceOracleExecuted": false,
+  "baselinePredictionsRead": false,
+  "candidatePredictionsRead": false,
+  "goldAdded": 0,
+  "truthSealed": false,
+  "sssPlusCertified": false
+}
