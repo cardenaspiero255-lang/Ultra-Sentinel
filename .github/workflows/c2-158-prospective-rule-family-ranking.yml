@@ -70,6 +70,8 @@ jobs:
   owner-only-158-metadata-ranking:
     needs: [offline-admission-and-tests,first-owner-introduction]
     if: >-
+      always() &&
+      needs.offline-admission-and-tests.result == 'success' &&
       (github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'push' &&
         needs.first-owner-introduction.outputs.introduced == 'true')) &&
