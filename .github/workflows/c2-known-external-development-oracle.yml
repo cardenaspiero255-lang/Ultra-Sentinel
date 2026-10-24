@@ -7,6 +7,10 @@ on:
       - packages/quality-gates/c2-external-original-attestor.cjs
       - scripts/c2-attest-tasks-original-development.cjs
       - tests/unit/c2-external-original-attestor*.test.cjs
+      - tests/oracles/c2-external-tasks-throttle/**
+      - scripts/c2-tasks-source-only-receipt.cjs
+      - packages/quality-gates/c2-tasks-source-only-observation.cjs
+      - tests/unit/c2-tasks-source-only-observation.test.cjs
       - docs/quality/C2-KNOWN-EXTERNAL-ORIGINAL-DEVELOPMENT-20261024.md
   push:
     branches: [main]
