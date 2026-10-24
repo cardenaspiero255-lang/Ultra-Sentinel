@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const {planC2BulkIntake, reviewC2BulkReceipts} =
   require('../../packages/quality-gates/c2-bulk-evidence-intake.cjs');
 const locked = require('../../docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json');
+const expanded = require('../../docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
 const H = 'a'.repeat(40), D = 'a'.repeat(64);
 const clone = x => JSON.parse(JSON.stringify(x));
 function candidate(i) {
@@ -125,4 +126,15 @@ test('repeated causal witness cannot masquerade as two independent labels',()=>{
  const x=planC2BulkIntake(manifest(rows));
  assert.throws(()=>reviewC2BulkReceipts(x,[receipt(rows[0]),receipt(rows[1])]),
   /C2_BULK_INTAKE_BLOCKED/);
+});
+
+test('169 real source-free prospective PR metadata are prepared together, not counted as truths',()=>{
+ const x=planC2BulkIntake(expanded);
+ assert.equal(x.sourceCandidates,169);
+ assert.equal(x.shards.length,16);
+ assert.equal(x.shards.reduce((n,s)=>n+s.candidates.length,0),169);
+ assert.equal(x.additionalTruthNeeded,111);
+ assert.equal(x.sourceInspected,false);
+ assert.equal(x.newGoldLabels,0);
+ assert.equal(x.holdoutFrozen,false);
 });
