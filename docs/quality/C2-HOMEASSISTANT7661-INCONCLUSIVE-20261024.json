@@ -1,0 +1,12 @@
+{
+  "schema": "c2-prospective-pretruth-disposition/v1",
+  "repository": "home-assistant/android",
+  "pr": 7661,
+  "reason": "DEPENDENCY_UPDATE_NO_ORIGINAL_FIXED_BENIGN_BUG",
+  "detail": "Renovate upgrade of github/gh-aw-actions in workflow lock; no claimed reproducible defect or active rule-aligned original-to-fix semantics.",
+  "status": "INCONCLUSIVE_NOT_DEFECT",
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false
+}
