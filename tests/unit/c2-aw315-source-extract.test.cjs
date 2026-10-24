@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const {sourceSlices}=require('../../scripts/c2-aw315-source-extract.cjs');
 
 const original=`package net.activitywatch.android
-class RustInterface(context: Any? = null) {
+class RustInterface(context: Context? = null) {
     fun startServerTask() {
         if (!serverStarted) {
             try {
@@ -27,7 +27,7 @@ internal fun probeServerPort(port: Int): PortProbe =
     catch (e: java.io.IOException) { onDenied(e); PortProbe.SOCKET_DENIED }
     catch (e: SecurityException) { onDenied(e); PortProbe.SOCKET_DENIED }
 
-class RustInterface(context: Any? = null) {
+class RustInterface(context: Context? = null) {
     fun startServerTask() {
         if (!serverStarted) {
             when (probeServerPort(BuildConfig.SERVER_PORT)) {
