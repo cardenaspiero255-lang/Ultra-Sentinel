@@ -9,7 +9,7 @@ const earlier=[
  require('../../docs/quality/C2-HA7681-OWNER-RELEASED-DISPOSITION-20261024.json').candidate
 ];
 const {FROZEN_RULES,FROZEN_CORE_BLOBS}=require('../../packages/quality-gates/c2-frozen-path-rule-prefilter.cjs');
-test('source release attested on owner's exact protected SHA, never oracle or GOLD',()=>{
+test('source release attested on exact protected owner SHA, never oracle or GOLD',()=>{
  assert.equal(receipt.decision,'INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE');
  assert.equal(receipt.release.runId,40136816063);
  assert.equal(receipt.release.ownerGithubActorId,322222186);
