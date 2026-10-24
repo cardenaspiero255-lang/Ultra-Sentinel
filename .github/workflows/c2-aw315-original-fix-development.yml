@@ -140,6 +140,28 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
+      - name: Independent trusted verifier checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Independently checkout immutable original ActivityWatch Git tree
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ActivityWatch/aw-android
+          ref: 3cd8a388d21dcdd7bc7e686a75a7b3046d876f11
+          path: aw-base
+          persist-credentials: false
+      - name: Independently checkout immutable repaired ActivityWatch Git tree
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ActivityWatch/aw-android
+          ref: 5a44cecef81c62d1527c49fecd00f90bd18db9df
+          path: aw-head
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
       - name: Download exact producer run artifact without source
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
@@ -165,6 +187,23 @@ jobs:
           grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/original.log"
           grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/fixed.log"
           grep -Fq 'OK (5 tests)' "$root/junit.log"
+          test "$(git -C aw-base rev-parse HEAD)" = 3cd8a388d21dcdd7bc7e686a75a7b3046d876f11
+          test "$(git -C aw-head rev-parse HEAD)" = 5a44cecef81c62d1527c49fecd00f90bd18db9df
+          test "$(git -C aw-base rev-parse HEAD:mobile/src/main/java/net/activitywatch/android/RustInterface.kt)" = 410c7a2d9c6d5698c3ed623b3c0d46ee01620081
+          test "$(git -C aw-head rev-parse HEAD:mobile/src/main/java/net/activitywatch/android/RustInterface.kt)" = 9474712a3953c78118f0d33633afb247bae31770
+          test "$(git -C aw-head rev-parse HEAD:mobile/src/test/java/net/activitywatch/android/ServerPortProbeTest.kt)" = 842324ca38c8a1f3253c464eca41dcfdd05d382e
+          # Fresh independent source-scoped extraction and SHA256 equivalence.
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const {sourceSlices}=require('./scripts/c2-aw315-source-extract.cjs');
+          const base=fs.readFileSync('aw-base/mobile/src/main/java/net/activitywatch/android/RustInterface.kt','utf8');
+          const head=fs.readFileSync('aw-head/mobile/src/main/java/net/activitywatch/android/RustInterface.kt','utf8');
+          const actual=sourceSlices(base,head);
+          const reported=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/c2-aw315-proof/source-metadata.json','utf8'));
+          for(const name of ['originalMethodSha256','fixedMethodSha256','originalSourceSha256','fixedSourceSha256']){
+            if(actual[name]!==reported[name])throw Error('C2_AW315_INDEPENDENT_SOURCE_MISMATCH');
+          }
+          NODE
           gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
             jq -e --arg sha "$EXPECTED_SHA" --argjson id "$GITHUB_RUN_ID" '
               .id==$id and .head_sha==$sha and .repository.id==1418338512 and
