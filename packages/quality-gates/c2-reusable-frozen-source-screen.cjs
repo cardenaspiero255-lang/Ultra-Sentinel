@@ -54,7 +54,13 @@ function screenFrozenSourceMetadata({roster,preseal,exposures,previousDispositio
  c.baseSha===PINNED.baseSha&&c.headSha===PINNED.headSha&&c.createdAt===PINNED.createdAt&&
  c.source==='PROSPECTIVE_GITHUB'&&c.disclosure==='METADATA_ONLY');
  if(matches.length!==1||!exposures||exposures.disclosures?.length!==8||
- !Array.isArray(previousDispositions)||previousDispositions.length!==2)blocked();
+ !Array.isArray(previousDispositions)||previousDispositions.length!==2||
+ previousDispositions[0]?.original?.repository!=='LawnchairLauncher/lawnchair'||
+ previousDispositions[0]?.original?.pr!==7428||
+ previousDispositions[1]?.candidate?.repository!=='bitwarden/android'||
+ previousDispositions[1]?.candidate?.pr!==7499||
+ previousDispositions[0]?.cohort?.ownerReleasedReviewed!==undefined&&
+ previousDispositions[0]?.cohort?.ownerReleasedReviewed!==1)blocked();
  const previously=[...exposures.disclosures,previousDispositions[0]?.original,
  previousDispositions[1]?.candidate];
  const ids=new Set();
