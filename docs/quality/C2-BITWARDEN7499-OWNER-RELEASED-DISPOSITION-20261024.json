@@ -1,0 +1,72 @@
+{
+  "schema": "c2-owner-released-exact-rule-disposition/v1",
+  "candidate": {
+    "repository": "bitwarden/android",
+    "pr": 7499,
+    "createdAt": "2026-10-20T22:29:32Z",
+    "baseSha": "9bdf4d222ed0916415973418052f0bd089507875",
+    "headSha": "6ee1047c7312ce61153184e84840bc372cf38602",
+    "upstreamStateAtInspection": "open"
+  },
+  "releasedBy": {
+    "ownerGitHubActorId": 322222186,
+    "ownerRepoId": 1418338512,
+    "protectedMainSha": "c4e9fe92604d375b4885073a0df0c33174cd71fc",
+    "workflowRunId": 40127755967,
+    "artifactId": 12573284548,
+    "artifactSha256": "c2c0e0b29391a13ce8b08e413adb0d825b64b6d364f05933bdf945add802d28d",
+    "precheckSuccess": true,
+    "ownerIntroSuccess": true,
+    "ownerSourceReadSuccess": true,
+    "independentAttestorSuccess": true
+  },
+  "scope": {
+    "historicCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+    "historicCoreBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+    "frozenRuleCount": 17,
+    "changedFileCount": 8,
+    "coreProductionEligible": 5,
+    "testsChanged": 3,
+    "pathEligible": true,
+    "exactFrozenRuleId": null,
+    "exactRuleMatch": false,
+    "detectorPredictionsRead": false,
+    "baselinePredictionsRead": false
+  },
+  "upstreamInspection": {
+    "sourceReadAfterAuthenticatedRelease": true,
+    "primarySource": "app/src/main/kotlin/com/x8bit/bitwarden/data/auth/repository/AuthRepositoryImpl.kt",
+    "originalPrimaryBlob": "de31d296cb7762af8627eec1e8246250578cb66a",
+    "fixedPrimaryBlob": "fd67b29d39811ffd04342a49ac40debf0e503226",
+    "secondarySource": "app/src/main/kotlin/com/x8bit/bitwarden/data/vault/datasource/sdk/VaultSdkSourceImpl.kt",
+    "originalSecondaryBlob": "5e951f8d4ac7813c4745b85d7bed56d9f642c5e4",
+    "fixedSecondaryBlob": "72366ad2d523bed8ee73ebfc56e21757f6827f3b",
+    "mechanism": "KeyConnector derivation now passes masterPasswordUnlock.salt rather than profile.email and draws KDF from masterPasswordUnlock; no historical 17-rule predicate checks this cryptographic parameter mapping",
+    "sourceLicenseAcceptanceCertified": false,
+    "causalIndependenceCertified": false,
+    "upstreamFixAccepted": false
+  },
+  "oracle": {
+    "originalExecuted": false,
+    "fixedExecuted": false,
+    "benignExecuted": false,
+    "upstreamJUnitExecuted": false,
+    "sourceOracleAuthenticated": false,
+    "reason": "NO_SPECIFIC_HISTORICAL_RULE_ID_PATH_LINE_FOR_PARAMETER_MAPPING"
+  },
+  "cohort": {
+    "manifestTotal": 169,
+    "olderUnapprovedSourceExposures": 8,
+    "olderOwnerReleasedExposures": 1,
+    "bitwardenOwnerReleasedExposures": 1,
+    "uninspectedMetadataOnly": 159,
+    "previousDocumentedTruth": 9,
+    "addedGoldLabels": 0,
+    "remainingTo120": 111,
+    "truthSealed": false,
+    "holdoutFrozen": false,
+    "tripleSPlusCertified": false
+  },
+  "verdict": "INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE",
+  "eligibleForGold": false
+}
