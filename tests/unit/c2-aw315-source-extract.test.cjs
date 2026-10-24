@@ -24,8 +24,8 @@ internal enum class PortProbe { FREE, IN_USE, SOCKET_DENIED }
 internal fun probeServerPort(port: Int): PortProbe =
     try { java.net.ServerSocket(port).close(); PortProbe.FREE }
     catch (e: java.net.BindException) { PortProbe.IN_USE }
-    catch (e: java.io.IOException) { PortProbe.SOCKET_DENIED }
-    catch (e: SecurityException) { PortProbe.SOCKET_DENIED }
+    catch (e: java.io.IOException) { onDenied(e); PortProbe.SOCKET_DENIED }
+    catch (e: SecurityException) { onDenied(e); PortProbe.SOCKET_DENIED }
 
 class RustInterface(context: Any? = null) {
     fun startServerTask() {
