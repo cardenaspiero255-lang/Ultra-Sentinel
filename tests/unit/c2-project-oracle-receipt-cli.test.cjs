@@ -9,7 +9,7 @@ function sample(){
   fs.writeFileSync(path.join(dir,phase+'.test.cjs'),
    "test('"+phase+"',()=>{});\n");
   fs.writeFileSync(path.join(dir,phase+'.log'),
-   '# tests 2\n# pass '+(phase==='original'?'1':'2')+'\n# fail '+(phase==='original'?'1':'0')+'\n');
+   '# oracle phase '+phase+'\n# tests 2\n# pass '+(phase==='original'?'1':'2')+'\n# fail '+(phase==='original'?'1':'0')+'\n');
  }
  return dir;
 }
