@@ -1,0 +1,198 @@
+name: C2 known external Tasks Kotlin source oracle + independent verifier (DEVELOPMENT ONLY)
+# No blind PR source, no detector output, no original upstream fix assertion.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-known-external-development-oracle.yml
+      - packages/quality-gates/c2-external-original-attestor.cjs
+      - scripts/c2-attest-tasks-original-development.cjs
+      - tests/unit/c2-external-original-attestor*.test.cjs
+      - tests/oracles/c2-external-tasks-throttle/**
+      - scripts/c2-tasks-source-only-receipt.cjs
+      - packages/quality-gates/c2-tasks-source-only-observation.cjs
+      - tests/unit/c2-tasks-source-only-observation.test.cjs
+      - docs/quality/C2-KNOWN-EXTERNAL-ORIGINAL-DEVELOPMENT-20261024.md
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  isolated-original-kotlin:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512 &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout trusted Sentinel HEAD, no token persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Checkout immutable already-known Tasks.org source read-only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: tasks/tasks
+          ref: 3936c221aea180b795085d7402286373b5d3f6d2
+          fetch-depth: 0
+          path: original-external
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Full architecture and source-only unit suite
+        run: npm run check
+      - name: Verify original Git bytes, commit ancestry, no PR source substitution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C original-external rev-parse HEAD)" = 3936c221aea180b795085d7402286373b5d3f6d2
+          git -C original-external merge-base --is-ancestor 5624816cac6ecab701969d24e6d3387ccd21a773 3936c221aea180b795085d7402286373b5d3f6d2
+          test "$(git -C original-external rev-parse HEAD:app/src/main/java/org/tasks/notifications/Throttle.kt)" = 0e472cfd73510ab11a396ee5eba9968d57172050
+          test -x "$(command -v kotlinc)"
+          mkdir -p "$RUNNER_TEMP/c2-external-development"
+          kotlinc original-external/app/src/main/java/org/tasks/notifications/Throttle.kt \
+            tests/oracles/c2-external-tasks-throttle/*.kt \
+            -include-runtime -d "$RUNNER_TEMP/c2-external-development/external.jar"
+          test -s "$RUNNER_TEMP/c2-external-development/external.jar"
+      - name: Mandatory AppArmor and Bubblewrap restricted user namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Run original source in actual networkless Bubblewrap and same-source inline counterfactual
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-external-development"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          # Genuine external Kotlin, but KNOWN development control; never GOLD.
+          timeout 45s env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+              "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$root" /workspace \
+              --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+              -- /jdk/bin/java -jar /workspace/external.jar > "$root/worker.json"
+          jq -e '.schema=="c2-tasks-throttle-external-jvm/v1" and
+            .productionSourceExecuted==true and
+            .counterfactualSameOriginalProductionSource==true and
+            .independentOriginalTruth==false' "$root/worker.json" >/dev/null
+          node scripts/c2-tasks-source-only-receipt.cjs \
+            "$GITHUB_WORKSPACE/original-external" "$root/worker.json" "$root/report.json"
+          jq -e '.sourceRepository=="tasks/tasks" and
+            .originalSourceGitBlob=="0e472cfd73510ab11a396ee5eba9968d57172050" and
+            .newGoldLabels==0 and .independentProspectiveTruthAttested==false and
+            .candidatePredictionsRead==false' "$root/report.json" >/dev/null
+          mkdir -p "$root/output"
+          cp "$root/worker.json" "$root/report.json" "$root/output/"
+          rm -f "$root/worker.json" "$root/report.json" "$root/external.jar"
+      - name: Archive only real known-development worker and scoped source witness
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-known-external-tasks-original-source-NOT-GOLD
+          path: ${{ runner.temp }}/c2-external-development/output/
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-original-attestor:
+    needs: [isolated-original-kotlin]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Independent trusted verifier checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Independently checkout immutable external Git source, never candidate holdout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: tasks/tasks
+          ref: 3936c221aea180b795085d7402286373b5d3f6d2
+          fetch-depth: 0
+          path: original-external
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Download only producer artifact from same Actions run
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: c2-known-external-tasks-original-source-NOT-GOLD
+          path: ${{ runner.temp }}/c2-external-original-artifact
+      - name: Authenticate owner GitHub run and artifact metadata separately
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" > "$RUNNER_TEMP/original-run.json"
+          jq -e --arg sha "$EXPECTED_SHA" --argjson id "$GITHUB_RUN_ID" '
+            .id==$id and .head_sha==$sha and .repository.id==1418338512 and
+            .actor.id==322222186 and
+            (.event=="pull_request" or .event=="push")' "$RUNNER_TEMP/original-run.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" > "$RUNNER_TEMP/original-artifacts.json"
+          jq -e --argjson id "$GITHUB_RUN_ID" '
+            [.artifacts[]|select(.name=="c2-known-external-tasks-original-source-NOT-GOLD" and
+              .workflow_run.id==$id and .workflow_run.repository_id==1418338512 and
+              .expired==false and (.digest|test("^sha256:[0-9a-f]{64}$")))]|length==1' "$RUNNER_TEMP/original-artifacts.json" >/dev/null
+          rm -f "$RUNNER_TEMP/original-run.json" "$RUNNER_TEMP/original-artifacts.json"
+      - name: Independent Git blob and worker SHA256 attestation, no Core or predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-external-original-artifact"
+          test "$(find "$root" -maxdepth 1 -type f | wc -l)" -eq 2
+          test "$(find "$root" -type l | wc -l)" -eq 0
+          node scripts/c2-attest-tasks-original-development.cjs \
+            "$GITHUB_WORKSPACE/original-external" \
+            "$root/worker.json" "$root/report.json" \
+            "$RUNNER_TEMP/external-development-attestation.json"
+          jq -e '.status=="KNOWN_EXTERNAL_DEVELOPMENT_SOURCE_WITNESS_BYTES_VERIFIED" and
+            .repository=="tasks/tasks" and
+            .ruleId=="BLOCKING_ANDROID_CALL" and
+            .originalWorkerDigestVerified==true and
+            .sourceDigestCrossChecked==true and
+            .originalPrIdentityAuthenticated==false and
+            .realUpstreamFixReproduced==false and
+            .newGoldLabels==0 and .remaining==111 and
+            .truthSealed==false and .candidatePredictionsRead==false and
+            .tripleSPlusCertified==false' "$RUNNER_TEMP/external-development-attestation.json" >/dev/null
+      - name: Archive verifier result only, no external source or trusted environment
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-known-external-independent-source-attestation-NOT-GOLD
+          path: ${{ runner.temp }}/external-development-attestation.json
+          retention-days: 14
+          if-no-files-found: error

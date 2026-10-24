@@ -1,0 +1,141 @@
+name: C2 project original-oracle isolation and independent receipt byte verification (NO GOLD)
+# Executes only trusted, repository-owned fixtures. Never sources a blind PR.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-project-oracle-isolation.yml
+      - scripts/c2-project-oracle-isolated-worker.sh
+      - scripts/c2-project-oracle-receipt.cjs
+      - packages/quality-gates/c2-project-oracle-proof.cjs
+      - tests/oracles/c2-project-oracle-fixture/**
+      - tests/unit/c2-project-oracle-*.test.cjs
+      - docs/quality/C2-PROJECT-ORACLE-ISOLATION-20261024.md
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  isolated-selftest:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512 &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact trusted commit, no persistent GitHub credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify exact checked-out commit and all architecture/tests
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          npm run check
+      - name: Establish mandatory AppArmor and user-namespace isolation
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v bwrap
+      - name: Execute source-only trusted RED/GREEN/benign fixture inside real Bubblewrap
+        shell: bash
+        env:
+          C2_OWNER_SANDBOX: '1'
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-isolated-oracle"
+          mkdir -p "$root"
+          bash scripts/c2-project-oracle-isolated-worker.sh "$root" "$EXPECTED_SHA" > "$RUNNER_TEMP/verification.json"
+          jq -e '.actualBytesVerified==true and
+            .runtimeIsolationAuthenticated==false and
+            .newGoldLabels==0 and .remaining==111 and
+            .candidatePredictionsRead==false and .tripleSPlusCertified==false' "$RUNNER_TEMP/verification.json" >/dev/null
+          rm -f "$RUNNER_TEMP/verification.json"
+      - name: Publish only the seven trust-boundary test files, never source from a prospective PR
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-project-isolated-three-phase-selftest-NOT-GOLD
+          path: ${{ runner.temp }}/c2-isolated-oracle/
+          retention-days: 14
+          if-no-files-found: error
+
+  independent-receipt-verification:
+    needs: [isolated-selftest]
+    if: needs.isolated-selftest.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact trusted verifier code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Get precisely the isolated-producer artifact from this run
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: c2-project-isolated-three-phase-selftest-NOT-GOLD
+          path: ${{ runner.temp }}/c2-independent-receipt
+      - name: Authenticate GitHub run identity, actor, repository and required artifact metadata
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP"
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" > "$root/run.json"
+          jq -e --arg sha "$EXPECTED_SHA" --argjson run "$GITHUB_RUN_ID" '
+            .id==$run and .head_sha==$sha and
+            .repository.id==1418338512 and .actor.id==322222186 and
+            (.event=="pull_request" or .event=="push")' "$root/run.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" > "$root/artifacts.json"
+          jq -e --argjson run "$GITHUB_RUN_ID" '
+            [.artifacts[]|select(.name=="c2-project-isolated-three-phase-selftest-NOT-GOLD" and
+              .expired==false and .workflow_run.id==$run and
+              .workflow_run.repository_id==1418338512 and
+              (.digest|test("^sha256:[0-9a-f]{64}$")))]|length==1' "$root/artifacts.json" >/dev/null
+          rm -f "$root/run.json" "$root/artifacts.json"
+      - name: Independently re-hash downloaded sources, JUnit-style test logs and Git blob IDs
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/c2-project-oracle-receipt.cjs verify \
+            "$RUNNER_TEMP/c2-independent-receipt" "$EXPECTED_SHA" \
+            > "$RUNNER_TEMP/independent-receipt-report.json"
+          jq -e '.actualBytesVerified==true and
+            .sourceGitBlobsRehashed==3 and .phaseLogsRehashed==3 and
+            .ownerArtifactAndRunProvenanceAuthenticated==false and
+            .externalOriginalSourceAuthenticated==false and
+            .newGoldLabels==0 and .truthSealed==false and
+            .tripleSPlusCertified==false' "$RUNNER_TEMP/independent-receipt-report.json" >/dev/null
+      - name: Archive noncertifying independently checked receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-project-isolated-independent-checked-NOT-GOLD
+          path: ${{ runner.temp }}/independent-receipt-report.json
+          retention-days: 14
+          if-no-files-found: error

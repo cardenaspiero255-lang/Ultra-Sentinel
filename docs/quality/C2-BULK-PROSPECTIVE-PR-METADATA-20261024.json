@@ -1,0 +1,1527 @@
+{
+  "schema": "c2-bulk-source-candidate-manifest/v1",
+  "cutoff": "2026-10-20T19:30:54Z",
+  "candidates": [
+    {
+      "repository": "ActivityWatch/aw-android",
+      "pr": 377,
+      "baseSha": "6b42711b9b7946c4e3b7925d736abedc0836537d",
+      "headSha": "459ddea4b654d20289c0fa872ea4650b1f631e24",
+      "createdAt": "2026-10-21T08:42:00Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "ActivityWatch/aw-android",
+      "pr": 379,
+      "baseSha": "6b42711b9b7946c4e3b7925d736abedc0836537d",
+      "headSha": "bb364bb81283f67b9081e11de11e6ba1a9b81ac2",
+      "createdAt": "2026-10-22T18:32:28Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "ActivityWatch/aw-android",
+      "pr": 380,
+      "baseSha": "6b42711b9b7946c4e3b7925d736abedc0836537d",
+      "headSha": "0ada9e4cc22026e5cae29079ffd9783aa4f5362c",
+      "createdAt": "2026-10-23T19:12:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7498,
+      "baseSha": "9bdf4d222ed0916415973418052f0bd089507875",
+      "headSha": "e4db2e4ea88c9b9135a83f1fdb348e0be65327b9",
+      "createdAt": "2026-10-20T20:17:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7499,
+      "baseSha": "9bdf4d222ed0916415973418052f0bd089507875",
+      "headSha": "6ee1047c7312ce61153184e84840bc372cf38602",
+      "createdAt": "2026-10-20T22:29:32Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7501,
+      "baseSha": "6d08ab550eb69efda46b9cd4616a63aedf71ccb7",
+      "headSha": "99be64d61f0a0eeefb42b3f6d268a5b248814d37",
+      "createdAt": "2026-10-21T17:33:34Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7502,
+      "baseSha": "6d08ab550eb69efda46b9cd4616a63aedf71ccb7",
+      "headSha": "0865f36d9b2785272840211d016216ab8a36f8ae",
+      "createdAt": "2026-10-21T20:31:57Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7504,
+      "baseSha": "6d08ab550eb69efda46b9cd4616a63aedf71ccb7",
+      "headSha": "1a6d2c63e887f409880d4e7d7068e550bc674eb9",
+      "createdAt": "2026-10-22T13:33:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7506,
+      "baseSha": "69fa0814c8506b2e3222e8b120a156b9d64a743f",
+      "headSha": "959cbd16bc6c4e656f8307a3d72c1eff48003c61",
+      "createdAt": "2026-10-22T21:06:24Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7507,
+      "baseSha": "959cbd16bc6c4e656f8307a3d72c1eff48003c61",
+      "headSha": "a48e493e9ad89ecb787520ee501e1bca90b9dcad",
+      "createdAt": "2026-10-22T21:06:26Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7508,
+      "baseSha": "a48e493e9ad89ecb787520ee501e1bca90b9dcad",
+      "headSha": "4996789320b80367f977542b9857d3b72bf9fbd5",
+      "createdAt": "2026-10-22T21:06:29Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7509,
+      "baseSha": "4996789320b80367f977542b9857d3b72bf9fbd5",
+      "headSha": "274859caad42d5f2c4bc12924b0e912426542e00",
+      "createdAt": "2026-10-22T21:06:31Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7510,
+      "baseSha": "274859caad42d5f2c4bc12924b0e912426542e00",
+      "headSha": "c3ed1902fa6b475408fc0755432878f69ff2113f",
+      "createdAt": "2026-10-22T21:06:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7511,
+      "baseSha": "c3ed1902fa6b475408fc0755432878f69ff2113f",
+      "headSha": "4ccf65075fe81b080eff4625a142d34db628151c",
+      "createdAt": "2026-10-22T21:06:36Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7514,
+      "baseSha": "69fa0814c8506b2e3222e8b120a156b9d64a743f",
+      "headSha": "1c0f5b2604a8a4b2c4a60358a173b19549632db0",
+      "createdAt": "2026-10-23T03:49:53Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7515,
+      "baseSha": "1c0f5b2604a8a4b2c4a60358a173b19549632db0",
+      "headSha": "ac87537ff7ebf37949d256352d525140c8161e8c",
+      "createdAt": "2026-10-23T03:49:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7516,
+      "baseSha": "ac87537ff7ebf37949d256352d525140c8161e8c",
+      "headSha": "30c519b4e1e70e899bb628ad9129e43ea7879f73",
+      "createdAt": "2026-10-23T03:50:03Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7517,
+      "baseSha": "30c519b4e1e70e899bb628ad9129e43ea7879f73",
+      "headSha": "c37729026d94556720013376facd188aed8d2c46",
+      "createdAt": "2026-10-23T03:50:08Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7518,
+      "baseSha": "c37729026d94556720013376facd188aed8d2c46",
+      "headSha": "c3ad3575b985568f606c06f270babc39a5e1fd46",
+      "createdAt": "2026-10-23T03:50:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7519,
+      "baseSha": "c3ad3575b985568f606c06f270babc39a5e1fd46",
+      "headSha": "de253f715e5c18167a3356ceea403db1b6e832ab",
+      "createdAt": "2026-10-23T03:50:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7520,
+      "baseSha": "de253f715e5c18167a3356ceea403db1b6e832ab",
+      "headSha": "bad27be2ba53ddd909b1aec68447945abebc6580",
+      "createdAt": "2026-10-23T03:50:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7521,
+      "baseSha": "bad27be2ba53ddd909b1aec68447945abebc6580",
+      "headSha": "a51cd0d687d54bd9499407777511f28201200f17",
+      "createdAt": "2026-10-23T03:50:27Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7522,
+      "baseSha": "a51cd0d687d54bd9499407777511f28201200f17",
+      "headSha": "ebddaabb9869c9ae1ad28b8f9a6d34e98111a5a8",
+      "createdAt": "2026-10-23T03:50:32Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7524,
+      "baseSha": "ebddaabb9869c9ae1ad28b8f9a6d34e98111a5a8",
+      "headSha": "583191922d96355e5191190acba666b5b1a33ea3",
+      "createdAt": "2026-10-23T04:07:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "bitwarden/android",
+      "pr": 7526,
+      "baseSha": "69fa0814c8506b2e3222e8b120a156b9d64a743f",
+      "headSha": "a31fb2e2c8548a89dd6af406ea1e997ffff2ef13",
+      "createdAt": "2026-10-23T10:18:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7661,
+      "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+      "headSha": "4f7df177857b7ca8cfdda7687552143db4f8df35",
+      "createdAt": "2026-10-21T01:03:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7662,
+      "baseSha": "4a509be11346262ebc4fa7dea5a2d8ab00ef374f",
+      "headSha": "c9e985ac70807141cbebe0d4af3c58f91f21f9d0",
+      "createdAt": "2026-10-21T05:02:29Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7664,
+      "baseSha": "4a509be11346262ebc4fa7dea5a2d8ab00ef374f",
+      "headSha": "7edd59a284febfafce1298d8cb14fec44aa4078f",
+      "createdAt": "2026-10-21T06:43:04Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7666,
+      "baseSha": "ab4e5b07a69116a3ac5f5858d1ea390182fd9e53",
+      "headSha": "24227a6fe53c635ece6f02d5048c0635e1e46a9a",
+      "createdAt": "2026-10-21T08:02:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7668,
+      "baseSha": "b84a4af6c8da29f5751a17ce1f38293306ac87e4",
+      "headSha": "ceeddbab92d42dbe1430fbe56b4d7d41cc1df97a",
+      "createdAt": "2026-10-21T12:35:06Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7669,
+      "baseSha": "12b292e4972bbcf50cf18844dd8a8aa6e4c6c7a2",
+      "headSha": "50b6506dad308e23929145dc12e2c6e598e36f0c",
+      "createdAt": "2026-10-21T13:32:03Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7670,
+      "baseSha": "386a4a558cfd69d1c79e1829946b39f1f12ce272",
+      "headSha": "648f89f89850cc875c7c584e7923fae6104a7477",
+      "createdAt": "2026-10-21T13:54:26Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7672,
+      "baseSha": "12b292e4972bbcf50cf18844dd8a8aa6e4c6c7a2",
+      "headSha": "84f89fa8e66acd9f67a7df7b917e25bdcba462c9",
+      "createdAt": "2026-10-21T16:59:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7673,
+      "baseSha": "023390ba94333d05876304238b2297ffe1df97e2",
+      "headSha": "7d37b657e822019c46b3486ebfb721b41955b133",
+      "createdAt": "2026-10-21T21:32:20Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7676,
+      "baseSha": "023390ba94333d05876304238b2297ffe1df97e2",
+      "headSha": "8900daa47ef853c16d3f057838df1f1319839f3b",
+      "createdAt": "2026-10-22T08:05:06Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7679,
+      "baseSha": "bcbab62309b9abae52b41e60e571e5b4192466ef",
+      "headSha": "760945dae4f6368af4f30f8a2e48f2637d03285c",
+      "createdAt": "2026-10-22T18:48:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7680,
+      "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+      "headSha": "5ef8e08246db5996e481759b7b033e3f42e508e8",
+      "createdAt": "2026-10-22T19:45:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7681,
+      "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+      "headSha": "dbf2056e4a9cab37c6b766fe22afda687119033e",
+      "createdAt": "2026-10-22T20:46:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7682,
+      "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+      "headSha": "ba62f7bae22297418a97595ec3d332106cb7c054",
+      "createdAt": "2026-10-23T16:59:57Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9171,
+      "baseSha": "acb562f401e64746badb343f42338432c6c27295",
+      "headSha": "520a4d370395814fcd3cf1dd56cf73810e5fa0e8",
+      "createdAt": "2026-10-20T19:51:09Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9172,
+      "baseSha": "6b40ffb028ec46005f4121932acf45cdeb1010b0",
+      "headSha": "bbebe404365eed9ad19d27cf90fbf63a6004edba",
+      "createdAt": "2026-10-20T20:27:57Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9174,
+      "baseSha": "e8fc2fcf80a7e48801086719b0f4629e02a3bb4c",
+      "headSha": "4b106f22132c28873a856e65e81d81b7db7c7a5e",
+      "createdAt": "2026-10-20T21:07:15Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9175,
+      "baseSha": "f0c5d072783aa073545aac953f022415b8aa801c",
+      "headSha": "70b894994547413490bd724bf931f2328728a74f",
+      "createdAt": "2026-10-21T07:23:46Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9176,
+      "baseSha": "ce4f8def64f9bb8874243578a614aac1005044ee",
+      "headSha": "fe73c4e396310a5dda118a981e4e495b48410ce9",
+      "createdAt": "2026-10-21T07:52:39Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9177,
+      "baseSha": "f0c5d072783aa073545aac953f022415b8aa801c",
+      "headSha": "b0d291ad8bfd38070866d45e6b698937242ab525",
+      "createdAt": "2026-10-21T08:04:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9178,
+      "baseSha": "50b165b9c015bb51594eba128a92fdfaa6d5285a",
+      "headSha": "a264bcd64228abe770ec8e8a5824c1e281c3646a",
+      "createdAt": "2026-10-21T08:55:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9179,
+      "baseSha": "46ff8d5db13de201759d4dd7e255c8fb2809db7f",
+      "headSha": "18fa09a6200e7fee34fae55c2f56defbd5e1c31b",
+      "createdAt": "2026-10-21T09:10:59Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9180,
+      "baseSha": "ccd37e7aa910d1e7c3d892df6fcd37bc2c8a2363",
+      "headSha": "ed55d2163d3eb256bbcf663a12e5622c57cbb6d9",
+      "createdAt": "2026-10-21T09:25:53Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9181,
+      "baseSha": "212587e07dbb14066dd58efada469a2e8eb671e6",
+      "headSha": "7bb74d817b700fb870ba23a7e2f061def97b4974",
+      "createdAt": "2026-10-21T09:54:26Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9183,
+      "baseSha": "6e40a9f2e28babf523bf6959d75595bd3b89efd6",
+      "headSha": "a0087dca1bb67e1db702b02bfb2f8e36190ef66f",
+      "createdAt": "2026-10-21T10:34:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9184,
+      "baseSha": "6e40a9f2e28babf523bf6959d75595bd3b89efd6",
+      "headSha": "9c3183ed48e2ddf35b0b778689adf7a10055f1f6",
+      "createdAt": "2026-10-21T10:48:39Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9185,
+      "baseSha": "ce4f8def64f9bb8874243578a614aac1005044ee",
+      "headSha": "e616592f0eca8b0f17f45498057308969ee507cf",
+      "createdAt": "2026-10-21T12:01:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9186,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "b5c7384281f2059cee0ebe5e7296df18aac62077",
+      "createdAt": "2026-10-21T12:15:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9187,
+      "baseSha": "ce4f8def64f9bb8874243578a614aac1005044ee",
+      "headSha": "c4ad2104689df01594963f99c6ad9976ec1a5deb",
+      "createdAt": "2026-10-21T12:19:11Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9188,
+      "baseSha": "4c9b3e0d8b7e0f87a3a8efe64839941dc19ae3f8",
+      "headSha": "55f541cb1c2835b4adc514f6fc25b7ef4df92b1a",
+      "createdAt": "2026-10-21T12:51:42Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9189,
+      "baseSha": "245682330a3be1dc9d953c09fe073dfae48ee8f5",
+      "headSha": "a55209677ea153a1d104b387d33a69a013491dba",
+      "createdAt": "2026-10-21T13:04:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9190,
+      "baseSha": "b74b6c2adf1477038e2abeed3b4492cad26d2079",
+      "headSha": "d68209db689c09cd483fa23cfdc37b24878ba91b",
+      "createdAt": "2026-10-21T13:46:18Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9191,
+      "baseSha": "f63b9f344c0a7e5d9d261480d1f81e5a4dad2981",
+      "headSha": "755eba02e8fcf2db7661f4dd91a834cf48001d07",
+      "createdAt": "2026-10-21T14:33:55Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9192,
+      "baseSha": "071abf683c83fa8b2a7d1f9ebf4675ae05f7dfd5",
+      "headSha": "80c1828f39e155fe8b76ee95a5e37eaeb35ec8c4",
+      "createdAt": "2026-10-21T15:15:00Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9193,
+      "baseSha": "5224f2c48f18791111d153740461744a41813e4b",
+      "headSha": "6da7eb5e597e930970693180ca4a7e850ce6993a",
+      "createdAt": "2026-10-21T16:04:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9194,
+      "baseSha": "d834af82174e8fe157db2902d482a44cea316e77",
+      "headSha": "b2ff99cebcb43f4e17ed0a6cd7125b176df72985",
+      "createdAt": "2026-10-21T16:07:04Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9195,
+      "baseSha": "d834af82174e8fe157db2902d482a44cea316e77",
+      "headSha": "b2611fe9f6a23d967df303b465cb6dd46eaa3112",
+      "createdAt": "2026-10-21T16:26:18Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9196,
+      "baseSha": "27b28d270d15aa756b6c5aad04fa4ada720cf16c",
+      "headSha": "cd28bf3c492929d6e88f55c02455da038692d9aa",
+      "createdAt": "2026-10-21T19:28:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9197,
+      "baseSha": "0551f613f9800e5ebd2c6f89b12b1a52cf515420",
+      "headSha": "24d033c36c265bf90518ebdd4446fe5d5d6e26b2",
+      "createdAt": "2026-10-21T20:06:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9198,
+      "baseSha": "4c9b3e0d8b7e0f87a3a8efe64839941dc19ae3f8",
+      "headSha": "e58d42e19a9d5c8ea993920688e7d0c47ed05709",
+      "createdAt": "2026-10-21T23:07:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9199,
+      "baseSha": "37a5b33fa147b47095dee0ee0baa374c89409b67",
+      "headSha": "14d6be15beee31f27f760dd44a82963d2f066aba",
+      "createdAt": "2026-10-22T07:02:46Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9200,
+      "baseSha": "acb562f401e64746badb343f42338432c6c27295",
+      "headSha": "c0108c619b8375d5f971fb98f1dd591d1d40a7e8",
+      "createdAt": "2026-10-22T08:45:49Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9201,
+      "baseSha": "acb562f401e64746badb343f42338432c6c27295",
+      "headSha": "b1da8b881dee413b05bb5ef11705e11de0e826f1",
+      "createdAt": "2026-10-22T08:57:52Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9202,
+      "baseSha": "5224f2c48f18791111d153740461744a41813e4b",
+      "headSha": "846163ba15836867d700e68898c68293ceddaff0",
+      "createdAt": "2026-10-22T10:55:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9203,
+      "baseSha": "5224f2c48f18791111d153740461744a41813e4b",
+      "headSha": "ea8e0c18fb90e7dd6dc307265f26b8c149da3353",
+      "createdAt": "2026-10-22T10:55:59Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9204,
+      "baseSha": "5224f2c48f18791111d153740461744a41813e4b",
+      "headSha": "318f8f443a0487cd67cd2f854db0107da25a0332",
+      "createdAt": "2026-10-22T10:56:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9205,
+      "baseSha": "0551f613f9800e5ebd2c6f89b12b1a52cf515420",
+      "headSha": "474484e78105bf304b84aea96d9b6ca27bc093de",
+      "createdAt": "2026-10-22T11:43:16Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9206,
+      "baseSha": "0551f613f9800e5ebd2c6f89b12b1a52cf515420",
+      "headSha": "d2744818f1ed55a30a9876ae892cb50aab17684d",
+      "createdAt": "2026-10-22T13:01:31Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9207,
+      "baseSha": "0551f613f9800e5ebd2c6f89b12b1a52cf515420",
+      "headSha": "fe43f8206b4428b05485e8cebe44184fd572555c",
+      "createdAt": "2026-10-22T13:11:00Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9208,
+      "baseSha": "c1e996c62df1165118c7f1f4e05850647826ddfc",
+      "headSha": "b07c19be93016775a77cc79b04bf98660087a625",
+      "createdAt": "2026-10-22T13:42:28Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9209,
+      "baseSha": "1ace6132a3808643b5542507f2c4fe1439560fce",
+      "headSha": "fb87a658c363fd310daa1720211e02072984afd8",
+      "createdAt": "2026-10-22T13:48:51Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9210,
+      "baseSha": "e92cdb72b00555561bf1562b1bd3ce4699e56017",
+      "headSha": "592f137f9646517c98d052103a2197c8254237b6",
+      "createdAt": "2026-10-22T14:32:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9211,
+      "baseSha": "b65084b82a277f53751cfdebec47c1cac7f164fc",
+      "headSha": "e4a63375f83571b1dc983afb0a9049d317958f15",
+      "createdAt": "2026-10-22T14:54:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9212,
+      "baseSha": "082d830e9251b99f0fe9678bbe04f6293d83eb87",
+      "headSha": "8fd827bc4a2434b682505643bc24cc592c4545fc",
+      "createdAt": "2026-10-22T15:14:48Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9213,
+      "baseSha": "c003827adcafb48fa52f187aa5f6b14917589283",
+      "headSha": "fd5935affb09e66b35483adb6c30524098f71147",
+      "createdAt": "2026-10-22T16:01:32Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9214,
+      "baseSha": "5e2bd0e3163302c9743ea8197dad2915f8954315",
+      "headSha": "de0dae70f92dc1aa65c02455c2e1c01ec61caf40",
+      "createdAt": "2026-10-22T16:28:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9215,
+      "baseSha": "80dd1180c94be5330167c241e9944e341214f567",
+      "headSha": "ab006cd81a5df6d21a9186556bf76ec15f052825",
+      "createdAt": "2026-10-22T18:02:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9216,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "8cbd0aa16ec007ca5a5373b07864a451f8d300e9",
+      "createdAt": "2026-10-22T19:10:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9217,
+      "baseSha": "c003827adcafb48fa52f187aa5f6b14917589283",
+      "headSha": "e121211c76183271f63d8833fa80db0437992f82",
+      "createdAt": "2026-10-22T20:32:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9218,
+      "baseSha": "c003827adcafb48fa52f187aa5f6b14917589283",
+      "headSha": "f5e0a592b201842f21ac6834a0418d51d711ad17",
+      "createdAt": "2026-10-22T21:17:41Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9219,
+      "baseSha": "082d830e9251b99f0fe9678bbe04f6293d83eb87",
+      "headSha": "04aba88830a2d14a13a63cbd656319857ef170c9",
+      "createdAt": "2026-10-22T23:04:42Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9220,
+      "baseSha": "082d830e9251b99f0fe9678bbe04f6293d83eb87",
+      "headSha": "316a8f26703ab7c0b9f7377c67f7ee377519cf72",
+      "createdAt": "2026-10-23T01:28:02Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9221,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "b587d48fb8537606b143d792f4c3922b485ba605",
+      "createdAt": "2026-10-23T06:04:21Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9222,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "8562139cb3c48dcde716d2c27dcb0cde5d8fd3bb",
+      "createdAt": "2026-10-23T08:32:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9223,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "b6812df1af261f90040f3a11a86ebb575e121a8e",
+      "createdAt": "2026-10-23T08:55:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9224,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "54d0a0514a20b2aff1aeae6fc0d48cd7d159df11",
+      "createdAt": "2026-10-23T09:30:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9225,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "327df71c65c7a5727ea0703c6c56c9c0f99f68ae",
+      "createdAt": "2026-10-23T09:41:53Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9226,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "dfd1724b644504e201e5abcbaeee90b7d65740e4",
+      "createdAt": "2026-10-23T09:58:16Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9227,
+      "baseSha": "3d8d0fd8a879994c78f82529316f075bae27ab4c",
+      "headSha": "b2146b3bcd17edf772b697d1e00aaf8f915c06eb",
+      "createdAt": "2026-10-23T10:03:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9228,
+      "baseSha": "fbb4f57821d2f3a314d9748a3cd0ef067ebf757d",
+      "headSha": "c62004db0b35f2b27aa9a531b0ffd46c1bf7b4bb",
+      "createdAt": "2026-10-23T10:03:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9229,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "1e37ee321670cba43d55bec3277af808ebb944eb",
+      "createdAt": "2026-10-23T10:28:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9230,
+      "baseSha": "77be099d5acc994446955b400256665f67086534",
+      "headSha": "7697dc8e6ecb73a5f0b7fb904e7f7cdb805da8e8",
+      "createdAt": "2026-10-23T10:29:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9231,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "b0951fbf05bd8f827e72b09a046e98065451c1dd",
+      "createdAt": "2026-10-23T10:31:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9232,
+      "baseSha": "81e55e3e2d9e7a84cb1e2bfb146eb9ce84c847ec",
+      "headSha": "36f511162b54c58feba6da0b3fb2f9ebe7fe42f6",
+      "createdAt": "2026-10-23T10:52:36Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9233,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "e680a4594c787b0a34b736eb03cf6fb3dc25b1ce",
+      "createdAt": "2026-10-23T10:53:40Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9234,
+      "baseSha": "2940f38c994b2c93e6ba5544eecc57ebbe2b78db",
+      "headSha": "4b4e06614b46e4352a7a366568b5f47ffaf0441a",
+      "createdAt": "2026-10-23T10:57:11Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9235,
+      "baseSha": "80dd1180c94be5330167c241e9944e341214f567",
+      "headSha": "c5d286e51fb828d878032bf0e84a5c086b17a536",
+      "createdAt": "2026-10-23T11:31:03Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9236,
+      "baseSha": "27b28d270d15aa756b6c5aad04fa4ada720cf16c",
+      "headSha": "3e8480021ec9a8103094fdd562816212147c6c33",
+      "createdAt": "2026-10-23T11:55:26Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9237,
+      "baseSha": "27b28d270d15aa756b6c5aad04fa4ada720cf16c",
+      "headSha": "8d56a90c9f0f709e16a32ab2346742a72d1d0618",
+      "createdAt": "2026-10-23T12:03:29Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9238,
+      "baseSha": "27b28d270d15aa756b6c5aad04fa4ada720cf16c",
+      "headSha": "d05069c36649987513d50a30b3b0db83e89d5599",
+      "createdAt": "2026-10-23T12:46:24Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9239,
+      "baseSha": "e92cdb72b00555561bf1562b1bd3ce4699e56017",
+      "headSha": "ec2a10744363738cade5e0d568f48050928bac60",
+      "createdAt": "2026-10-23T12:58:22Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9240,
+      "baseSha": "e92cdb72b00555561bf1562b1bd3ce4699e56017",
+      "headSha": "66462def5adb51f1487653c3c885b7539f350a47",
+      "createdAt": "2026-10-23T13:09:56Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9241,
+      "baseSha": "31f1f9deb0d860f1d76321f12189df976c82e2e5",
+      "headSha": "1d273e46e63fbebba142319b5b6128ecb54c053a",
+      "createdAt": "2026-10-23T13:31:52Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9242,
+      "baseSha": "31f1f9deb0d860f1d76321f12189df976c82e2e5",
+      "headSha": "33100ecfd542de0322812cf508b589a093a049d9",
+      "createdAt": "2026-10-23T13:33:16Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9243,
+      "baseSha": "fbb4f57821d2f3a314d9748a3cd0ef067ebf757d",
+      "headSha": "3ccc989a6e759966e0be32a11aa4eccc717551b1",
+      "createdAt": "2026-10-23T14:13:49Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9244,
+      "baseSha": "50b165b9c015bb51594eba128a92fdfaa6d5285a",
+      "headSha": "6c1d3ebaae1959c40b9e454042a102609403c1e5",
+      "createdAt": "2026-10-23T14:27:41Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9245,
+      "baseSha": "50b165b9c015bb51594eba128a92fdfaa6d5285a",
+      "headSha": "207f3d3ccbe9455e4b8c4934b7b52c18629cfccd",
+      "createdAt": "2026-10-23T14:30:09Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9246,
+      "baseSha": "50b165b9c015bb51594eba128a92fdfaa6d5285a",
+      "headSha": "806043a7788cbed2b278f9435dcd7258422dbed5",
+      "createdAt": "2026-10-23T14:44:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9247,
+      "baseSha": "50b165b9c015bb51594eba128a92fdfaa6d5285a",
+      "headSha": "702374361bdab5ac52e471207cda6a99c29e7982",
+      "createdAt": "2026-10-23T14:46:56Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9248,
+      "baseSha": "5480b60673a435654214ca9045f6eb52d8b22073",
+      "headSha": "912f5ff30f53c0b6cd5e2b1f27456687acff3e0e",
+      "createdAt": "2026-10-23T17:13:43Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9249,
+      "baseSha": "5480b60673a435654214ca9045f6eb52d8b22073",
+      "headSha": "9d07aceb3d3d33513a954e8153149ab631e2b248",
+      "createdAt": "2026-10-23T17:29:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9250,
+      "baseSha": "09d278678224cec815ccabb6dbd3d8d3735f1612",
+      "headSha": "3c79414884a7ad00a0ec9ce7929daaa753680c2b",
+      "createdAt": "2026-10-23T19:01:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "JetBrains/kotlin",
+      "pr": 9251,
+      "baseSha": "dc82a39b65ca54a53afb0e47b368a45206d9035c",
+      "headSha": "7b1c6576fb89bb14347f8b11461fa46b7c1f980d",
+      "createdAt": "2026-10-24T02:55:37Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7419,
+      "baseSha": "d04b3b1c8dcf3a8490faf19c48e8b56d967405fa",
+      "headSha": "7a65b863857b6639cca8488985cfc781f340271a",
+      "createdAt": "2026-10-21T13:15:05Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7420,
+      "baseSha": "eba9492be1070a5d68781dfbb870215d7f41af66",
+      "headSha": "867d11ae2e1f7f3db40ea0c375fa347e85413219",
+      "createdAt": "2026-10-21T20:28:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7421,
+      "baseSha": "eba9492be1070a5d68781dfbb870215d7f41af66",
+      "headSha": "db7e3dbbefd87459cf9c9085e58015d4de62878c",
+      "createdAt": "2026-10-21T20:28:41Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7422,
+      "baseSha": "fc5503ec256c4f4f6f0f69fa07d69bfb568cea57",
+      "headSha": "d325a0a90c677f9a619e4cb3c85116b3de78f7f9",
+      "createdAt": "2026-10-21T22:57:47Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7424,
+      "baseSha": "c7e6b8dd75cbb8bcbcd24bd415d731440db28d70",
+      "headSha": "6ea085892756a59a6aa439faadd700dce176f83c",
+      "createdAt": "2026-10-22T03:19:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7425,
+      "baseSha": "c7e6b8dd75cbb8bcbcd24bd415d731440db28d70",
+      "headSha": "8295d4347fa1f64dc734d828b3c56ff5e7865d2e",
+      "createdAt": "2026-10-22T04:46:40Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7428,
+      "baseSha": "c13364593e779add560f3413255b2f8fdc50e21a",
+      "headSha": "8affcce26ad139ecf9d163028956854ff6dfe799",
+      "createdAt": "2026-10-22T10:19:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7429,
+      "baseSha": "c13364593e779add560f3413255b2f8fdc50e21a",
+      "headSha": "31e395bcd92a3476b721eaf90cf0649fc700ae17",
+      "createdAt": "2026-10-22T11:48:34Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7431,
+      "baseSha": "ab2d3621c970a00b980267af6760a0815b442300",
+      "headSha": "eb74319e48b3df89fa918e103443c303d4c4fc91",
+      "createdAt": "2026-10-22T21:33:59Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7432,
+      "baseSha": "745891d7696d4ef0ba2bf81d2f840c2611bfee96",
+      "headSha": "17de2ab348b3c125f138f2d2c20b12945f7288c2",
+      "createdAt": "2026-10-23T16:08:43Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "LawnchairLauncher/lawnchair",
+      "pr": 7433,
+      "baseSha": "687153c642354d95108c9e0b4395efeaa9104bce",
+      "headSha": "197c148402ebff07b43c253478351836571e7015",
+      "createdAt": "2026-10-23T16:08:52Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17857,
+      "baseSha": "d510714670b88cf37f8eb1e00caed9c2ee577d97",
+      "headSha": "41f7279b1396f8921d1e815d4ad7a26ff9e5abac",
+      "createdAt": "2026-10-21T01:04:11Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17858,
+      "baseSha": "4e5ce14e264a52f2029dae242d7d6d7b1b6a47d2",
+      "headSha": "b8c4886a57f9ce53c33200b8f6270a1e056b600e",
+      "createdAt": "2026-10-21T05:46:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17859,
+      "baseSha": "f15b2f9dc44e2948026bb401a66b0b928af9fde3",
+      "headSha": "866709070e6e1e56e9fed5543fb82fc3efc3f495",
+      "createdAt": "2026-10-21T05:47:02Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17860,
+      "baseSha": "f738ac0621a6303bcf12215186fcbb83fb7539bc",
+      "headSha": "82860590515f6ef940127443417c84f2da5a7e86",
+      "createdAt": "2026-10-21T10:05:08Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17861,
+      "baseSha": "4a6c39d7580992891699bffa7b1654ecf892410a",
+      "headSha": "7c574885d349e2b6d5ce14c260fb638255e23782",
+      "createdAt": "2026-10-21T11:37:03Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17863,
+      "baseSha": "3f9d8d4878677b8a21f8fefd008338a71d0d0ad7",
+      "headSha": "c586fecd3ed8cee4c47ee73434590927b3cdc4f2",
+      "createdAt": "2026-10-21T15:09:42Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17864,
+      "baseSha": "6e7bbf4178b59bcacc3f4991b1f61245e2c511ca",
+      "headSha": "6e496559481227ea5d27b0f6f0476c7cf4a3de7a",
+      "createdAt": "2026-10-22T08:28:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17865,
+      "baseSha": "6e7bbf4178b59bcacc3f4991b1f61245e2c511ca",
+      "headSha": "9a73d3a7128c6644ec06ff756f70c55fcbfd8a7a",
+      "createdAt": "2026-10-22T09:42:41Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17866,
+      "baseSha": "6e7bbf4178b59bcacc3f4991b1f61245e2c511ca",
+      "headSha": "741a9eea3e3e835d4404bf5d645e4c8b5f49d3b4",
+      "createdAt": "2026-10-22T12:35:33Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17867,
+      "baseSha": "6558f45f6e704dfc9786396ce7e8a16a2c1e5f9f",
+      "headSha": "2479461550471f2f9adbee9b2ae71ef509328a2d",
+      "createdAt": "2026-10-22T13:23:06Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17868,
+      "baseSha": "d57fdc89810ac9ca1c0f9590b19fb1d11ae8cc7c",
+      "headSha": "97d1f951cfcb79e88d8d0729cc4ce5789e545a37",
+      "createdAt": "2026-10-23T09:07:20Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17869,
+      "baseSha": "580b4203a2667df723c6607fb8239ae2dd9614bd",
+      "headSha": "5a761b28f32fdd533a39f8a11d553a1c4d1aaa59",
+      "createdAt": "2026-10-23T09:27:53Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17870,
+      "baseSha": "d57fdc89810ac9ca1c0f9590b19fb1d11ae8cc7c",
+      "headSha": "8b3f38c610961e1b1f2810839c8bf769f9664770",
+      "createdAt": "2026-10-23T10:02:07Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17871,
+      "baseSha": "d57fdc89810ac9ca1c0f9590b19fb1d11ae8cc7c",
+      "headSha": "54e6dd443290e45273ada9beb353fe219c500565",
+      "createdAt": "2026-10-23T18:30:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17872,
+      "baseSha": "d57fdc89810ac9ca1c0f9590b19fb1d11ae8cc7c",
+      "headSha": "6b738c95e3ab011a0858af9bb9caaea81a47c841",
+      "createdAt": "2026-10-23T23:56:00Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/android",
+      "pr": 17873,
+      "baseSha": "cae2070490b4460827433b9fd56ba917cbb53646",
+      "headSha": "7a5c48a9f0b524325e644fef81d32b3f3adcec5c",
+      "createdAt": "2026-10-24T09:21:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6937,
+      "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+      "headSha": "2d08f9e3b46d911d52dfdfb7075fe9201327e9de",
+      "createdAt": "2026-10-22T07:11:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6938,
+      "baseSha": "8dcc62a077802446b93108df5ff76a6a390be3d3",
+      "headSha": "26892c801d4e7fbd12fbef7dfb04e0e1ded71c34",
+      "createdAt": "2026-10-22T09:54:39Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6939,
+      "baseSha": "1e4f5009e4ab88cf94a2b857016bfc5a53748793",
+      "headSha": "c0d84aa9207c3843fb67a009e6e922d30ca5a5da",
+      "createdAt": "2026-10-22T13:07:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6940,
+      "baseSha": "48880fb92e49a3cd3fa345e6e10bd21f80cc5b1a",
+      "headSha": "45b1a9c6aa24def1ee2e6ae3e2aeb01ff2626772",
+      "createdAt": "2026-10-22T14:44:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6941,
+      "baseSha": "96bd54d5c7ae0198d1eabbc17fc5a57b3e6b56b0",
+      "headSha": "ca23163ffac89cbcec722050e24d10d06a37dda0",
+      "createdAt": "2026-10-22T17:31:42Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6942,
+      "baseSha": "599b513f8b560697e17bbc8cfcb0e3275d84a265",
+      "headSha": "1144fe121aa3f328ca1a9e6dde20ab010a65b5a0",
+      "createdAt": "2026-10-23T10:00:17Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6943,
+      "baseSha": "4180c83533de78aed800ea1440380f14abe9665f",
+      "headSha": "064076588f900b505191a904a1e868f94e40b9dc",
+      "createdAt": "2026-10-23T10:17:14Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6944,
+      "baseSha": "a946e6893465938ffaca59470cc7f1d249d41f2b",
+      "headSha": "b8d08d350e81e4d090902ce8f45af3ff8f2a5938",
+      "createdAt": "2026-10-23T10:58:12Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6945,
+      "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+      "headSha": "705887c6795b2f7746bef47e08a5c8c2aba9c3ff",
+      "createdAt": "2026-10-23T13:08:43Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6946,
+      "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+      "headSha": "043f67d25278f6c55713f02ed8a5455e7f4bdebb",
+      "createdAt": "2026-10-23T15:46:12Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "nextcloud/talk-android",
+      "pr": 6949,
+      "baseSha": "f8246586d06152b40c1823411bc8a7354f217a8d",
+      "headSha": "1673d0680d0b816a51f9ea8b3f647f5ab0399bda",
+      "createdAt": "2026-10-24T08:42:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23430,
+      "baseSha": "f8be9f98865fe007dea6b304072e29f5b74e897c",
+      "headSha": "919041352f150ef119ebf511c7609082ff369ac8",
+      "createdAt": "2026-10-20T20:04:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23431,
+      "baseSha": "1ff2f3d713b13e82c7e382018929c452ce53fac2",
+      "headSha": "d570c812054ccda7bcc61af0a43f8b67506a16e1",
+      "createdAt": "2026-10-21T11:32:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23432,
+      "baseSha": "b21329c4d05e86bdc450dd779ea253bb7b5dc15c",
+      "headSha": "168aa8a3e3baa09776462ae6905807eade21b113",
+      "createdAt": "2026-10-21T12:04:56Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23433,
+      "baseSha": "cfd1a3b55485def892f80911315442ec3198783a",
+      "headSha": "d47d6c333bb759b49cc27229e5a452aef69c4bbb",
+      "createdAt": "2026-10-21T18:03:35Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23434,
+      "baseSha": "c75b331967441be045ba37103770aa2931cd55d0",
+      "headSha": "cdcdd99e7362efe7963ff814c5b508077c1a6405",
+      "createdAt": "2026-10-21T19:48:06Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23435,
+      "baseSha": "fd26d9c7f88785e3037ca5ca13774d1ddfee99b4",
+      "headSha": "11e50ae7196c62e2995b35ba769215a8b34fd3e8",
+      "createdAt": "2026-10-21T19:49:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23436,
+      "baseSha": "a1ab364a16a26f2b5dff2dd74f1e56b4c06ae8a0",
+      "headSha": "a4b62aaeab7218cb5ef8042a2ac7e591fb2c598c",
+      "createdAt": "2026-10-21T21:28:46Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23437,
+      "baseSha": "24eefe085d10c430ba42fce317d74e285ebc7789",
+      "headSha": "854a192e50de27cd4033f9b73dc53aaf2af5894b",
+      "createdAt": "2026-10-22T11:38:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23438,
+      "baseSha": "c822c04859d0b9ed2deb8f58cf3fd399c22f51d3",
+      "headSha": "15fa4595e721e836375aab3557c2927636b717c1",
+      "createdAt": "2026-10-22T11:45:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23439,
+      "baseSha": "cdafb3d46e2070b2cdd597f723b64f216bd0ee0a",
+      "headSha": "cb5ebec4cca3660f591c68041e8700696efcc920",
+      "createdAt": "2026-10-22T13:53:24Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23440,
+      "baseSha": "cfd1a3b55485def892f80911315442ec3198783a",
+      "headSha": "4b0179ab7ec588e040437c92c932495596abb484",
+      "createdAt": "2026-10-23T13:41:56Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23441,
+      "baseSha": "cfd1a3b55485def892f80911315442ec3198783a",
+      "headSha": "7b0a50e9c8d81aeea72ebe36e25706d3cffeb587",
+      "createdAt": "2026-10-23T14:12:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "wordpress-mobile/WordPress-Android",
+      "pr": 23442,
+      "baseSha": "cfd1a3b55485def892f80911315442ec3198783a",
+      "headSha": "5192421ce5c5ad58ee1a0ea43594f40d5a79087d",
+      "createdAt": "2026-10-24T00:07:04Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    }
+  ]
+}
