@@ -1,0 +1,95 @@
+{
+  "schema": "c2-frozen-path-only-snapshot/v1",
+  "candidate": {
+    "repository": "bitwarden/android",
+    "pr": 7499,
+    "baseSha": "9bdf4d222ed0916415973418052f0bd089507875",
+    "headSha": "6ee1047c7312ce61153184e84840bc372cf38602",
+    "createdAt": "2026-10-20T22:29:32Z"
+  },
+  "frozenCore": {
+    "referenceCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+    "coreBlobSha": "db29f94be1e0afb791a241d26f449695df0eafd0",
+    "semanticBlobSha": "7df2a994f566ad56bdacab999fa6ba83b69e3b4d",
+    "knownDefectsBlobSha": "8c2fa4289d331e157b07f4e693239ac7e31cae8c",
+    "rulesFrozenCount": 17
+  },
+  "files": [
+    {
+      "filename": "app/src/main/kotlin/com/x8bit/bitwarden/data/auth/manager/KeyConnectorManager.kt",
+      "status": "modified",
+      "sha": "35e4f45ff1aebb9ee48b49a3d94660c1dd734e60",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2
+    },
+    {
+      "filename": "app/src/main/kotlin/com/x8bit/bitwarden/data/auth/manager/KeyConnectorManagerImpl.kt",
+      "status": "modified",
+      "sha": "9a211f5b8e856e015a176caa9d5d2f75c994fc34",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4
+    },
+    {
+      "filename": "app/src/main/kotlin/com/x8bit/bitwarden/data/auth/repository/AuthRepositoryImpl.kt",
+      "status": "modified",
+      "sha": "fd67b29d39811ffd04342a49ac40debf0e503226",
+      "additions": 7,
+      "deletions": 6,
+      "changes": 13
+    },
+    {
+      "filename": "app/src/main/kotlin/com/x8bit/bitwarden/data/vault/datasource/sdk/VaultSdkSource.kt",
+      "status": "modified",
+      "sha": "ed229198b186e8a3fb4573ff4a858639260e2cb0",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2
+    },
+    {
+      "filename": "app/src/main/kotlin/com/x8bit/bitwarden/data/vault/datasource/sdk/VaultSdkSourceImpl.kt",
+      "status": "modified",
+      "sha": "72366ad2d523bed8ee73ebfc56e21757f6827f3b",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4
+    },
+    {
+      "filename": "app/src/test/kotlin/com/x8bit/bitwarden/data/auth/manager/KeyConnectorManagerTest.kt",
+      "status": "modified",
+      "sha": "d2605477d56940ab1e7d3fca749d751f0632c860",
+      "additions": 11,
+      "deletions": 11,
+      "changes": 22
+    },
+    {
+      "filename": "app/src/test/kotlin/com/x8bit/bitwarden/data/auth/repository/AuthRepositoryTest.kt",
+      "status": "modified",
+      "sha": "72bafd32cdd5356e281201840bc0cdac312aa1d2",
+      "additions": 19,
+      "deletions": 14,
+      "changes": 33
+    },
+    {
+      "filename": "app/src/test/kotlin/com/x8bit/bitwarden/data/vault/datasource/sdk/VaultSdkSourceTest.kt",
+      "status": "modified",
+      "sha": "4520acdedafd4ea2e86c627a012afc84b9d98559",
+      "additions": 16,
+      "deletions": 16,
+      "changes": 32
+    }
+  ],
+  "metadataPathOnly": true,
+  "prTitleRead": false,
+  "patchExposedToDetector": false,
+  "sourceExecution": false,
+  "prefilterStatus": "PENDING_OWNER_MAIN_AUTHENTICATION",
+  "exactRuleMatched": false,
+  "independentOriginalFixBenignEvidence": false,
+  "trainingIndependenceCertified": false,
+  "causalIndependenceCertified": false,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "tripleSPlusCertified": false
+}
