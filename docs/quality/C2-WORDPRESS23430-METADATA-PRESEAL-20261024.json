@@ -1,0 +1,32 @@
+{
+  "schema": "c2-prospective-single-pr-selection/v1",
+  "selectedAtPhase": "METADATA_ONLY_PRE_SOURCE",
+  "selectionCriteria": "oldest frozen externally owned Android repository PR with at most one changed file, excluding all known development/training repositories and protected four SHA tuples; here first viable under scoped selection",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "cutoff": "2026-10-20T19:30:54Z",
+  "candidate": {
+    "repository": "wordpress-mobile/WordPress-Android",
+    "pr": 23430,
+    "createdAt": "2026-10-20T20:04:23Z",
+    "baseSha": "f8be9f98865fe007dea6b304072e29f5b74e897c",
+    "headSha": "919041352f150ef119ebf511c7609082ff369ac8"
+  },
+  "sampledWithSourceCode": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "gateState": "PRE_ADMISSION_PENDING_GIT_LINEAGE_LICENSE_RULE_AND_ORACLE",
+  "trainingCausalLineageExcluded": false,
+  "sourceReleasePermitted": false,
+  "importedGoldLabels": 0,
+  "priorDocumentedTruth": 9,
+  "additionalNeeded": 111,
+  "truthSealed": false,
+  "holdoutFrozen": false,
+  "tripleSPlusCertified": false,
+  "risks": [
+    "PR creation timestamp does not prove source creation after cutoff",
+    "exact Git ancestry and causal family overlap not yet independently attested",
+    "eligibility of 17 active Core rules unknown",
+    "original fix benign behavior not reproduced"
+  ]
+}
