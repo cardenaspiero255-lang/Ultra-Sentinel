@@ -73,7 +73,7 @@ function validateOwnerRelease({roster,exposures,request,api,event}={}){
    trainingIndependenceCertified:false,causalIndependenceCertified:false,
    ruleCompatibilityAuthenticated:false,sourceOracleAuthenticated:false,
    truthSealed:false,holdoutFrozen:false,newGoldLabels:0,
-   candidatePredictionsRead:false,baselinePredictionsRead:false,
+   candidatePredictionsRead:false,detectorPredictionsRead:false,baselinePredictionsRead:false,
    precision:null,recall:null,f1:null,tripleSPlusCertified:false,
    limitation:'Owner event authorizes inspection only; live Git provenance, license, causal independence, rule-path-line applicability and original/fixed/benign oracle require separate subsequent evidence.'
   });
