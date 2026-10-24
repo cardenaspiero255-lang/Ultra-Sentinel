@@ -1,0 +1,24 @@
+{
+  "schema": "c2-prospective-single-pr-selection/v1",
+  "phase": "METADATA_ONLY_PRE_SOURCE",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "cutoff": "2026-10-20T19:30:54Z",
+  "candidate": {
+    "repository": "home-assistant/android",
+    "pr": 7662,
+    "createdAt": "2026-10-21T05:02:29Z",
+    "baseSha": "4a509be11346262ebc4fa7dea5a2d8ab00ef374f",
+    "headSha": "c9e985ac70807141cbebe0d4af3c58f91f21f9d0"
+  },
+  "selectionCriteria": "next chronologically after Renovate-only #7661; 2 changed files; human author from PR metadata; no source, title or detector inspected",
+  "sourceInspected": false,
+  "baselinePredictionsRead": false,
+  "detectorPredictionsRead": false,
+  "trainingIndependenceCertified": false,
+  "sourceReleasePermitted": false,
+  "originalOracleExecuted": false,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "holdoutFrozen": false,
+  "tripleSPlusCertified": false
+}
