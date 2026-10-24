@@ -1,0 +1,46 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const result=require('../../docs/quality/C2-LAWNCHAIR7428-OWNER-RELEASED-DISPOSITION-20261024.json');
+const {generalKotlinProduction}=require('../../packages/core/ultra_sentinel_core.cjs');
+const roster=require('../../docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
+const quarantine=require('../../docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json');
+
+test('owner release is backed by a real successful actor-only run but no source-oracle GOLD admission',()=>{
+ assert.equal(result.schema,'c2-owner-released-source-disposition/v1');
+ assert.equal(result.sourceRelease.ownerGithubActorId,322222186);
+ assert.equal(result.sourceRelease.ownerRepositoryId,1418338512);
+ assert.match(result.sourceRelease.artifactSha256,/^[a-f0-9]{64}$/);
+ assert.equal(result.sourceRelease.producerJobConclusion,'success');
+ assert.equal(result.sourceRelease.independentAttestorConclusion,'success');
+ assert.equal(result.oracle.originalExecuted,false);
+ assert.equal(result.oracle.fixedExecuted,false);
+ assert.equal(result.oracle.benignExecuted,false);
+ assert.equal(result.verdict,'INCONCLUSIVE_OUT_OF_FROZEN_CORE_SCOPE');
+ assert.equal(result.canPromoteToGold,false);
+ assert.equal(result.corpus.addedGoldLabels,0);
+ assert.equal(result.corpus.truthSealed,false);
+ assert.equal(result.corpus.sssPlusCertified,false);
+});
+test('Lawnchair PR is the frozen ninth source disclosure but NOT a frozen rule-supported source path',()=>{
+ const c=result.original;
+ const x=roster.candidates.find(x=>x.repository===c.repository&&x.pr===c.pr);
+ assert.ok(x);
+ assert.equal(x.baseSha,c.baseSha);
+ assert.equal(x.headSha,c.headSha);
+ assert.equal(quarantine.disclosures.some(x=>x.repository===c.repository&&x.pr===c.pr),false);
+ const path=result.source.path;
+ assert.equal(path,'src/com/android/launcher3/dragndrop/FolderAdaptiveIcon.java');
+ const fixedCoreDefault=/^(app\/src\/main\/|supabase\/functions\/|\.github\/(?:workflows|scripts)\/|control-center\/)/.test(path);
+ assert.equal(fixedCoreDefault,false);
+ assert.equal(generalKotlinProduction(path),false);
+ assert.equal(result.frozenCore.frozenCorePathEligible,false);
+ assert.equal(result.frozenCore.frozenRuleCompatible,false);
+ assert.equal(result.frozenCore.coreExecutedOnCandidate,false);
+ assert.equal(result.corpus.pool,169);
+ assert.equal(result.corpus.earlierUnlicensedExposures,8);
+ assert.equal(result.corpus.ownerReleasedReviewed,1);
+ assert.equal(result.corpus.untouchedMetadataOnlyRemaining,160);
+ assert.equal(result.corpus.documentedHistoricalGoldLabels,9);
+ assert.equal(result.corpus.remainingToTarget,111);
+});

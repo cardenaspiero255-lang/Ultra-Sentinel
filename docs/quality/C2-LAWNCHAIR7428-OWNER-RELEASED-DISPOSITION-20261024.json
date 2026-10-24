@@ -1,0 +1,62 @@
+{
+  "schema": "c2-owner-released-source-disposition/v1",
+  "original": {
+    "repository": "LawnchairLauncher/lawnchair",
+    "pr": 7428,
+    "baseSha": "c13364593e779add560f3413255b2f8fdc50e21a",
+    "headSha": "8affcce26ad139ecf9d163028956854ff6dfe799",
+    "createdAt": "2026-10-22T10:19:58Z"
+  },
+  "sourceRelease": {
+    "sourceReadPermitted": true,
+    "sourceReleaseAuthenticGitHubOwnerRun": true,
+    "ownerGithubActorId": 322222186,
+    "ownerRepositoryId": 1418338512,
+    "workflowRunId": 40126013934,
+    "workflowHeadSha": "f39bfac4714ee193c94a79e9780d81177063c30e",
+    "artifactId": 12573121682,
+    "artifactSha256": "094aa45db924a9d1658af9da5ffd77b2b813161f4b9a1721a12598fd0a1b578f",
+    "producerJobConclusion": "success",
+    "independentAttestorConclusion": "success"
+  },
+  "source": {
+    "path": "src/com/android/launcher3/dragndrop/FolderAdaptiveIcon.java",
+    "baselineBlobSha": "df4dd57a24c14ce6781862ae5b45898f26e298a6",
+    "fixedBlobSha": "049eebe08e70766541045fca475679b3cdae008c",
+    "language": "java",
+    "upstreamClaim": "Android 26-27 crash from Bitmap.createBitmap(Picture), patched with API 28 check and software rendering",
+    "sourceReadAfterOwnerRelease": true,
+    "licenseTextHeader": "Apache-2.0",
+    "independentTrainingLineageCertified": false
+  },
+  "frozenCore": {
+    "frozenCorePathEligible": false,
+    "frozenRuleCompatible": false,
+    "verifiedBy": "immutable frozen path policy check; original file path is not app/src/main, .github/workflows, supabase/functions, control-center, or external src/main/kotlin/*.kt",
+    "candidatePredictionsRead": false,
+    "baselinePredictionsRead": false,
+    "coreExecutedOnCandidate": false
+  },
+  "oracle": {
+    "originalExecuted": false,
+    "fixedExecuted": false,
+    "benignExecuted": false,
+    "originalUpstreamJUnitLocated": false,
+    "reason": "NOT_EXECUTED_OUTSIDE_IMPLEMENTED_FROZEN_CORE_RULE_SCOPE",
+    "sourceOracleAuthenticated": false
+  },
+  "corpus": {
+    "pool": 169,
+    "earlierUnlicensedExposures": 8,
+    "ownerReleasedReviewed": 1,
+    "untouchedMetadataOnlyRemaining": 160,
+    "addedGoldLabels": 0,
+    "documentedHistoricalGoldLabels": 9,
+    "remainingToTarget": 111,
+    "truthSealed": false,
+    "holdoutFrozen": false,
+    "sssPlusCertified": false
+  },
+  "verdict": "INCONCLUSIVE_OUT_OF_FROZEN_CORE_SCOPE",
+  "canPromoteToGold": false
+}
