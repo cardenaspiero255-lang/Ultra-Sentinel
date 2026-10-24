@@ -1,0 +1,67 @@
+{
+  "schema": "c2-owner-released-exact-rule-disposition/v1",
+  "candidate": {
+    "repository": "home-assistant/android",
+    "pr": 7681,
+    "baseSha": "c0457ffd2353bff63eceafd2a82ca0f505a70e10",
+    "headSha": "dbf2056e4a9cab37c6b766fe22afda687119033e",
+    "createdAt": "2026-10-22T20:46:35Z",
+    "upstreamStateAtInspection": "open"
+  },
+  "release": {
+    "ownerGithubActorId": 322222186,
+    "ownerRepositoryId": 1418338512,
+    "introducingMergeSha": "cb68be31ec65c510816f9c6201d3c6d594318cd0",
+    "runId": 40131542020,
+    "artifactId": 12575436175,
+    "artifactSha256": "313bbcbe211db76a002f05dc0c24f258d17c87959b4ed38b951932edbf15b9fc",
+    "sourceFreePathPrecheck": "success",
+    "introducingOwnerMergeCheck": "success",
+    "ownerReleaseJob": "success",
+    "separateGitAndBlobAttestor": "success"
+  },
+  "blobs": {
+    "productionPath": "app/src/main/kotlin/io/homeassistant/companion/android/frontend/js/FrontendJsBridge.kt",
+    "baseProductionGitBlob": "222e0551c4496bb4ca1750914ab72b4dfb5ae613",
+    "headProductionGitBlob": "20cf04c4bddd2bf415697f3f9be55bd4545ffad3",
+    "testPath": "app/src/test/kotlin/io/homeassistant/companion/android/frontend/js/FrontendJsBridgeTest.kt",
+    "baseTestGitBlob": "8516de3e84dbc9335bf98d77ef2fd543759f112f",
+    "headTestGitBlob": "f8bca3e1f174f80d42cc01e6f293270d5314cf03"
+  },
+  "upstreamMechanism": {
+    "claim": "Repeated WebView JavaScript bridge re-registration before navigation can crash native WebView; fix caches attached V1/V2 and makes repeated same-version attach a no-op until detach.",
+    "upstreamAddedMockedJUnitTests": 4,
+    "originalJUnitExecuted": false,
+    "fixedJUnitExecuted": false,
+    "benignControlExecuted": false,
+    "realWebViewNativeCrashReproduced": false,
+    "upstreamFixMerged": false,
+    "causalIndependenceCertified": false
+  },
+  "scope": {
+    "frozenCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+    "frozenCoreBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+    "frozenRules": 17,
+    "pathEligible": true,
+    "exactFrozenRuleId": null,
+    "exactRulePathLineMatch": false
+  },
+  "scoring": {
+    "detectorPredictionsRead": false,
+    "baselinePredictionsRead": false,
+    "truthSealed": false,
+    "originalFixBenignOracleCertified": false,
+    "addedGoldLabels": 0,
+    "priorDocumentedSourceScopedTruth": 9,
+    "remainingTo120": 111,
+    "sssPlusCertified": false
+  },
+  "corpus": {
+    "originalProspective": 169,
+    "previouslyExposed": 10,
+    "newlyOwnerReleasedInspected": 1,
+    "remainingSourceUntouched": 158
+  },
+  "verdict": "INCONCLUSIVE_NO_COMPATIBLE_FROZEN_RULE",
+  "noGoldPromotion": true
+}
