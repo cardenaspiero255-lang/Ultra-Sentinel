@@ -12,13 +12,13 @@ The [nine-label source-scoped seal](C2-NEXT-NINE-SOURCE-TRUTH.md) documents **4 
 - Requires post-training cutoff, exact source metadata schema, immutable SHA formatting, rejects reused original Git heads, known-training projects and any modification of the four preregistered prospective SHA tuples.
 - Strict offline intake for source-oracle receipt **claims** (original, fixed, benign JUnit digests, exact rule/path/line and causal fingerprint). Rejects duplicates and evidence reuse; extra flags such as `newGoldLabels`, `independentTruthCertified`, `candidateFindings`, and `sourceOracleAuthenticated` fail closed.
 - Quarantine output **always** reports zero new GOLD, unchanged previously documented nine, and 111 still missing. This is intentional: a caller-supplied JSON digest is not proof of GitHub ownership, original Kotlin execution or genuine independent causal behavior.
-- PR CI runs all `npm run check`, plans the four pre-registered prospective candidates and emits a sanitized JSON artifact with no source. An **owner-only** `workflow_dispatch` from protected `main` separately checks the exact four GitHub PR metadata tuples against the authenticated GitHub API, still without reading source or asserting labels.
+- PR CI runs all `npm run check` and plans **169 source-free PR identities** from twelve consulted public repositories, including the four earlier pinned prospective SHA tuples. The one-shot planner distributes all 169 across 16 shards, without reading source or predictions. An **owner-only** `workflow_dispatch` from protected `main` checks PR identities and reports live SHA pointer drift against the snapshot. Pointer drift is **not** silently overwritten or represented as original HEAD-to-PR provenance; the output still grants zero truth labels.
 
 ### Run the complete registered metadata roster in one invocation
 
 ```bash
 node scripts/c2-bulk-evidence-intake.cjs plan \
-  "$PWD/docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json" \
+  "$PWD/docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json" \
   > /tmp/c2-plan.json
 printf '[]\n' > /tmp/c2-oracle-claims.json
 node scripts/c2-bulk-evidence-intake.cjs review \
@@ -38,3 +38,9 @@ A larger **owner-approved source-free** manifest follows `c2-bulk-source-candida
 ### Security and limitation
 
 `c2-bulk-evidence-intake.cjs` is offline and read-only, with no cross-repository write, no reviewer privilege, no login key, and no background task. A green workflow certifies only the intake invariants, **not** 111 labels, source/oracle correctness, precision/recall/F1, Core coverage or SSS+. The prospective four from [2026-10-22](C2-FOUR-EXTERNAL-CANDIDATES-PROVENANCE-20261022.md) remain content-uninspected; their source should not be released to the detector by this job.
+
+## Frozen expanded metadata batch (24 October 2026)
+
+The one-shot owner/GitHub API metadata discovery enumerated 12 repositories and selected **169 source-uninspected identities** created strictly after `2026-10-20T19:30:54Z`, preserving 4 earlier pinned entries. Unchanged repositories without eligible PRs legitimately contribute zero. Invalid/duplicate original HEAD claims were excluded; existing pinned SHA records are **not silently advanced** when current GitHub PR HEAD pointers drift. The immutable manifest is `docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json` (a source-free roster, not a GOLD label set).
+
+The 169 may contain unrelated changes, duplicate causal families, PRs with incompatible licenses, or code outside the frozen 17-rule detector scope. **No assertion of 169 real defects, 169 independent labels, or independence from all training data.** All records are `METADATA_ONLY`; original source and predictions remain unread by this workflow. Before running any original source, apply independent ancestry, licensing, causal-family, per-rule and sandbox checks and isolate future holdout identities from developer visibility.
