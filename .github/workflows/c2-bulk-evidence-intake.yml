@@ -9,6 +9,7 @@ on:
       - scripts/c2-bulk-evidence-intake.cjs
       - tests/unit/c2-bulk-evidence-intake*.test.cjs
       - docs/quality/C2-BULK-EVIDENCE-INTAKE-20261024.md
+      - docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json
   workflow_dispatch:
 permissions:
   contents: read
@@ -43,17 +44,17 @@ jobs:
           root="$RUNNER_TEMP/c2-bulk-intake"
           mkdir -p "$root"
           node scripts/c2-bulk-evidence-intake.cjs plan \
-            "$GITHUB_WORKSPACE/docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json" \
+            "$GITHUB_WORKSPACE/docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json" \
             > "$root/plan.json"
           printf '[]\n' > "$root/no-witnesses.json"
           node scripts/c2-bulk-evidence-intake.cjs review \
             "$root/plan.json" "$root/no-witnesses.json" > "$root/quarantine.json"
           jq -e '.schema=="c2-bulk-evidence-intake-plan/v1" and
-            .sourceCandidates==4 and .previousSealedTruth==9 and
+            .sourceCandidates==169 and .previousSealedTruth==9 and
             .additionalTruthNeeded==111 and .newGoldLabels==0 and
             .sourceInspected==false and .candidatePredictionsRead==false and
             .holdoutFrozen==false and .tripleSPlusCertified==false' "$root/plan.json" >/dev/null
-          jq -e '.newGoldLabels==0 and .missing==4 and
+          jq -e '.newGoldLabels==0 and .missing==169 and
             .claimsAwaitingOwnerAuthentication==0 and
             .sourceOracleAuthenticated==false and .tripleSPlusCertified==false' "$root/quarantine.json" >/dev/null
       - name: Publish sanitized candidate-only report
@@ -80,7 +81,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Independently verify metadata tuples against GitHub API, NOT source
+      - name: Check live PR metadata and report SHA drift without reading source
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -90,21 +91,27 @@ jobs:
           root="$RUNNER_TEMP/c2-owner-bulk"
           mkdir -p "$root"
           node scripts/c2-bulk-evidence-intake.cjs plan \
-            "$GITHUB_WORKSPACE/docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json" \
+            "$GITHUB_WORKSPACE/docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json" \
             > "$root/plan.json"
           : > "$root/verified.ndjson"
           while IFS=$'\t' read -r repo pr base head created; do
+            # A historic frozen SHA may move in the live PR: record drift,
+            # never silently substitute the new HEAD or claim provenance.
             gh api "/repos/$repo/pulls/$pr" |
-              jq -e --arg repo "$repo" --argjson pr "$pr" \
+              jq -ce --arg repo "$repo" --argjson pr "$pr" \
                 --arg base "$base" --arg head "$head" --arg created "$created" '
-                .number==$pr and .base.repo.full_name==$repo and
-                .base.sha==$base and .head.sha==$head and .created_at==$created' >/dev/null
-            jq -nc --arg repo "$repo" --argjson pr "$pr" --arg head "$head" \
-              '{repository:$repo,pr:$pr,headSha:$head,githubApiMetadataMatched:true}' \
-              >> "$root/verified.ndjson"
+                select(.number==$pr and .base.repo.full_name==$repo and
+                  .created_at==$created) |
+                {repository:$repo,pr:$pr,frozenHeadSha:$head,
+                 frozenBaseSha:$base,originalCreatedAt:$created,
+                 headPointerMatchesNow:(.head.sha==$head),
+                 basePointerMatchesNow:(.base.sha==$base),
+                 historicalHeadToPrAssociationAttested:false,
+                 sourceInspected:false,sourceOracleExecuted:false,
+                 newGoldLabels:0}' >> "$root/verified.ndjson"
           done < <(jq -r '.shards[].candidates[] |
             [.repository,(.pr|tostring),.baseSha,.headSha,.createdAt]|@tsv' "$root/plan.json")
-          test "$(wc -l < "$root/verified.ndjson")" -eq 4
+          test "$(wc -l < "$root/verified.ndjson")" -eq 169
           jq -sc '{schema:"c2-owner-bulk-prospective-api-attestation/v1",
             metadataOnly:true,sourceInspected:false,sourceOraclesExecuted:0,
             candidatePredictionsRead:false,baselinePredictionsRead:false,
