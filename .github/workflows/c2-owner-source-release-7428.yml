@@ -1,0 +1,201 @@
+name: C2 owner-authenticated one-PR source release (NO GOLD)
+# This is a deliberately narrow, owner-only, one-time source INSPECTION gate.
+# Upstream code is never executed or sent to any model, and no GOLD is minted.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-owner-source-release-7428.yml
+      - packages/quality-gates/c2-owner-source-release.cjs
+      - tests/unit/c2-owner-source-release.test.cjs
+      - docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-20261024.json
+      - docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-20261024.md
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-owner-source-release-7428-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  preregistration-and-regression:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512) ||
+       github.event_name == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run all structure, C2 and adversarial tests; no external source
+        run: npm run check
+  owner-only-source-release:
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    needs: [preregistration-and-regression]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Trusted commit checkout, no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Prove this owner merge first introduced the one-PR release request
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          # No repeat release on later main pushes, even by the same owner.
+          test "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3
+          changed="$(git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA")"
+          test "$(printf '%s\n' "$changed" | grep -Fxc 'docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-20261024.json')" -eq 1
+          test ! -e "$RUNNER_TEMP/c2-release" || exit 2
+      - name: Authenticate one original PR metadata tuple before any source fetch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-release"
+          mkdir -m 700 "$root"
+          gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428' |
+            jq -e '{number,created_at,state,base:{sha:.base.sha,repo:{full_name:.base.repo.full_name}},head:{sha:.head.sha}}' > "$root/pr.json"
+          node - "$root/pr.json" "$root/release.json" <<'NODE'
+          const fs=require('node:fs');
+          const {validateOwnerRelease}=require('./packages/quality-gates/c2-owner-source-release.cjs');
+          const roster=require('./docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
+          const exposures=require('./docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json');
+          const request=require('./docs/quality/C2-OWNER-ONE-PR-SOURCE-RELEASE-20261024.json');
+          const api=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const event={repositoryId:Number(process.env.GITHUB_REPOSITORY_ID),
+            actorId:Number(process.env.GITHUB_ACTOR_ID),ref:process.env.GITHUB_REF,
+            eventName:process.env.GITHUB_EVENT_NAME,headCommit:process.env.GITHUB_SHA};
+          const release=validateOwnerRelease({roster,exposures,request,api,event});
+          fs.writeFileSync(process.argv[3],JSON.stringify(release,null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+          jq -e '.status=="OWNER_AUTHENTICATED_SOURCE_READ_ONLY" and
+            .sourceReadPermitted==true and .originalGithubGitProvenanceAuthenticated==false and
+            .sourceExecuted==false and .newGoldLabels==0 and .truthSealed==false and
+            .detectorPredictionsRead==false' "$root/release.json" >/dev/null
+      - name: Only after authorization obtain the upstream file scope, not code execution
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-release"
+          # The API response may contain a patch. Preserve only immutable Git
+          # blob and path metadata; remove the raw API response from the pipe.
+          gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428/files?per_page=100' |
+            jq -e '[.[] | {filename,status,sha,additions,deletions,changes}]' > "$root/files.json"
+          node - "$root/release.json" "$root/files.json" "$root/scope.json" <<'NODE'
+          const fs=require('node:fs');
+          const {verifySourceFileScope}=require('./packages/quality-gates/c2-owner-source-release.cjs');
+          const release=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const files=JSON.parse(fs.readFileSync(process.argv[3],'utf8'));
+          const result=verifySourceFileScope(release,files);
+          if(result.changedFiles!==1)throw Error('C2_OWNER_SOURCE_RELEASE_BLOCKED');
+          fs.writeFileSync(process.argv[4],JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+          # Output contains only paths + digests, never patches, source or tokens.
+          cd "$root"
+          sha256sum release.json scope.json > SHA256SUMS
+          rm -f pr.json files.json
+      - name: Publish owner-authenticated read permission and exact source scope
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-owner-one-source-read-7428-NOT-GOLD
+          path: ${{ runner.temp }}/c2-release/
+          if-no-files-found: error
+          retention-days: 30
+  independent-release-attestation:
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    needs: [owner-only-source-release]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Independent verifier pinned to the same protected main commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Independently download same-run release-only artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: c2-owner-one-source-read-7428-NOT-GOLD
+          path: ${{ runner.temp }}/c2-attest
+      - name: Re-authenticate run actor, upstream PR pointers and original Git blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-attest"
+          test "$(find "$root" -maxdepth 1 -type f | wc -l)" -eq 3
+          test "$(find "$root" -type l | wc -l)" -eq 0
+          (cd "$root" && sha256sum -c SHA256SUMS)
+          jq -e '.sourceReadPermitted==true and .newGoldLabels==0 and
+            .originalGithubGitProvenanceAuthenticated==false and
+            .truthSealed==false and .sourceExecuted==false' "$root/release.json" >/dev/null
+          jq -e '.changedFiles==1 and .newGoldLabels==0 and
+            .sourceOracleAuthenticated==false and
+            .ruleCompatibilityAuthenticated==false' "$root/scope.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
+            jq -e --arg sha "$GITHUB_SHA" --argjson id "$GITHUB_RUN_ID" '
+              .id==$id and .head_sha==$sha and
+              .repository.id==1418338512 and .actor.id==322222186 and
+              .event=="push" and .head_branch=="main"' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" |
+            jq -e --argjson id "$GITHUB_RUN_ID" '
+              [.artifacts[]|select(.name=="c2-owner-one-source-read-7428-NOT-GOLD" and
+                .workflow_run.id==$id and .workflow_run.repository_id==1418338512 and
+                .expired==false and (.digest|test("^sha256:[a-f0-9]{64}$")))]|length==1' >/dev/null
+          gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428' |
+            jq -e --arg head "8affcce26ad139ecf9d163028956854ff6dfe799" \
+              --arg base "c13364593e779add560f3413255b2f8fdc50e21a" '
+              .number==7428 and .created_at=="2026-10-22T10:19:58Z" and
+              .base.repo.full_name=="LawnchairLauncher/lawnchair" and
+              .head.sha==$head and .base.sha==$base' >/dev/null
+          # Check both historical Git trees independently, including the PR fork.
+          # This is read-only and does NOT run upstream source code.
+          gh api '/repos/LawnchairLauncher/lawnchair/git/commits/c13364593e779add560f3413255b2f8fdc50e21a' |
+            jq -e '.sha=="c13364593e779add560f3413255b2f8fdc50e21a" and (.tree.sha|test("^[0-9a-f]{40}$"))' >/dev/null
+          gh api '/repos/caizhixing/lawnchair/git/commits/8affcce26ad139ecf9d163028956854ff6dfe799' |
+            jq -e '.sha=="8affcce26ad139ecf9d163028956854ff6dfe799" and (.tree.sha|test("^[0-9a-f]{40}$"))' >/dev/null
+          gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428' |
+            jq -e '.head.repo.full_name=="caizhixing/lawnchair" and
+              .head.repo.id==1429174115' >/dev/null
+          # Re-open only the exact one changed-file blob identity, then compare
+          # to independent fork contents at frozen HEAD, never inspect predictions.
+          gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428/files?per_page=100' |
+            jq -e --slurpfile s "$root/scope.json" '
+              length==1 and .[0].filename==$s[0].changedPaths[0] and
+              (.[0].sha|test("^[0-9a-f]{40}$")) and
+              (.[0].status=="modified" or .[0].status=="added")' >/dev/null
+          file="$(jq -r '.changedPaths[0]' "$root/scope.json")"
+          blob="$(gh api '/repos/LawnchairLauncher/lawnchair/pulls/7428/files?per_page=100' --jq '.[0].sha')"
+          gh api "/repos/caizhixing/lawnchair/contents/$file?ref=8affcce26ad139ecf9d163028956854ff6dfe799" |
+            jq -e --arg blob "$blob" '.sha==$blob and .type=="file"' >/dev/null
+          echo 'C2_OWNER_SOURCE_RELEASE_VERIFIED_NOT_GOLD; NO_ORACLE_EXECUTED'
