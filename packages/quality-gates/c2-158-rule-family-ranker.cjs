@@ -40,7 +40,7 @@ function remainingCandidates({roster,eight,dispositions}={}){
   dispositions[1]?.candidate?.pr!==7499||
   dispositions[2]?.candidate?.repository!=='home-assistant/android'||
   dispositions[2]?.candidate?.pr!==7681||
-  dispositions.some(d=>(d.cohort?.addedGoldLabels??d.scoring?.addedGoldLabels)!==0))
+  dispositions.some(d=>(d.corpus?.addedGoldLabels??d.cohort?.addedGoldLabels??d.scoring?.addedGoldLabels)!==0))
   blocked();
  const prior=[...eight.disclosures,dispositions[0].original,
   dispositions[1].candidate,dispositions[2].candidate];
