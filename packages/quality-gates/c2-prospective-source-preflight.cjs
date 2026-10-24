@@ -82,4 +82,44 @@ function preflightSelections(roster,selection){
   limitation:'Exact frozen metadata is matched only against a repository manifest. No real original/fix/benign executable source truth, upstream original PR provenance, rule compatibility, train/test causal independence or scoring may be inferred.'
  });
 }
-module.exports={preflightSelections};
+const DISCLOSURE_FIELDS=new Set(['schema','sourceManifest','poolSize','disclosures',
+'disclosedTo','sourceReleasePermittedByPriorSeal','allDisclosuresQuarantined',
+'originalBehaviorAuthenticated','originalFixBenignJUnitExecuted',
+'detectorPredictionsRead','baselinePredictionsRead','admittedToBlindHoldout',
+'newGoldLabels','truthSealed','tripleSPlusCertified','limitation']);
+const ENTRY_FIELDS=new Set(['repository','pr','reason']);
+function quarantineDisclosureLedger(roster,ledger){
+ if(!roster||roster.schema!==EXPECTED_ROSTER||!Array.isArray(roster.candidates)||
+ !sameKeys(ledger,DISCLOSURE_FIELDS)||ledger.schema!=='c2-source-disclosure-quarantine/v1'||
+ ledger.sourceManifest!==MANIFEST||ledger.poolSize!==roster.candidates.length||
+ !Array.isArray(ledger.disclosures)||ledger.disclosures.length!==8||
+ ledger.disclosedTo!=='DEVELOPMENT_ORACLE_TRIAGE'||
+ ledger.sourceReleasePermittedByPriorSeal!==false||
+ ledger.allDisclosuresQuarantined!==true||
+ ledger.originalBehaviorAuthenticated!==false||
+ ledger.originalFixBenignJUnitExecuted!==false||
+ ledger.detectorPredictionsRead!==false||ledger.baselinePredictionsRead!==false||
+ ledger.admittedToBlindHoldout!==false||ledger.newGoldLabels!==0||
+ ledger.truthSealed!==false||ledger.tripleSPlusCertified!==false||
+ typeof ledger.limitation!=='string'||ledger.limitation.length<25)blocked();
+ const rows=new Map(roster.candidates.map(c=>[candidateKey(c),c])),seen=new Set();
+ if(rows.size!==roster.candidates.length)blocked();
+ for(const row of ledger.disclosures){
+  if(!sameKeys(row,ENTRY_FIELDS)||typeof row.repository!=='string'||
+     !Number.isSafeInteger(row.pr)||row.pr<1||
+     typeof row.reason!=='string'||!(/^[A-Z][A-Z0-9_]{5,120}$/.test(row.reason)))blocked();
+  const k=candidateKey(row);
+  if(seen.has(k)||!rows.has(k)||rows.get(k).repository!==row.repository)blocked();
+  seen.add(k);
+ }
+ return Object.freeze({
+  schema:'c2-source-exposure-quarantine-verified/v1',
+  status:'UNAUTHORIZED_SOURCE_EXPOSURE_EXCLUDED_FROM_BLIND_HOLDOUT',
+  sourceDisclosed:seen.size,uninspectedRemaining:roster.candidates.length-seen.size,
+  sourceReleaseAuthenticated:false,originalBehaviorAuthenticated:false,
+  admittedToBlindHoldout:0,newGoldLabels:0,truthSealed:false,
+  candidatePredictionsRead:false,baselinePredictionsRead:false,
+  tripleSPlusCertified:false
+ });
+}
+module.exports={preflightSelections,quarantineDisclosureLedger};
