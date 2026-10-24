@@ -105,8 +105,6 @@ jobs:
           umask 077
           root="$RUNNER_TEMP"
           gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" > "$root/run.json"
-          jq -e --arg sha "$EXPECTED_SHA" '
-            .id==env.GITHUB_RUN_ID|tonumber' "$root/run.json" > /dev/null 2>&1 || true
           jq -e --arg sha "$EXPECTED_SHA" --argjson run "$GITHUB_RUN_ID" '
             .id==$run and .head_sha==$sha and
             .repository.id==1418338512 and .actor.id==322222186 and
