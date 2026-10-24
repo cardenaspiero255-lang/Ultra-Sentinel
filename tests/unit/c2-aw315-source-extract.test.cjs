@@ -59,3 +59,17 @@ test('fails closed on missing upstream production function and missing denial ha
 test('fails closed on duplicated source anchors that permit ambiguous extraction',()=>{
  assert.throws(()=>sourceSlices(original+'\n'+original,repaired),/C2_AW315_BLOCKED/);
 });
+
+test('independent job re-fetches both exact original and fixed Git blobs before claiming source provenance',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const wf=fs.readFileSync(path.resolve(__dirname,'../../.github/workflows/c2-aw315-original-fix-development.yml'),'utf8');
+ const verifier=wf.split('  independent-receipt-authentication:')[1];
+ assert.ok(verifier, 'independent verifier job is required');
+ assert.match(verifier,/ref: 3cd8a388d21dcdd7bc7e686a75a7b3046d876f11/);
+ assert.match(verifier,/ref: 5a44cecef81c62d1527c49fecd00f90bd18db9df/);
+ assert.match(verifier,/410c7a2d9c6d5698c3ed623b3c0d46ee01620081/);
+ assert.match(verifier,/9474712a3953c78118f0d33633afb247bae31770/);
+ assert.match(verifier,/842324ca38c8a1f3253c464eca41dcfdd05d382e/);
+ assert.match(verifier,/originalMethodSha256/);
+ assert.match(verifier,/fixedMethodSha256/);
+});
