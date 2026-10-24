@@ -1,0 +1,156 @@
+name: C2 source-free rank 158 frozen prospective PRs (NO GOLD)
+# This workflow never archives PR title/body/diff/patch or retrieves detector predictions.
+# API /pulls/{n}/files includes patches: jq projects ONLY filename/status/blob/counts
+# immediately in a pipeline; no raw API payload is written to disk/artifacts.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-158-prospective-rule-family-ranking.yml
+      - packages/quality-gates/c2-158-rule-family-ranker.cjs
+      - scripts/c2-rank-prospective-metadata.cjs
+      - tests/unit/c2-158-rule-family-ranker.test.cjs
+      - docs/quality/C2-158-RULE-FAMILY-RANKING-20261024.md
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+concurrency:
+  group: c2-158-source-free-rank-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline-admission-and-tests:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.id == 1418338512)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: All contract, architecture and adversarial tests
+        run: npm run check
+  first-owner-introduction:
+    needs: [offline-admission-and-tests]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    outputs:
+      introduced: ${{ steps.check.outputs.introduced }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: One-time metadata-only owner gate
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3 ] &&
+            git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+              grep -Fxq 'docs/quality/C2-158-RULE-FAMILY-RANKING-20261024.md'; then
+            echo 'introduced=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'introduced=false' >> "$GITHUB_OUTPUT"
+          fi
+  owner-only-158-metadata-ranking:
+    needs: [offline-admission-and-tests,first-owner-introduction]
+    if: >-
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' &&
+        needs.first-owner-introduction.outputs.introduced == 'true')) &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Fetch exactly the untouched 158 live PR identities and SANITIZED file metadata
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-158"
+          mkdir -m 700 "$root"
+          node - "$root/candidates.tsv" <<'NODE'
+          const fs=require('node:fs');
+          const {remainingCandidates}=require('./packages/quality-gates/c2-158-rule-family-ranker.cjs');
+          const read=x=>require('./docs/quality/'+x+'.json');
+          const rows=remainingCandidates({
+            roster:read('C2-BULK-PROSPECTIVE-PR-METADATA-20261024'),
+            eight:read('C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024'),
+            dispositions:[
+              read('C2-LAWNCHAIR7428-OWNER-RELEASED-DISPOSITION-20261024'),
+              read('C2-BITWARDEN7499-OWNER-RELEASED-DISPOSITION-20261024'),
+              read('C2-HA7681-OWNER-RELEASED-DISPOSITION-20261024')
+            ]
+          });
+          if(rows.length!==158)throw Error('C2_158_RANKING_BLOCKED');
+          fs.writeFileSync(process.argv[2],rows.map(x=>[x.repository,x.pr,x.baseSha,x.headSha,x.createdAt].join('\t')).join('\n')+'\n',{flag:'wx',mode:0o600});
+          NODE
+          : > "$root/observations.ndjson"
+          while IFS=$'\t' read -r repo pr base head created; do
+            status='API_ERROR'
+            if gh api "/repos/$repo/pulls/$pr" 2>/dev/null |
+                jq -ec '{number,created_at,base:{sha:.base.sha,repo:{full_name:.base.repo.full_name}},head:{sha:.head.sha}}' > "$root/pr.json"; then
+              if jq -e --arg repo "$repo" --argjson pr "$pr" --arg base "$base" --arg head "$head" --arg created "$created" '
+                .number==$pr and .created_at==$created and .base.repo.full_name==$repo and
+                .base.sha==$base and .head.sha==$head' "$root/pr.json" >/dev/null; then
+                status='MATCHED'
+                if ! gh api --paginate "/repos/$repo/pulls/$pr/files?per_page=100" 2>/dev/null |
+                  jq -se 'add | map({filename,status,sha,additions,deletions,changes})' > "$root/paths.json"; then
+                  status='API_ERROR'
+                elif ! jq -e 'length>=1 and length<=300' "$root/paths.json" >/dev/null; then
+                  status='INCOMPLETE'
+                fi
+              else
+                status='DRIFT'
+              fi
+            fi
+            if [ "$status" != 'MATCHED' ]; then printf '[]\n' > "$root/paths.json"; fi
+            jq -cn --arg repository "$repo" --argjson pr "$pr" --arg baseSha "$base" --arg headSha "$head" --arg createdAt "$created" --arg status "$status" --slurpfile files "$root/paths.json" '
+              {repository:$repository,pr:$pr,baseSha:$baseSha,headSha:$headSha,
+               createdAt:$createdAt,status:$status,files:$files[0]}' >> "$root/observations.ndjson"
+          done < "$root/candidates.tsv"
+          test "$(wc -l < "$root/observations.ndjson")" -eq 158
+          node scripts/c2-rank-prospective-metadata.cjs "$root/observations.ndjson" > "$root/report.json"
+          jq -e '.schema=="c2-source-free-158-rule-family-ranked/v1" and
+            .candidatesExamined==158 and .sourcePreviouslyExposed==11 and
+            .releasedSource==false and .newGoldLabels==0 and
+            .truthSealed==false and .candidatePredictionsRead==false and
+            .originalOracleExecuted==false' "$root/report.json" >/dev/null
+          echo 'C2_SOURCE_FREE_RANKING_ONLY_NO_GOLD'
+          jq -c '{candidatesExamined,ranked,unavailable,plausiblyApplicable,countsByDisposition,
+            shortlist:[.shortlist[]|{repository:.candidate.repository,pr:.candidate.pr,
+              rankScore,eligibility,changedTestPresent,possibleRuleIds}]}' "$root/report.json"
+          rm -f "$root/pr.json" "$root/paths.json" "$root/candidates.tsv" "$root/observations.ndjson"
+      - name: Upload metadata-only report, not source
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-158-frozen-rule-family-shortlist-NO-GOLD
+          path: ${{ runner.temp }}/c2-158/report.json
+          if-no-files-found: error
+          retention-days: 30
