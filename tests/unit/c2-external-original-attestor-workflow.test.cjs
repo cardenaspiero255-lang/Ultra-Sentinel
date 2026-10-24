@@ -24,3 +24,14 @@ test('independent verifier does not import candidate detector or compare predict
  assert.doesNotMatch(source,/require\([^\n]*(?:ultra_sentinel_core|shadow-parity|c2-frozen-benchmark)/);
  assert.doesNotMatch(source,/newGoldLabels\s*:\s*[1-9]/);
 });
+
+test('original-source gate runs when any source oracle executable or verifier dependency changes',()=>{
+ const wf=fs.readFileSync(file,'utf8');
+ const pathsSection=wf.split('  push:')[0];
+ for(const target of [
+  'tests/oracles/c2-external-tasks-throttle/**',
+  'scripts/c2-tasks-source-only-receipt.cjs',
+  'packages/quality-gates/c2-tasks-source-only-observation.cjs',
+  'tests/unit/c2-tasks-source-only-observation.test.cjs'
+ ]) assert.ok(pathsSection.includes('- '+target), 'Missing PR trigger for '+target);
+});
