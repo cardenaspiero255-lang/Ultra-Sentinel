@@ -9,6 +9,7 @@ on:
       - scripts/c2-bulk-evidence-intake.cjs
       - tests/unit/c2-bulk-evidence-intake*.test.cjs
       - docs/quality/C2-BULK-EVIDENCE-INTAKE-20261024.md
+      - docs/quality/C2-PROJECT-ORACLE-ISOLATION-20261024.md
       - docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json
   workflow_dispatch:
 permissions:
