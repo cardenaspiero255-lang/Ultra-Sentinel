@@ -1,0 +1,120 @@
+name: C2 bulk 111 remaining — prospective evidence preflight (NO GOLD)
+# Bulk capacity != labels. This workflow NEVER evaluates prospective source
+# against the detector, executes untrusted PR code, or certifies SSS+.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-bulk-evidence-intake.yml
+      - packages/quality-gates/c2-bulk-evidence-intake.cjs
+      - scripts/c2-bulk-evidence-intake.cjs
+      - tests/unit/c2-bulk-evidence-intake*.test.cjs
+      - docs/quality/C2-BULK-EVIDENCE-INTAKE-20261024.md
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-bulk-intake-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  admission-contract:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout without persisting token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Full architecture and TDD verification
+        run: npm run check
+      - name: Run the whole pinned prospective roster in one fail-closed pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-bulk-intake"
+          mkdir -p "$root"
+          node scripts/c2-bulk-evidence-intake.cjs plan \
+            "$GITHUB_WORKSPACE/docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json" \
+            > "$root/plan.json"
+          printf '[]\n' > "$root/no-witnesses.json"
+          node scripts/c2-bulk-evidence-intake.cjs review \
+            "$root/plan.json" "$root/no-witnesses.json" > "$root/quarantine.json"
+          jq -e '.schema=="c2-bulk-evidence-intake-plan/v1" and
+            .sourceCandidates==4 and .previousSealedTruth==9 and
+            .additionalTruthNeeded==111 and .newGoldLabels==0 and
+            .sourceInspected==false and .candidatePredictionsRead==false and
+            .holdoutFrozen==false and .tripleSPlusCertified==false' "$root/plan.json" >/dev/null
+          jq -e '.newGoldLabels==0 and .missing==4 and
+            .claimsAwaitingOwnerAuthentication==0 and
+            .sourceOracleAuthenticated==false and .tripleSPlusCertified==false' "$root/quarantine.json" >/dev/null
+      - name: Publish sanitized candidate-only report
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-bulk-prospective-metadata-only-NOT-GOLD
+          path: ${{ runner.temp }}/c2-bulk-intake/*.json
+          retention-days: 14
+          if-no-files-found: error
+  owner-pr-metadata-check:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    needs: admission-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Independently verify metadata tuples against GitHub API, NOT source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-owner-bulk"
+          mkdir -p "$root"
+          node scripts/c2-bulk-evidence-intake.cjs plan \
+            "$GITHUB_WORKSPACE/docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json" \
+            > "$root/plan.json"
+          : > "$root/verified.ndjson"
+          while IFS=$'\t' read -r repo pr base head created; do
+            gh api "/repos/$repo/pulls/$pr" |
+              jq -e --arg repo "$repo" --argjson pr "$pr" \
+                --arg base "$base" --arg head "$head" --arg created "$created" '
+                .number==$pr and .base.repo.full_name==$repo and
+                .base.sha==$base and .head.sha==$head and .created_at==$created' >/dev/null
+            jq -nc --arg repo "$repo" --argjson pr "$pr" --arg head "$head" \
+              '{repository:$repo,pr:$pr,headSha:$head,githubApiMetadataMatched:true}' \
+              >> "$root/verified.ndjson"
+          done < <(jq -r '.shards[].candidates[] |
+            [.repository,(.pr|tostring),.baseSha,.headSha,.createdAt]|@tsv' "$root/plan.json")
+          test "$(wc -l < "$root/verified.ndjson")" -eq 4
+          jq -sc '{schema:"c2-owner-bulk-prospective-api-attestation/v1",
+            metadataOnly:true,sourceInspected:false,sourceOraclesExecuted:0,
+            candidatePredictionsRead:false,baselinePredictionsRead:false,
+            newGoldLabels:0,truthSealed:false,holdoutFrozen:false,
+            sssPlusCertified:false,candidates:.}' \
+            "$root/verified.ndjson" > "$root/report.json"
+          rm -f "$root/verified.ndjson"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-bulk-owner-prospective-api-preflight-NOT-GOLD
+          path: ${{ runner.temp }}/c2-owner-bulk/report.json
+          retention-days: 14
+          if-no-files-found: error
