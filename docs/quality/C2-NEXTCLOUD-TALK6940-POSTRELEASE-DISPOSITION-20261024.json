@@ -1,0 +1,88 @@
+{
+  "schema": "c2-ranked-owner-source-triage-disposition/v1",
+  "decision": "INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE",
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6940,
+    "baseSha": "48880fb92e49a3cd3fa345e6e10bd21f80cc5b1a",
+    "headSha": "45b1a9c6aa24def1ee2e6ae3e2aeb01ff2626772",
+    "createdAt": "2026-10-22T14:44:23Z",
+    "upstreamStateAtInspection": "open",
+    "upstreamMerged": false
+  },
+  "ranking": {
+    "runId": 40135121700,
+    "artifactId": 12576852855,
+    "rankScore": 13,
+    "tiedOtherPr": 6949,
+    "selectedBy": "DETERMINISTIC_LOWEST_PR_NUMBER_TIEBREAKER",
+    "previouslyUnopened": 158
+  },
+  "release": {
+    "ownerGithubActorId": 322222186,
+    "repositoryId": 1418338512,
+    "introducingMainSha": "8aca0a4d20a53792b4d7812ed5bb18bcf1ee0987",
+    "runId": 40136816063,
+    "artifactId": 12577566122,
+    "artifactSha256": "62f8a77c48035f6574a1b26c9c67931cc445aaf7d363d3088e4c1e261ed170b1",
+    "sourceFreeContracts": "success",
+    "ownerIntroduction": "success",
+    "ownerSourceRead": "success",
+    "independentGitBlobAttestor": "success"
+  },
+  "source": {
+    "originalMainActivityGitBlob": "e82a40d3b91abae3b629bc221fdca4bebf667282",
+    "proposedMainActivityGitBlob": "5e66bc194c5fd8400d70c9fbdba7415d15377e8a",
+    "proposedMainActivityLaunchGitBlob": "45e4061ca16bf2d1be0b84d0038c3ce62efdb915",
+    "proposedMainActivityLaunchTestGitBlob": "4e11aba74a969256e01e309a053a63d608341e31",
+    "mainActivityPath": "app/src/main/java/com/nextcloud/talk/activities/MainActivity.kt",
+    "decisionPath": "app/src/main/java/com/nextcloud/talk/activities/MainActivityLaunch.kt",
+    "testPath": "app/src/test/java/com/nextcloud/talk/activities/MainActivityLaunchTest.kt",
+    "originalDecisionFilePresent": false,
+    "originalTestFilePresent": false,
+    "proposedTestsCount": 10,
+    "licenseSPDX": "GPL-3.0-or-later",
+    "externalCodeExecuted": false,
+    "mechanism": "Change AndroidManifest MainActivity launchMode singleTask; add intent routing decisions for launcher tap, app-internal task and external deep link; original navigation/task backstack problem, not a frozen heuristic predicate."
+  },
+  "ruleScope": {
+    "frozenCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+    "frozenCoreGitBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+    "ruleCount": 17,
+    "productionPathEligible": true,
+    "exactRuleId": null,
+    "exactRulePathLine": null,
+    "sourceRootCauseRuleCompatible": false,
+    "reason": "No historical Core ruleId for Android task root navigation, singleTask lifecycle/backstack or external intent routing. The changed test paths are excluded by historical Core, and REGRESSION_TEST_COVERAGE cannot be scored positive because a test file is changed."
+  },
+  "oracle": {
+    "originalJUnitExecuted": false,
+    "proposedFixedJUnitExecuted": false,
+    "benignJUnitExecuted": false,
+    "originalJUnitReproducibleAsIs": false,
+    "reason": "Original commit has no MainActivityLaunch.kt/MainActivityLaunchTest.kt: proposed regression tests depend on a newly introduced decision object; no actual original/fix/benign authenticated execution and no exact Core rule to score.",
+    "originalRuntimeFailureAuthenticated": false,
+    "fixedRuntimeSuccessAuthenticated": false,
+    "benignControlsAuthenticated": false,
+    "independentOracleAttested": false
+  },
+  "security": {
+    "sourceReadAfterOwnerAndIndependentAttestation": true,
+    "independenceFromTrainingCertified": false,
+    "causalIndependenceCertified": false,
+    "candidatePredictionsRead": false,
+    "baselinePredictionsRead": false,
+    "truthSealed": false
+  },
+  "counts": {
+    "originalProspectivePool": 169,
+    "priorSourceExposed": 11,
+    "newlySourceExposed": 1,
+    "remainingSourceUninspected": 157,
+    "priorDocumentedSourceScopedLabels": 9,
+    "newGoldLabels": 0,
+    "nominalRemainingToTarget120": 111,
+    "sssPlusCertified": false
+  },
+  "promotableToGold": false
+}
