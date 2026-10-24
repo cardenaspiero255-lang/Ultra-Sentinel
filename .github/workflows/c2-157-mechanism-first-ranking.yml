@@ -111,7 +111,7 @@ jobs:
             ],
             nextcloud:read('C2-NEXTCLOUD-TALK6940-POSTRELEASE-DISPOSITION-20261024')
           });
-          if(rows.length!==157)throw Error('C2_158_RANKING_BLOCKED');
+          if(rows.length!==157)throw Error('C2_157_MECHANISM_RANK_BLOCKED');
           fs.writeFileSync(process.argv[2],rows.map(x=>[x.repository,x.pr,x.baseSha,x.headSha,x.createdAt].join('\t')).join('\n')+'\n',{flag:'wx',mode:0o600});
           NODE
           : > "$root/observations.ndjson"
