@@ -1,0 +1,16 @@
+{
+  "schema": "c2-prospective-pretruth-disposition/v1",
+  "repository": "wordpress-mobile/WordPress-Android",
+  "pr": 23430,
+  "sourcePresealedAt": "ca9d2ec36fd8725de435899fc18c0540916d9df0",
+  "reason": "OUTSIDE_FROZEN_17_RULE_SCOPE",
+  "scope": "Dangerfile Ruby CI: milestone warning only",
+  "sourceInspectionAfterPreseal": true,
+  "sourceOraclesExecuted": 0,
+  "newGoldLabels": 0,
+  "candidatePredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "truthSealed": false,
+  "eligible": false,
+  "verdict": "INCONCLUSIVE_OUT_OF_SCOPE"
+}

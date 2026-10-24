@@ -1,0 +1,50 @@
+{
+  "schema": "c2-prospective-fixed-ordered-oracle-screen/v1",
+  "phase": "FOUR_PRECOMMITTED_METADATA_ONLY",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "selectionRule": "after presealed #7662 DNS exception bug outside 17 frozen rule IDs, select next four human-authored Home Assistant candidates bounded <=3 modified files in createdAt order (all were selected without reading code or predictions)",
+  "candidates": [
+    {
+      "repository": "home-assistant/android",
+      "pr": 7664,
+      "createdAt": "2026-10-21T06:43:04Z",
+      "baseSha": "4a509be11346262ebc4fa7dea5a2d8ab00ef374f",
+      "headSha": "7edd59a284febfafce1298d8cb14fec44aa4078f"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7666,
+      "createdAt": "2026-10-21T08:02:33Z",
+      "baseSha": "ab4e5b07a69116a3ac5f5858d1ea390182fd9e53",
+      "headSha": "24227a6fe53c635ece6f02d5048c0635e1e46a9a"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7672,
+      "createdAt": "2026-10-21T16:59:58Z",
+      "baseSha": "12b292e4972bbcf50cf18844dd8a8aa6e4c6c7a2",
+      "headSha": "84f89fa8e66acd9f67a7df7b917e25bdcba462c9"
+    },
+    {
+      "repository": "home-assistant/android",
+      "pr": 7676,
+      "createdAt": "2026-10-22T08:05:06Z",
+      "baseSha": "023390ba94333d05876304238b2297ffe1df97e2",
+      "headSha": "8900daa47ef853c16d3f057838df1f1319839f3b"
+    }
+  ],
+  "sourceInspected": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "oracleEvaluationOrder": [
+    7664,
+    7666,
+    7672,
+    7676
+  ],
+  "trainingIndependenceCertified": false,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "holdoutFrozen": false,
+  "tripleSPlusCertified": false
+}
