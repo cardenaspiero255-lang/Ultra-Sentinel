@@ -1,0 +1,15 @@
+# C2 — Lawnchair 7428, first authenticated owner source release
+
+The **protected-main** GitHub Actions release workflow run [40126013934](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/40126013934) finished **SUCCESS** for the producer and the **separate verifier** on immutable main SHA `f39bfac4714ee193c94a79e9780d81177063c30e`. Owner actor ID `322222186`. Artifact `12573121682` published GitHub-reported sha256 digest `094aa45db924a9d1658af9da5ffd77b2b813161f4b9a1721a12598fd0a1b578f`.
+
+Only **after** this authorization was the original external PR diff opened. It addresses an Android API compatibility issue in `src/com/android/launcher3/dragndrop/FolderAdaptiveIcon.java`. The original at immutable source commit `c13364593e779add560f3413255b2f8fdc50e21a` invokes `Bitmap.createBitmap(Picture)`. The fixed source at `8affcce26ad139ecf9d163028956854ff6dfe799` guards API 28 and renders a software bitmap on API 26–27. Git blob IDs are pinned in `C2-LAWNCHAIR7428-OWNER-RELEASED-DISPOSITION-20261024.json`.
+
+**Compatibility gate fails closed.** Original frozen Core path selection does not scan this top-level `src/com/android/launcher3/...` Java path, including under the optional external Kotlin path policy. No implemented frozen 17-rule `ruleId/path/line` obligation for this Java API 28 crash is established. An upstream PR claiming to correct a genuine bug does not prove a supported detector false negative without a valid scope or source oracle.
+
+Therefore it would be improper to run an expensive source oracle to generate a fake score or synthesize extra rules after disclosure. No original/fixed/benign **runtime** executed in this prospective C2 attempt; none is represented as JUnit or GOLD. The source is admitted only as owner-released **development evidence**, with `INCONCLUSIVE_OUT_OF_FROZEN_CORE_SCOPE`.
+
+The 169-row roster now contains **8 earlier exposed without a prior owner release**, **1 owner-authenticated source-inspected development case** and **160 untouched metadata-only candidates**. All 9 inspected entries are excluded from future untouched holdout reuse. The historical documented truth remains 9 source-scoped labels; **111 more** are still needed for 120. No benchmark scores, baseline predictions, sealed truth or SSS+ certification are claimed.
+
+## Next owner-release iteration
+
+Choose a fresh candidate from the 160 without reading code first. Request/attest ownership + frozen SHA + licensing, verify the **frozen Core's production path eligibility from changed-path metadata** before admitting it to a source execution adapter, and only then run its *authentic original and fixed code* plus benign JUnit in isolated workers with separate Git blob / test attestation. Reject as `INCONCLUSIVE` if there is no one-to-one Core rule or original regression test; do not add detectors while scoring this frozen benchmark. The new owner release requires its **own** explicit request and introducing merge, never silent reuse of the #7428 permission.
