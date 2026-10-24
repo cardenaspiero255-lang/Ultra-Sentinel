@@ -1,0 +1,19 @@
+{
+  "schema": "c2-prospective-pretruth-disposition/v1",
+  "repository": "wordpress-mobile/WordPress-Android",
+  "pr": 23432,
+  "preseal": "5f6bbbe014b4b47ce926582714a8096b1911de09",
+  "status": "REAL_SOURCE_BUG_UNSUPPORTED_BY_FROZEN_RULE_VOCABULARY",
+  "reason": "GPS EXIF stripping leaks metadata; implemented Core lacks EXIF/GPS-specific correctness rule. No attributable 17-rule detector obligation is established.",
+  "sourceInspectedAfterPreseal": true,
+  "upstreamJUnitSourceSeen": true,
+  "originalUpstreamJUnitExecuted": false,
+  "originalFixBenignReproduced": false,
+  "eligibleForScoring": false,
+  "quarantine": true,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "candidatePredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "tripleSPlusCertified": false
+}
