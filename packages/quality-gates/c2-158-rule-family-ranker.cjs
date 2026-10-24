@@ -13,7 +13,7 @@ const WORKFLOW=/^\.github\/workflows\/[A-Za-z0-9_.-]+\.ya?ml$/;
 const FILE=['filename','status','sha','additions','deletions','changes'];
 const FIELDS=['repository','pr','baseSha','headSha','createdAt','status','files'];
 const pathValid=x=>typeof x==='string'&&x.length<=250&&
- /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)+$/.test(x)&&
+ /^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/.test(x)&&
  x.split('/').every(s=>s!=='.'&&s!=='..'&&!s.includes('..'));
 const exact=(x,names)=>x!==null&&typeof x==='object'&&!Array.isArray(x)&&
  Object.keys(x).length===names.length&&names.every(k=>Object.hasOwn(x,k));
