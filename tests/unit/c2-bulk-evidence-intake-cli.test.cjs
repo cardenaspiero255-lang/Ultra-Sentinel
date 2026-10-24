@@ -3,6 +3,8 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {run}=require('../../scripts/c2-bulk-evidence-intake.cjs');
+const expandedFixture=path.resolve(__dirname,
+ '../../docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
 const fixture=path.resolve(__dirname,
  '../../docs/quality/C2-FOUR-EXTERNAL-PROSPECTIVE-PR-METADATA-20261022.json');
 
@@ -43,4 +45,13 @@ test('CLI refuses symlinked evidence and injected receipt claims',()=>{
   }));
   assert.throws(()=>run(['plan',injected]),/C2_BULK_INTAKE_BLOCKED/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('one-shot CLI processes all 169 independent-looking metadata identities without labels',()=>{
+ const plan=run(['plan',expandedFixture]);
+ assert.equal(plan.sourceCandidates,169);
+ assert.equal(plan.shards.length,16);
+ assert.equal(plan.additionalTruthNeeded,111);
+ assert.equal(plan.sourceInspected,false);
+ assert.equal(plan.newGoldLabels,0);
 });
