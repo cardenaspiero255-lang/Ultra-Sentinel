@@ -1,0 +1,25 @@
+{
+  "schema": "c2-prospective-single-pr-selection/v1",
+  "phase": "METADATA_ONLY_PRE_SOURCE",
+  "sourceManifest": "docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json",
+  "cutoff": "2026-10-20T19:30:54Z",
+  "candidate": {
+    "repository": "wordpress-mobile/WordPress-Android",
+    "pr": 23432,
+    "createdAt": "2026-10-21T12:04:56Z",
+    "baseSha": "b21329c4d05e86bdc450dd779ea253bb7b5dc15c",
+    "headSha": "168aa8a3e3baa09776462ae6905807eade21b113"
+  },
+  "selectionCriteria": "next chronological WordPress Android prospective after out-of-scope #23430; #23431 bounded-out (34 changed files), #23432 five files; no code/titles/predictions inspected",
+  "independenceConfirmed": false,
+  "licenseConfirmed": false,
+  "sourceReleasePermitted": false,
+  "sourceInspected": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "trainingExcluded": false,
+  "newGoldLabels": 0,
+  "truthSealed": false,
+  "holdoutFrozen": false,
+  "tripleSPlusCertified": false
+}
