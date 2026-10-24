@@ -9,6 +9,7 @@ on:
       - packages/quality-gates/c2-project-oracle-proof.cjs
       - tests/oracles/c2-project-oracle-fixture/**
       - tests/unit/c2-project-oracle-*.test.cjs
+      - docs/quality/C2-PROJECT-ORACLE-ISOLATION-20261024.md
   push:
     branches: [main]
 permissions:
