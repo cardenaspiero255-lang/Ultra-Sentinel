@@ -1,0 +1,182 @@
+name: C2 ActivityWatch PR315 upstream original-vs-fix Kotlin and JUnit (DEVELOPMENT ONLY)
+# This pre-cutoff, already inspected external PR MUST NEVER count as blind GOLD.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-aw315-original-fix-development.yml
+      - scripts/c2-aw315-source-extract.cjs
+      - tests/unit/c2-aw315-source-extract.test.cjs
+      - tests/oracles/c2-aw315-source-witness.kt
+      - docs/quality/C2-AW315-EXTERNAL-DEVELOPMENT-20261024.md
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  original-fixed-source-jvm:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512 &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Trusted Sentinel commit (no persisted credentials)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Original immutable ActivityWatch PR base
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ActivityWatch/aw-android
+          ref: 3cd8a388d21dcdd7bc7e686a75a7b3046d876f11
+          path: aw-base
+          persist-credentials: false
+      - name: Fixed immutable ActivityWatch PR head and authentic JUnit source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ActivityWatch/aw-android
+          ref: 5a44cecef81c62d1527c49fecd00f90bd18db9df
+          path: aw-head
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fail-closed owner tests and upstream Git SHA and blob identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          npm run check
+          test "$(git -C aw-base rev-parse HEAD)" = 3cd8a388d21dcdd7bc7e686a75a7b3046d876f11
+          test "$(git -C aw-head rev-parse HEAD)" = 5a44cecef81c62d1527c49fecd00f90bd18db9df
+          test "$(git -C aw-base rev-parse HEAD:mobile/src/main/java/net/activitywatch/android/RustInterface.kt)" = 410c7a2d9c6d5698c3ed623b3c0d46ee01620081
+          test "$(git -C aw-head rev-parse HEAD:mobile/src/main/java/net/activitywatch/android/RustInterface.kt)" = 9474712a3953c78118f0d33633afb247bae31770
+          test "$(git -C aw-head rev-parse HEAD:mobile/src/test/java/net/activitywatch/android/ServerPortProbeTest.kt)" = 842324ca38c8a1f3253c464eca41dcfdd05d382e
+      - name: Prepare minimal offline source-scoped Kotlin/JUnit ABI and isolate production execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles junit4 libhamcrest-java
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          root="$RUNNER_TEMP/c2-aw315"
+          mkdir -p "$root/source" "$root/report"
+          node scripts/c2-aw315-source-extract.cjs \
+            "$GITHUB_WORKSPACE/aw-base/mobile/src/main/java/net/activitywatch/android/RustInterface.kt" \
+            "$GITHUB_WORKSPACE/aw-head/mobile/src/main/java/net/activitywatch/android/RustInterface.kt" \
+            "$root/source"
+          kotlinc "$root/source/original.kt" tests/oracles/c2-aw315-source-witness.kt \
+            -include-runtime -d "$root/original.jar"
+          kotlinc "$root/source/fixed.kt" tests/oracles/c2-aw315-source-witness.kt \
+            aw-head/mobile/src/test/java/net/activitywatch/android/ServerPortProbeTest.kt \
+            -cp /usr/share/java/junit4.jar -include-runtime -d "$root/fixed.jar"
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          test -x "$jdk/bin/java"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then
+              mounts+=(--ro-bind "$mount" "$mount")
+            else
+              exit 2
+            fi
+          done
+          for phase in original fixed junit; do
+            case "$phase" in
+              original)
+                args=(-Djava.security.manager=allow -cp /workspace/original.jar net.activitywatch.android.C2Aw315SourceWitness original)
+                ;;
+              fixed)
+                args=(-Djava.security.manager=allow -cp /workspace/fixed.jar net.activitywatch.android.C2Aw315SourceWitness fixed)
+                ;;
+              junit)
+                args=(-cp "/workspace/fixed.jar:/usr/share/java/junit4.jar:/usr/share/java/hamcrest-core.jar" org.junit.runner.JUnitCore net.activitywatch.android.ServerPortProbeTest)
+                ;;
+            esac
+            timeout --signal=TERM --kill-after=5s 45s env -i PATH=/usr/bin:/bin HOME=/tmp \
+              /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+                --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
+                "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$root" /workspace \
+                --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /workspace \
+                -- /jdk/bin/java "${args[@]}" > "$root/report/$phase.log" 2>&1
+            test "$(stat -c %s "$root/report/$phase.log")" -le 100000
+          done
+          grep -Fxq C2_AW315_ORIGINAL_SECURITY_DENIAL_ESCAPED "$root/report/original.log"
+          grep -Fxq C2_AW315_FIXED_SECURITY_DENIAL_HANDLED "$root/report/fixed.log"
+          grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/report/original.log"
+          grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/report/fixed.log"
+          grep -Fq 'OK (5 tests)' "$root/report/junit.log"
+          cp "$root/source/source-metadata.json" "$root/report/"
+          (cd "$root/report" && sha256sum original.log fixed.log junit.log source-metadata.json > SHA256SUMS)
+          # Neither external upstream source nor compiled JARs leave the runner.
+      - name: Publish non-GOLD original/fixed/upstream test execution receipts only
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: c2-aw315-original-fixed-development-NOT-GOLD
+          path: ${{ runner.temp }}/c2-aw315/report/
+          if-no-files-found: error
+          retention-days: 14
+
+  independent-receipt-authentication:
+    needs: [original-fixed-source-jvm]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Download exact producer run artifact without source
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: c2-aw315-original-fixed-development-NOT-GOLD
+          path: ${{ runner.temp }}/c2-aw315-proof
+      - name: Authenticate run, artifact, source PR and receipt bytes separately
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-aw315-proof"
+          test "$(find "$root" -maxdepth 1 -type f|wc -l)" -eq 5
+          test "$(find "$root" -type l|wc -l)" -eq 0
+          (cd "$root" && sha256sum -c SHA256SUMS)
+          jq -e '.schema=="c2-aw315-sliced-production-source/v1" and
+            .externalPr==315 and .newGoldLabels==0 and
+            .trainingExcludedAsKnownDevelopment==true and
+            .truthSealed==false and .tripleSPlusCertified==false' "$root/source-metadata.json" >/dev/null
+          grep -Fxq C2_AW315_ORIGINAL_SECURITY_DENIAL_ESCAPED "$root/original.log"
+          grep -Fxq C2_AW315_FIXED_SECURITY_DENIAL_HANDLED "$root/fixed.log"
+          grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/original.log"
+          grep -Fxq C2_AW315_BENIGN_BIND_CONFLICT_HANDLED "$root/fixed.log"
+          grep -Fq 'OK (5 tests)' "$root/junit.log"
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
+            jq -e --arg sha "$EXPECTED_SHA" --argjson id "$GITHUB_RUN_ID" '
+              .id==$id and .head_sha==$sha and .repository.id==1418338512 and
+              .actor.id==322222186 and (.event=="pull_request" or .event=="push")' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" |
+            jq -e --argjson id "$GITHUB_RUN_ID" '
+              [.artifacts[]|select(.name=="c2-aw315-original-fixed-development-NOT-GOLD" and
+                .workflow_run.id==$id and .workflow_run.repository_id==1418338512 and
+                .expired==false and (.digest|test("^sha256:[0-9a-f]{64}$")))]|length==1' >/dev/null
+          gh api "/repos/ActivityWatch/aw-android/pulls/315" |
+            jq -e '.number==315 and
+              .head.sha=="5a44cecef81c62d1527c49fecd00f90bd18db9df" and
+              .base.sha=="3cd8a388d21dcdd7bc7e686a75a7b3046d876f11" and
+              .created_at<"2026-10-20T19:30:54Z"' >/dev/null
+          echo 'C2_AW315_SOURCE_SCOPED_DEV_ORACLE_ATTESTED_NOT_GOLD'
