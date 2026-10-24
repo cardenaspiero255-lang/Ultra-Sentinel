@@ -1,0 +1,71 @@
+{
+  "schema": "c2-owner-ranked-candidate-release-request/v1",
+  "scope": "EXACT_ONE_PUBLIC_SOURCE_READ_NO_CODE_EXECUTION",
+  "ownerApproval": "ALLOW_ONE_SOURCE_READ_NO_PREDICTIONS",
+  "actorId": 322222186,
+  "repositoryId": 1418338512,
+  "sourceRankingRunId": 40135121700,
+  "sourceRankingArtifactId": 12576852855,
+  "sourceRankingArtifactSha256": "f621b4acd62b5cf9eecb869a7cedf510085becac047e1e16b30110a442173b9d",
+  "frozenCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+  "frozenCoreBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+  "frozenRules": 17,
+  "sourceRosterTotal": 169,
+  "previouslyExposed": 11,
+  "rankScore": 13,
+  "deterministicRank": 1,
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6940,
+    "baseSha": "48880fb92e49a3cd3fa345e6e10bd21f80cc5b1a",
+    "headSha": "45b1a9c6aa24def1ee2e6ae3e2aeb01ff2626772",
+    "createdAt": "2026-10-22T14:44:23Z"
+  },
+  "pathScope": [
+    {
+      "filename": "app/src/main/AndroidManifest.xml",
+      "status": "modified",
+      "sha": "65cf60c075bc641ddb63d19a4f8616e7ca12670d",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/activities/MainActivity.kt",
+      "status": "modified",
+      "sha": "5e66bc194c5fd8400d70c9fbdba7415d15377e8a",
+      "additions": 42,
+      "deletions": 1,
+      "changes": 43
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/activities/MainActivityLaunch.kt",
+      "status": "added",
+      "sha": "45e4061ca16bf2d1be0b84d0038c3ce62efdb915",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50
+    },
+    {
+      "filename": "app/src/test/java/com/nextcloud/talk/activities/MainActivityLaunchTest.kt",
+      "status": "added",
+      "sha": "4e11aba74a969256e01e309a053a63d608341e31",
+      "additions": 148,
+      "deletions": 0,
+      "changes": 148
+    }
+  ],
+  "sourceInspected": false,
+  "exactRuleId": null,
+  "exactRulePathLineVerified": false,
+  "trainingIndependenceCertified": false,
+  "originalOracleExecuted": false,
+  "fixedOracleExecuted": false,
+  "benignOracleExecuted": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "sssPlusCertified": false,
+  "limitation": "Rank score/path/tests are metadata-only hypotheses. Owner protected main event grants a one-shot read only; separate original/fixed/benign execution plus independent receipts and frozen exact rule required before GOLD."
+}
