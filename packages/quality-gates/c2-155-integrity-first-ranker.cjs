@@ -100,7 +100,7 @@ function rankPool155({roster,eight,dispositions,nextcloud,excluded,observations}
     a.candidate.repository.localeCompare(b.candidate.repository)||
     a.candidate.pr-b.candidate.pr).slice(0,12),
    observations:reports,sourceReadAuthorized:false,
-   candidatePredictionsRead:false,baselinePredictionsRead:false,
+   candidatePredictionsRead:false,detectorPredictionsRead:false,baselinePredictionsRead:false,
    originalOracleExecuted:false,truthSealed:false,newGoldLabels:0,
    tripleSPlusCertified:false,limitation:'Metadata paths, line-change counts and test presence do not establish source predicate or oracle. 100+ file changes are held for manual scope analysis before any protected source grant.'
   });
