@@ -1,0 +1,47 @@
+{
+  "schema": "c2-owner-ranked-candidate-release-request/v1",
+  "scope": "EXACT_ONE_PUBLIC_SOURCE_READ_NO_CODE_EXECUTION",
+  "ownerApproval": "ALLOW_ONE_SOURCE_READ_NO_PREDICTIONS",
+  "actorId": 322222186,
+  "repositoryId": 1418338512,
+  "sourceRankingRunId": 40143252243,
+  "sourceRankingArtifactId": 12579174108,
+  "sourceRankingArtifactSha256": "192af2eed718b8602ebe95981acb813d1ba9e02d8b4faa0588231e5172de83b1",
+  "frozenCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+  "frozenCoreBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+  "frozenRules": 17,
+  "sourceRosterTotal": 169,
+  "previouslyExposed": 13,
+  "rankScore": 8,
+  "deterministicRank": 2,
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6945,
+    "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+    "headSha": "705887c6795b2f7746bef47e08a5c8c2aba9c3ff",
+    "createdAt": "2026-10-23T13:08:43Z"
+  },
+  "pathScope": [
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/api/LoggingHttpInterceptor.kt",
+      "status": "modified",
+      "sha": "89901a06d04e78206ca470532e4d4ccbd8908d1f",
+      "additions": 4,
+      "deletions": 1,
+      "changes": 5
+    }
+  ],
+  "sourceInspected": false,
+  "exactRuleId": null,
+  "exactRulePathLineVerified": false,
+  "trainingIndependenceCertified": false,
+  "originalOracleExecuted": false,
+  "fixedOracleExecuted": false,
+  "benignOracleExecuted": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "sssPlusCertified": false,
+  "limitation": "Owner-only release of exact Nextcloud Talk #6945 immutable one changed Git blob. Frozen Core POTENTIAL_PRIVATE_LOG rule requires added executable Log/Timber call with transcript/password/authToken/accessToken; filenames are not evidence. All original/fixed/benign execution, predictions, GOLD and SSS+ remain blocked until attestation and later independent truth."
+}
