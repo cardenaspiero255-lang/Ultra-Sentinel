@@ -1,0 +1,57 @@
+{
+  "schema": "c2-frozen-pr-source-free-258-pre-read-metadata/v1",
+  "candidate": {
+    "repository": "nextcloud/android",
+    "pr": 17870,
+    "createdAt": "2026-10-23T10:02:07Z",
+    "baseSha": "d57fdc89810ac9ca1c0f9590b19fb1d11ae8cc7c",
+    "headSha": "8b3f38c610961e1b1f2810839c8bf769f9664770",
+    "upstreamStateAtCheck": "open"
+  },
+  "githubFilesApi": {
+    "pagedWithPerPage": 100,
+    "pages": [
+      100,
+      100,
+      58
+    ],
+    "prChangedFiles": 258,
+    "complete": true,
+    "shaFormatValidCount": 258,
+    "distinctPathCount": 258,
+    "allStatus": "modified",
+    "rawPatchContentInspected": false
+  },
+  "counts": {
+    "totalFiles": 258,
+    "productionKotlinJavaFiles": 217,
+    "testFiles": 40,
+    "otherFiles": 1,
+    "workflowFiles": 0,
+    "productionAddedLines": 94,
+    "productionDeletedLines": 343,
+    "testAddedLines": 13,
+    "testDeletedLines": 45,
+    "otherAddedLines": 9,
+    "otherDeletedLines": 9,
+    "totalAddedLines": 116,
+    "totalDeletedLines": 397,
+    "productionFilesNoAddedLines": 153,
+    "productionFilesAtMostTwoChangedLines": 179
+  },
+  "filenameOnlyHints": {
+    "loggerImpl": "app/src/main/java/com/nextcloud/client/logger/LoggerImpl.kt",
+    "loggerImplAdditions": 0,
+    "logEntry": "app/src/main/java/com/nextcloud/client/logger/LogEntry.kt",
+    "logEntryAdditions": 0,
+    "sparseAsyncTaskPathsDoNotEstablishBlockingCalls": true
+  },
+  "assessment": "METADATA_COMPLETE_BULK_CHANGE_LOW_PRE_READ_FROZEN_RULE_CONFIDENCE",
+  "noSourceRead": true,
+  "corePredictionsRead": false,
+  "exactFrozenRulePathLine": null,
+  "realOriginalTestsExecuted": false,
+  "newGoldLabels": 0,
+  "sourceReadAuthorized": false,
+  "caveat": "Full source behavior unknown. Metadata only proves volume and path/source line counts; possible historical Core rule match remains unverified. Do not interpret zero additions in logger paths as absence of risk elsewhere."
+}
