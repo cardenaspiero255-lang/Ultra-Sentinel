@@ -53,6 +53,10 @@ function bundle(){
 function trust(bundle){
  return Object.fromEntries(bundle.attestations.map(x=>[x.role,x.publicKey]));
 }
+function resign(attestation,privateKey){
+ const unsigned=Object.fromEntries(Object.entries(attestation).filter(([key])=>key!=='signature'));
+ attestation.signature=crypto.sign(null,Buffer.from(canonical(unsigned)),privateKey).toString('base64');
+}
 
 test('three independently signed SHA-bound attestations certify an eligible campaign but never permit writes',()=>{
  const input=bundle();
@@ -78,6 +82,21 @@ test('one key cannot impersonate the distinct truth, CI and release roles',()=>{
  const result=verifyTripleSPlusEvidenceBundle(input);
  assert.equal(result.classification,'NOT_CERTIFIED');
  assert.ok(result.blocked.includes('invalidAttestationSignature')||result.blocked.includes('nonDistinctSigner'));
+});
+
+test('one Ed25519 key with alternate PEM encodings cannot impersonate three trust roles',()=>{
+ const input=bundle();
+ const key=crypto.generateKeyPairSync('ed25519');
+ const pem=key.publicKey.export({type:'spki',format:'pem'});
+ const variants=[pem,pem.replace(/\n/g,'\r\n'),pem+'\n'];
+ input.attestations.forEach((attestation,index)=>{
+  attestation.keyId='key-alternate-'+index;
+  attestation.publicKey=variants[index];
+  resign(attestation,key.privateKey);
+ });
+ const result=verifyTripleSPlusEvidenceBundle(input,{trustedAttestors:trust(input)});
+ assert.equal(result.classification,'NOT_CERTIFIED');
+ assert.ok(result.blocked.includes('nonDistinctSigner'));
 });
 
 test('a signature over a different campaign or engine SHA cannot certify',()=>{

@@ -46,6 +46,9 @@ function digest(value){
  if(bytes.length>512000)throw Error('OVERSIZED_VALUE');
  return crypto.createHash('sha256').update(bytes).digest('hex');
 }
+function publicKeyFingerprint(key){
+ return crypto.createHash('sha256').update(key.export({type:'spki',format:'der'})).digest('hex');
+}
 function blocked(reasons,preScreen=null){
  return Object.freeze({
   schema:'ultra-sentinel-sssplus-certification/v1',classification:'NOT_CERTIFIED',
@@ -66,8 +69,8 @@ function verifyAttestation(raw,expected){
  try{
   const key=crypto.createPublicKey(raw.publicKey);
   if(key.asymmetricKeyType!=='ed25519'||!crypto.verify(null,Buffer.from(canonical(unsigned)),key,signature))return null;
+  return Object.freeze({role:raw.role,keyId:raw.keyId,publicKeySha256:publicKeyFingerprint(key)});
  }catch{return null;}
- return Object.freeze({role:raw.role,keyId:raw.keyId,publicKeySha256:digest(raw.publicKey)});
 }
 function trustedKeys(options){
  if(!exact(options,['trustedAttestors'])||!exact(options.trustedAttestors,Object.keys(ROLES)))return null;
@@ -75,8 +78,9 @@ function trustedKeys(options){
  for(const role of Object.keys(ROLES)){
   const pem=options.trustedAttestors[role];
   if(typeof pem!=='string'||pem.length<64||pem.length>1000)return null;
-  try{if(crypto.createPublicKey(pem).asymmetricKeyType!=='ed25519')return null;}catch{return null;}
-  out[role]=digest(pem);
+  let key;
+  try{key=crypto.createPublicKey(pem);if(key.asymmetricKeyType!=='ed25519')return null;}catch{return null;}
+  out[role]=publicKeyFingerprint(key);
  }
  return out;
 }
