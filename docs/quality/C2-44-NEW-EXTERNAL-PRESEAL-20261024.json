@@ -1,6 +1,6 @@
 {
   "schema": "c2-additional-external-metadata-preseal/v1",
-  "frozenPriorCorpusDigest": null,
+  "frozenPriorCorpusDigest": "abeba6b0be1d84f34fa9c2d2cfc4b4c211f48538",
   "oldCohortCandidates": 169,
   "oldCohortSourceUninspected": 155,
   "previouslySourceExposed": 14,
