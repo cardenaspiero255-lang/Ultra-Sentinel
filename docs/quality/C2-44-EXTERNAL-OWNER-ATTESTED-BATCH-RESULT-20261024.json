@@ -1,0 +1,60 @@
+{
+  "schema": "c2-44-new-external-owner-attested-report/v1",
+  "sourceCohort": {
+    "manifest": "docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json",
+    "manifestBlob": "a51c679023a792ba4fce54731d13970946a18678",
+    "originalCandidates": 169,
+    "previouslyInspected": 14,
+    "originalUntouched": 155,
+    "newCandidateCount": 44,
+    "newExternalRepositories": 11,
+    "totalRegistered": 213,
+    "totalUntouched": 199
+  },
+  "ownerRun": {
+    "runId": 40153124994,
+    "repositoryId": 1418338512,
+    "githubActorId": 322222186,
+    "mainSha": "27cc00054972481b8fc939b43ff724661d6db655",
+    "conclusion": "success",
+    "jobResults": [
+      "offline-preseal-and-tests:success",
+      "owner-one-time-introduction:success",
+      "owner-source-free-44-in-parallel:success",
+      "independent-metadata-artifact-attestor:success"
+    ],
+    "artifactId": 12583088861,
+    "artifactName": "c2-new-44-external-filename-only-NO-GOLD",
+    "artifactDigest": "sha256:db37b51aaaaaeef1b9796c2199190caeef9fb0d9f838bc7b0ee9113eec04fad6"
+  },
+  "results": {
+    "candidatesExamined": 44,
+    "metadataComparable": 41,
+    "metadataIncomplete": 3,
+    "bulkHeld": 1,
+    "mechanismHinted": 0,
+    "ownerGateRequiredCount": 0,
+    "shortlist": [],
+    "countsByDisposition": {
+      "ANDROID_PATH_NO_ADDED_MECHANISM_HINT": 8,
+      "OUTSIDE_FROZEN_CORE_SOURCE_PATH": 19,
+      "METADATA_DEPENDENCY_ONLY": 6,
+      "WORKFLOW_PATH_NO_ADDED_MECHANISM_HINT": 7,
+      "NOT_RANKED_TRUNCATED_FILES": 3,
+      "BULK_CHURN_PRE_READ_CAUTION": 1
+    }
+  },
+  "safety": {
+    "sourceReadAuthorized": false,
+    "sourceInspected": false,
+    "originalOracleExecuted": false,
+    "truthSealed": false,
+    "candidatePredictionsRead": false,
+    "baselinePredictionsRead": false,
+    "newGoldLabels": 0,
+    "originalDocumentedLabels": 9,
+    "nominalAdditionalNeeded": 111,
+    "sssPlusCertified": false
+  },
+  "nextStep": "Do not auto-release any candidate. Freeze another prospective SHA-only cohort chosen for wider applicable Kotlin Android and workflow paths with original test provenance; then require exact individually owner-authorized Git blobs, independent original/fixed/benign executable oracle and uniqueness before truth sealing."
+}
