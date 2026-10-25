@@ -177,4 +177,12 @@ jobs:
           const sorted=x=>JSON.stringify([...x].sort((a,b)=>a.filename.localeCompare(b.filename)));
           if(got.length!==16||sorted(got)!==sorted(expected))throw Error('C2_SECOND_GIT_BLOB_SCOPE_DRIFT');
           NODE
+          head_tree="$(gh api '/repos/nextcloud/talk-android/git/commits/043f67d25278f6c55713f02ed8a5455e7f4bdebb' --jq '.tree.sha')"
+          test "${#head_tree}" -eq 40
+          gh api "/repos/nextcloud/talk-android/git/trees/$head_tree?recursive=1" |
+            jq -e --slurpfile s docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json '
+              .truncated==false and
+              (.tree as $tree | $s[0].pathScope |
+                (length==16 and all(.[];
+                  . as $f | any($tree[]; .type=="blob" and .path==$f.filename and .sha==$f.sha))))' >/dev/null
           echo 'C2_6946_ONE_SOURCE_READ_AUTHENTICATED_16_BLOBS_NO_GOLD'
