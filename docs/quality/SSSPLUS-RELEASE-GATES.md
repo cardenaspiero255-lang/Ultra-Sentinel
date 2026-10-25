@@ -36,6 +36,33 @@ Las reglas críticas incluidas ahora son `PRIVILEGED_UNTRUSTED_CHECKOUT`, `POTEN
 
 La ausencia de evaluador humano no cambia las protecciones implementadas: un campo `independentLabelsVerified=false` significa que **no hay independencia externa demostrada**, no que el propietario deba contratar a alguien. El resultado `NUMERICAL_PRESCREEN_ONLY` **no significa S+ aprobado**: `tripleSPlusCertified=false`, `independentLabelsVerified=false`, `liveSourceCiIndependentlyVerified=false`, `mergeAllowed=false` siempre. Fijar esos campos en un JSON de entrada tampoco concede autoridad. No usar el exit code cero de este comando para habilitar auto-merge.
 
+## Certificación respaldada por evidencia
+
+`packages/certification/sssplus-evidence-certification.cjs` incorpora el
+verificador offline `verifyTripleSPlusEvidenceBundle(bundle)`. Es el único
+componente que puede emitir `TRIPLE_S_PLUS_CERTIFIED`; el pre-screen por sí
+solo sigue siendo diagnóstico numérico.
+
+El bundle debe contener el mismo `campaignSha256` calculado sobre la campaña
+canónica y exactamente tres attestations Ed25519: `TRUTH_ATTESTOR`,
+`CI_ATTESTOR` y `RELEASE_OWNER`. Cada una vincula repositorio, SHA del motor y
+digest de campaña; las tres deben usar claves y `keyId` distintos. Sus
+afirmaciones son cerradas: etiquetas independientes congeladas, CI de origen
+exitosa ligada al SHA y autorización de lanzamiento en modo lectura.
+
+Las claves públicas incluidas en el bundle **no son** anclas de confianza. El
+llamador debe aportar `trustedAttestors`, un almacén externo con una clave
+Ed25519 fijada para cada rol; una firma autoemitida, una clave repetida o una
+clave distinta a ese almacén devuelve `NOT_CERTIFIED`. Esta separación evita
+que tres claves creadas por quien arma el JSON aparenten una revisión
+independiente.
+
+La certificación no agrega privilegios: incluso con evidencia válida, el
+resultado conserva `mergeAllowed:false` y `autoRepair:false`. A fecha de este
+commit no existe un bundle auténtico de producción, por lo que el estado real
+del repositorio permanece **NOT_CERTIFIED** hasta reunir y verificar dicha
+evidencia.
+
 ## Mutation Lab
 
 `node scripts/run-mutation-lab.cjs` ejecuta el Core real sobre ocho variantes sintéticas peligrosas y sus ocho controles benignos: coroutine fuera de ciclo de vida, espera bloqueante, GC forzado, loop sin cancelación, retry de reconocimiento síncrono, fuga por log, secreto literal y checkout privilegiado de PR no confiable.
