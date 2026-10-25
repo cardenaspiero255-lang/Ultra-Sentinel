@@ -1,0 +1,35 @@
+{
+  "schema": "c2-owner-source-disposition/v1",
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6945,
+    "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+    "headSha": "705887c6795b2f7746bef47e08a5c8c2aba9c3ff"
+  },
+  "ownerRun": 40146912385,
+  "ownerCheck": "SUCCESS_4_OF_4",
+  "independentAttestation": true,
+  "source": {
+    "path": "app/src/main/java/com/nextcloud/talk/api/LoggingHttpInterceptor.kt",
+    "baseBlob": "d82ebe834b837226ab948901ee99e258f9c88142",
+    "headBlob": "89901a06d04e78206ca470532e4d4ccbd8908d1f",
+    "addedLines": 4,
+    "deletedLines": 1,
+    "mechanism": "BuildConfig.DEBUG conditional logging for HTTP traffic",
+    "newTests": 0
+  },
+  "ruleId": "POTENTIAL_PRIVATE_LOG",
+  "exactRuleMatch": false,
+  "exactRulePath": null,
+  "exactRuleLine": null,
+  "disposition": "INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE",
+  "originalOracleExecuted": false,
+  "fixedOracleExecuted": false,
+  "benignOracleExecuted": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "remainingUnopened": 155,
+  "sssPlusCertified": false
+}
