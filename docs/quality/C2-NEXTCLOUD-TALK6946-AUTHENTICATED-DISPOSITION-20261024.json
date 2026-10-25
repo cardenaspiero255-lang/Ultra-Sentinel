@@ -1,0 +1,85 @@
+{
+  "schema": "c2-owner-released-frozen-rule-disposition/v1",
+  "decision": "INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE",
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6946,
+    "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+    "headSha": "043f67d25278f6c55713f02ed8a5455e7f4bdebb",
+    "createdAt": "2026-10-23T15:46:12Z",
+    "upstreamOpenAtInspection": true
+  },
+  "ranking": {
+    "runId": 40143252243,
+    "artifactId": 12579174108,
+    "mechanismHint": "UNSCOPED_COROUTINE",
+    "rankScore": 9,
+    "sourceInspectedAtRanking": false
+  },
+  "authorization": {
+    "ownerGithubActorId": 322222186,
+    "repositoryId": 1418338512,
+    "introducingMainSha": "69b45805919449bdc9df34980880465108be4e68",
+    "runId": 40145173894,
+    "artifactId": 12579999665,
+    "artifactSha256": "fdba145e3c688ce1514caf512dc4af4157a74f5f20f8802d76864eae96ce64fc",
+    "offlineContracts": "success",
+    "ownerIntroduction": "success",
+    "ownerRead": "success",
+    "independentGitHeadTreeSixteenBlobs": "success"
+  },
+  "source": {
+    "changedPaths": 16,
+    "preRegisteredPaths": "docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json",
+    "addedPatchLinesInspected": 384,
+    "exactFrozenGlobalScopeLaunchOrAsyncAdded": 0,
+    "newViewModelScopeLaunchCallsAdded": 2,
+    "newBlockingAndroidCallPatternAdded": 0,
+    "mechanism": "Adds conversation SIP dial-in, mention permissions, listable scope UI/model/repository/API actions; no introduced unscoped coroutine GlobalScope.launch or GlobalScope.async in added executable diff lines."
+  },
+  "frozenCore": {
+    "commit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+    "blob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+    "ruleCount": 17,
+    "examinedRuleId": "UNSCOPED_COROUTINE",
+    "actualPredicate": "GlobalScope.launch or GlobalScope.async on added executable Kotlin Android production line",
+    "exactRuleMatch": false,
+    "exactMatchingPath": null,
+    "exactMatchingLine": null,
+    "unscopedCoroutineIntroduced": false
+  },
+  "originalTests": {
+    "viewModelTestPath": "app/src/test/java/com/nextcloud/talk/conversationinfo/viewmodel/ConversationInfoViewModelTest.kt",
+    "originalGitBlob": "5b78047ae7b93d3edd8ccc0ddc70567aa70cc241",
+    "fixedGitBlob": "05ca78a3c5e6c54ba9bf5bfa80bbc862dabe4fbc",
+    "fakeRepositoryOriginalGitBlob": "bd10c586d56276a24c1c568c11cff80e61643691",
+    "fakeRepositoryFixedGitBlob": "342aa8ec87a924e697a1e0758baacb869d74dcd7",
+    "originalViewModelGitBlob": "5f80aee2d0f8d875b914bfe79a48f93360c60fd6",
+    "fixedViewModelGitBlob": "44f468c6cf3eb7a68a81bfcc8ea2bc44988fb1c8",
+    "newProposedTestCases": 3,
+    "newFeaturesAbsentInOriginal": true,
+    "originalTestsExecuted": false,
+    "fixedTestsExecuted": false,
+    "benignTestsExecuted": false,
+    "originalSourceRuleFailureReproduced": false,
+    "originalFixBenignOracleExecuted": false,
+    "independentOracleAttested": false,
+    "reason": "The added tests assert behavior of new SIP/listable/mention APIs. Those features and related tests were absent on the original SHA, and no exact frozen rule predicate is present. Running the new test functions against the old commit would not certify an original UNSCOPED_COROUTINE bug."
+  },
+  "evaluation": {
+    "detectorPredictionsRead": false,
+    "baselinePredictionsRead": false,
+    "truthSealed": false,
+    "goldNew": 0,
+    "priorDocumentedSourceScopedLabels": 9,
+    "remainingNominalTo120": 111,
+    "certifiedSSSPlus": false
+  },
+  "corpus": {
+    "originalProspective": 169,
+    "priorSourceExposed": 12,
+    "newlySourceExposed": 1,
+    "sourceUntouchedRemaining": 156
+  },
+  "policy": "NO_GOLD_NO_BENIGN_LABEL_NO_FALSE_NEGATIVE: do not score an issue that has no matching frozen rule. Separate metadata-only candidate selection may continue with remaining 156. New rule development needs separately frozen new benchmark and cannot retroactively contaminate this prospective cohort."
+}
