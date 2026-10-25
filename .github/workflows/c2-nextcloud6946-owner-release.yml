@@ -1,0 +1,180 @@
+name: C2 owner source read Nextcloud Talk 6946 (NO GOLD)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-nextcloud6946-owner-release.yml
+      - packages/quality-gates/c2-nextcloud6946-gate.cjs
+      - tests/unit/c2-nextcloud6946-gate.test.cjs
+      - docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+concurrency:
+  group: c2-6946-owner-once-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline-contracts:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.id == 1418338512))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm run check
+  introducing-owner-merge:
+    needs: [offline-contracts]
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    outputs:
+      introduced: ${{ steps.once.outputs.introduced }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - id: once
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3 ] &&
+            git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+            grep -Fxq 'docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json'; then
+            echo 'introduced=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'introduced=false' >> "$GITHUB_OUTPUT"
+          fi
+  one-pr-owner-read:
+    needs: [offline-contracts,introducing-owner-merge]
+    if: >-
+      github.event_name == 'push' &&
+      github.event.repository.id == 1418338512 &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186' &&
+      needs.introducing-owner-merge.outputs.introduced == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check frozen Core and introducing owner merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3
+          git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+            grep -Fxq 'docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json'
+          test "$(git rev-parse 547938ed88804e25bbabecf74a3c3d91b74cf1a4:packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+      - name: Validate SHA-pinned PR identity and exactly sixteen changed Git blob IDs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-6946"
+          mkdir -m 700 "$root"
+          gh api '/repos/nextcloud/talk-android/pulls/6946' |
+            jq -e '{number,created_at,base:{sha:.base.sha,repo:{full_name:.base.repo.full_name}},head:{sha:.head.sha}}' > "$root/pr.json"
+          gh api '/repos/nextcloud/talk-android/pulls/6946/files?per_page=100' |
+            jq -e '[.[]|{filename,status,sha,additions,deletions,changes}]' > "$root/files.json"
+          node - "$root/pr.json" "$root/files.json" "$root/release.json" <<'NODE'
+          const fs=require('node:fs');
+          const {authorizeMetadata}=require('./packages/quality-gates/c2-nextcloud6946-gate.cjs');
+          const release=authorizeMetadata({
+            request:require('./docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json'),
+            pr:JSON.parse(fs.readFileSync(process.argv[2],'utf8')),
+            files:JSON.parse(fs.readFileSync(process.argv[3],'utf8')),
+            owner:{actorId:Number(process.env.GITHUB_ACTOR_ID),repositoryId:Number(process.env.GITHUB_REPOSITORY_ID),
+              ref:process.env.GITHUB_REF,eventName:process.env.GITHUB_EVENT_NAME,mainSha:process.env.GITHUB_SHA}
+          });
+          fs.writeFileSync(process.argv[4],JSON.stringify(release,null,2)+'\n',{flag:'wx',mode:0o600});
+          NODE
+          (cd "$root" && sha256sum release.json > SHA256SUMS)
+          rm "$root/pr.json" "$root/files.json"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-6946-source-read-permit-NO-GOLD
+          path: ${{ runner.temp }}/c2-6946/
+          if-no-files-found: error
+          retention-days: 30
+  independent-git-blob-attestor:
+    needs: [one-pr-owner-read]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: c2-6946-source-read-permit-NO-GOLD
+          path: ${{ runner.temp }}/c2-6946-verify
+      - name: Independently compare receipt, run, upstream Git commit trees and sixteen blobs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-6946-verify"
+          test "$(find "$root" -maxdepth 1 -type f | wc -l)" -eq 2
+          test "$(find "$root" -type l | wc -l)" -eq 0
+          (cd "$root" && sha256sum -c SHA256SUMS)
+          jq -e '.candidate.pr==6946 and .changedFiles==16 and .sourceReadPermitted==true and .newGoldLabels==0 and .truthSealed==false and .detectorPredictionsRead==false' "$root/release.json" >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
+            jq -e --arg sha "$GITHUB_SHA" --argjson run "$GITHUB_RUN_ID" '
+              .id==$run and .head_sha==$sha and .repository.id==1418338512 and
+              .actor.id==322222186 and .event=="push" and .head_branch=="main"' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" |
+            jq -e --argjson run "$GITHUB_RUN_ID" '
+              [.artifacts[] | select(.name=="c2-6946-source-read-permit-NO-GOLD" and
+              .workflow_run.id==$run and .workflow_run.repository_id==1418338512 and
+              .expired==false and (.digest|test("^sha256:[a-f0-9]{64}$")))] | length==1' >/dev/null
+          gh api '/repos/nextcloud/talk-android/pulls/6946' |
+            jq -e '.number==6946 and .created_at=="2026-10-23T15:46:12Z" and
+              .base.sha=="591f033cd87f44d90c430d7fa477285eb22186e0" and
+              .head.sha=="043f67d25278f6c55713f02ed8a5455e7f4bdebb"' >/dev/null
+          gh api '/repos/nextcloud/talk-android/git/commits/591f033cd87f44d90c430d7fa477285eb22186e0' |
+            jq -e '.sha=="591f033cd87f44d90c430d7fa477285eb22186e0" and (.tree.sha|test("^[a-f0-9]{40}$"))' >/dev/null
+          gh api '/repos/nextcloud/talk-android/git/commits/043f67d25278f6c55713f02ed8a5455e7f4bdebb' |
+            jq -e '.sha=="043f67d25278f6c55713f02ed8a5455e7f4bdebb" and (.tree.sha|test("^[a-f0-9]{40}$"))' >/dev/null
+          gh api '/repos/nextcloud/talk-android/pulls/6946/files?per_page=100' |
+            jq -e '[.[]|{filename,status,sha,additions,deletions,changes}]' > "$RUNNER_TEMP/c2-6946-second-path-snapshot.json"
+          node - "$RUNNER_TEMP/c2-6946-second-path-snapshot.json" <<'NODE'
+          const fs=require('node:fs');
+          const expected=require('./docs/quality/C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json').pathScope;
+          const got=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const sorted=x=>JSON.stringify([...x].sort((a,b)=>a.filename.localeCompare(b.filename)));
+          if(got.length!==16||sorted(got)!==sorted(expected))throw Error('C2_SECOND_GIT_BLOB_SCOPE_DRIFT');
+          NODE
+          echo 'C2_6946_ONE_SOURCE_READ_AUTHENTICATED_16_BLOBS_NO_GOLD'
