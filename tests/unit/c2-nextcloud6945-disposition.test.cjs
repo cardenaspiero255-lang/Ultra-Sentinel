@@ -1,0 +1,33 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const receipt=require('../../docs/quality/C2-NEXTCLOUD6945-POSTSOURCE-20261024.json');
+const request=require('../../docs/quality/C2-NEXTCLOUD6945-SOURCE-REQUEST-20261024.json');
+const {FROZEN_RULES,FROZEN_CORE_BLOBS}=require('../../packages/quality-gates/c2-frozen-path-rule-prefilter.cjs');
+test('owner and Git blob release precede source inspection without granting GOLD',()=>{
+ assert.equal(receipt.ownerRun,40146912385);
+ assert.equal(receipt.ownerCheck,'SUCCESS_4_OF_4');
+ assert.equal(receipt.independentAttestation,true);
+ assert.equal(receipt.candidate.headSha,request.candidate.headSha);
+ assert.equal(receipt.candidate.baseSha,request.candidate.baseSha);
+ assert.equal(receipt.source.headBlob,request.pathScope[0].sha);
+ assert.equal(receipt.source.path,request.pathScope[0].filename);
+ assert.equal(receipt.ruleId,'POTENTIAL_PRIVATE_LOG');
+ assert.ok(FROZEN_RULES.includes(receipt.ruleId));
+ assert.equal(FROZEN_CORE_BLOBS.core,'db29f94be1e0afb791a241d26f449695df0eafd0');
+});
+test('source changed logging condition not a Core predicate or independent triple oracle',()=>{
+ assert.equal(receipt.source.addedLines,4);
+ assert.equal(receipt.source.newTests,0);
+ assert.equal(receipt.exactRuleMatch,false);
+ assert.equal(receipt.exactRulePath,null);
+ assert.equal(receipt.exactRuleLine,null);
+ assert.equal(receipt.originalOracleExecuted,false);
+ assert.equal(receipt.fixedOracleExecuted,false);
+ assert.equal(receipt.benignOracleExecuted,false);
+ assert.equal(receipt.detectorPredictionsRead,false);
+ assert.equal(receipt.baselinePredictionsRead,false);
+ assert.equal(receipt.truthSealed,false);
+ assert.equal(receipt.newGoldLabels,0);
+ assert.equal(receipt.remainingUnopened,155);
+ assert.equal(receipt.sssPlusCertified,false);
+});
