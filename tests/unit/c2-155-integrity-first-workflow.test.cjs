@@ -1,0 +1,41 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const w=fs.readFileSync(path.resolve(__dirname,'../../.github/workflows/c2-155-integrity-first-ranking.yml'),'utf8');
+const m=require('../../docs/quality/C2-155-NEXTCLOUD17870-PRE-READ-METADATA-20261024.json');
+test('RED/green owner only: first protected merge or explicit manual owner rerun',()=>{
+ assert.match(w,/github.actor_id == '322222186'/);
+ assert.match(w,/github.ref == 'refs\/heads\/main'/);
+ assert.match(w,/github.event.repository.id == 1418338512/);
+ assert.match(w,/needs.first-owner-introduction.outputs.introduced == 'true'/);
+ assert.match(w,/needs.offline-admission-and-tests.result == 'success'/);
+});
+test('155 source-free candidates, 14 exposures and complete Git changed_files cardinality',()=>{
+ assert.match(w,/remainingCandidates155\(/);
+ assert.match(w,/C2-NEXTCLOUD6945-POSTSOURCE-20261024/);
+ assert.match(w,/C2-NEXTCLOUD-TALK6946-AUTHENTICATED-DISPOSITION-20261024/);
+ assert.match(w,/rows.length!==155/);
+ assert.match(w,/sourcePreviouslyExposed==14/);
+ assert.match(w,/\.changed_files/);
+ assert.match(w,/length==\$expected/);
+ assert.match(w,/gh api --paginate/);
+ assert.match(w,/jq -se 'add \| map\(\{filename,status,sha,additions,deletions,changes\}\)'/);
+ assert.match(w,/C2_INTEGRITY_FIRST_FILENAME_HINTS_ONLY_NO_GOLD/);
+});
+test('Nextcloud android 17870 snapshot is complete yet NOT approved for source reading',()=>{
+ assert.equal(m.candidate.pr,17870);
+ assert.deepEqual(m.githubFilesApi.pages,[100,100,58]);
+ assert.equal(m.githubFilesApi.prChangedFiles,258);
+ assert.equal(m.githubFilesApi.distinctPathCount,258);
+ assert.equal(m.githubFilesApi.shaFormatValidCount,258);
+ assert.equal(m.githubFilesApi.complete,true);
+ assert.equal(m.counts.productionKotlinJavaFiles,217);
+ assert.equal(m.counts.testFiles,40);
+ assert.equal(m.counts.productionFilesNoAddedLines,153);
+ assert.equal(m.counts.totalAddedLines,116);
+ assert.equal(m.counts.totalDeletedLines,397);
+ assert.equal(m.noSourceRead,true);
+ assert.equal(m.sourceReadAuthorized,false);
+ assert.equal(m.newGoldLabels,0);
+ assert.equal(m.exactFrozenRulePathLine,null);
+});
