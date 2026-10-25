@@ -12,6 +12,9 @@ on:
       - docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json
       - docs/quality/C2-44-NEW-EXTERNAL-CAMPAIGN-20261024.md
       - docs/quality/C2-44-NEW-EXTERNAL-RECOVERY-20261024.md
+      - docs/quality/C2-44-NEW-EXTERNAL-RECOVERY-SECOND-20261024.md
+      - packages/quality-gates/c2-new-external-file-metadata.cjs
+      - tests/unit/c2-new-external-file-metadata.test.cjs
   push:
     branches: [main]
 permissions:
@@ -61,7 +64,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3 ] &&
             git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
-              grep -Fxq 'docs/quality/C2-44-NEW-EXTERNAL-RECOVERY-20261024.md'; then
+              grep -Fxq 'docs/quality/C2-44-NEW-EXTERNAL-RECOVERY-SECOND-20261024.md'; then
             echo 'introduced=true' >> "$GITHUB_OUTPUT"
           else
             echo 'introduced=false' >> "$GITHUB_OUTPUT"
