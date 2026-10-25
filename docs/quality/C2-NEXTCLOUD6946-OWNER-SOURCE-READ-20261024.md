@@ -1,0 +1,15 @@
+# C2 — owner-only source gate for Nextcloud Talk Android #6946
+
+**Pre-source preregistration.** Frozen source-free ranking V2 GitHub Actions [run 40143252243](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/40143252243) completed 3/3 successful jobs on commit `a1f4fa06e5e2a2042bc7ed6daeb0a4446c53d49e`; artifact `12579174108`, SHA256 `192af2eed718b8602ebe95981acb813d1ba9e02d8b4faa0588231e5172de83b1`. 157 candidates remained untouched after 12 exposures; 152 have comparable metadata, five had filename mechanism hints, five unranked due to drift or truncation.
+
+The highest ranked remaining candidate is `nextcloud/talk-android#6946`, metadata score 9, a **hypothetical** `UNSCOPED_COROUTINE` affinity because the filename `NcApiCoroutines.kt` was changed. **Do not assert that GlobalScope.launch/async exists until authorized source inspection.** Rank score does not establish a defect.
+
+Before reading any PR patch/title or source, public GitHub changed-file metadata confirmed the original manifested PR identity: created `2026-10-23T15:46:12Z`, frozen base `591f033cd87f44d90c430d7fa477285eb22186e0`, frozen HEAD `043f67d25278f6c55713f02ed8a5455e7f4bdebb`, 16 changed paths including production Kotlin, XML and two tests. All 16 blob IDs, statuses and counts are pinned in `C2-NEXTCLOUD-TALK6946-PREAUTHORIZED-SOURCE-20261024.json`.
+
+**Permission proposal:** the sole owner GitHub actor ID `322222186` can introduce this one exact PR source read via a protected main merge. The new workflow runs full `npm run check` before owner acceptance. It validates the exact original and HEAD SHA and 16 sanitized GitHub file-pointer metadata, checks the frozen 17-rule Core's original Git blob, and emits a permission-only attestation. A second independent Actions job reacquires the owner-run identity, immutable artifact SHA256, both original Git commit trees and the complete HEAD Git tree (must not be truncated), matching each of the 16 blob IDs to its actual Git tree path. No original PR code is executed or passed to the Core.
+
+Source reading is only allowed **after both owner gate and independent verifier succeed** on the exact same merge run. Then inspect source to find `GlobalScope.launch` or `GlobalScope.async` in executable **added lines** recognized by the frozen rule `UNSCOPED_COROUTINE`; a coroutine or `suspend` declaration is insufficient. Identify `ruleId/path/line` precisely and check semantics before any oracle.
+
+**Conditional next steps:** if an exact frozen predicate is found, inspect original test modules and clone only pinned commit trees into a network-isolated Kotlin runner, run original failing / fixed passing / benign passing controls with SHA-bound JUnit receipts, then verify independently before sealing truth and finally scoring. If no predicate or original failure reproducible, save `INCONCLUSIVE_OUT_OF_FROZEN_RULE_SCOPE` or `INCONCLUSIVE_NO_INDEPENDENT_ORACLE`, remove #6946 from prospective untouched holdout, keep `newGoldLabels=0`.
+
+No changes to frozen Core, no detector/baseline predictions, no automatic repairs, no truth seal, no change to SSS+ status. `NOT_CERTIFIED`.

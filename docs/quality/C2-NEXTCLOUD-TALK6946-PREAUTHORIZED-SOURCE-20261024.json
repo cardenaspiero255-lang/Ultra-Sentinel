@@ -1,0 +1,167 @@
+{
+  "schema": "c2-owner-ranked-candidate-release-request/v1",
+  "scope": "EXACT_ONE_PUBLIC_SOURCE_READ_NO_CODE_EXECUTION",
+  "ownerApproval": "ALLOW_ONE_SOURCE_READ_NO_PREDICTIONS",
+  "actorId": 322222186,
+  "repositoryId": 1418338512,
+  "sourceRankingRunId": 40143252243,
+  "sourceRankingArtifactId": 12579174108,
+  "sourceRankingArtifactSha256": "192af2eed718b8602ebe95981acb813d1ba9e02d8b4faa0588231e5172de83b1",
+  "frozenCoreCommit": "547938ed88804e25bbabecf74a3c3d91b74cf1a4",
+  "frozenCoreBlob": "db29f94be1e0afb791a241d26f449695df0eafd0",
+  "frozenRules": 17,
+  "sourceRosterTotal": 169,
+  "previouslyExposed": 12,
+  "rankScore": 9,
+  "deterministicRank": 1,
+  "candidate": {
+    "repository": "nextcloud/talk-android",
+    "pr": 6946,
+    "baseSha": "591f033cd87f44d90c430d7fa477285eb22186e0",
+    "headSha": "043f67d25278f6c55713f02ed8a5455e7f4bdebb",
+    "createdAt": "2026-10-23T15:46:12Z"
+  },
+  "pathScope": [
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/api/NcApiCoroutines.kt",
+      "status": "modified",
+      "sha": "7c5b7c0b25ffa93298099ee98e8ac135d09598d4",
+      "additions": 23,
+      "deletions": 0,
+      "changes": 23
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/conversationcreation/CreateConversationParams.kt",
+      "status": "modified",
+      "sha": "809c83923ee9e5d40af538d39112b6a25d4219e2",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/conversationinfo/ConversationInfoActivity.kt",
+      "status": "modified",
+      "sha": "bb3e118921dfccd817e8f09bd56f1a656fd89109",
+      "additions": 3,
+      "deletions": 0,
+      "changes": 3
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/conversationinfo/ConversationInfoUiState.kt",
+      "status": "modified",
+      "sha": "2877021cd5a8de231cfc2640bcdb661d7dd2ca26",
+      "additions": 14,
+      "deletions": 0,
+      "changes": 14
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/conversationinfo/ui/ConversationInfoScreen.kt",
+      "status": "modified",
+      "sha": "d8c5e5bad6a6f32cee403bc5fc1192c15465a27f",
+      "additions": 75,
+      "deletions": 0,
+      "changes": 75
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/conversationinfo/viewmodel/ConversationInfoViewModel.kt",
+      "status": "modified",
+      "sha": "44f468c6cf3eb7a68a81bfcc8ea2bc44988fb1c8",
+      "additions": 125,
+      "deletions": 1,
+      "changes": 126
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/models/domain/ConversationModel.kt",
+      "status": "modified",
+      "sha": "e3e53e271a4a5a32f543a38c9fd4d6ecce0bd244",
+      "additions": 10,
+      "deletions": 0,
+      "changes": 10
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/models/json/conversations/ConversationDto.kt",
+      "status": "modified",
+      "sha": "940f00c737678ac493a5d116c48e2e1356608af3",
+      "additions": 15,
+      "deletions": 0,
+      "changes": 15
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/models/json/signaling/settings/SignalingSettingsDto.kt",
+      "status": "modified",
+      "sha": "a21b92e0b2ffd021493c215e82ec616c9ece44e1",
+      "additions": 3,
+      "deletions": 1,
+      "changes": 4
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/repositories/conversations/ConversationsRepository.kt",
+      "status": "modified",
+      "sha": "371c9cb850c59915f75560427b8ba9b680843ee2",
+      "additions": 8,
+      "deletions": 0,
+      "changes": 8
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/repositories/conversations/ConversationsRepositoryImpl.kt",
+      "status": "modified",
+      "sha": "a9e9116a3160250a4768cbdcc3f36e6a21320868",
+      "additions": 17,
+      "deletions": 0,
+      "changes": 17
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/utils/ApiUtils.kt",
+      "status": "modified",
+      "sha": "c099b6a169439f3ae5c668720eb8ee8ad8ac09e7",
+      "additions": 6,
+      "deletions": 0,
+      "changes": 6
+    },
+    {
+      "filename": "app/src/main/java/com/nextcloud/talk/utils/CapabilitiesUtil.kt",
+      "status": "modified",
+      "sha": "6bfbb07178dd787f6c60b20273ca59014609e98f",
+      "additions": 2,
+      "deletions": 0,
+      "changes": 2
+    },
+    {
+      "filename": "app/src/main/res/values/strings.xml",
+      "status": "modified",
+      "sha": "e55e3d596ff3b43d8d64a32dbf3f82bca876fe56",
+      "additions": 8,
+      "deletions": 0,
+      "changes": 8
+    },
+    {
+      "filename": "app/src/test/java/com/nextcloud/talk/conversationinfo/viewmodel/ConversationInfoViewModelTest.kt",
+      "status": "modified",
+      "sha": "05ca78a3c5e6c54ba9bf5bfa80bbc862dabe4fbc",
+      "additions": 54,
+      "deletions": 0,
+      "changes": 54
+    },
+    {
+      "filename": "app/src/test/java/com/nextcloud/talk/conversationinfo/viewmodel/FakeConversationsRepository.kt",
+      "status": "modified",
+      "sha": "342aa8ec87a924e697a1e0758baacb869d74dcd7",
+      "additions": 20,
+      "deletions": 0,
+      "changes": 20
+    }
+  ],
+  "sourceInspected": false,
+  "exactRuleId": null,
+  "exactRulePathLineVerified": false,
+  "trainingIndependenceCertified": false,
+  "originalOracleExecuted": false,
+  "fixedOracleExecuted": false,
+  "benignOracleExecuted": false,
+  "detectorPredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "sssPlusCertified": false,
+  "limitation": "Ranking V2 is based on filenames ONLY, possible UNSCOPED_COROUTINE but not a confirmed defect. One-time owner source read gate, then independent SHA/blob attestation. No code execution/model predictions/GOLD; original/fix/benign tests only after exact frozen ruleId/path/line is proven."
+}
