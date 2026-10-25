@@ -37,6 +37,32 @@ if gh api "/repos/$repo/pulls/$pr" 2>/dev/null |
   else state='DRIFT'
   fi
 fi
+if [[ "$state" == 'MATCHED' ]]; then
+  # Detect filenames/fields the frozen ranker cannot safely classify.
+  # Do not relax the historical validator or save any raw patch bytes.
+  if ! node - "$work/files.json" <<'NODE'
+const fs=require('node:fs');
+const files=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const allowed=['filename','status','sha','additions','deletions','changes'];
+const validPath=x=>typeof x==='string'&&x.length<=250&&
+ /^[A-Za-z0-9_.-]+(?:\\/[A-Za-z0-9_.-]+)*$/.test(x)&&
+ x.split('/').every(s=>s!=='.'&&s!=='..'&&!s.includes('..'));
+const names=new Set();
+for(const f of files){
+ if(!f||Object.keys(f).length!==6||!allowed.every(k=>Object.hasOwn(f,k))||
+  !validPath(f.filename)||names.has(f.filename)||
+  !/^[a-f0-9]{40}$/.test(f.sha)||
+  !['added','modified','removed','renamed','copied','changed'].includes(f.status)||
+  ![f.additions,f.deletions,f.changes].every(Number.isSafeInteger)||
+  f.additions<0||f.deletions<0||f.changes<0||f.changes!==f.additions+f.deletions)
+   process.exit(2);
+ names.add(f.filename);
+}
+NODE
+  then
+    state='INCOMPLETE'
+  fi
+fi
 if [[ "$state" != 'MATCHED' ]]; then printf '[]\n' > "$work/files.json"; fi
 node - "$index" "$state" "$work/files.json" "$root" <<'NODE'
 const fs=require('node:fs'),path=require('node:path');
