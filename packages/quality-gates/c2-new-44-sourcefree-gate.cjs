@@ -2,6 +2,10 @@
 // Immutable additional PR IDs, metadata-only triage. Never read PR titles,
 // bodies, patches or source, or invoke detector predictions / original oracles.
 const {remainingCandidates155,rankSourceFreeV3}=require('./c2-155-integrity-first-ranker.cjs');
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const manifestPath=path.resolve(__dirname,'../../docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json');
+const lockedNewManifest=require('../../docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json');
+const LOCKED_GIT_BLOB='a51c679023a792ba4fce54731d13970946a18678';
 const roster=require('../../docs/quality/C2-BULK-PROSPECTIVE-PR-METADATA-20261024.json');
 const eight=require('../../docs/quality/C2-EIGHT-INSPECTED-PR-QUARANTINE-20261024.json');
 const dispositions=[
@@ -37,6 +41,11 @@ const manifestFields=['schema','frozenPriorCorpusDigest','oldCohortCandidates',
  'truthSealed','newGoldLabels','sssPlusCertified','candidates'];
 function auditExpandedPreseal(manifest,old={}){
  try{
+  // SHA1 is Git's content-addressed blob identity, NOT a security signature.
+  // Protected owner main/CI authenticates the commit containing the preregistered blob.
+  const bytes=fs.readFileSync(manifestPath);
+  const gitBlob=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
+  if(gitBlob!==LOCKED_GIT_BLOB||!equal(manifest,lockedNewManifest))deny();
   if(!exact(manifest,manifestFields)||
    manifest.schema!=='c2-additional-external-metadata-preseal/v1'||
    manifest.frozenPriorCorpusDigest!=='abeba6b0be1d84f34fa9c2d2cfc4b4c211f48538'||
