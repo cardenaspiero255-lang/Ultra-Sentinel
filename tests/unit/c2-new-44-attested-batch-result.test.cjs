@@ -1,0 +1,33 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const report=require('../../docs/quality/C2-44-EXTERNAL-OWNER-ATTESTED-BATCH-RESULT-20261024.json');
+const preseal=require('../../docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json');
+test('44 new preregistered identities are preserved without reclassifying old 14 source disclosures',()=>{
+ assert.equal(preseal.candidates.length,44);
+ assert.equal(report.sourceCohort.manifestBlob,'a51c679023a792ba4fce54731d13970946a18678');
+ assert.equal(report.sourceCohort.originalCandidates,169);
+ assert.equal(report.sourceCohort.originalUntouched,155);
+ assert.equal(report.sourceCohort.newCandidateCount,44);
+ assert.equal(report.sourceCohort.totalRegistered,213);
+ assert.equal(report.sourceCohort.totalUntouched,199);
+});
+test('all 4 GitHub owner jobs and artifact digest explicitly bound; no fabricated original oracle',()=>{
+ assert.equal(report.ownerRun.runId,40153124994);
+ assert.equal(report.ownerRun.mainSha,'27cc00054972481b8fc939b43ff724661d6db655');
+ assert.equal(report.ownerRun.conclusion,'success');
+ assert.equal(report.ownerRun.jobResults.length,4);
+ assert.ok(report.ownerRun.jobResults.every(x=>x.endsWith(':success')));
+ assert.equal(report.ownerRun.artifactId,12583088861);
+ assert.match(report.ownerRun.artifactDigest,/^sha256:[a-f0-9]{64}$/);
+ assert.equal(report.results.metadataComparable,41);
+ assert.equal(report.results.metadataIncomplete,3);
+ assert.equal(Object.values(report.results.countsByDisposition).reduce((x,y)=>x+y,0),44);
+ assert.equal(report.results.mechanismHinted,0);
+ assert.equal(report.results.ownerGateRequiredCount,0);
+ assert.deepEqual(report.results.shortlist,[]);
+ assert.equal(report.safety.newGoldLabels,0);
+ assert.equal(report.safety.truthSealed,false);
+ assert.equal(report.safety.originalOracleExecuted,false);
+ assert.equal(report.safety.sourceReadAuthorized,false);
+ assert.equal(report.safety.sssPlusCertified,false);
+});
