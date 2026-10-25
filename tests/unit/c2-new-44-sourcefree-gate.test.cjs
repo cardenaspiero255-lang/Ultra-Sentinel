@@ -61,7 +61,7 @@ test('RED: reject any injected source, extra old candidate, forged dates and bad
   c=>c.newCandidateCount=45,
   c=>c.candidates[0].headSha='0'.repeat(40),
   c=>c.candidates[0].repository='cardenaspiero255-lang/Ultra-Sentinel',
-  c=>c.candidates[0].pr=roster.candidates[0].pr,
+  c=>{c.candidates[0].repository=roster.candidates[0].repository;c.candidates[0].pr=roster.candidates[0].pr;},
   c=>c.candidates[0].createdAt='2020-01-01T00:00:00Z',
   c=>c.candidates[0].patch='source',
   c=>c.sourceInspected=true,
