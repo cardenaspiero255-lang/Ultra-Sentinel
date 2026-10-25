@@ -25,9 +25,9 @@ test('RED: one run organizes all 155, zero source reads, zero fabricated GOLD, 1
  assert.equal(r.status,'BLOCKED_NO_RULE_ADMISSIBLE_SOURCE');
  assert.equal(r.sourceCandidates,155);
  assert.equal(r.totalBatchShards,32);
- assert.equal(r.currentPrevalidatedGold,9);
+ assert.equal(r.previousDocumentedLabels,9);
  assert.equal(r.newGoldLabels,0);
- assert.equal(r.totalGoldLabels,9);
+ assert.equal(r.documentedLabelTotal,9);
  assert.equal(r.missingAuthenticLabels,111);
  assert.equal(r.authorizedSourceReads,0);
  assert.equal(r.originalFixBenignExecuted,0);
