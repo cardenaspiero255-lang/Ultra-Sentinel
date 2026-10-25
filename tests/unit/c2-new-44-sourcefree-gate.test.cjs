@@ -67,9 +67,9 @@ test('RED: reject any injected source, extra old candidate, forged dates and bad
   c=>c.sourceInspected=true,
   c=>c.newGoldLabels=111
  ];
- for(const mutate of cases){const i=clone(manifest);mutate(i);
-  assert.throws(()=>auditExpandedPreseal(i,old),/C2_44_NEW_EXTERNAL_BLOCKED/);
- }
+ cases.forEach((mutate,caseIndex)=>{const i=clone(manifest);mutate(i);
+  assert.throws(()=>auditExpandedPreseal(i,old),/C2_44_NEW_EXTERNAL_BLOCKED/, 'invalid candidate case '+caseIndex);
+ });
  const bad=manifest.candidates.map(x=>row(x));
  bad[0].files=[{...path('app/src/main/java/example/Logger.kt'),patch:'RAW'}];bad[0].status='MATCHED';
  assert.throws(()=>assessNewExternalBatch(manifest,old,bad),/C2_44_NEW_EXTERNAL_BLOCKED/);
