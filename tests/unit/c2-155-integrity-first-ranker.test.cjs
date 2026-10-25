@@ -64,6 +64,8 @@ test('RED: 155 exact observations and drift preserved unranked; no truth/GOLD',(
  assert.equal(x.sourcePreviouslyExposed,14);
  assert.equal(x.remainingUntouched,155);
  assert.equal(x.newGoldLabels,0);
+ assert.equal(x.releasedSource,false);
+ assert.equal(x.sourceReadAuthorized,false);
  assert.equal(x.truthSealed,false);
  assert.equal(x.detectorPredictionsRead,false);
  assert.deepEqual(x.shortlist,[]);

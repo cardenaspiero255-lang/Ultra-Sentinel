@@ -25,3 +25,7 @@ This is a complete Git metadata set, but no rule `path/line` is known and origin
 Exactly 155 source-free observations, no old released PR IDs, no truncated file lists masquerading as matched, stable deterministic ranked shortlist of filename hints with additions and 100+-file holds. The report must say `newGoldLabels=0`, `truthSealed=false`, `sourceReadAuthorized=false` and `originalOracleExecuted=false`.
 
 Only after V3 has successfully generated a fresh metadata artifact may a single new candidate receive its own exact Git SHA/blob owner-only source release and independent attestor; then a true original frozen rule/predicate and separately run original/fixed/benign oracle are required. **No changes to Core or reserved holdout after revealing source.**
+
+## Owner revalidation of explicit no-source-release report field
+
+The initial protected rank workflow required `releasedSource==false` in its JSON gate but V3 had omitted the field. This corrective commit adds the explicit immutable `releasedSource:false` contract, with an adversarial unit assertion and the original non-disclosure semantics unchanged. This owner-protected merge reintroduces this exact frozen V3 policy document, allowing an **authenticated new metadata-only run** without inspecting source, widening the cohort, changing weights, or granting any PR read. Only the new protected run with all jobs and artifact success may be used for ranking decisions; the initial run must not be treated as valid.
