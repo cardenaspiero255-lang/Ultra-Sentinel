@@ -10,7 +10,7 @@ Esto impide seleccionar a continuación un candidato del ranking como si estuvie
 
 ## Qué ejecuta el lote de 32 particiones
 
-Este cambio añade `c2-one-shot-111-admission.cjs` que **vuelve a calcular el ranking V3 completo** desde las 155 observaciones y el manifiesto original de 169 casos, excluyendo por sus recibos verificables los 14 casos cuyo código ya se divulgó. Rechaza cualquier cantidad, contenido, estado, puntaje, SHA o resultado inyectado que difiera del informe recalculado.
+Este cambio añade `c2-one-shot-111-admission.cjs` que **autentica en el workflow el artefacto V3 por run/owner/commit/digest** y después verifica la integridad estructural de las 155 filas contra las identidades del manifiesto original de 169 PR y los recibos de los 14 ya expuestos. Las filas de salida V3 no contienen todos los archivos originales, por lo que el script **no puede recalcular íntegramente el puntaje a partir de ellas**; comprueba que SHA, cobertura, resumen y orden del shortlist son consistentes, y que ningún campo pueda proclamar permisos, predicciones o GOLD. La autenticidad de los puntajes originales depende del run de Actions fijado, no de un JSON no autenticado.
 
 El plan único distribuye las **155 identidades** entre **32 particiones deterministas**: errores de identidad / lista incompleta a nueva verificación de metadatos sin leer código; PR de 100+ archivos a revisión manual de alcance; candidatos con indicio compatible necesitan gate del dueño y un atestador **por candidato**, y los demás quedan no priorizados. Las particiones son de **metadatos**; no son 32 ejecuciones de código de terceros.
 
