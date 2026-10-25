@@ -1,0 +1,184 @@
+name: C2 44 new Android external Git metadata and independent attestation (NO GOLD)
+# Does not read PR titles, bodies, patches or source; all outputs are sanitized.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/c2-44-new-external-metadata.yml
+      - packages/quality-gates/c2-new-44-sourcefree-gate.cjs
+      - scripts/c2-evaluate-new-44-metadata.cjs
+      - scripts/c2-new-44-metadata-worker.sh
+      - tests/unit/c2-new-44-sourcefree-gate.test.cjs
+      - tests/unit/c2-new-44-workflow.test.cjs
+      - docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json
+      - docs/quality/C2-44-NEW-EXTERNAL-CAMPAIGN-20261024.md
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: c2-new-44-external-once-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  offline-preseal-and-tests:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.id == 1418338512))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm run check
+  owner-one-time-introduction:
+    needs: [offline-preseal-and-tests]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    outputs:
+      introduced: ${{ steps.once.outputs.introduced }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - id: once
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 3 ] &&
+            git diff --name-only "$GITHUB_SHA^1" "$GITHUB_SHA" |
+              grep -Fxq 'docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json'; then
+            echo 'introduced=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'introduced=false' >> "$GITHUB_OUTPUT"
+          fi
+  owner-source-free-44-in-parallel:
+    needs: [offline-preseal-and-tests,owner-one-time-introduction]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186' &&
+      needs.offline-preseal-and-tests.result == 'success' &&
+      needs.owner-one-time-introduction.outputs.introduced == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify frozen Core is unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse 547938ed88804e25bbabecf74a3c3d91b74cf1a4:packages/core/ultra_sentinel_core.cjs)" = db29f94be1e0afb791a241d26f449695df0eafd0
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Query 44 PR identities and sanitized file paths in four parallel workers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/c2-new-44"
+          mkdir -m 700 "$root"
+          seq 0 43 | xargs -P 4 -I '{}' bash scripts/c2-new-44-metadata-worker.sh '{}' "$root"
+          test "$(find "$root" -maxdepth 1 -name 'row-*.ndjson' -type f | wc -l)" -eq 44
+          cat "$root"/row-*.ndjson > "$root/observations.ndjson"
+          test "$(wc -l < "$root/observations.ndjson")" -eq 44
+          node scripts/c2-evaluate-new-44-metadata.cjs "$root/observations.ndjson" > "$root/report.json"
+          jq -e '.schema=="c2-new-44-external-sourcefree-metadata-rank/v1" and
+            .newProjects==11 and .candidatesExamined==44 and .totalRegistered==213 and
+            .combinedUntouched==199 and .previouslySourceExposed==14 and
+            .newGoldLabels==0 and .sourceReadAuthorized==false and
+            .sourceInspected==false and .originalOracleExecuted==false and
+            .truthSealed==false and .candidatePredictionsRead==false' "$root/report.json" >/dev/null
+          jq -c '{candidatesExamined,matchedCandidates,apiUnavailable,mechanismHinted,
+            ownerGateRequiredCount,countsByDisposition,shortlist:[.shortlist[] |
+            {repository:.candidate.repository,pr:.candidate.pr,rankScore,possibleRuleIds}]}' "$root/report.json"
+          rm -f "$root"/row-*.ndjson "$root/observations.ndjson"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-new-44-external-filename-only-NO-GOLD
+          path: ${{ runner.temp }}/c2-new-44/report.json
+          if-no-files-found: error
+          retention-days: 30
+  independent-metadata-artifact-attestor:
+    needs: [owner-source-free-44-in-parallel]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: c2-new-44-external-filename-only-NO-GOLD
+          path: ${{ runner.temp }}/c2-new-44-auth
+      - name: Independent owner-run / artifact / report integrity verification
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/c2-new-44-auth"
+          test "$(find "$root" -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$root" -type l | wc -l)" -eq 0
+          test -f "$root/report.json"
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" |
+            jq -e --arg sha "$GITHUB_SHA" --argjson run "$GITHUB_RUN_ID" '
+              .id==$run and .head_sha==$sha and .repository.id==1418338512 and
+              .actor.id==322222186 and .event=="push" and .head_branch=="main"' >/dev/null
+          gh api "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID/artifacts" |
+            jq -e --argjson run "$GITHUB_RUN_ID" '
+              [.artifacts[] | select(.name=="c2-new-44-external-filename-only-NO-GOLD" and
+                .workflow_run.id==$run and .workflow_run.repository_id==1418338512 and
+                .expired==false and (.digest|test("^sha256:[a-f0-9]{64}$")))] |
+                length==1' >/dev/null
+          node - "$root/report.json" <<'NODE'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const m=require('./docs/quality/C2-44-NEW-EXTERNAL-PRESEAL-20261024.json');
+          const locked=new Map(m.candidates.map(x=>[x.repository.toLowerCase()+'#'+x.pr,x]));
+          if(r.candidatesExamined!==44||r.totalRegistered!==213||r.newGoldLabels!==0||
+           r.truthSealed!==false||r.sourceReadAuthorized!==false||r.sourceInspected!==false||
+           !Array.isArray(r.observations)||r.observations.length!==44)throw Error('C2_44_ATTEST_BLOCKED');
+          const seen=new Set();
+          for(const x of r.observations){
+           const key=x.candidate?.repository?.toLowerCase()+'#'+x.candidate?.pr;
+           const original=locked.get(key);
+           if(!original||seen.has(key)||x.candidate.headSha!==original.headSha||
+            x.candidate.baseSha!==original.baseSha||x.newGoldLabels!==0||
+            x.sourceReadAuthorized!==false)throw Error('C2_44_ATTEST_BLOCKED');
+           seen.add(key);
+          }
+          if(seen.size!==44)throw Error('C2_44_ATTEST_BLOCKED');
+          NODE
+          echo 'C2_44_INDEPENDENT_METADATA_ATTESTED_NO_GOLD'
