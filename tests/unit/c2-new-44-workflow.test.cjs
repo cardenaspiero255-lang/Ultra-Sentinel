@@ -38,10 +38,10 @@ test('independent job confirms GitHub actor/run/artifact, no predictions, no GOL
 });
 
 test('recovery owner introduction is explicit and malformed metadata is quarantined per PR',()=>{
- assert.match(workflow,/C2-44-NEW-EXTERNAL-RECOVERY-20261024.md/);
- assert.match(workflow,/grep -Fxq 'docs\/quality\/C2-44-NEW-EXTERNAL-RECOVERY-20261024.md'/);
+ assert.match(workflow,/C2-44-NEW-EXTERNAL-RECOVERY-SECOND-20261024.md/);
+ assert.match(workflow,/grep -Fxq 'docs\/quality\/C2-44-NEW-EXTERNAL-RECOVERY-SECOND-20261024.md'/);
  assert.match(worker,/state='INCOMPLETE'/);
- assert.match(worker,/!validPath\(f.filename\)/);
- assert.match(worker,/f.changes!==f.additions\+f.deletions/);
+ assert.match(worker,/validNewExternalFileList/);
+ assert.match(worker,/c2-new-external-file-metadata.cjs/);
  assert.match(worker,/if \[\[ "\$state" != 'MATCHED' \]\]; then printf '\[\]\\n'/);
 });
