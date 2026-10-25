@@ -1,0 +1,431 @@
+{
+  "schema": "c2-additional-external-metadata-preseal/v1",
+  "frozenPriorCorpusDigest": null,
+  "oldCohortCandidates": 169,
+  "oldCohortSourceUninspected": 155,
+  "previouslySourceExposed": 14,
+  "cutoff": "2026-10-20T19:30:54Z",
+  "latestCreationAllowed": "2026-10-25T00:44:00Z",
+  "discoveryMethod": "PUBLIC_GITHUB_PULL_REQUEST_LIST_METADATA_ONLY",
+  "selection": "Latest eligible recent PRs, per-repository caps fixed before any source inspection. Filenames analyzed only after owner gate.",
+  "perRepositoryCap": {
+    "FossifyOrg/Gallery": 1,
+    "FossifyOrg/Calendar": 1,
+    "Thunderbird/thunderbird-android": 3,
+    "AntennaPod/AntennaPod": 2,
+    "zhanghai/MaterialFiles": 1,
+    "element-hq/element-x-android": 14,
+    "StreetComplete/StreetComplete": 6,
+    "beemdevelopment/Aegis": 2,
+    "TeamNewPipe/NewPipe": 8,
+    "FossifyOrg/Camera": 1,
+    "organicmaps/organicmaps": 5
+  },
+  "newCandidateCount": 44,
+  "originalRepoOverlapCount": 0,
+  "sourceInspected": false,
+  "candidatePredictionsRead": false,
+  "baselinePredictionsRead": false,
+  "originalOracleExecuted": false,
+  "truthSealed": false,
+  "newGoldLabels": 0,
+  "sssPlusCertified": false,
+  "candidates": [
+    {
+      "repository": "AntennaPod/AntennaPod",
+      "pr": 8856,
+      "baseSha": "3d105d598dfa582c6cb22ba40b56d11780366890",
+      "headSha": "7505ac26eb0bb6d6b87ea1f372ffc92cfc91d495",
+      "createdAt": "2026-10-24T06:39:53Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "AntennaPod/AntennaPod",
+      "pr": 8857,
+      "baseSha": "3d105d598dfa582c6cb22ba40b56d11780366890",
+      "headSha": "dce45682d6217e444bfd2acaee324bf3123b5084",
+      "createdAt": "2026-10-24T07:20:14Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "beemdevelopment/Aegis",
+      "pr": 1848,
+      "baseSha": "d6f4e5925a97e4e91593f1542085eae03432a759",
+      "headSha": "bc21f5037bc6aac68d2e574d7822bd05aab14778",
+      "createdAt": "2026-10-23T09:56:40Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "beemdevelopment/Aegis",
+      "pr": 1849,
+      "baseSha": "d6f4e5925a97e4e91593f1542085eae03432a759",
+      "headSha": "8ff5689e7a027581d9003697c4416882760553dd",
+      "createdAt": "2026-10-23T13:33:44Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7980,
+      "baseSha": "111731b09f0849365a0bca8b50dbb09c09f32b65",
+      "headSha": "1a8d60ae3cd54cdf96b9826666e7866a6df720d2",
+      "createdAt": "2026-10-21T23:57:06Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7981,
+      "baseSha": "cd3fb0ddca6961e0a262b9620aab07d3572598c3",
+      "headSha": "d5f799176cd956041a290fc96e6d176a774f20d1",
+      "createdAt": "2026-10-21T23:57:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7982,
+      "baseSha": "2a8ce3eff280c1601d069df09e20da2ee4125f66",
+      "headSha": "bceab1f462dbfa1f618ba4514eb9582000ce7384",
+      "createdAt": "2026-10-22T02:31:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7983,
+      "baseSha": "8b31a1f81551f5bbb6f053f312430d6436ec3000",
+      "headSha": "2ad07249c0e3558c678f23e524915a72477ccedc",
+      "createdAt": "2026-10-22T05:50:02Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7984,
+      "baseSha": "2a8ce3eff280c1601d069df09e20da2ee4125f66",
+      "headSha": "c42adcde5cfd98afc5b0625015be0c0d16edd201",
+      "createdAt": "2026-10-22T08:47:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7989,
+      "baseSha": "a21ee3b9c4c2ffd5abace4efaf1aa363d7d0eda4",
+      "headSha": "967cee86daa618147d3b486a866e583b1ec8228b",
+      "createdAt": "2026-10-23T07:41:27Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7990,
+      "baseSha": "a21ee3b9c4c2ffd5abace4efaf1aa363d7d0eda4",
+      "headSha": "03003096a18d2dfccf66f6b825cce6de2b81abb7",
+      "createdAt": "2026-10-23T08:06:13Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7991,
+      "baseSha": "cd3fb0ddca6961e0a262b9620aab07d3572598c3",
+      "headSha": "8ee5003c1b5f3eefce3b4e6f7191a23effadeef1",
+      "createdAt": "2026-10-23T08:16:20Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7993,
+      "baseSha": "cd3fb0ddca6961e0a262b9620aab07d3572598c3",
+      "headSha": "1a1728d8233979bf42888322c29b9e95ac70e558",
+      "createdAt": "2026-10-23T13:42:52Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7994,
+      "baseSha": "1a1728d8233979bf42888322c29b9e95ac70e558",
+      "headSha": "4bef760b109a0f5feee72eac8262403a9378e5db",
+      "createdAt": "2026-10-23T14:00:10Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7995,
+      "baseSha": "cd3fb0ddca6961e0a262b9620aab07d3572598c3",
+      "headSha": "61b6202852394ae9716bb2da2ee75702afb21e0f",
+      "createdAt": "2026-10-23T14:16:29Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7996,
+      "baseSha": "cd3fb0ddca6961e0a262b9620aab07d3572598c3",
+      "headSha": "c9a404594e68c5dbc78fb6411e18c42dd7694633",
+      "createdAt": "2026-10-23T14:17:01Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 7998,
+      "baseSha": "03003096a18d2dfccf66f6b825cce6de2b81abb7",
+      "headSha": "bba5a911d27e006ecbe7b40f778699fae5e2fcc3",
+      "createdAt": "2026-10-23T16:22:01Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "element-hq/element-x-android",
+      "pr": 8000,
+      "baseSha": "4b62a99d925e5ecb051f635874bc47edc43b59e7",
+      "headSha": "3087b6341ac69d2b34c75c9521e87d9f64b5c7f2",
+      "createdAt": "2026-10-24T14:39:04Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "FossifyOrg/Calendar",
+      "pr": 1378,
+      "baseSha": "708e6e5b6dec1882afe83502d964c21774a028c8",
+      "headSha": "959600eb29e2b3ea42393233e5fc83f7e0fd4379",
+      "createdAt": "2026-10-21T16:51:32Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "FossifyOrg/Camera",
+      "pr": 361,
+      "baseSha": "571631acf538689731a0549d326cd36fab98974e",
+      "headSha": "be60dfef7c12cd0632aa7ed0eb7cd37118a7972e",
+      "createdAt": "2026-10-23T12:28:45Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "FossifyOrg/Gallery",
+      "pr": 1192,
+      "baseSha": "ea7499d425c583c960566ffa9f05b7dfaedd30f1",
+      "headSha": "7cd77e0e51812facd831ecfd800f2590112a1d54",
+      "createdAt": "2026-10-23T12:28:39Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "organicmaps/organicmaps",
+      "pr": 13978,
+      "baseSha": "c88a7178757842cdb5426d8f0d51690a467df567",
+      "headSha": "6db751d5a9726babf13d0af65c1cefa0058e1e21",
+      "createdAt": "2026-10-23T21:07:31Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "organicmaps/organicmaps",
+      "pr": 13979,
+      "baseSha": "013c3a22a1720e3e49f6f04466de72c35bd84a43",
+      "headSha": "070ad0a50d3379519255658fe97abf29bb39e20a",
+      "createdAt": "2026-10-23T21:14:25Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "organicmaps/organicmaps",
+      "pr": 13981,
+      "baseSha": "408e794500f798655fb118cf15fdc74e1ae18b99",
+      "headSha": "2cac4d965f852ab2a81ec3a6ab9bb35f5d8d15d4",
+      "createdAt": "2026-10-23T22:32:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "organicmaps/organicmaps",
+      "pr": 13982,
+      "baseSha": "287b97d6bca46dd6ccd50a809c6415e02b6fec2b",
+      "headSha": "98e020c9f501e389e61c56d96a597bff7d6b7de4",
+      "createdAt": "2026-10-24T14:58:18Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "organicmaps/organicmaps",
+      "pr": 13984,
+      "baseSha": "3b4952efad3ef1f2c033c3d9520804fc41c93ad0",
+      "headSha": "229b6ef6c8a1c0d971a2cfb950756178283c6de3",
+      "createdAt": "2026-10-24T20:29:23Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7322,
+      "baseSha": "4faaf24aa37a8331224d7eb37a35b2d7e61b9908",
+      "headSha": "d834d425044de8c8e1924a9542028e7feec596f6",
+      "createdAt": "2026-10-21T13:40:19Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7325,
+      "baseSha": "4faaf24aa37a8331224d7eb37a35b2d7e61b9908",
+      "headSha": "84a519050a053fb09ef0a1a214a8c8b0493c19f2",
+      "createdAt": "2026-10-22T13:11:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7328,
+      "baseSha": "4faaf24aa37a8331224d7eb37a35b2d7e61b9908",
+      "headSha": "6dab6e68c935ade7842e385195603f67895110f9",
+      "createdAt": "2026-10-23T21:46:11Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7329,
+      "baseSha": "f1a56a164444662d1f15f087fa30600023d49080",
+      "headSha": "c6d7f0101758ca3e945bed1a06567be57a4bd460",
+      "createdAt": "2026-10-24T04:50:10Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7330,
+      "baseSha": "f1a56a164444662d1f15f087fa30600023d49080",
+      "headSha": "82c61dd548fce4e8ce59bb4eb298e5b293f94f92",
+      "createdAt": "2026-10-24T07:47:30Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "StreetComplete/StreetComplete",
+      "pr": 7331,
+      "baseSha": "e1eafc18c3ca06eeb943d13521d9c7b6ec1b8c22",
+      "headSha": "df8f1e40f32d6692f68a033b778fa7f0c092ef8e",
+      "createdAt": "2026-10-24T15:07:12Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13940,
+      "baseSha": "7436ba1010493515ff1a5f5d60aacdc6168c8500",
+      "headSha": "e6606acf6cbee3c93dd2993fa3260feaab174adf",
+      "createdAt": "2026-10-20T19:44:29Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13941,
+      "baseSha": "f46290f28ab44fa514bac0a9f0252fd7d2afb66f",
+      "headSha": "07f17263649036a954f09c03d2b4ce560ab5d1cc",
+      "createdAt": "2026-10-21T04:26:37Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13942,
+      "baseSha": "d7d6f25c031a43ec62dd37acffa5ce379d0f70cf",
+      "headSha": "0735e1729d47967638e253553056675e99f532e5",
+      "createdAt": "2026-10-21T05:42:15Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13943,
+      "baseSha": "acb7dfd658a8478686d0f8a0c389269d0ca8df95",
+      "headSha": "4624634b10631fa3f734edf67fa2ee5cb5f56c19",
+      "createdAt": "2026-10-21T09:51:40Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13944,
+      "baseSha": "7436ba1010493515ff1a5f5d60aacdc6168c8500",
+      "headSha": "015183bba96a63071ce631b55f7f5932824a805c",
+      "createdAt": "2026-10-21T10:36:36Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13951,
+      "baseSha": "acb7dfd658a8478686d0f8a0c389269d0ca8df95",
+      "headSha": "814c9584c819f459c34683a5aa595179f8963c83",
+      "createdAt": "2026-10-23T14:10:38Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13952,
+      "baseSha": "acb7dfd658a8478686d0f8a0c389269d0ca8df95",
+      "headSha": "dd2b9a127f52e8154dd9092ef3632fa98548466f",
+      "createdAt": "2026-10-23T19:06:58Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "TeamNewPipe/NewPipe",
+      "pr": 13955,
+      "baseSha": "acb7dfd658a8478686d0f8a0c389269d0ca8df95",
+      "headSha": "5d604ac0413c06a0024fbe6910d47ccdd136d2df",
+      "createdAt": "2026-10-24T12:31:44Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "Thunderbird/thunderbird-android",
+      "pr": 11780,
+      "baseSha": "1943b9e1fb64a6b8658236fc26aec71913cafe06",
+      "headSha": "d3a5743ff42e5394096842667ab999911027710a",
+      "createdAt": "2026-10-21T00:13:07Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "Thunderbird/thunderbird-android",
+      "pr": 11785,
+      "baseSha": "dbd85a0da20daced961ff578240d8879876328b2",
+      "headSha": "ef7fe241dad86a933439a91fbedd5a109f8b67c3",
+      "createdAt": "2026-10-22T11:04:27Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "Thunderbird/thunderbird-android",
+      "pr": 11792,
+      "baseSha": "7b052f47dbf30a01677785030fb074e9d739dc5c",
+      "headSha": "f3623f69086fad67b6ca4377db0a056504d2b257",
+      "createdAt": "2026-10-23T22:41:47Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    },
+    {
+      "repository": "zhanghai/MaterialFiles",
+      "pr": 1665,
+      "baseSha": "93c333960aa897836ba3f215a19d0cb0de494db1",
+      "headSha": "d749b6e6a10d9195bb361fc41032e33ad807813d",
+      "createdAt": "2026-10-24T13:56:15Z",
+      "source": "PROSPECTIVE_GITHUB",
+      "disclosure": "METADATA_ONLY"
+    }
+  ]
+}
