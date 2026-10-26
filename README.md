@@ -1,3 +1,5 @@
+> **Objetivo actual — Ultra Sentinel SSS+ Private Edition (25-10-2026):** uso personal exclusivo, sin publicación para terceros ni obligación de 120 etiquetas. El benchmark de 120 sigue conservado como experimento histórico opcional, no como gate de lanzamiento privado. El repositorio seguirá público **hasta terminar y verificar todo** por decisión del propietario. El estado operativo sigue NOT_CERTIFIED y las reparaciones/escrituras permanecen protegidas. [Política y controles privados](docs/quality/PRIVATE-EDITION-RELEASE-GATES.md).
+
 # Ultra Sentinel
 
 **Estado actual: motor independiente de análisis y revisión en modo lectura, con migración funcional parcial. NO Triple SSS certificado.**
