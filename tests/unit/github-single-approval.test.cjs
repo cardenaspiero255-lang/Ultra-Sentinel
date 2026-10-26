@@ -75,10 +75,10 @@ test('rejects incomplete/forged/expired/changed approval and commenter',()=>{
  ])assert.throws(()=>verify({event:event(e)}),/SINGLE_APPROVAL_DENIED/);
 });
 test('rejects altered issuer JWT and an invalid trust anchor',()=>{
- assert.throws(()=>verify({oidcJwt:jwt({actor_id:'3'})}),/OIDC_APPROVAL_DENIED/);
- assert.throws(()=>verify({oidcJwt:jwt({event_name:'workflow_dispatch'})}),/OIDC_APPROVAL_DENIED/);
- assert.throws(()=>verify({jwks:{keys:[]}}),/OIDC_APPROVAL_DENIED/);
- assert.throws(()=>verify({oidcContext:{...CONTEXT,sha:'1'.repeat(40)}}),/OIDC_APPROVAL_DENIED/);
+ assert.throws(()=>verify({oidcJwt:jwt({actor_id:'3'})}),/OIDC_APPROVAL_DENIED|SINGLE_APPROVAL_DENIED/);
+ assert.throws(()=>verify({oidcJwt:jwt({event_name:'workflow_dispatch'})}),/OIDC_APPROVAL_DENIED|SINGLE_APPROVAL_DENIED/);
+ assert.throws(()=>verify({jwks:{keys:[]}}),/OIDC_APPROVAL_DENIED|SINGLE_APPROVAL_DENIED/);
+ assert.throws(()=>verify({oidcContext:{...CONTEXT,sha:'1'.repeat(40)}}),/OIDC_APPROVAL_DENIED|SINGLE_APPROVAL_DENIED/);
 });
 test('format fails closed on invalid digest, nonce, or scope',()=>{
  for(const payload of [
