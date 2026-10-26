@@ -1,0 +1,131 @@
+name: Ultra Sentinel — Una aprobación GitHub, reparación aislada
+# Owner-only issue command: exactly one GitHub-authenticated approval.
+# This workflow repairs a historical GameHub source COPY ONLY. No remote writes.
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+concurrency:
+  group: ultra-owner-single-approval-isolated
+  cancel-in-progress: false
+jobs:
+  single-owner-approved-sandbox:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor == 'cardenaspiero255-lang' &&
+      github.actor_id == '322222186' &&
+      github.event.sender.id == 322222186 &&
+      github.event.comment.user.id == 322222186 &&
+      github.event.issue.number == 50 &&
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, 'ULTRA_SENTINEL_OWNER_APPROVAL_V1|') &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout trusted immutable Ultra Sentinel main without GitHub credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Bind GitHub one-approval comment, signed OIDC, exact plan digest and 15-minute expiry
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-owner-single-workflow.cjs
+      - name: Frozen GameHub original SHA without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 9ad983576c16c6c34d59283979d83c69ede50dce
+          path: upstream
+          persist-credentials: false
+      - name: Revalidate frozen source and repository rules
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = 9ad983576c16c6c34d59283979d83c69ede50dce
+          test "$(git -C upstream hash-object app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt)" = adb11032b9b7f62f865228dfa1c27258ca3fa0df
+          npm run check
+      - name: Restrict Bubblewrap sandbox using existing Ubuntu AppArmor profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          dest=/etc/apparmor.d/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" "$dest"
+          sudo apparmor_parser -r "$dest"
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Compile real Kotlin and exercise independent RED GREEN Judge inside Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/gamehub-pr151-real-red-green-judge.sh "$GITHUB_WORKSPACE/upstream"
+      - name: Patch disposable Git checkout and prove exact original tree rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/gamehub-pr151-real-source-rollback.cjs \
+            "$GITHUB_WORKSPACE/upstream" "$RUNNER_TEMP/one-approval-rollback.json"
+      - name: Cross-check signed owner receipt, Kotlin original oracle and identical Git tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP" <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir=process.argv[2];
+          const owner=JSON.parse(fs.readFileSync(path.join(dir,'owner-single-approval-receipt.json'),'utf8'));
+          const rollback=JSON.parse(fs.readFileSync(path.join(dir,'one-approval-rollback.json'),'utf8'));
+          const oracle=JSON.parse(fs.readFileSync(path.join(dir,'gamehub-pr151-real-proof/receipt.json'),'utf8'));
+          if(owner.status!=='SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED'||
+             owner.workflowSha!==process.env.GITHUB_SHA||
+             owner.runId!==process.env.GITHUB_RUN_ID||
+             owner.remoteWrites!==false||owner.mergeAllowed!==false||
+             rollback.status!=='REAL_SOURCE_GIT_ROLLBACK_VERIFIED'||
+             rollback.sourceCommit!==oracle.sourceCommit||
+             rollback.sourceBlobSha!==oracle.originalBlob||
+             rollback.restoredTreeSha!==rollback.baselineTreeSha||
+             !rollback.originalGitBlobRestored||
+             oracle.redOriginalFailedAtExactPredicate!==true||
+             oracle.greenPatchedPassed!==true||
+             oracle.independentJudgePassed!==true)process.exit(1);
+          const sealed={
+           schema:'ultra-sentinel-one-approval-gamehub-sandbox-e2e/v1',
+           status:'OWNER_ONE_APPROVAL_REAL_SOURCE_SANDBOX_PROOF',
+           workflowSha:owner.workflowSha,ownerId:owner.ownerId,
+           runId:owner.runId,commentId:owner.commentId,
+           planDigest:owner.planDigest,sourceCommit:rollback.sourceCommit,
+           sourceBlob:rollback.sourceBlobSha,repairedBlob:rollback.patchedBlobSha,
+           independentKotlinRedGreenJudge:true,realSourcePatchedInTemporaryGit:true,
+           originalTreeIdenticallyRestored:true,
+           singleGitHubOwnerApprovalVerified:true,ed25519Required:false,
+           remoteWrites:false,mergeAllowed:false,productionCertified:false
+          };
+          fs.writeFileSync(path.join(dir,'one-approval-e2e.json'),
+           JSON.stringify(sealed)+'\n',{flag:'wx',mode:0o600});
+          console.log('ONE_GITHUB_APPROVAL_REAL_SOURCE_ROLLBACK_VERIFIED_NO_PRODUCTION_WRITE');
+          NODE
+      - name: Publish only bounded, credential-free evidence
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: owner-single-approval-real-source-receipt
+          path: ${{ runner.temp }}/one-approval-e2e.json
+          retention-days: 14
+          if-no-files-found: error
