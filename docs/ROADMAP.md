@@ -1,3 +1,5 @@
+> **Nuevo alcance aprobado (25-10-2026):** las 120 etiquetas, la distribución comercial y el benchmark público se excluyen de los requisitos de la edición privada. Preservar campañas anteriores, pruebas reales, autorizaciones, rollback, CI y verificación por SHA. El repositorio **no** se hará privado antes de finalizar. Véase [gates Private Edition](quality/PRIVATE-EDITION-RELEASE-GATES.md).
+
 # Roadmap ejecutable de Ultra Sentinel — cinco bloques sin duplicar motores
 
 **Corte actualizado:** `main@a251653f58641a90658ae2940266f11cec03ca7d` (PR #34/#42/#44/#46/#47 fusionados después de #39/#40/#41). El estado fuente por cada capacidad está en [US-CAPABILITY-INVENTORY.md](US-CAPABILITY-INVENTORY.md); el [issue #5](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/issues/5) permanece como histórico de ideas y propietarios.
