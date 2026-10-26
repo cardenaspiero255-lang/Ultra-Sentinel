@@ -66,6 +66,23 @@ function semanticCandidates({path,lines,added,active}={}){
      'Dos artículos con URLs del mismo hostname y dominios declarados distintos deben causar abstención.');
   }
  }
+ // Known real GameHub #151 source-level regression (NOT a blind benchmark label).
+ // The telemetry treats +Infinity as "high pressure" when checking only !isNaN.
+ // The independent Kotlin acceptance oracle is required for causal proof.
+ if(path.endsWith('/domain/AiSessionCoach.kt')&&
+    /\bHIGH_THERMAL_HEADROOM\s*=\s*0\.80f\b/.test(body)&&
+    /\bthermalHeadroom\b/.test(body)){
+  for(const row of added){
+   const code=active.get(row.line);
+   if(typeof code!=='string')continue;
+   const legacy=/(?:!it\s*\.\s*isNaN\(\)|!\s*(?:sample|current)\s*\.\s*thermalHeadroom\s*\.\s*isNaN\(\))/.test(code);
+   if(legacy&&(/\bHIGH_THERMAL_HEADROOM\b/.test(code)||
+    /\b(?:sample|current)\s*\.\s*thermalHeadroom\b/.test(code)))
+    emit(row,'NONFINITE_THERMAL_HEADROOM',
+     'El chequeo !isNaN acepta infinito como telemetría térmica válida.',
+     'Compilar fuente Kotlin original y probar +Infinity/−Infinity, finitos, NaN y null; exigir isFinite.');
+  }
+ }
  for(const risk of knownDefectRegressionCandidates({path,lines,added,active}))
   findings.push(risk);
  return findings;
