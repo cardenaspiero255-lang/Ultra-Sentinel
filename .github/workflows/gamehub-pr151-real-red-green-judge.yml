@@ -1,0 +1,74 @@
+name: GameHub PR151 — Real Kotlin RED GREEN Judge (read-only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gamehub-pr151-real-red-green-judge.yml'
+      - 'scripts/gamehub-pr151-real-red-green-judge.sh'
+      - 'tests/oracles/gamehub-pr151-*.kt'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/gamehub-pr151-real-red-green-judge.yml'
+      - 'scripts/gamehub-pr151-real-red-green-judge.sh'
+      - 'tests/oracles/gamehub-pr151-*.kt'
+permissions:
+  contents: read
+concurrency:
+  group: gamehub-pr151-source-proof-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  real-original-and-fix:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Sentinel without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Checkout original GameHub at pinned historical SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 9ad983576c16c6c34d59283979d83c69ede50dce
+          path: upstream
+          persist-credentials: false
+      - name: Verify source and run standard Sentinel checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = 9ad983576c16c6c34d59283979d83c69ede50dce
+          test "$(git -C upstream hash-object upstream/app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt)" = adb11032b9b7f62f865228dfa1c27258ca3fa0df
+          npm run check
+      - name: Restrict OS namespace policy to Bubblewrap executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Compile original and corrected Kotlin, execute RED GREEN Judge in sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          bash scripts/gamehub-pr151-real-red-green-judge.sh "$GITHUB_WORKSPACE/upstream"
+      - name: Publish minimal read-only SHA-bound receipt
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: gamehub-pr151-real-kotlin-red-green-judge
+          path: ${{ runner.temp }}/gamehub-pr151-real-proof/receipt.json
+          retention-days: 14
+          if-no-files-found: error
