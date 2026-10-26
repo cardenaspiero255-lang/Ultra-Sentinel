@@ -55,8 +55,11 @@ run red
 rc=$?
 set -e
 test "$rc" -eq 1 || { echo GAMEHUB_BATTERY_RED_NOT_REPRODUCED; exit 2; }
-grep -F 'GAMEHUB_BATTERY_RED_INVALID_PERCENTAGE_ACCEPTED' "$out/red.log" >/dev/null ||
-  { echo GAMEHUB_BATTERY_RED_WRONG_CAUSE; exit 2; }
+if ! grep -F 'GAMEHUB_BATTERY_RED_INVALID_PERCENTAGE_ACCEPTED' "$out/red.log" >/dev/null; then
+  echo GAMEHUB_BATTERY_RED_WRONG_CAUSE
+  sed -n '1,24p' "$out/red.log" >&2
+  exit 2
+fi
 run green
 grep -Fx 'GAMEHUB_BATTERY_ACCEPTANCE_GREEN' "$out/green.log" >/dev/null ||
   { echo GAMEHUB_BATTERY_GREEN_FAILED; exit 2; }
