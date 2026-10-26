@@ -17,6 +17,23 @@ const checks=names.map(name=>({name,head_sha:CAND,status:'completed',conclusion:
 function assess(change={}){
  return assessRegisteredRepairPr({plan,pr,changedFiles:files,checkRuns:checks,...change});
 }
+test('GitHub file ordering does not change the validated change set',()=>{
+ assert.equal(assess({changedFiles:[...files].reverse()}).status,'PR_REVIEW_READY_NO_AUTO_MERGE');
+});
+test('additional pending, stale or indeterminate current-head checks block handoff',()=>{
+ for(const extra of [
+  {status:'queued',conclusion:null},
+  {status:'in_progress',conclusion:null},
+  {status:'completed',conclusion:'stale'},
+  {status:'completed',conclusion:null},
+  {status:'completed',conclusion:'unexpected'},
+ ])assert.throws(()=>assess({checkRuns:[...checks,{name:'security',head_sha:CAND,...extra}]}),
+  /REGISTERED_PR_HANDOFF_BLOCKED/);
+});
+test('test file must carry a valid Git blob identity',()=>{
+ for(const sha of [undefined,'','not-a-sha'])assert.throws(
+  ()=>assess({changedFiles:[files[0],{...files[1],sha}]}),/REGISTERED_PR_HANDOFF_BLOCKED/);
+});
 test('real branch PR with exact change set and required SHA checks is review-ready, NEVER auto-merge',()=>{
  const r=assess();
  assert.equal(r.status,'PR_REVIEW_READY_NO_AUTO_MERGE');

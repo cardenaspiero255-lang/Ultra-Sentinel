@@ -23,17 +23,21 @@ function assessRegisteredRepairPr({plan,pr,changedFiles,checkRuns}={}){
    pr.base?.repo?.full_name!==plan.targetRepo||
    pr.head?.sha!==plan.candidateSha||pr.base?.sha!==plan.baseSha||
    pr.base?.ref!=='main'||pr.changed_files!==2||
-   changedFiles.length!==2||!Array.isArray(changedFiles)||
-   changedFiles[0]?.filename!==TARGET||changedFiles[0]?.status!=='modified'||
-   changedFiles[0]?.sha!==plan.candidateBlob||
-   changedFiles[1]?.filename!==TEST||changedFiles[1]?.status!=='modified')blocked();
+   changedFiles.length!==2)blocked();
+  const source=changedFiles.find(x=>x?.filename===TARGET);
+  const regression=changedFiles.find(x=>x?.filename===TEST);
+  if(source?.status!=='modified'||source.sha!==plan.candidateBlob||
+   regression?.status!=='modified'||typeof regression.sha!=='string'||
+   !SHA.test(regression.sha))blocked();
   for(const name of REQUIRED){
    const matches=checkRuns.filter(x=>x.name===name&&x.head_sha===plan.candidateSha);
    if(matches.length!==1||matches[0].status!=='completed'||
     matches[0].conclusion!=='success')blocked();
   }
+  // Required checks must succeed; additional checks must at least have a
+  // recognized, non-blocking terminal result. Unknown results fail closed.
   if(checkRuns.some(x=>x.head_sha===plan.candidateSha&&
-      ['failure','cancelled','timed_out','action_required'].includes(x.conclusion)))blocked();
+      (x.status!=='completed'||!['success','neutral','skipped'].includes(x.conclusion))))blocked();
   return Object.freeze({
    status:'PR_REVIEW_READY_NO_AUTO_MERGE',prNumber:pr.number,
    repo:plan.targetRepo,baseSha:plan.baseSha,headSha:plan.candidateSha,

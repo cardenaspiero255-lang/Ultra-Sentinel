@@ -11,7 +11,9 @@ function fail(){throw Error('INVALID_SCHEDULE_EVIDENCE');}
 function timestamp(value){
  if(typeof value!=='string'||!TIME.test(value))fail();
  const ms=Date.parse(value);
- if(!Number.isFinite(ms))fail();
+ // Date.parse normalizes impossible dates (February 30, 24:00) instead
+ // of rejecting them. Evidence must retain its original calendar fields.
+ if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,19)!==value.slice(0,19))fail();
  return ms;
 }
 function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamples=3}={}){
