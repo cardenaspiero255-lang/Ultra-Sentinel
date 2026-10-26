@@ -1,3 +1,5 @@
+> **Uso del inventario para Private Edition (25-10-2026):** estas 35 capacidades son el alcance técnico a reevaluar por SHA; el corte de estado mostrado debajo es de 15-10-2026 y NO equivale a un inventario actualizado. No se exigen 120 etiquetas ni publicación pública. Mantener pruebas de funcionamiento, autorización, rollback y vínculos cross-product. [Política Private Edition](quality/PRIVATE-EDITION-RELEASE-GATES.md).
+
 # Inventario único US-001—US-035 (código del repositorio independiente)
 
 **Corte de código:** `main@a251653f58641a90658ae2940266f11cec03ca7d`, 2026-10-15 (incluye #34, #42, #44, #46 y #47 después de #39–#41). Los gates operativos siguen pendientes.  

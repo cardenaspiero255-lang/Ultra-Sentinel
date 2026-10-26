@@ -1,3 +1,5 @@
+> **Perfil Private Edition (25-10-2026):** el criterio de 120 etiquetas descrito en el pre-screen SSS+ es histórico/opcional; **no bloquea** la edición privada. Las protecciones de pruebas adversariales, evidencia real, autorización, rollback y CI **sí** siguen siendo obligatorias. Véase [Private Edition](PRIVATE-EDITION-RELEASE-GATES.md).
+
 # Gates de calidad — definidos por fase
 
 ## Bootstrap (aplica ahora)

@@ -1,3 +1,5 @@
+> **Nota de alcance (25-10-2026):** este scorecard de 120 etiquetas se mantiene para reproducir el benchmark histórico, pero **no es una condición de cierre de Ultra Sentinel Private Edition**. No se debilitan firmas, seguridad ni verificaciones E2E por ese cambio. [Criterios actuales de la edición privada](PRIVATE-EDITION-RELEASE-GATES.md).
+
 # Triple S+ — criterio interno medible y certificación pendiente
 
 El término **Triple S+** es una clasificación interna del proyecto, **no** una certificación profesional o estándar industrial. Ningún fixture sintético, porcentaje de CI, autocalificación del autor ni salida de este repositorio otorga por sí solo la clasificación.
