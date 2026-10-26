@@ -20,7 +20,7 @@ test('only exact GitHub owner comment from issue #50 starts a read-only OIDC wor
   'gamehub-pr151-real-source-rollback.cjs',
   'retention-days: 14',
  ])assert.ok(yml.includes(x),x);
- assert.match(yml,/permissions:\n  contents: read\n  actions: read\n  id-token: write/);
+ assert.match(yml,/permissions:\n  contents: read\n  actions: read\n  issues: read\n  id-token: write/);
  assert.doesNotMatch(yml,/contents: write|pull_request_target|git push|git merge|secrets\.|npm publish|deployments: write/);
 });
 test('OIDC GitHub single-approval entrypoint never works by itself from ChatGPT message',()=>{
