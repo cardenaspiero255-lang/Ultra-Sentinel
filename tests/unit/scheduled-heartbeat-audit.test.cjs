@@ -63,7 +63,7 @@ test('older workflow revision within lookback does not invalidate latest main SH
 });
 test('calendar rollover cannot manufacture a valid heartbeat timestamp',()=>{
  for(const invalid of ['2026-02-30T16:00:00Z','2026-10-14T24:00:00Z']) {
-  assert.throws(()=>audit(base,{now:invalid}),/INVALID_SCHEDULE_EVIDENCE/);
+  assert.throws(()=>audit([],{now:invalid}),/INVALID_SCHEDULE_EVIDENCE/);
   assert.throws(()=>audit([{...base[0],created_at:invalid},...base.slice(1)]),
    /INVALID_SCHEDULE_EVIDENCE/);
  }
