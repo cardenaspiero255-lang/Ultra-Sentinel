@@ -80,3 +80,51 @@ test('CLI rejects symbolic links and forged JSON without publishing secrets',()=
   assert.equal(x.stdout,'');
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+
+test('one-click GH workflow remains immutable-main, owner-only and read-only',()=>{
+ const root=path.resolve(__dirname,'../..');
+ const source=fs.readFileSync(path.join(root,'.github/workflows/owner-one-click-sandbox.yml'),'utf8');
+ for(const required of [
+  'on:\n  workflow_dispatch:',"github.ref == 'refs/heads/main'",
+  'github.event.repository.id == 1418338512',
+  "github.actor_id == '322222186'",
+  "github.actor == 'cardenaspiero255-lang'",
+  'github.run_attempt == 1',
+  'persist-credentials: false',
+  'ref: ${{ github.sha }}',
+  'npm run check',
+  'verify-github-workflow-approval.cjs',
+  'node --test tests/unit/hunter-owner-flow.test.cjs',
+  'tests/unit/repair-judge.test.cjs',
+  'scripts/drill-bwrap-isolation.cjs',
+  "realProductionRepairVerified:false",
+  'privateEditionCertified:false',
+  'retention-days: 14'
+ ])assert.ok(source.includes(required),required);
+ assert.match(source,/permissions:\n  contents: read\n  actions: read/);
+ assert.doesNotMatch(source,/pull_request_target|contents: write|deployments: write|secrets\.|git push|git merge|git remote add|sudo sysctl/);
+ const ownerRunner=fs.readFileSync(path.join(root,'scripts/run-owner-sandbox-repair.cjs'),'utf8');
+ assert.match(ownerRunner,/requireRedGreenJudge:true,requireHunterEvidence:true/);
+ assert.match(ownerRunner,/OWNER_SIGNING_KEY|OWNER_PUBLIC_KEY_FILE|trustedPublicKey/);
+});
+test('CLI accepts exact current API-backed owner run, but never authorizes production',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'owner-github-approval-success-'));
+ try{
+  const file=path.join(dir,'run.json');
+  fs.writeFileSync(file,JSON.stringify({...run,created_at:new Date(Date.now()-5000).toISOString()}),{mode:0o600});
+  const cli=path.resolve(__dirname,'../../scripts/verify-github-workflow-approval.cjs');
+  const env={PATH:process.env.PATH,HOME:dir,
+   ULTRA_OWNER_RUN_METADATA_FILE:file,GITHUB_REPOSITORY:REPO,
+   GITHUB_REPOSITORY_ID:'1418338512',GITHUB_ACTOR_ID:'322222186',
+   GITHUB_REF:'refs/heads/main',GITHUB_SHA:SHA,GITHUB_EVENT_NAME:'workflow_dispatch',
+   GITHUB_RUN_ID:'12345678',GITHUB_RUN_ATTEMPT:'1',
+   GITHUB_WORKFLOW_REF:REPO+'/.github/workflows/owner-one-click-sandbox.yml@refs/heads/main'
+  };
+  const result=spawnSync(process.execPath,[cli],{env,encoding:'utf8',timeout:10000});
+  assert.equal(result.status,0,result.stderr);
+  const x=JSON.parse(result.stdout.trim());
+  assert.equal(x.status,'OWNER_GITHUB_SANDBOX_ONLY');
+  assert.equal(x.authorizedForProductionRepair,false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
