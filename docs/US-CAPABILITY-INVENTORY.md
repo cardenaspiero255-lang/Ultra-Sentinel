@@ -23,7 +23,7 @@
 | US-005 | Grafo causal verificable | **parcial** | `packages/family-hunter/ultra_sentinel_family_fingerprints.cjs` | Causas raíz contrastadas con repros multiarchivo |
 | US-006 | Memoria de playbooks | **parcial** | `packages/memory/ultra_sentinel_memory.cjs`, `ultra_sentinel_memory_ledger.cjs` | Procedencia acreditada; cero fixes externos certificados |
 | US-007 | Frontier offline HTML/JSON | **pendiente** | Futuro `packages/reports/`; no atribuirlo al Core | Historial Git y exportador verificable |
-| US-008 | Regression Investigator / bisect | **pendiente** | Futuro `packages/quality-gates/` | Bisect reproducible supervisado |
+| US-008 | Regression Investigator / bisect | **parcial** | `packages/quality-gates/regression-investigator.cjs`; `tests/unit/regression-investigator.test.cjs` | Planificador bisect offline probado; pendiente autenticación de genealogía Git, CI exacta y ejecución E2E supervisada |
 | US-009 | Hunter→Fixer→Judge | **parcial** | `packages/family-hunter/ultra_sentinel_family_hunter_modes.cjs`, `packages/recovery/repair-draft.cjs` | Juez independiente con veto real, E2E |
 | US-010 | Propuesta de parche acotado | **implementado** | `packages/recovery/repair-draft.cjs`; `tests/unit/supervised-repair.test.cjs` | Solo propuestas; ejecución es otra capacidad |
 | US-011 | Reproducción CI ligada a SHA | **parcial** | `packages/orchestrator/gamehub-live-reader.cjs`, `check-pr-provenance.cjs` | Manifiesto reproducible de falla CI |
