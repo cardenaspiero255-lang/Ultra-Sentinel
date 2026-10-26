@@ -13,13 +13,15 @@ const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 const {judgeLocalRepair}=require('./repair-judge.cjs');
 const {verifyHunterRepairBinding}=require('./hunter-repair-binding.cjs');
+const {verifyGitHubSingleApproval}=require('./github-single-approval.cjs');
+const PINNED_GITHUB_OIDC_JWKS='https://token.actions.githubusercontent.com/.well-known/jwks';
 function digestPlan(plan,changes){
  return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
 async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwnerId,
  authorization,authorizationSignature,trustedPublicKey,nonceStorePath,directory,plan,changes,expectedHeadSha,fetchImpl,
  verifyRepair,verifyRed,judgeRepair,requireRedGreenJudge=false,
- requireHunterEvidence=false,now=Date.now()}={}){
+ requireHunterEvidence=false,now=Date.now(),githubSingleApproval,fetchGithubJwks=globalThis.fetch}={}){
  if(typeof verifyRepair!=='function')throw Error('REPAIR_VERIFIER_REQUIRED');
  if(requireHunterEvidence!==true&&requireHunterEvidence!==false)
   throw Error('INVALID_HUNTER_BINDING_MODE');
@@ -35,11 +37,42 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   authorization.nonce!==plan.authorizationNonce||
   authorization.planDigest!==digestPlan(plan,changes))
   throw Error('AUTHORIZATION_SCOPE_MISMATCH');
- const actor=await authenticateGitHubOwner({token,expectedOwner,expectedOwnerId,fetchImpl});
- const check=verifyOwnerAuthorization({authorization,verifiedActor:actor,expectedOwner,expectedOwnerId,signature:authorizationSignature,
-  trustedPublicKey,now});
- if(!check.authorized||check.canonical!==stableAuthorization(authorization))
-  throw Error('OWNER_AUTHORIZATION_DENIED');
+ if(githubSingleApproval!==undefined){
+  // Alternative authorization is explicitly sandbox-only. It is a
+  // GitHub-owner-authenticated plan approval, NOT an Ed25519 signature.
+  // OIDC issuer keys come only from a fixed TLS endpoint, never a comment.
+  if(expectedOwner!=='cardenaspiero255-lang'||expectedOwnerId!==322222186||
+   authorization.ownerLogin!==expectedOwner||
+   typeof authorization.expiresAt!=='number'||
+   githubSingleApproval?.approvedPlan?.planDigest!==authorization.planDigest||
+   githubSingleApproval?.approvedPlan?.nonce!==authorization.nonce||
+   githubSingleApproval?.approvedPlan?.expiresAt!==authorization.expiresAt||
+   !Number.isSafeInteger(now)||typeof fetchGithubJwks!=='function'||
+   authorization.expiresAt<=now||authorization.expiresAt-now>900000)
+   throw Error('SINGLE_OWNER_APPROVAL_SCOPE_DENIED');
+  const keys=await fetchGithubJwks(PINNED_GITHUB_OIDC_JWKS,{
+   method:'GET',redirect:'error',headers:{Accept:'application/json'},
+   signal:AbortSignal.timeout(15000)});
+  if(!keys?.ok)throw Error('SINGLE_OWNER_APPROVAL_JWKS_UNAVAILABLE');
+  const approved=verifyGitHubSingleApproval({
+   oidcJwt:githubSingleApproval.oidcJwt,
+   jwks:await keys.json(),
+   oidcContext:githubSingleApproval.oidcContext,
+   event:githubSingleApproval.event,
+   approvedPlan:githubSingleApproval.approvedPlan,now
+  });
+  if(approved.planDigest!==digestPlan(plan,changes)||
+   approved.nonce!==plan.authorizationNonce||
+   approved.workflowSha!==githubSingleApproval.oidcContext.sha||
+   approved.productionWritesAllowed!==false||approved.remoteWrites!==false)
+   throw Error('SINGLE_OWNER_APPROVAL_PLAN_DENIED');
+ }else{
+  const actor=await authenticateGitHubOwner({token,expectedOwner,expectedOwnerId,fetchImpl});
+  const check=verifyOwnerAuthorization({authorization,verifiedActor:actor,expectedOwner,expectedOwnerId,signature:authorizationSignature,
+   trustedPublicKey,now});
+  if(!check.authorized||check.canonical!==stableAuthorization(authorization))
+   throw Error('OWNER_AUTHORIZATION_DENIED');
+ }
  // The chosen finding is inside the signed plan digest. The trusted local
  // Core/Family Hunter must independently find it at the exact Git baseline.
  // Never create a journal, consume a nonce or modify a file if it differs.
