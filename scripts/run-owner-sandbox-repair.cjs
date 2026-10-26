@@ -53,8 +53,10 @@ function bubblewrapCommand(directory,argv){
   '--',...argv);
  return Object.freeze({binary:'/usr/bin/bwrap',args:Object.freeze(args)});
 }
-function verifierFromTrustedEnvironment(directory){
- const raw=process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON;
+function verifierFromTrustedEnvironment(directory,{argvVariable='ULTRA_SENTINEL_VALIDATOR_ARGV_JSON',expectRed=false}={}){
+ if(!['ULTRA_SENTINEL_VALIDATOR_ARGV_JSON','ULTRA_SENTINEL_JUDGE_ARGV_JSON'].includes(argvVariable)||
+  typeof expectRed!=='boolean')throw Error('UNTRUSTED_VALIDATOR_CONFIGURATION');
+ const raw=process.env[argvVariable];
  if(!raw)throw Error('VALIDATOR_CONFIGURATION_REQUIRED');
  const argv=JSON.parse(raw);
  if(!Array.isArray(argv)||argv.length===0||argv.length>20||
@@ -77,7 +79,15 @@ function verifierFromTrustedEnvironment(directory){
    env:{PATH:'/usr/bin:/bin',HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
     GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}
   });
-  return !result.error&&result.status===0;
+  if(result.error)return false;
+  if(expectRed){
+   // A random tool crash, timeout or namespace failure is not a reproduced
+   // failing test. Require TAP evidence from the *same* test argv used for GREEN.
+   return result.status===1&&result.signal===null&&
+    /^\s*not ok [1-9]\d*\s*-/m.test(result.stdout)&&
+    /^\s*# fail [1-9]\d*\s*$/m.test(result.stdout);
+  }
+  return result.status===0;
  };
 }
 
@@ -87,13 +97,20 @@ async function main(){
  const request=JSON.parse(readTrustedFile(process.env.ULTRA_SENTINEL_REPAIR_REQUEST_FILE));
  const trustedPublicKey=readTrustedFile(process.env.ULTRA_SENTINEL_OWNER_PUBLIC_KEY_FILE);
  const verifyRepair=verifierFromTrustedEnvironment(request.directory);
+ const verifyRed=verifierFromTrustedEnvironment(request.directory,{expectRed:true});
+ const testArgv=process.env.ULTRA_SENTINEL_VALIDATOR_ARGV_JSON;
+ const judgeArgv=process.env.ULTRA_SENTINEL_JUDGE_ARGV_JSON;
+ if(!judgeArgv||JSON.stringify(JSON.parse(judgeArgv))===JSON.stringify(JSON.parse(testArgv)))
+  throw Error('DISTINCT_JUDGE_CONFIGURATION_REQUIRED');
+ const judgeRepair=verifierFromTrustedEnvironment(request.directory,{argvVariable:'ULTRA_SENTINEL_JUDGE_ARGV_JSON'});
  const result=await runOwnerAuthorizedSandboxRepair({
   token,expectedOwner:OWNER,expectedOwnerId:OWNER_ID,
   authorization:request.authorization,
   authorizationSignature:request.authorizationSignature,
   trustedPublicKey,nonceStorePath:request.nonceStorePath,
   directory:request.directory,plan:request.plan,changes:request.changes,
-  expectedHeadSha:request.expectedHeadSha,verifyRepair
+  expectedHeadSha:request.expectedHeadSha,verifyRepair,verifyRed,judgeRepair,
+  requireRedGreenJudge:true
  });
  if(result.status!=='SANDBOX_REPAIR_VERIFIED')throw Error('REPAIR_NOT_VERIFIED');
  process.stdout.write('OWNER_AUTHORIZED_SANDBOX_REPAIR_VERIFIED\n');
