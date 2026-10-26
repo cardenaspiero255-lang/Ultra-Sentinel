@@ -1,0 +1,139 @@
+name: Ultra Sentinel — aprobar prueba aislada desde GitHub
+# One click: Actions > this workflow > Run workflow (main).
+# GitHub-native OWNER approval is for read-only isolation + rollback fixtures.
+# It does NOT sign or authorize production repairs.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ultra-owner-one-click-sandbox
+  cancel-in-progress: false
+jobs:
+  owner-approved-isolated-drill:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186' &&
+      github.actor == 'cardenaspiero255-lang' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact immutable main SHA without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Reject moved HEAD and validate repository contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          npm run check
+      - name: Verify actual authenticated GitHub owner workflow run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          directory="$RUNNER_TEMP/ultra-one-click"
+          mkdir -p "$directory"
+          chmod 0700 "$directory"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "/repos/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/$GITHUB_RUN_ID" \
+            > "$directory/run.json"
+          ULTRA_OWNER_RUN_METADATA_FILE="$directory/run.json" \
+            node scripts/verify-github-workflow-approval.cjs > "$directory/approval.json"
+          node - "$directory/approval.json" <<'NODE'
+          const fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(x.status!=='OWNER_GITHUB_SANDBOX_ONLY'||
+             x.authorizedForProductionRepair!==false||
+             x.remoteWritesAllowed!==false||
+             x.signatureSubstituted!==false||
+             x.sha!==process.env.GITHUB_SHA)process.exit(1);
+          console.log('OWNER_GITHUB_APPROVAL_BOUND_TO_EXACT_SHA_SANDBOX_ONLY');
+          NODE
+      - name: Exercise Hunter Fixer Judge and verified rollback on disposable Git repos
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/hunter-owner-flow.test.cjs \
+            tests/unit/owner-sandbox-flow.test.cjs \
+            tests/unit/repair-judge.test.cjs
+      - name: Install Bubblewrap under restricted AppArmor policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          dest=/etc/apparmor.d/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" "$dest"
+          sudo apparmor_parser -r "$dest"
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Verify isolated namespace, denied network, inaccessible host files
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/drill-bwrap-isolation.cjs \
+            > "$RUNNER_TEMP/ultra-one-click/isolation.json"
+          node - "$RUNNER_TEMP/ultra-one-click/isolation.json" <<'NODE'
+          const fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(x.status!=='BWRAP_EPHEMERAL_HOST_ISOLATION_OBSERVED'||
+             !x.networkNamespaceSeparate||!x.hostFilesHidden||
+             !x.networkAttemptDenied||!x.secretsAbsent||
+             x.productionOwnerAuthorizationVerified!==false||
+             x.realRollbackE2EVerified!==false)process.exit(1);
+          console.log('BWRAP_NAMESPACE_AND_NETWORK_DENIAL_VERIFIED');
+          NODE
+      - name: Seal minimal evidence bound to this owner and this SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP/ultra-one-click" <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const dir=process.argv[2];
+          const owner=JSON.parse(fs.readFileSync(path.join(dir,'approval.json'),'utf8'));
+          const isolation=JSON.parse(fs.readFileSync(path.join(dir,'isolation.json'),'utf8'));
+          if(owner.status!=='OWNER_GITHUB_SANDBOX_ONLY'||
+             owner.sha!==process.env.GITHUB_SHA||
+             isolation.status!=='BWRAP_EPHEMERAL_HOST_ISOLATION_OBSERVED')process.exit(1);
+          const receipt={
+           schema:'ultra-sentinel-owner-click-isolated-evidence/v1',
+           status:'ISOLATED_FIXTURE_DRILLS_VERIFIED',
+           repo:owner.repo,sourceSha:owner.sha,githubRunId:owner.runId,
+           ownerId:owner.ownerId,runAttempt:owner.runAttempt,
+           githubOwnerApprovalVerified:true,
+           sandboxOnly:true,
+           hunterRedGreenJudgeAndRollbackFixturesPassed:true,
+           namespaceIsolationObserved:true,
+           networkAttemptDenied:true,hostFilesHidden:true,secretsAbsent:true,
+           productionOwnerSignatureVerified:false,
+           realProductionRepairVerified:false,
+           automaticRepairEnabled:false,remoteWrites:false,
+           mergeAllowed:false,privateEditionCertified:false
+          };
+          fs.writeFileSync(path.join(dir,'receipt.json'),JSON.stringify(receipt)+'\n',{mode:0o600,flag:'wx'});
+          NODE
+      - name: Upload owner-approved read-only evidence
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: owner-one-click-sandbox-evidence
+          path: ${{ runner.temp }}/ultra-one-click/receipt.json
+          if-no-files-found: error
+          retention-days: 14
