@@ -22,7 +22,7 @@ function readPlain(root,relative){
 }
 function digest(contents){return crypto.createHash('sha256').update(contents).digest('hex');}
 function validatePlan(p){
- if(!p||typeof p!=='object'||Array.isArray(p)||Object.keys(p).length!==15||
+ if(!p||typeof p!=='object'||Array.isArray(p)||Object.keys(p).length!==16||
   p.schema!=='ultra-sentinel-registered-plan/v1'||
   typeof p.id!=='string'||!SAFE_ID.test(p.id)||
   p.operation!=='SANDBOX_HUNTER_FIXER_JUDGE'||
