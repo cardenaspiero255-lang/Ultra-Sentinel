@@ -8,7 +8,7 @@ const ctx={sha:SHA,runId:'123456789',actorId:'322222186',repoId:'1418338512',
   audience:'urn:ultra-sentinel:gamehub-pr151:sandbox',now:NOW};
 function jwt(overrides={},header={}){
  const claims={iss:'https://token.actions.githubusercontent.com',
-  aud:ctx.audience,sub:'repo:'+REPO+':ref:refs/heads/main',
+  aud:ctx.audience,sub:'repo:'+ 'cardenaspiero255-lang@322222186/Ultra-Sentinel@1418338512' +':ref:refs/heads/main',
   repository:REPO,repository_id:ctx.repoId,actor:'cardenaspiero255-lang',
   actor_id:ctx.actorId,ref:'refs/heads/main',sha:SHA,event_name:'workflow_dispatch',
   run_id:ctx.runId,run_attempt:'1',
