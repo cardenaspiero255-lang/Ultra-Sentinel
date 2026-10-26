@@ -61,3 +61,14 @@ test('older workflow revision within lookback does not invalidate latest main SH
  const r=audit([base[0],sample('2026-10-15T15:30:00Z',{sha:OTHER}),base[2]]);
  assert.equal(r.verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
 });
+test('calendar rollover cannot manufacture a valid heartbeat timestamp',()=>{
+ for(const invalid of ['2026-02-30T16:00:00Z','2026-10-14T24:00:00Z']) {
+  assert.throws(()=>audit(base,{now:invalid}),/INVALID_SCHEDULE_EVIDENCE/);
+  assert.throws(()=>audit([{...base[0],created_at:invalid},...base.slice(1)]),
+   /INVALID_SCHEDULE_EVIDENCE/);
+ }
+});
+test('valid leap days and fractional UTC timestamps remain accepted',()=>{
+ assert.equal(audit([],{now:'2024-02-29T16:00:00.123456Z'}).verdict,
+  'INSUFFICIENT_SCHEDULE_EVIDENCE');
+});

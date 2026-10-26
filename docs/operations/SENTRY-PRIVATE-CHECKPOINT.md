@@ -1,4 +1,4 @@
-# Estado privado Sentry — cifrado preparado, no desplegado
+# Estado privado Sentry — cifrado preparado, despliegue no acreditado
 
 El monitor **público** de GitHub Actions jamás debe llevar IDs de errores privados, correo, stacktraces, tokens, mensajes de usuarios ni breadcrumbs al artefacto público `ultra-sentinel-github-only-state-v1`.
 
@@ -11,7 +11,7 @@ Este bloque incorpora `packages/operations/sentry-sealed-checkpoint.cjs` como pr
 - `openSentryCheckpoint` rechaza cambios de ciphertext, tag, nonce, algoritmo, clave u origen, sin revelar el plaintext.
 - Sin filesystem, red, claves generadas automáticamente ni escritura GitHub dentro de la librería; pruebas tamper/replay, clave débil y privacidad.
 
-**Estado real:** la API Sentry read-only ya está implementada en `adapters/sentry/sentry-readonly.cjs`. Este formato criptográfico está probado solo con datos sintéticos; **no se ha creado ni activado un workflow Sentry privado** y no se conocen token, proyecto, consentimiento ni clave real. Configurar secretos de Actions y elegir retención/consentimiento debe preceder a cualquier ejecución privada. No copiar credenciales en issues, comentarios, PR, chats ni logs.
+**Estado real:** la API Sentry read-only ya está implementada en `adapters/sentry/sentry-readonly.cjs`. Este formato criptográfico está probado solo con datos sintéticos; existe el workflow opt-in de conectividad descrito abajo, pero esto no acredita un monitor Sentry privado desplegado ni su configuración real de token, proyecto, consentimiento y clave. Configurar secretos de Actions y elegir retención/consentimiento debe preceder a cualquier ejecución privada. No copiar credenciales en issues, comentarios, PR, chats ni logs.
 
 La recuperación depende de conservar la clave fuera de GitHub y planificar rotación. No permite auto-reparación, push ni autofusión.
 
