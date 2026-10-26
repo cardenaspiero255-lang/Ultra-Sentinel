@@ -235,3 +235,63 @@ test('verifier may not add a Git remote even with successful local tests',async(
   fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
  }
 });
+
+
+test('strict flow denies missing RED or Judge before any writes',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,requireRedGreenJudge:true,verifyRepair:async()=>true}),/RED_GREEN_JUDGE_REQUIRED/);
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+});
+test('strict RED must fail as expected, otherwise no repair runs',async()=>{
+ const f=fixture();let green=false,judge=false;
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,requireRedGreenJudge:true,
+   verifyRed:async()=>false,verifyRepair:async()=>{green=true;return true;},
+   judgeRepair:async()=>{judge=true;return true;}}),/RED_NOT_REPRODUCED/);
+  assert.equal(green,false);assert.equal(judge,false);
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+});
+test('GREEN failure and independent Judge veto both rollback exact baseline',async()=>{
+ for(const phase of ['GREEN','JUDGE']){
+  const f=fixture();let judgeCalled=false;
+  try{
+   const result=await runOwnerAuthorizedSandboxRepair({...f.options,requireRedGreenJudge:true,
+    verifyRed:async()=>true,verifyRepair:async()=>phase!=='GREEN',
+    judgeRepair:async()=>{judgeCalled=true;return false;}});
+   assert.equal(result.status,'SANDBOX_REPAIR_ROLLED_BACK');
+   assert.equal(result.rollback.status,'ROLLBACK_VERIFIED');
+   assert.equal(result.reason,phase==='GREEN'?'REPAIR_VERIFICATION_FAILED':'INDEPENDENT_JUDGE_VETO');
+   assert.equal(judgeCalled,phase==='JUDGE');
+   assert.equal(git(f.directory,'rev-parse','HEAD^{tree}'),git(f.directory,'rev-parse',f.options.expectedHeadSha+'^{tree}'));
+  }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+ }
+});
+test('strict RED GREEN Judge run sequentially after real owner attestation',async()=>{
+ const f=fixture(),trace=[];
+ try{
+  const result=await runOwnerAuthorizedSandboxRepair({...f.options,requireRedGreenJudge:true,
+   verifyRed:async()=>{trace.push('RED');return true;},
+   verifyRepair:async()=>{trace.push('GREEN');return true;},
+   judgeRepair:async()=>{trace.push('JUDGE');return true;}});
+  assert.deepEqual(trace,['RED','GREEN','JUDGE']);
+  assert.equal(result.status,'SANDBOX_REPAIR_VERIFIED');
+  assert.equal(result.redGreenJudgeVerified,true);
+  assert.equal(result.remoteWrites,false);assert.equal(result.mergeAllowed,false);
+  assert.equal(git(f.directory,'remote'),'');
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+});
+test('RED validator altering baseline requires recovery, cannot authorize repair',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,requireRedGreenJudge:true,
+   verifyRed:async()=>{fs.writeFileSync(path.join(f.directory,f.file),'tampered\n');return true;},
+   verifyRepair:async()=>true,judgeRepair:async()=>true}),/RECOVERY_REQUIRED/);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),true);
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
+});
