@@ -10,6 +10,7 @@ on:
       - 'tests/oracles/gamehub-battery-*.kt'
       - 'docs/quality/owner-approved-plans.json'
       - 'docs/quality/owner-gamehub-battery-plan.json'
+      - 'docs/quality/OWNER-REGISTERED-PLANS-V2.md'
 permissions:
   contents: read
 concurrency:
