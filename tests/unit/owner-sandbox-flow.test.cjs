@@ -295,3 +295,31 @@ test('RED validator altering baseline requires recovery, cannot authorize repair
   assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});}
 });
+
+
+test('production strict Hunter gate rejects plans without signed source finding before writes',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,
+   requireRedGreenJudge:true,requireHunterEvidence:true,
+   verifyRed:async()=>true,verifyRepair:async()=>true,
+   judgeRepair:async()=>true}),/HUNTER_/);
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.options.expectedHeadSha);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
+test('Hunter cannot be enabled by itself to bypass RED GREEN Judge',async()=>{
+ const f=fixture();
+ try{
+  await assert.rejects(runOwnerAuthorizedSandboxRepair({...f.options,
+   requireRedGreenJudge:false,requireHunterEvidence:true,
+   verifyRepair:async()=>true}),/STRICT_HUNTER_REQUIRES_RED_GREEN_JUDGE/);
+  assert.equal(fs.existsSync(f.options.nonceStorePath+'.txn'),false);
+ }finally{
+  fs.rmSync(f.directory,{recursive:true,force:true});
+  fs.rmSync(path.dirname(f.options.nonceStorePath),{recursive:true,force:true});
+ }
+});
