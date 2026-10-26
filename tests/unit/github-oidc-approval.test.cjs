@@ -59,3 +59,17 @@ test('wrong GitHub run-bound context and malformed JWK fail closed',()=>{
  assert.throws(()=>verifyGitHubOidcApproval({jwt:jwt(),jwks:{keys:[]},context:ctx}),/OIDC_APPROVAL_DENIED/);
  assert.throws(()=>verifyGitHubOidcApproval({jwt:jwt(),jwks:{keys:[{...pub,kty:'oct'}]},context:ctx}),/OIDC_APPROVAL_DENIED/);
 });
+
+test('OIDC issue comment is restricted to separately verified owner-only event and exact workflow',()=>{
+ const issueJwt=jwt({event_name:'issue_comment'});
+ assert.throws(()=>verifyGitHubOidcApproval({jwt:issueJwt,jwks:{keys:[pub]},context:ctx}),/OIDC_APPROVAL_DENIED/);
+ const approved=verifyGitHubOidcApproval({jwt:issueJwt,jwks:{keys:[pub]},
+  context:{...ctx,eventName:'issue_comment',approvedOwnerIssueComment:true}});
+ assert.equal(approved.status,'GITHUB_OIDC_OWNER_SANDBOX_APPROVED');
+ assert.equal(approved.authorizedForProductionRepair,false);
+ for(const change of [
+  {approvedOwnerIssueComment:false},{eventName:'workflow_dispatch'},
+  {actorId:'1212'}, {runId:'1'}
+ ])assert.throws(()=>verifyGitHubOidcApproval({jwt:issueJwt,jwks:{keys:[pub]},
+  context:{...ctx,eventName:'issue_comment',approvedOwnerIssueComment:true,...change}}),/OIDC_APPROVAL_DENIED/);
+});
