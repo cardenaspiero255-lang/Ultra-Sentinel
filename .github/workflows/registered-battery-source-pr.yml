@@ -15,7 +15,7 @@ permissions:
   contents: read
 concurrency:
   group: registered-battery-pr-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   actual-source-red-green-judge-revert:
     if: >-
