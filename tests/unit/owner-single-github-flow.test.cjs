@@ -99,7 +99,7 @@ test('ChatGPT text alone or fake GitHub comment is not a valid single approval',
    {...f.opts,authorization:{...f.opts.authorization,nonce:'modified-repair-nonce-0123456789'}},
    {...f.opts,githubSingleApproval:{...f.opts.githubSingleApproval,
     approvedPlan:{...f.opts.githubSingleApproval.approvedPlan,planDigest:'0'.repeat(64)}}},
-  ])await assert.rejects(runOwnerAuthorizedSandboxRepair(input),/AUTHENTICATION_UNAVAILABLE|SINGLE_APPROVAL_|AUTHORIZATION_SCOPE_MISMATCH/);
+  ])await assert.rejects(runOwnerAuthorizedSandboxRepair(input),/AUTHENTICATION_UNAVAILABLE|SINGLE_APPROVAL_|SINGLE_OWNER_APPROVAL_|AUTHORIZATION_SCOPE_MISMATCH/);
   assert.equal(git(f.root,'rev-parse','HEAD'),f.sha);
   assert.equal(fs.existsSync(f.opts.nonceStorePath),false);
  }finally{f.dispose();}
