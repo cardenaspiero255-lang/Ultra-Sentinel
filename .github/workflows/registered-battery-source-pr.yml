@@ -13,7 +13,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: registered-battery-pr-\${{ github.ref }}
+  group: registered-battery-pr-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   actual-source-red-green-judge-revert:
@@ -105,6 +105,6 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: registered-battery-original-kotlin-pr-proof
-          path: \${{ runner.temp }}/registered-battery-pr-receipt.json
+          path: ${{ runner.temp }}/registered-battery-pr-receipt.json
           retention-days: 14
           if-no-files-found: error
