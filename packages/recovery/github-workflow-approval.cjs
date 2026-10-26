@@ -24,7 +24,7 @@ function validateOwnerWorkflowApproval({run,repository,repositoryId,actorId,ref,
   run.repository?.id!==REPO_ID||run.repository?.full_name!==REPO||
   run.actor?.id!==OWNER_ID||run.actor?.login!==OWNER||
   run.status!=='in_progress'||run.conclusion!==null||
-  typeof run.created_at!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/.test(run.created_at))
+  typeof run.created_at!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{3})?Z$/.test(run.created_at))
   denied();
  const created=Date.parse(run.created_at);
  if(!Number.isFinite(created)||created>now+60000||now-created>900000)denied();
