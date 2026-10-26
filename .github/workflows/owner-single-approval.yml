@@ -42,6 +42,8 @@ jobs:
       - name: Bind GitHub one-approval comment, signed OIDC, exact plan digest and 15-minute expiry
         id: owner_approval
         shell: bash
+        env:
+          ULTRA_OWNER_COMMENT_READ_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           umask 077
@@ -133,6 +135,7 @@ jobs:
           const rollback=JSON.parse(fs.readFileSync(path.join(dir,'one-approval-rollback.json'),'utf8'));
           const oracle=JSON.parse(fs.readFileSync(path.join(dir,'gamehub-pr151-real-proof/receipt.json'),'utf8'));
           if(owner.status!=='SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED'||
+             owner.nonceReplayBlocked!==true||
              owner.workflowSha!==process.env.GITHUB_SHA||
              owner.runId!==process.env.GITHUB_RUN_ID||
              owner.remoteWrites!==false||owner.mergeAllowed!==false||
@@ -187,7 +190,7 @@ jobs:
           const r=get('registered-owner-rollback.json');
           const k=get('gamehub-battery-domain-proof/receipt.json');
           if(a.status!=='SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED' ||
-             a.planKind!=='registered' || r.planDigest!==a.planDigest ||
+             a.nonceReplayBlocked!==true || a.planKind!=='registered' || r.planDigest!==a.planDigest ||
              r.ownerCommentId!==a.commentId || r.runId!==a.runId ||
              r.status!=='REGISTERED_GIT_CANDIDATE_ROLLBACK_VERIFIED' ||
              r.originalTree!==r.restoredTree ||
