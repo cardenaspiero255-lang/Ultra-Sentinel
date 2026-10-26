@@ -12,13 +12,19 @@ const {executeSandboxRepair}=require('./sandbox-executor.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 const {judgeLocalRepair}=require('./repair-judge.cjs');
+const {verifyHunterRepairBinding}=require('./hunter-repair-binding.cjs');
 function digestPlan(plan,changes){
  return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
 async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwnerId,
  authorization,authorizationSignature,trustedPublicKey,nonceStorePath,directory,plan,changes,expectedHeadSha,fetchImpl,
- verifyRepair,verifyRed,judgeRepair,requireRedGreenJudge=false,now=Date.now()}={}){
+ verifyRepair,verifyRed,judgeRepair,requireRedGreenJudge=false,
+ requireHunterEvidence=false,now=Date.now()}={}){
  if(typeof verifyRepair!=='function')throw Error('REPAIR_VERIFIER_REQUIRED');
+ if(requireHunterEvidence!==true&&requireHunterEvidence!==false)
+  throw Error('INVALID_HUNTER_BINDING_MODE');
+ if(requireHunterEvidence&&!requireRedGreenJudge)
+  throw Error('STRICT_HUNTER_REQUIRES_RED_GREEN_JUDGE');
  if(requireRedGreenJudge!==false&&requireRedGreenJudge!==true)throw Error('INVALID_STRICT_REPAIR_MODE');
  if(requireRedGreenJudge&&(typeof verifyRed!=='function'||typeof judgeRepair!=='function'))
   throw Error('RED_GREEN_JUDGE_REQUIRED');
@@ -34,6 +40,11 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   trustedPublicKey,now});
  if(!check.authorized||check.canonical!==stableAuthorization(authorization))
   throw Error('OWNER_AUTHORIZATION_DENIED');
+ // The chosen finding is inside the signed plan digest. The trusted local
+ // Core/Family Hunter must independently find it at the exact Git baseline.
+ // Never create a journal, consume a nonce or modify a file if it differs.
+ if(requireHunterEvidence)
+  verifyHunterRepairBinding({directory,expectedHeadSha,plan});
  // Reject an in-worktree ledger BEFORE creating any ledger file or journal.
  validateSandbox(directory,nonceStorePath);
  const nonceStore=new PersistentNonceStore(nonceStorePath);
