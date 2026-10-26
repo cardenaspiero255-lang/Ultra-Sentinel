@@ -101,7 +101,7 @@ test('OIDC alone can never authorize a change, even when a token is authentic',a
   const vals={...f.request,authorizationSignature:undefined,
    verifyRed:async()=>true,verifyRepair:async()=>true,judgeRepair:async()=>true};
   await assert.rejects(runOwnerOidcAndEd25519SandboxRepair({...input(f),
-   ownerRequest:vals}),/OWNER_AUTHORIZATION_DENIED|OWNER_SIGNATURE_REQUIRED/);
+   ownerRequest:vals}),/DUAL_GATE_POLICY_DENIED|OWNER_AUTHORIZATION_DENIED|OWNER_SIGNATURE_REQUIRED/);
   assert.equal(git(f.root,'rev-parse','HEAD'),f.sha);
   assert.equal(fs.existsSync(f.request.nonceStorePath),false);
  }finally{f.dispose();}
