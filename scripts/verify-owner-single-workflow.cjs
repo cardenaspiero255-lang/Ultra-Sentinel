@@ -6,6 +6,7 @@
 const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 const {verifyGitHubSingleApproval,MARKER}=require('../packages/recovery/github-single-approval.cjs');
 const {loadRegisteredPlan}=require('../packages/recovery/registered-owner-plans.cjs');
+const {verifyUniqueOwnerComment}=require('../packages/recovery/owner-comment-replay-gate.cjs');
 const ISSUER='https://token.actions.githubusercontent.com/.well-known/jwks';
 const AUD='urn:ultra-sentinel:one-owner-approval:sandbox';
 const FLOW='cardenaspiero255-lang/Ultra-Sentinel/.github/workflows/owner-single-approval.yml@refs/heads/main';
@@ -91,6 +92,10 @@ async function main({env=process.env,fetchImpl=fetch,root=path.resolve(__dirname
   },
   event,approvedPlan
  });
+ const unique=await verifyUniqueOwnerComment({
+  event,token:env.ULTRA_OWNER_COMMENT_READ_TOKEN,fetchImpl
+ });
+ if(unique.nonce!==approvedPlan.nonce||unique.commentId!==approval.commentId)denied();
  const receipt={
   schema:'ultra-sentinel-single-approval-github-receipt/v1',
   status:approval.status,workflowSha:approval.workflowSha,
@@ -99,7 +104,7 @@ async function main({env=process.env,fetchImpl=fetch,root=path.resolve(__dirname
   githubOwnerIdentityVerified:true,ed25519Required:false,
   onlyAllowlistedHistoricSandbox:selected.kind==='legacy',
   registeredPlanId:selected.planId,planKind:selected.kind,
-  remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false
+  nonceReplayBlocked:true,remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false
  };
  const dir=env.RUNNER_TEMP;
  if(!dir||!path.isAbsolute(dir))denied();
