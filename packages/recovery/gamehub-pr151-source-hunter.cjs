@@ -14,7 +14,7 @@ function sha1Blob(data){
 function inspectFrozenGameHubThermal({source,path,sourceSha,experimentalFixture=false}={}){
  if(typeof source!=='string'||source.length<10||source.length>100000||
   source.includes('\r')||source.includes('\0')||!source.endsWith('\n')||
-  !Buffer.from(source,'utf8').toString('utf8')===source||
+  Buffer.from(source,'utf8').toString('utf8')!==source||
   path!==PATH||sourceSha!==HEAD)reject();
  const blob=sha1Blob(source);
  if(experimentalFixture!==true&&blob!==BLOB)reject();
