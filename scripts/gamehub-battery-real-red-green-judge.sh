@@ -45,7 +45,7 @@ run() {
   env -i PATH=/usr/bin:/bin HOME=/tmp \
     /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
       --setenv PATH /usr/bin:/bin --setenv HOME /tmp \
-      "\${mounts[@]}" --ro-bind "$jdk" /jdk \
+      "${mounts[@]}" --ro-bind "$jdk" /jdk \
       --ro-bind "$out" /workspace --proc /proc --dev /dev \
       --tmpfs /tmp --dir /home --chdir /workspace \
       -- /jdk/bin/java -jar "/workspace/$kind.jar" > "$out/$kind.log" 2>&1
