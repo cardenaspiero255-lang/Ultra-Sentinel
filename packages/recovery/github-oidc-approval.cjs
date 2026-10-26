@@ -49,7 +49,8 @@ function verifyGitHubOidcApproval({jwt,jwks,context}={}){
   claim.repository!==REPO||claim.repository_id!=='1418338512'||
   claim.actor!==OWNER||claim.actor_id!=='322222186'||
   claim.ref!=='refs/heads/main'||claim.sha!==context.sha||
-  claim.event_name!=='workflow_dispatch'||
+  !(claim.event_name==='workflow_dispatch' && (context.eventName===undefined||context.eventName==='workflow_dispatch') ||
+    claim.event_name==='issue_comment'&&context.eventName==='issue_comment'&&context.approvedOwnerIssueComment===true)||
   claim.run_id!==context.runId||String(claim.run_attempt)!=='1'||
   claim.workflow_ref!==FLOW||claim.runner_environment!=='github-hosted'||
   typeof claim.jti!=='string'||claim.jti.length<6||
@@ -64,7 +65,7 @@ function verifyGitHubOidcApproval({jwt,jwks,context}={}){
   cryptographicallyVerified:true,
   authorizedForSandboxDrill:true,authorizedForProductionRepair:false,
   ed25519OwnerSignatureVerified:false,remoteWrites:false,mergeAllowed:false,
-  runAttempt:1,audience:AUD
+  runAttempt:1,eventName:claim.event_name,audience:AUD
  });
 }
 module.exports={verifyGitHubOidcApproval,AUDIENCE:AUD};
