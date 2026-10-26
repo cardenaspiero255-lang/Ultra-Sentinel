@@ -53,6 +53,12 @@ function bubblewrapCommand(directory,argv){
   '--',...argv);
  return Object.freeze({binary:'/usr/bin/bwrap',args:Object.freeze(args)});
 }
+function redFailureObserved(result){
+ return !!result&&!result.error&&result.status===1&&result.signal===null&&
+  typeof result.stdout==='string'&&
+  /^\\s*not ok [1-9]\\d*\\s*-/m.test(result.stdout)&&
+  /^\\s*# fail [1-9]\\d*\\s*$/m.test(result.stdout);
+}
 function verifierFromTrustedEnvironment(directory,{argvVariable='ULTRA_SENTINEL_VALIDATOR_ARGV_JSON',expectRed=false}={}){
  if(!['ULTRA_SENTINEL_VALIDATOR_ARGV_JSON','ULTRA_SENTINEL_JUDGE_ARGV_JSON'].includes(argvVariable)||
   typeof expectRed!=='boolean')throw Error('UNTRUSTED_VALIDATOR_CONFIGURATION');
@@ -79,15 +85,8 @@ function verifierFromTrustedEnvironment(directory,{argvVariable='ULTRA_SENTINEL_
    env:{PATH:'/usr/bin:/bin',HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
     GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}
   });
-  if(result.error)return false;
-  if(expectRed){
-   // A random tool crash, timeout or namespace failure is not a reproduced
-   // failing test. Require TAP evidence from the *same* test argv used for GREEN.
-   return result.status===1&&result.signal===null&&
-    /^\s*not ok [1-9]\d*\s*-/m.test(result.stdout)&&
-    /^\s*# fail [1-9]\d*\s*$/m.test(result.stdout);
-  }
-  return result.status===0;
+  if(expectRed)return redFailureObserved(result);
+  return !result.error&&result.status===0;
  };
 }
 
@@ -122,4 +121,4 @@ if(require.main===module){
   process.exitCode=1;
  });
 }
-module.exports={main,verifierFromTrustedEnvironment,bubblewrapCommand,readTrustedFile};
+module.exports={main,verifierFromTrustedEnvironment,bubblewrapCommand,readTrustedFile,redFailureObserved};
