@@ -1,0 +1,14 @@
+{
+  "schema": "ultra-sentinel-single-approval-allowlist/v1",
+  "operation": "SANDBOX_HUNTER_FIXER_JUDGE",
+  "targetRepo": "cardenaspiero255-lang/gamehub-ultra",
+  "targetCommit": "9ad983576c16c6c34d59283979d83c69ede50dce",
+  "targetFile": "app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt",
+  "targetBlob": "adb11032b9b7f62f865228dfa1c27258ca3fa0df",
+  "validation": "scripts/gamehub-pr151-real-red-green-judge.sh",
+  "rollback": "scripts/gamehub-pr151-real-source-rollback.cjs",
+  "scope": "ONLY_ISOLATED_HISTORICAL_KOTLIN_FIX",
+  "remoteWrites": false,
+  "mergeAllowed": false,
+  "productionReleaseAllowed": false
+}
