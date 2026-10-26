@@ -2,6 +2,8 @@ name: Ultra Sentinel — Autorizar reparación real aislada de GameHub (sin Term
 # Approves a pinned historical source REPAIR EXPERIMENT, never a production write.
 on:
   workflow_dispatch:
+  issue_comment:
+    types: [created]
 permissions:
   contents: read
   actions: read
@@ -12,8 +14,15 @@ concurrency:
 jobs:
   owner-real-source-isolated-repair:
     if: >-
-      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_GAMEHUB_OWNER_OIDC_PR151_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186)) &&
       github.event.repository.id == 1418338512 &&
       github.actor_id == '322222186' &&
       github.actor == 'cardenaspiero255-lang' &&
