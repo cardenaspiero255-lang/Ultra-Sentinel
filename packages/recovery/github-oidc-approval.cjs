@@ -8,6 +8,8 @@ const crypto=require('node:crypto');
 const OWNER='cardenaspiero255-lang',REPO=OWNER+'/Ultra-Sentinel';
 const FLOW=REPO+'/.github/workflows/gamehub-pr151-owner-e2e.yml@refs/heads/main';
 const AUD='urn:ultra-sentinel:gamehub-pr151:sandbox';
+const SINGLE_AUD='urn:ultra-sentinel:one-owner-approval:sandbox';
+const SINGLE_FLOW=REPO+'/.github/workflows/owner-single-approval.yml@refs/heads/main';
 function denied(){throw Error('OIDC_APPROVAL_DENIED');}
 function decode(part){
  if(typeof part!=='string'||part.length>20000||!/^[A-Za-z0-9_-]+$/.test(part))denied();
@@ -37,22 +39,27 @@ function verifyGitHubOidcApproval({jwt,jwks,context}={}){
    Buffer.from(parts[2],'base64url'));
   if(!valid)denied();
  }catch{denied();}
+ const single=context.purpose==='ONE_APPROVAL';
+ const expectedAudience=single?SINGLE_AUD:AUD;
+ const expectedWorkflow=single?SINGLE_FLOW:FLOW;
  const now=context.now??Math.floor(Date.now()/1000);
  if(!Number.isSafeInteger(now)||typeof context.sha!=='string'||
   !/^[0-9a-f]{40}$/.test(context.sha)||
   !/^[1-9]\d{0,16}$/.test(context.runId||'')||
   context.actorId!=='322222186'||context.repoId!=='1418338512'||
-  context.audience!==AUD||
+  context.audience!==expectedAudience||
   claim.iss!=='https://token.actions.githubusercontent.com'||
-  claim.aud!==AUD||
+  claim.aud!==expectedAudience||
   claim.sub!=='repo:'+ 'cardenaspiero255-lang@322222186/Ultra-Sentinel@1418338512' +':ref:refs/heads/main'||
   claim.repository!==REPO||claim.repository_id!=='1418338512'||
   claim.actor!==OWNER||claim.actor_id!=='322222186'||
   claim.ref!=='refs/heads/main'||claim.sha!==context.sha||
-  !(claim.event_name==='workflow_dispatch' && (context.eventName===undefined||context.eventName==='workflow_dispatch') ||
-    claim.event_name==='issue_comment'&&context.eventName==='issue_comment'&&context.approvedOwnerIssueComment===true)||
+  !(single?
+     claim.event_name==='issue_comment'&&context.eventName==='issue_comment'&&context.approvedOwnerIssueComment===true:
+     claim.event_name==='workflow_dispatch'&&(context.eventName===undefined||context.eventName==='workflow_dispatch') ||
+     claim.event_name==='issue_comment'&&context.eventName==='issue_comment'&&context.approvedOwnerIssueComment===true)||
   claim.run_id!==context.runId||String(claim.run_attempt)!=='1'||
-  claim.workflow_ref!==FLOW||claim.runner_environment!=='github-hosted'||
+  claim.workflow_ref!==expectedWorkflow||claim.runner_environment!=='github-hosted'||
   typeof claim.jti!=='string'||claim.jti.length<6||
   !Number.isSafeInteger(claim.iat)||!Number.isSafeInteger(claim.nbf)||
   !Number.isSafeInteger(claim.exp)||claim.exp<=now||
@@ -65,7 +72,7 @@ function verifyGitHubOidcApproval({jwt,jwks,context}={}){
   cryptographicallyVerified:true,
   authorizedForSandboxDrill:true,authorizedForProductionRepair:false,
   ed25519OwnerSignatureVerified:false,remoteWrites:false,mergeAllowed:false,
-  runAttempt:1,eventName:claim.event_name,audience:AUD
+  runAttempt:1,eventName:claim.event_name,audience:expectedAudience
  });
 }
 module.exports={verifyGitHubOidcApproval,AUDIENCE:AUD};
