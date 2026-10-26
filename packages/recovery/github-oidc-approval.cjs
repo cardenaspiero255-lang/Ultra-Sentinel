@@ -45,7 +45,7 @@ function verifyGitHubOidcApproval({jwt,jwks,context}={}){
   context.audience!==AUD||
   claim.iss!=='https://token.actions.githubusercontent.com'||
   claim.aud!==AUD||
-  claim.sub!=='repo:'+REPO+':ref:refs/heads/main'||
+  claim.sub!=='repo:'+ 'cardenaspiero255-lang@322222186/Ultra-Sentinel@1418338512' +':ref:refs/heads/main'||
   claim.repository!==REPO||claim.repository_id!=='1418338512'||
   claim.actor!==OWNER||claim.actor_id!=='322222186'||
   claim.ref!=='refs/heads/main'||claim.sha!==context.sha||
