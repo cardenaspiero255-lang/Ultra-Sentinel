@@ -5,6 +5,8 @@
  */
 const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 const {verifyGitHubSingleApproval,MARKER}=require('../packages/recovery/github-single-approval.cjs');
+const {loadRegisteredPlan}=require('../packages/recovery/registered-owner-plans.cjs');
+const {verifyUniqueOwnerComment}=require('../packages/recovery/owner-comment-replay-gate.cjs');
 const ISSUER='https://token.actions.githubusercontent.com/.well-known/jwks';
 const AUD='urn:ultra-sentinel:one-owner-approval:sandbox';
 const FLOW='cardenaspiero255-lang/Ultra-Sentinel/.github/workflows/owner-single-approval.yml@refs/heads/main';
@@ -24,6 +26,15 @@ function readPolicy(root){
   obj.remoteWrites!==false||obj.mergeAllowed!==false||
   obj.productionReleaseAllowed!==false)denied();
  return crypto.createHash('sha256').update(contents).digest('hex');
+}
+function selectOwnerApprovalPlan(root,digest){
+ if(typeof digest!=='string'||!/^[0-9a-f]{64}$/.test(digest))denied();
+ const legacyDigest=readPolicy(root);
+ if(digest===legacyDigest)return Object.freeze({kind:'legacy',
+  planId:'gamehub-thermal-historic-pr151',planDigest:digest});
+ const registered=loadRegisteredPlan(root,digest);
+ return Object.freeze({kind:'registered',planId:registered.plan.id,
+  planDigest:registered.planDigest,plan:registered.plan});
 }
 function parseApprovedComment(body,workflowSha,digest){
  if(typeof body!=='string'||body.length>500)denied();
@@ -51,8 +62,10 @@ async function main({env=process.env,fetchImpl=fetch,root=path.resolve(__dirname
   !env.ACTIONS_ID_TOKEN_REQUEST_TOKEN||!env.ACTIONS_ID_TOKEN_REQUEST_URL)
   denied();
  const event=JSON.parse(fs.readFileSync(env.GITHUB_EVENT_PATH,'utf8'));
- const digest=readPolicy(root);
- const approvedPlan=parseApprovedComment(event.comment?.body,env.GITHUB_SHA,digest);
+ const parts=String(event.comment?.body||'').split('|');
+ if(parts.length!==6)denied();
+ const selected=selectOwnerApprovalPlan(root,parts[3]);
+ const approvedPlan=parseApprovedComment(event.comment?.body,env.GITHUB_SHA,selected.planDigest);
  // Refuse to fetch issuer credentials until local scope/plan inputs pass.
  if(event.action!=='created'||event.issue?.number!==50||
   event.issue?.pull_request!=null||
@@ -79,23 +92,40 @@ async function main({env=process.env,fetchImpl=fetch,root=path.resolve(__dirname
   },
   event,approvedPlan
  });
+ const unique=await verifyUniqueOwnerComment({
+  event,token:env.ULTRA_OWNER_COMMENT_READ_TOKEN,fetchImpl
+ });
+ if(unique.nonce!==approvedPlan.nonce||unique.commentId!==approval.commentId)denied();
  const receipt={
   schema:'ultra-sentinel-single-approval-github-receipt/v1',
   status:approval.status,workflowSha:approval.workflowSha,
   planDigest:approval.planDigest,nonce:approval.nonce,
   ownerId:322222186,commentId:approval.commentId,runId:approval.runId,
   githubOwnerIdentityVerified:true,ed25519Required:false,
-  onlyAllowlistedHistoricSandbox:true,remoteWrites:false,
-  mergeAllowed:false,productionReleaseCertified:false
+  onlyAllowlistedHistoricSandbox:selected.kind==='legacy',
+  registeredPlanId:selected.planId,planKind:selected.kind,
+  nonceReplayBlocked:true,remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false
  };
  const dir=env.RUNNER_TEMP;
  if(!dir||!path.isAbsolute(dir))denied();
  const file=path.join(dir,'owner-single-approval-receipt.json');
  fs.writeFileSync(file,JSON.stringify(receipt)+'\n',{flag:'wx',mode:0o600});
+ // These are values read from a reviewed, immutable main policy, not issue text.
+ if(env.GITHUB_OUTPUT){
+  if(!path.isAbsolute(env.GITHUB_OUTPUT))denied();
+  const lines=['plan_kind='+selected.kind,'plan_id='+selected.planId];
+  if(selected.kind==='registered')lines.push(
+   'target_repo='+selected.plan.targetRepo,
+   'base_sha='+selected.plan.baseSha,
+   'candidate_sha='+selected.plan.candidateSha,
+   'oracle='+selected.plan.oracle
+  );
+  fs.appendFileSync(env.GITHUB_OUTPUT,lines.join('\n')+'\n');
+ }
  process.stdout.write('OWNER_SINGLE_GITHUB_SANDBOX_APPROVAL_VERIFIED\n');
  return receipt;
 }
 if(require.main===module)main().catch(()=>{
  process.stderr.write('OWNER_SINGLE_GITHUB_SANDBOX_BLOCKED\n');process.exitCode=1;
 });
-module.exports={main,readPolicy,parseApprovedComment};
+module.exports={main,readPolicy,parseApprovedComment,selectOwnerApprovalPlan};

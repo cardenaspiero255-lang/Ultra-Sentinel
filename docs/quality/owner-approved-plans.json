@@ -1,0 +1,9 @@
+{
+  "schema": "ultra-sentinel-owner-registry/v1",
+  "plans": [
+    {
+      "id": "gamehub-battery-valid-range",
+      "policyPath": "docs/quality/owner-gamehub-battery-plan.json"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: read
   id-token: write
 concurrency:
   group: ultra-owner-single-approval-isolated
@@ -39,13 +40,49 @@ jobs:
         with:
           node-version: '22'
       - name: Bind GitHub one-approval comment, signed OIDC, exact plan digest and 15-minute expiry
+        id: owner_approval
         shell: bash
+        env:
+          ULTRA_OWNER_COMMENT_READ_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           umask 077
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           node scripts/verify-owner-single-workflow.cjs
+      - name: Checkout registered original Git commit
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ steps.owner_approval.outputs.target_repo }}
+          ref: ${{ steps.owner_approval.outputs.base_sha }}
+          path: registered-base
+          persist-credentials: false
+      - name: Checkout registered candidate Git commit
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ steps.owner_approval.outputs.target_repo }}
+          ref: ${{ steps.owner_approval.outputs.candidate_sha }}
+          path: registered-candidate
+          persist-credentials: false
+      - name: Validate trusted registered plan and no-write contract
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node - "$RUNNER_TEMP/owner-single-approval-receipt.json" <<'NODE'
+          const fs=require('node:fs');
+          const {loadRegisteredPlan}=require('./packages/recovery/registered-owner-plans.cjs');
+          const receipt=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const policy=loadRegisteredPlan(process.cwd(),receipt.planDigest).plan;
+          if(policy.id!==receipt.registeredPlanId ||
+             policy.oracle!=='gamehub-kotlin-domain-battery-v1' ||
+             policy.targetRepo!=='cardenaspiero255-lang/gamehub-ultra' ||
+             policy.remoteWrites!==false||policy.mergeAllowed!==false)process.exit(1);
+          NODE
       - name: Frozen GameHub original SHA without credentials
+        if: steps.owner_approval.outputs.plan_kind == 'legacy'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: cardenaspiero255-lang/gamehub-ultra
@@ -53,6 +90,7 @@ jobs:
           path: upstream
           persist-credentials: false
       - name: Revalidate frozen source and repository rules
+        if: steps.owner_approval.outputs.plan_kind == 'legacy'
         shell: bash
         run: |
           set -euo pipefail
@@ -73,17 +111,20 @@ jobs:
           sudo apparmor_parser -r "$dest"
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
       - name: Compile real Kotlin and exercise independent RED GREEN Judge inside Bubblewrap
+        if: steps.owner_approval.outputs.plan_kind == 'legacy'
         shell: bash
         run: |
           set -euo pipefail
           bash scripts/gamehub-pr151-real-red-green-judge.sh "$GITHUB_WORKSPACE/upstream"
       - name: Patch disposable Git checkout and prove exact original tree rollback
+        if: steps.owner_approval.outputs.plan_kind == 'legacy'
         shell: bash
         run: |
           set -euo pipefail
           node scripts/gamehub-pr151-real-source-rollback.cjs \
             "$GITHUB_WORKSPACE/upstream" "$RUNNER_TEMP/one-approval-rollback.json"
       - name: Cross-check signed owner receipt, Kotlin original oracle and identical Git tree
+        if: steps.owner_approval.outputs.plan_kind == 'legacy'
         shell: bash
         run: |
           set -euo pipefail
@@ -94,6 +135,7 @@ jobs:
           const rollback=JSON.parse(fs.readFileSync(path.join(dir,'one-approval-rollback.json'),'utf8'));
           const oracle=JSON.parse(fs.readFileSync(path.join(dir,'gamehub-pr151-real-proof/receipt.json'),'utf8'));
           if(owner.status!=='SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED'||
+             owner.nonceReplayBlocked!==true||
              owner.workflowSha!==process.env.GITHUB_SHA||
              owner.runId!==process.env.GITHUB_RUN_ID||
              owner.remoteWrites!==false||owner.mergeAllowed!==false||
@@ -121,8 +163,69 @@ jobs:
            JSON.stringify(sealed)+'\n',{flag:'wx',mode:0o600});
           console.log('ONE_GITHUB_APPROVAL_REAL_SOURCE_ROLLBACK_VERIFIED_NO_PRODUCTION_WRITE');
           NODE
+
+      - name: Real GameHub Battery Kotlin baseline RED and candidate GREEN with independent Judge in offline Bubblewrap
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.owner_approval.outputs.oracle }}" = gamehub-kotlin-domain-battery-v1
+          bash scripts/gamehub-battery-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate"
+      - name: Register exact local Git candidate and prove byte-identical rollback
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run-registered-candidate-rollback.cjs             "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate"             "$RUNNER_TEMP/registered-owner-rollback.json" "$RUNNER_TEMP/owner-single-approval-receipt.json"
+      - name: Cross-verify owner OIDC, actual Kotlin Judge and exact Git tree without authorizing a PR merge
+        if: steps.owner_approval.outputs.plan_kind == 'registered'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP" <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const root=process.argv[2];
+          const get=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+          const a=get('owner-single-approval-receipt.json');
+          const r=get('registered-owner-rollback.json');
+          const k=get('gamehub-battery-domain-proof/receipt.json');
+          if(a.status!=='SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED' ||
+             a.nonceReplayBlocked!==true || a.planKind!=='registered' || r.planDigest!==a.planDigest ||
+             r.ownerCommentId!==a.commentId || r.runId!==a.runId ||
+             r.status!=='REGISTERED_GIT_CANDIDATE_ROLLBACK_VERIFIED' ||
+             r.originalTree!==r.restoredTree ||
+             r.originalCommit!==k.originalCommit ||
+             r.candidateCommit!==k.candidateCommit ||
+             r.originalBlob!==k.originalBlob ||
+             r.proposedBlob!==k.candidateBlob ||
+             !k.redOriginalFailedAtExactPredicate ||
+             !k.greenPatchedPassed || !k.independentJudgePassed ||
+             r.remoteWrites!==false || r.mergeAllowed!==false)process.exit(1);
+          const receipt={
+           schema:'ultra-sentinel-registered-owner-repair/v1',
+           status:'REGISTERED_OWNER_APPROVED_SANDBOX_REPAIR_VERIFIED',
+           workflowSha:a.workflowSha,runId:a.runId,ownerId:322222186,
+           commentId:a.commentId,planId:a.registeredPlanId,planDigest:a.planDigest,
+           originalCommit:r.originalCommit,candidateCommit:r.candidateCommit,
+           originalBlob:r.originalBlob,candidateBlob:r.proposedBlob,
+           realKotlinRedGreenJudge:true,originalGitTreeRestored:true,
+           pullRequestReviewRequired:true,car29ChecksRequired:true,
+           remoteWrites:false,autoMerge:false,productionCertified:false
+          };
+          fs.writeFileSync(path.join(root,'registered-owner-proof.json'),JSON.stringify(receipt)+'\n',
+            {flag:'wx',mode:0o600});
+          console.log('REGISTERED_OWNER_APPROVAL_KOTLIN_ROLLBACK_VERIFIED_PR_REVIEW_REQUIRED');
+          NODE
+      - name: Upload registered plan receipt (PR release remains protected)
+        if: success() && steps.owner_approval.outputs.plan_kind == 'registered'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: owner-registered-real-kotlin-receipt
+          path: ${{ runner.temp }}/registered-owner-proof.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Publish only bounded, credential-free evidence
-        if: success()
+        if: success() && steps.owner_approval.outputs.plan_kind == 'legacy'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
           name: owner-single-approval-real-source-receipt
