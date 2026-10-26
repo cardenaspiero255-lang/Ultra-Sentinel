@@ -12,7 +12,7 @@ function fixture(){
   targetRepo:'cardenaspiero255-lang/gamehub-ultra',
   baseSha:'a'.repeat(40),baseBlob:'b'.repeat(40),
   candidateSha:'c'.repeat(40),candidateBlob:'d'.repeat(40),
-  targetFile:'app/src/main/java/com/cardenaspiero255/gamehubultra/domain/Example.kt',
+  targetFile:'app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt',
   oracle:'gamehub-kotlin-domain-battery-v1',
   rollback:'git-temporary-tree-revert-v1',
   maxChangedFiles:1,scope:'ONE_KOTLIN_PRODUCTION_FILE',
