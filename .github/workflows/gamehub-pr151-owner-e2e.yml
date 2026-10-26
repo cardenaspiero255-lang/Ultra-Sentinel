@@ -1,0 +1,153 @@
+name: Ultra Sentinel — Autorizar reparación real aislada de GameHub (sin Termux)
+# Approves a pinned historical source REPAIR EXPERIMENT, never a production write.
+on:
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+concurrency:
+  group: ultra-owner-gamehub-pr151-frozen
+  cancel-in-progress: false
+jobs:
+  owner-real-source-isolated-repair:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.number == 50 &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.body == 'ULTRA_SENTINEL_GAMEHUB_OWNER_OIDC_PR151_V1' &&
+        github.event.comment.user.id == 322222186 &&
+        github.event.sender.id == 322222186)) &&
+      github.event.repository.id == 1418338512 &&
+      github.actor_id == '322222186' &&
+      github.actor == 'cardenaspiero255-lang' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Trusted Ultra Sentinel SHA, no checkout credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Frozen original GameHub Kotlin source, no credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 9ad983576c16c6c34d59283979d83c69ede50dce
+          path: upstream
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Confirm exact repository SHA and original Git blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C upstream rev-parse HEAD)" = 9ad983576c16c6c34d59283979d83c69ede50dce
+          test "$(git -C upstream hash-object app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt)" = adb11032b9b7f62f865228dfa1c27258ca3fa0df
+          npm run check
+      - name: Authenticate GitHub-signed OIDC owner workflow identity (NOT Ed25519)
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/ultra-gamehub-owner-approval"
+          chmod 0700 "$RUNNER_TEMP/ultra-gamehub-owner-approval"
+          node scripts/verify-github-oidc-owner.cjs > "$RUNNER_TEMP/ultra-gamehub-owner-approval/oidc-approval.json"
+          node - "$RUNNER_TEMP/ultra-gamehub-owner-approval/oidc-approval.json" <<'NODE'
+          const fs=require('node:fs');
+          const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(x.status!=='GITHUB_OIDC_OWNER_SANDBOX_APPROVED'||
+           x.sha!==process.env.GITHUB_SHA||!x.cryptographicallyVerified||
+           x.authorizedForProductionRepair!==false||
+           x.ed25519OwnerSignatureVerified!==false||x.remoteWrites!==false)
+           process.exit(1);
+          console.log('GITHUB_OIDC_SIGNATURE_VERIFIED_OWNER_BOUND_TO_SHA_SANDBOX_ONLY');
+          NODE
+      - name: Restricted Bubblewrap and AppArmor; never disable global restrictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          dest=/etc/apparmor.d/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" "$dest"
+          sudo apparmor_parser -r "$dest"
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          test -x /usr/bin/bwrap
+      - name: Compile actual GameHub Kotlin original, corrected and independent Judge; run in Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc
+          command -v java
+          bash scripts/gamehub-pr151-real-red-green-judge.sh "$GITHUB_WORKSPACE/upstream"
+      - name: Source-bound Hunter and actual Kotlin patch Git commit then revert; require exact original tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/gamehub-pr151-real-source-rollback.cjs \
+            "$GITHUB_WORKSPACE/upstream" "$RUNNER_TEMP/ultra-gamehub-owner-approval/rollback.json"
+      - name: Cross-verify immutable source, OIDC approval and distinct RED GREEN Judge rollback receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$RUNNER_TEMP/ultra-gamehub-owner-approval" \
+            "$RUNNER_TEMP/gamehub-pr151-real-proof/receipt.json" <<'NODE'
+          const fs=require('node:fs'),path=require('node:path');
+          const folder=process.argv[2];
+          const approval=JSON.parse(fs.readFileSync(path.join(folder,'oidc-approval.json'),'utf8'));
+          const rollback=JSON.parse(fs.readFileSync(path.join(folder,'rollback.json'),'utf8'));
+          const kotlin=JSON.parse(fs.readFileSync(process.argv[3],'utf8'));
+          if(approval.status!=='GITHUB_OIDC_OWNER_SANDBOX_APPROVED'||
+             approval.sha!==process.env.GITHUB_SHA||
+             rollback.status!=='REAL_SOURCE_GIT_ROLLBACK_VERIFIED'||
+             rollback.sourceCommit!==kotlin.sourceCommit||
+             rollback.sourceBlobSha!==kotlin.originalBlob||
+             !rollback.originalGitBlobRestored||
+             rollback.restoredTreeSha!==rollback.baselineTreeSha||
+             kotlin.redOriginalFailedAtExactPredicate!==true||
+             kotlin.greenPatchedPassed!==true||
+             kotlin.independentJudgePassed!==true||
+             rollback.hunterLineNumbers.join(',')!=='73,150,264')process.exit(1);
+          const result={
+           schema:'ultra-sentinel-github-oidc-gamehub-real-source/v1',
+           status:'GITHUB_OWNER_APPROVED_REAL_SOURCE_SANDBOX_PROOF',
+           ownerWorkflowSha:approval.sha,runId:approval.runId,
+           githubIssuerSignedOwnerOIDCVerified:true,
+           originalGameHubCommit:rollback.sourceCommit,
+           originalGameHubBlob:rollback.sourceBlobSha,
+           repairedBlob:rollback.patchedBlobSha,
+           hunterSourceHypothesisLines:rollback.hunterLineNumbers,
+           frozenCoreRulesUnchanged:true,
+           realKotlinRedFailed:true,correctedKotlinGreenPassed:true,
+           independentKotlinJudgePassed:true,
+           localGitRepairCommitted:true,
+           rollbackRestoredIdenticalTree:true,
+           bubblewrapValidators:true,
+           productionOwnerEd25519Verified:false,
+           fullSignedProductionE2E:false,
+           remoteWrites:false,mergeAllowed:false,productionCertified:false
+          };
+          fs.writeFileSync(path.join(folder,'receipt.json'),JSON.stringify(result)+'\n',{mode:0o600,flag:'wx'});
+          console.log('GITHUB_OWNER_OIDC_REAL_SOURCE_FIX_ROLLBACK_VERIFIED_NO_PRODUCTION_WRITES');
+          NODE
+      - name: Upload minimal immutable proof without any token or raw code
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: gamehub-owner-oidc-real-source-rollback
+          path: ${{ runner.temp }}/ultra-gamehub-owner-approval/receipt.json
+          retention-days: 14
+          if-no-files-found: error
