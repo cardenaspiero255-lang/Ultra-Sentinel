@@ -14,6 +14,13 @@ No es una auditoría exhaustiva ni certifica las 35 capacidades.
   pasos de pruebas, restauración, observación y persistencia del checkpoint.
 - La autorización OIDC, aprobación única, antirreplay, reparación Kotlin registrada
   y rollback ya están en el código principal. Su presencia no autoriza operaciones nuevas.
+- La consulta autenticada `actions/runs?event=schedule&per_page=100` muestra un
+  intervalo de **443,33 minutos (7 h 23 min 20 s)** entre los runs
+  [40288339643](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/40288339643)
+  y [40347370464](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/40347370464).
+  El auditor, con corte `2026-10-26T21:15:00Z`, devuelve `SCHEDULE_GAP`, cinco
+  muestras en 24 horas y cero ejecuciones fallidas. El cron de 30 minutos no
+  demuestra continuidad; no se atribuye la causa del intervalo sin investigación.
 
 ## Defectos reproducidos y corregidos en este cambio
 
@@ -32,6 +39,9 @@ por estos defectos. Los controles de escritura, fusión y despliegue permanecen 
 Verificación local del cambio: `npm run check`, **1.121 pruebas aprobadas, cero fallos
 y cero omitidas**, Node.js 24.22.1. La CI configura Node.js 22 y debe verificarse
 separadamente sobre el SHA del PR.
+La [CI 40402215290](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/40402215290)
+pasó en `9c11403bf55d28b6b2d8ef667e5726a201909614`; cualquier commit posterior
+requiere su propia CI. No reutilizar este resultado para autorizar otro HEAD.
 
 ## Brechas operativas que no cierran los tests locales
 
