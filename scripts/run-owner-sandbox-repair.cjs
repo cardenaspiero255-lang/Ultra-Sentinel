@@ -109,7 +109,7 @@ async function main(){
   trustedPublicKey,nonceStorePath:request.nonceStorePath,
   directory:request.directory,plan:request.plan,changes:request.changes,
   expectedHeadSha:request.expectedHeadSha,verifyRepair,verifyRed,judgeRepair,
-  requireRedGreenJudge:true
+  requireRedGreenJudge:true,requireHunterEvidence:true
  });
  if(result.status!=='SANDBOX_REPAIR_VERIFIED')throw Error('REPAIR_NOT_VERIFIED');
  process.stdout.write('OWNER_AUTHORIZED_SANDBOX_REPAIR_VERIFIED\n');
