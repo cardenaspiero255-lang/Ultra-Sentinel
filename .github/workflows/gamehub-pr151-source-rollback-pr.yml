@@ -1,0 +1,87 @@
+name: GameHub PR151 frozen Kotlin repair and rollback (PR regression)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/gamehub-pr151-source-rollback-pr.yml'
+      - '.github/workflows/gamehub-pr151-owner-e2e.yml'
+      - 'packages/recovery/gamehub-pr151-source-hunter.cjs'
+      - 'packages/recovery/github-oidc-approval.cjs'
+      - 'scripts/gamehub-pr151-real-source-rollback.cjs'
+      - 'scripts/verify-github-oidc-owner.cjs'
+      - 'tests/unit/gamehub-thermal-hunter.test.cjs'
+      - 'tests/unit/github-oidc-approval.test.cjs'
+permissions:
+  contents: read
+jobs:
+  original-kotlin-sandbox-rollback:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout untrusted PR only after author and repo gate; no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Checkout frozen GameHub source by Git SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 9ad983576c16c6c34d59283979d83c69ede50dce
+          path: upstream
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify original source blob and run full existing contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C upstream rev-parse HEAD)" = 9ad983576c16c6c34d59283979d83c69ede50dce
+          test "$(git -C upstream hash-object app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt)" = adb11032b9b7f62f865228dfa1c27258ca3fa0df
+          npm run check
+      - name: Setup restricted Bubblewrap with AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Original Kotlin RED repaired Kotlin GREEN independent Judge, all offline Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/gamehub-pr151-real-red-green-judge.sh "$GITHUB_WORKSPACE/upstream"
+      - name: Source-bound experimental Hunter, local Git repair and exact rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/gamehub-pr151-real-source-rollback.cjs \
+            "$GITHUB_WORKSPACE/upstream" "$RUNNER_TEMP/gamehub-pr151-real-proof/rollback.json"
+          node - "$RUNNER_TEMP/gamehub-pr151-real-proof/rollback.json" <<'NODE'
+          const x=require(process.argv[2]);
+          if(x.status!=='REAL_SOURCE_GIT_ROLLBACK_VERIFIED'||
+             x.restoredTreeSha!==x.baselineTreeSha||
+             x.originalGitBlobRestored!==true||x.remoteWrites!==false||
+             x.hunterLineNumbers.join(',')!=='73,150,264')process.exit(1);
+          console.log('REAL_SOURCE_ROLLBACK_TREE_VERIFIED_SANDBOX_ONLY');
+          NODE
+      - name: Preserve only scrubbed original Kotlin and local rollback receipts
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: gamehub-real-source-pr151-rollback-not-production
+          path: |
+            ${{ runner.temp }}/gamehub-pr151-real-proof/receipt.json
+            ${{ runner.temp }}/gamehub-pr151-real-proof/rollback.json
+          retention-days: 14
+          if-no-files-found: error
