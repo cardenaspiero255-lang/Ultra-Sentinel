@@ -11,13 +11,17 @@ const {stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore}=requir
 const {executeSandboxRepair}=require('./sandbox-executor.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
+const {judgeLocalRepair}=require('./repair-judge.cjs');
 function digestPlan(plan,changes){
  return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
 async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwnerId,
  authorization,authorizationSignature,trustedPublicKey,nonceStorePath,directory,plan,changes,expectedHeadSha,fetchImpl,
- verifyRepair,now=Date.now()}={}){
+ verifyRepair,verifyRed,judgeRepair,requireRedGreenJudge=false,now=Date.now()}={}){
  if(typeof verifyRepair!=='function')throw Error('REPAIR_VERIFIER_REQUIRED');
+ if(requireRedGreenJudge!==false&&requireRedGreenJudge!==true)throw Error('INVALID_STRICT_REPAIR_MODE');
+ if(requireRedGreenJudge&&(typeof verifyRed!=='function'||typeof judgeRepair!=='function'))
+  throw Error('RED_GREEN_JUDGE_REQUIRED');
  if(!authorization||!plan||!Array.isArray(changes)||
   authorization.repo!=='cardenaspiero255-lang/Ultra-Sentinel'||
   authorization.branch!==plan.branch||
@@ -39,9 +43,34 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   planDigest:authorization.planDigest});
  let repair;
  try{
+  if(requireRedGreenJudge){
+   // Reproduce the failing test AFTER owner authentication, inside the
+   // existing journal, BEFORE any repair is allowed to change the tree.
+   if(await verifyRed({baselineHeadSha:expectedHeadSha,branch:plan.branch,directory})!==true)
+    throw Error('RED_NOT_REPRODUCED');
+   assertSafeGitCheckout(fs.realpathSync(directory));
+   if(sandboxGit(directory,'remote')!==''||
+      sandboxGit(directory,'branch','--show-current')!==plan.branch||
+      sandboxGit(directory,'rev-parse','HEAD')!==expectedHeadSha||
+      sandboxGit(directory,'status','--porcelain')!==''||
+      sandboxGit(directory,'rev-parse','HEAD^{tree}')!==journal.baselineTree)
+    throw Error('RED_VALIDATOR_MUTATED_BASELINE');
+  }
   repair=executeSandboxRepair({directory,plan,changes,nonceStore,
    nonce:authorization.nonce,expectedHeadSha});
   if(await verifyRepair(repair)!==true)throw Error('REPAIR_VERIFICATION_FAILED');
+  // The Judge is invoked separately from the GREEN verifier; a veto MUST
+  // traverse the same rollback path as any other post-repair failure.
+  if(requireRedGreenJudge){
+   // Separate, trusted local Judge independently recomputes Git ancestry,
+   // signed plan file identities and blob hashes before the configured
+   // isolated Judge test may issue its final veto.
+   const local=judgeLocalRepair({directory,plan,
+    baselineHeadSha:expectedHeadSha,repairHeadSha:repair.headSha});
+   if(local.approved!==true||await judgeRepair({baselineHeadSha:expectedHeadSha,
+    repairHeadSha:repair.headSha,branch:plan.branch,directory})!==true)
+    throw Error('INDEPENDENT_JUDGE_VETO');
+  }
   // The validator executes code from the disposable checkout. A clean exit
   // is NOT evidence it left the Git state unchanged. Never certify a commit
   // if verifier scripts added a remote, rewrote HEAD, changed tracked files,
@@ -55,7 +84,8 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
     throw Error('REPAIR_MUTATED_DURING_VERIFICATION');
   finishTransaction(journal);
   return Object.freeze({status:'SANDBOX_REPAIR_VERIFIED',repair,
-   remoteWrites:false,mergeAllowed:false});
+   remoteWrites:false,mergeAllowed:false,
+   redGreenJudgeVerified:requireRedGreenJudge===true});
  }catch(error){
   try{
    if(repair){

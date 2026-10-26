@@ -102,3 +102,21 @@ test('trusted owner public key and request files reject symlinks, writable files
   assert.throws(()=>readTrustedFile(valid),/UNSAFE_CONFIG_PARENT/);
  }finally{fs.rmSync(directory,{recursive:true,force:true});}
 });
+
+
+test('RED requires an actual failing TAP test, not timeout, bwrap or runtime failure',()=>{
+ const {redFailureObserved}=require('../../scripts/run-owner-sandbox-repair.cjs');
+ const reproduced={error:undefined,status:1,signal:null,
+  stdout:'TAP version 13\nnot ok 1 - reproduces bug\n# tests 1\n# pass 0\n# fail 1\n'};
+ assert.equal(redFailureObserved(reproduced),true);
+ for(const item of [
+  {...reproduced,status:0},
+  {...reproduced,status:2},
+  {...reproduced,status:null,signal:'SIGKILL'},
+  {...reproduced,error:Error('namespace denied')},
+  {...reproduced,stdout:'bwrap: Operation not permitted'},
+  {...reproduced,stdout:'TAP version 13\n# tests 1\n# pass 1\n# fail 0\n'},
+  {...reproduced,stdout:'not ok 1 - unrelated\n'},
+  {...reproduced,stdout:'# fail 1\n'}
+ ])assert.equal(redFailureObserved(item),false);
+});
