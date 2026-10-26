@@ -1,12 +1,12 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {analyze}=require('../../packages/core/ultra_sentinel_core.cjs');
+const {inspectFrozenGameHubThermal}=require('../../packages/recovery/gamehub-pr151-source-hunter.cjs');
 const PATH='app/src/main/java/com/cardenaspiero255/gamehubultra/domain/AiSessionCoach.kt';
-const SHA='a'.repeat(40);
+const SHA='9ad983576c16c6c34d59283979d83c69ede50dce';
 const bad=[
  'package com.cardenaspiero255.gamehubultra.domain',
  'object AiSessionCoach {',
- 'private const val HIGH_THERMAL_HEADROOM=0.8f',
+ 'private const val HIGH_THERMAL_HEADROOM=0.80f',
  'val highThermalHeadroom = snapshot.thermalHeadroom?.let { !it.isNaN() && it >= HIGH_THERMAL_HEADROOM } == true',
  'sample.thermalHeadroom != null &&',
  ' !sample.thermalHeadroom.isNaN() &&',
@@ -17,31 +17,29 @@ const bad=[
  '}',
  ''].join('\n');
 function scan(source,path=PATH){
- const rows=source.trimEnd().split('\n');
- const patch='@@ -0,0 +1,'+rows.length+' @@\n'+rows.map(x=>'+'+x).join('\n')+'\n';
- return analyze([{filename:path,status:'added',changes:rows.length,
-  additions:rows.length,deletions:0,patch,fullSource:source}],{sha:SHA});
+ return inspectFrozenGameHubThermal({source,path,sourceSha:SHA,experimentalFixture:true});
 }
-test('Hunter identifies nonfinite thermal headroom on each exact GameHub original predicate',()=>{
+test('auxiliary Hunter detects precisely three nonfinite predicates, without changing frozen Core rules',()=>{
  const out=scan(bad);
- assert.equal(out.coverage.partial,false);
- assert.deepEqual(out.findings.filter(x=>x.rule==='NONFINITE_THERMAL_HEADROOM').map(x=>x.line),[4,6,9]);
+ assert.equal(out.status,'SOURCE_HYPOTHESIS_NOT_CAUSAL_TRUTH');
+ assert.deepEqual(out.lines,[4,6,9]);
+ assert.equal(out.frozenCoreModified,false);
+ assert.equal(out.canAuthorizeRepair,false);
 });
-test('Hunter does not flag corrected finite checks or NaN checks unrelated to thermal metrics',()=>{
- const fixed=bad.replaceAll('!it.isNaN()','it.isFinite()')
-  .replaceAll('!sample.thermalHeadroom.isNaN()','sample.thermalHeadroom.isFinite()')
-  .replaceAll('!current.thermalHeadroom.isNaN()','current.thermalHeadroom.isFinite()');
- assert.equal(scan(fixed).findings.filter(x=>x.rule==='NONFINITE_THERMAL_HEADROOM').length,0);
- const unrelated=bad.replace('HIGH_THERMAL_HEADROOM=0.8f','OTHER=0.8f');
- assert.equal(scan(unrelated).findings.filter(x=>x.rule==='NONFINITE_THERMAL_HEADROOM').length,0);
+test('corrected finiteness checks, unrelated same-named files, and missing constant are clean',()=>{
+ const fixed=bad.replace('!it.isNaN()','it.isFinite()')
+   .replace('!sample.thermalHeadroom.isNaN()','sample.thermalHeadroom.isFinite()')
+   .replace('!current.thermalHeadroom.isNaN()','current.thermalHeadroom.isFinite()');
+ assert.deepEqual(scan(fixed).lines,[]);
+ assert.throws(()=>scan(bad,'app/src/main/java/Other.kt'),/GAMEHUB_HUNTER_REJECTED/);
+ assert.deepEqual(scan(bad.replace('HIGH_THERMAL_HEADROOM=0.80f','OTHER=0.80f')).lines,[]);
 });
-test('Hunter rejects quotes, comments and files not scoped to the real thermal component',()=>{
+test('comments, strings and fake continuation lines cannot create Hunter evidence',()=>{
  const altered=bad.replace('!sample.thermalHeadroom.isNaN()','// !sample.thermalHeadroom.isNaN()')
-   .replace('!current.thermalHeadroom.isNaN()','val example = "!current.thermalHeadroom.isNaN()"');
- assert.deepEqual(scan(altered).findings.filter(x=>x.rule==='NONFINITE_THERMAL_HEADROOM').map(x=>x.line),[4]);
- assert.equal(scan(bad,'app/src/main/java/com/example/Other.kt').findings.some(x=>x.rule==='NONFINITE_THERMAL_HEADROOM'),false);
+  .replace('!current.thermalHeadroom.isNaN()','val s = "!current.thermalHeadroom.isNaN()"');
+ assert.deepEqual(scan(altered).lines,[4]);
 });
-test('unverified Kotlin full-source cannot create an actionable thermal finding',()=>{
- const out=scan(bad.slice(0,-2)+'// different\n');
- assert.equal(out.findings.some(x=>x.rule==='NONFINITE_THERMAL_HEADROOM'),false);
+test('production mode rejects any source without matching original immutable Git blob',()=>{
+ assert.throws(()=>inspectFrozenGameHubThermal({source:bad,path:PATH,sourceSha:SHA}),/GAMEHUB_HUNTER_REJECTED/);
+ assert.throws(()=>inspectFrozenGameHubThermal({source:bad,path:PATH,sourceSha:'b'.repeat(40),experimentalFixture:true}),/GAMEHUB_HUNTER_REJECTED/);
 });
