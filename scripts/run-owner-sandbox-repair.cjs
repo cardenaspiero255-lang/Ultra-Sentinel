@@ -56,8 +56,8 @@ function bubblewrapCommand(directory,argv){
 function redFailureObserved(result){
  return !!result&&!result.error&&result.status===1&&result.signal===null&&
   typeof result.stdout==='string'&&
-  /^\\s*not ok [1-9]\\d*\\s*-/m.test(result.stdout)&&
-  /^\\s*# fail [1-9]\\d*\\s*$/m.test(result.stdout);
+  /^\s*not ok [1-9]\d*\s*-/m.test(result.stdout)&&
+  /^\s*# fail [1-9]\d*\s*$/m.test(result.stdout);
 }
 function verifierFromTrustedEnvironment(directory,{argvVariable='ULTRA_SENTINEL_VALIDATOR_ARGV_JSON',expectRed=false}={}){
  if(!['ULTRA_SENTINEL_VALIDATOR_ARGV_JSON','ULTRA_SENTINEL_JUDGE_ARGV_JSON'].includes(argvVariable)||
