@@ -11,6 +11,7 @@ const {stableAuthorization,verifyOwnerAuthorization,PersistentNonceStore}=requir
 const {executeSandboxRepair}=require('./sandbox-executor.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
+const {judgeLocalRepair}=require('./repair-judge.cjs');
 function digestPlan(plan,changes){
  return crypto.createHash('sha256').update(JSON.stringify({plan,changes})).digest('hex');
 }
@@ -60,9 +61,16 @@ async function runOwnerAuthorizedSandboxRepair({token,expectedOwner,expectedOwne
   if(await verifyRepair(repair)!==true)throw Error('REPAIR_VERIFICATION_FAILED');
   // The Judge is invoked separately from the GREEN verifier; a veto MUST
   // traverse the same rollback path as any other post-repair failure.
-  if(requireRedGreenJudge&&await judgeRepair({baselineHeadSha:expectedHeadSha,
-   repairHeadSha:repair.headSha,branch:plan.branch,directory})!==true)
-   throw Error('INDEPENDENT_JUDGE_VETO');
+  if(requireRedGreenJudge){
+   // Separate, trusted local Judge independently recomputes Git ancestry,
+   // signed plan file identities and blob hashes before the configured
+   // isolated Judge test may issue its final veto.
+   const local=judgeLocalRepair({directory,plan,
+    baselineHeadSha:expectedHeadSha,repairHeadSha:repair.headSha});
+   if(local.approved!==true||await judgeRepair({baselineHeadSha:expectedHeadSha,
+    repairHeadSha:repair.headSha,branch:plan.branch,directory})!==true)
+    throw Error('INDEPENDENT_JUDGE_VETO');
+  }
   // The validator executes code from the disposable checkout. A clean exit
   // is NOT evidence it left the Git state unchanged. Never certify a commit
   // if verifier scripts added a remote, rewrote HEAD, changed tracked files,
