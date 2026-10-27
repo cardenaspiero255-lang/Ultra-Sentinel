@@ -116,6 +116,7 @@ function bridge(root){
  const unsafe=utf8(read(real,'unsafe.kt',100,12000));
  if(!verifyOriginalAndCandidate({original,candidate})||
   unsafe!==makeTermuxCandidate(original).unsafe)bad();
+ process.stdout.write('TERMUX_ORIGINAL_SOURCE_PIN_VERIFIED\n');
  const proof=makeTermuxCandidate(original);
  const expected=[
   ['original','UNTRUSTED_SUFFIX_ACCEPTED',false,original],
@@ -139,7 +140,9 @@ function bridge(root){
   artifacts[mode]=Object.freeze({sourceSha256:row.sourceSha256,
    jarSha256:row.jarSha256,oracleLogSha256:row.oracleLogSha256});
  }
+ process.stdout.write('TERMUX_JVM_ARTIFACT_HASHES_VERIFIED\n');
  const good=gitScenario(original,candidate,gitBlob(candidate));
+ process.stdout.write('TERMUX_REPAIR_LOCAL_JUDGE_ROLLBACK_VERIFIED\n');
  const negative=gitScenario(original,unsafe,gitBlob(unsafe));
  if(!good||!negative)bad();
  return Object.freeze({
