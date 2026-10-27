@@ -4,6 +4,10 @@
     {
       "id": "gamehub-battery-valid-range",
       "policyPath": "docs/quality/owner-gamehub-battery-plan.json"
+    },
+    {
+      "id": "gamehub-battery-finite-drain-e2e",
+      "policyPath": "docs/quality/owner-gamehub-battery-finite-plan.json"
     }
   ]
 }
