@@ -8,6 +8,9 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
 const {judgeLocalRepair}=require('./repair-judge.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
+const {analyze}=require('../core/ultra_sentinel_core.cjs');
+const {analyzeFamilies}=require('../family-hunter/ultra_sentinel_family_fingerprints.cjs');
+const {planRepair}=require('./supervised-repair.cjs');
 const PATH='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/CompanionResultPolicy.kt';
 const PIN=Object.freeze({
  commit:'f2572a8abb0a1ef5b34d971ea8c4dc5acbecf868',
@@ -117,6 +120,25 @@ function bridge(root){
  if(!verifyOriginalAndCandidate({original,candidate})||
   unsafe!==makeTermuxCandidate(original).unsafe)bad();
  const proof=makeTermuxCandidate(original);
+ // First-class Core -> Family Hunter -> Fixer observation on the ACTUAL
+ // immutable Kotlin source, not on a predetermined finding or synthetic diff.
+ const rows=original.slice(0,-1).split('\n');
+ const sourceFile={filename:PATH,status:'added',changes:rows.length,
+  additions:rows.length,deletions:0,
+  patch:'@@ -0,0 +1,'+rows.length+' @@\n'+rows.map(x=>'+'+x).join('\n')+'\n',
+  fullSource:original};
+ const analysis=analyze([sourceFile],{
+  sha:PIN.commit,sourceScope:'KOTLIN_JVM_V3_EXPERIMENTAL'});
+ if(analysis.coverage?.partial!==false||analysis.omitted!==0)bad();
+ const finding=analysis.findings.find(f=>
+  f.rule==='REGEX_PREFIX_ACCEPTED_AS_FULL_EVIDENCE'&&f.path===PATH);
+ if(!finding)bad();
+ const hunter=analyzeFamilies(analysis);
+ if(!hunter.families.some(f=>f.rule===finding.rule&&
+  f.locations.some(l=>l.path===PATH&&l.line===finding.line)))bad();
+ const draft=planRepair({analysis});
+ if(draft.status!=='HUMAN_REVIEW_REQUIRED'||draft.commitAllowed!==false||
+  !draft.steps.some(x=>x.rule===finding.rule&&x.path===PATH))bad();
  const expected=[
   ['original','UNTRUSTED_SUFFIX_ACCEPTED',false,original],
   ['unsafe','NORMAL_ID_FORMAT_FAILED',false,unsafe],
@@ -150,6 +172,9 @@ function bridge(root){
   originalSourceSha256:proof.sourceSha256,
   candidateSourceSha256:proof.candidateSha256,
   artifactDigests:artifacts,
+  originalCoreDetectedUnregisteredIssue:true,
+  originalFamilyHunterGroupedIssue:true,
+  originalFixerDraftRequiresReview:true,
   originalJVMOracleFailedAsExpected:true,
   repairedJVMOraclePassed:true,
   unsafeRepairJVMOracleRejected:true,
