@@ -42,8 +42,8 @@ function receipts(){
 test('new registered immutable GameHub 252 finite-policy plan belongs to exact source and candidate',()=>{
  assert.equal(plan.id,'gamehub-battery-finite-drain-e2e');
  assert.equal(plan.oracle,'gamehub-kotlin-domain-battery-finite-v2');
- assert.equal(plan.baseSha,'4bdaf1d35380c7053f836d66ab969afc8040e744');
- assert.equal(plan.candidateSha,'67ecf5ec5f7517cc75080a6735927f39138b417d');
+ assert.equal(plan.baseSha,'458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7');
+ assert.equal(plan.candidateSha,'b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be');
  assert.equal(plan.baseBlob,'976e3aa53ec94d14317e8caa1e6bf71088553650');
  assert.equal(plan.candidateBlob,'28f163b0551479b925d702941c99235eded3a0d3');
  assert.equal(plan.remoteWrites,false);
