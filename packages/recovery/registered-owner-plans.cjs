@@ -9,7 +9,7 @@ const {formatGitHubSingleApproval}=require('./github-single-approval.cjs');
 const REGISTRY='docs/quality/owner-approved-plans.json';
 const SHA=/^[a-f0-9]{40}$/,DIGEST=/^[a-f0-9]{64}$/;
 const SAFE_ID=/^[a-z][a-z0-9-]{4,79}$/;
-const PROGRAMS=new Set(['gamehub-kotlin-domain-battery-v1','gamehub-pr151-real-kotlin-v1']);
+const PROGRAMS=new Set(['gamehub-kotlin-domain-battery-v1','gamehub-kotlin-domain-battery-finite-v2','gamehub-pr151-real-kotlin-v1']);
 const ROLLBACKS=new Set(['git-temporary-tree-revert-v1','gamehub-pr151-original-tree-v1']);
 function deny(){throw Error('REGISTERED_PLAN_DENIED');}
 function readPlain(root,relative){
@@ -37,10 +37,16 @@ function validatePlan(p){
   p.maxChangedFiles!==1||p.scope!=='ONE_KOTLIN_PRODUCTION_FILE'||
   p.remoteWrites!==false||p.mergeAllowed!==false||
   p.productionReleaseAllowed!==false)deny();
- if(p.oracle==='gamehub-kotlin-domain-battery-v1'&&
+ if(['gamehub-kotlin-domain-battery-v1','gamehub-kotlin-domain-battery-finite-v2'].includes(p.oracle)&&
     (p.targetRepo!=='cardenaspiero255-lang/gamehub-ultra'||
      !p.targetFile.endsWith('/domain/BatteryAwareGamingEngine.kt')||
      p.rollback!=='git-temporary-tree-revert-v1'))deny();
+ if(p.oracle==='gamehub-kotlin-domain-battery-finite-v2'&&
+    (p.id!=='gamehub-battery-finite-drain-e2e'||
+     p.baseSha!=='4bdaf1d35380c7053f836d66ab969afc8040e744'||
+     p.candidateSha!=='67ecf5ec5f7517cc75080a6735927f39138b417d'||
+     p.baseBlob!=='976e3aa53ec94d14317e8caa1e6bf71088553650'||
+     p.candidateBlob!=='28f163b0551479b925d702941c99235eded3a0d3'))deny();
  return Object.freeze({...p});
 }
 function loadRegisteredPlan(root,planDigest){
