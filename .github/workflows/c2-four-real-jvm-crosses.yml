@@ -5,6 +5,9 @@ on:
       - .github/workflows/c2-four-real-jvm-crosses.yml
       - packages/quality-gates/c2-four-direct-jvm-crosses.cjs
       - scripts/c2-four-real-jvm-crosses.sh
+      - scripts/c2-four-real-jvm-local-git-judge.cjs
+      - packages/recovery/gamehub-four-pair-local-judge.cjs
+      - tests/unit/gamehub-four-pair-local-judge.test.cjs
       - tests/oracles/c2-cross-*.kt
       - tests/unit/c2-four-direct-jvm-crosses.test.cjs
   push:
@@ -61,6 +64,10 @@ jobs:
           mkdir -p "$root"
           bash scripts/c2-four-real-jvm-crosses.sh "$SUITE" "$root"
           test -s "$root/output/receipt.json"
+          node scripts/c2-four-real-jvm-local-git-judge.cjs "$SUITE" "$root"
+          test -s "$root/output/local-git-judge-rollback.json"
+          mkdir -p "$RUNNER_TEMP/c2-pair-git-judge"
+          cp "$root/output/local-git-judge-rollback.json" "$RUNNER_TEMP/c2-pair-git-judge/receipt.json"
           mkdir -p "$RUNNER_TEMP/c2-pair-receipt"
           cp "$root/output/receipt.json" "$RUNNER_TEMP/c2-pair-receipt/receipt.json"
           rm -rf "$root"
@@ -70,6 +77,13 @@ jobs:
           name: c2-real-pair-${{ matrix.suite }}
           path: ${{ runner.temp }}/c2-pair-receipt/receipt.json
           retention-days: 30
+          if-no-files-found: error
+      - name: Archive second sanitized local Git Judge and rollback receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: c2-git-judge-original-${{ matrix.suite }}
+          path: ${{ runner.temp }}/c2-pair-git-judge/receipt.json
+          retention-days: 14
           if-no-files-found: error
   adjudicate:
     needs: [original-kotlin-pair]
