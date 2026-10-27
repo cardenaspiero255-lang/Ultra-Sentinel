@@ -23,13 +23,19 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
  const current=timestamp(now),seen=new Set(),samples=[];
  for(const r of runs){
   if(!r||typeof r!=='object'||Array.isArray(r))fail();
-  if(r.event!=='schedule'||r.name!==WORKFLOW||r.path!==PATH||r.head_branch!=='main')continue;
+  if(['event','name','path','head_branch'].some(key=>typeof r[key]!=='string'||r[key].length===0))fail();
+  if(r.event!=='schedule'||r.name!==WORKFLOW||
+   (r.path!==PATH&&r.path!==PATH+'@main')||r.head_branch!=='main')continue;
   if(!Number.isSafeInteger(r.id)||r.id<1||seen.has(r.id)||!SHA.test(r.head_sha||''))fail();
   seen.add(r.id);
   const created=timestamp(r.created_at);
   if(created>current)fail();
   if(created<current-24*60*60*1000)continue;
-  if(r.status!=='completed')continue;
+  if(!['completed','queued','in_progress','waiting','requested','pending'].includes(r.status))fail();
+  if(r.status!=='completed'){
+   if(r.conclusion!==null)fail();
+   continue;
+  }
   if(!['success','failure','cancelled','timed_out','action_required','neutral','skipped'].includes(r.conclusion))fail();
   samples.push({id:r.id,at:created,headSha:r.head_sha,conclusion:r.conclusion});
  }
@@ -47,6 +53,8 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
  else verdict='PUNCTUALITY_OBSERVED_NOT_24X7';
  return Object.freeze({schema:'ultra-sentinel-scheduled-heartbeat-audit/v1',
   verdict,expectedSha,latestRunId:samples[0]?.id??null,
+  latestFailedRunId:samples.find(x=>x.conclusion!=='success')?.id??null,
+  latestHeadStale:samples.length>0&&samples[0].headSha!==expectedSha,
   sampleCount:samples.length,latestAgeMinutes:latestAge===null?null:Math.round(latestAge*100)/100,
   maxGapMinutes:Math.round(maxGap*100)/100,failedCount:failed,
   sourceAuthenticityVerified:false,certified24x7:false,

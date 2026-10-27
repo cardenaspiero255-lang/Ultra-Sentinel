@@ -10,6 +10,10 @@ const {evaluateChanges,validateCheckpoint}=require('./watchdog-state.cjs');
 const {listSentryIssueSample}=require('../../adapters/sentry/sentry-readonly.cjs');
 const {readJarvisRepositoryState}=require('../../adapters/jarvis/jarvis-readonly.cjs');
 const {readGameHubLiveSample}=require('./gamehub-live-sample.cjs');
+const {auditScheduledHeartbeat}=require('../../packages/operations/scheduled-heartbeat-audit.cjs');
+const HEARTBEAT_VERDICTS=['INSUFFICIENT_SCHEDULE_EVIDENCE','SCHEDULE_OVERDUE',
+ 'SCHEDULE_GAP','SCHEDULE_FAILURE_NEEDS_LOG_REVIEW','STALE_WORKFLOW_SHA',
+ 'SCHEDULE_EVIDENCE_UNAVAILABLE','PUNCTUALITY_OBSERVED_NOT_24X7'];
 function fail(reason){throw Error(reason);}
 function privateDirectory(filename){
  if(typeof filename!=='string'||!path.isAbsolute(filename)||
@@ -27,10 +31,16 @@ function validateAlertRecord(alert){
  const types=['NEW_SENTRY_ISSUE','JARVIS_PR_OPENED','JARVIS_PR_HEAD_CHANGED',
   'JARVIS_PR_NO_LONGER_OPEN_IN_SNAPSHOT',
   'GAMEHUB_PR_SAMPLE_SELECTED','GAMEHUB_PR_SAMPLE_CHANGED',
-  'GAMEHUB_PR_HEAD_CHANGED','GAMEHUB_SAMPLE_NOW_IDLE'];
+  'GAMEHUB_PR_HEAD_CHANGED','GAMEHUB_SAMPLE_NOW_IDLE','SCHEDULE_HEARTBEAT'];
  if(!types.includes(alert.type))fail('STATE_ALERT_UNTRUSTED');
  let fields;
- if(alert.type==='NEW_SENTRY_ISSUE'){
+ if(alert.type==='SCHEDULE_HEARTBEAT'){
+  fields=['type','verdict','latestRunId'];
+  if(!HEARTBEAT_VERDICTS.includes(alert.verdict)||
+   alert.verdict==='PUNCTUALITY_OBSERVED_NOT_24X7'||
+   !(alert.latestRunId===null||(Number.isSafeInteger(alert.latestRunId)&&alert.latestRunId>0)))
+   fail('STATE_ALERT_UNTRUSTED');
+ }else if(alert.type==='NEW_SENTRY_ISSUE'){
   fields=['type','fingerprint'];
   if(typeof alert.fingerprint!=='string'||! /^[a-f0-9]{24}$/.test(alert.fingerprint))
    fail('STATE_ALERT_UNTRUSTED');
@@ -43,7 +53,7 @@ function validateAlertRecord(alert){
    fail('STATE_ALERT_UNTRUSTED');
  }else if(alert.type==='GAMEHUB_SAMPLE_NOW_IDLE')fields=['type'];
  else fields=['type','pr'];
- if(!['NEW_SENTRY_ISSUE','GAMEHUB_SAMPLE_NOW_IDLE'].includes(alert.type)&&
+ if(!['NEW_SENTRY_ISSUE','GAMEHUB_SAMPLE_NOW_IDLE','SCHEDULE_HEARTBEAT'].includes(alert.type)&&
   (!Number.isSafeInteger(alert.pr)||alert.pr<=0))
   fail('STATE_ALERT_UNTRUSTED');
  if(Object.keys(alert).length!==fields.length||
@@ -66,6 +76,15 @@ function checkedState(filename){
  if(!Array.isArray(raw.pendingAlerts)||raw.pendingAlerts.length>40)
   fail('STATE_PENDING_EVENTS_UNVERIFIED');
  validateCheckpoint(raw.checkpoint);
+ if(raw.heartbeat!==undefined&&(!raw.heartbeat||
+  Object.keys(raw.heartbeat).sort().join(',')!=='lastFailureRunId,lastHeadStale,lastVerdict'||
+  !HEARTBEAT_VERDICTS.includes(raw.heartbeat.lastVerdict)||
+  typeof raw.heartbeat.lastHeadStale!=='boolean'||
+  !(raw.heartbeat.lastFailureRunId===null||
+   (Number.isSafeInteger(raw.heartbeat.lastFailureRunId)&&raw.heartbeat.lastFailureRunId>0))))
+  fail('STATE_HEARTBEAT_INVALID');
+ if(raw.heartbeat!==undefined&&raw.pendingAlerts.some(alert=>alert?.type!=='SCHEDULE_HEARTBEAT'))
+  fail('STATE_HEARTBEAT_INVALID');
  if(raw.batchSequence!==undefined&&
   (!Number.isSafeInteger(raw.batchSequence)||raw.batchSequence<0))
   fail('STATE_SEQUENCE_INVALID');
@@ -97,6 +116,7 @@ function storeObservation(filename,previous,sentry,jarvis,gamehub=null){
  catch(e){if(e.code==='EEXIST')fail('WATCHDOG_ALREADY_RUNNING_OR_RECOVERY_REQUIRED');throw e;}
  try{
   const state=checkedState(filename);
+  if(state?.heartbeat!==undefined)fail('STATE_FILE_RESERVED_FOR_HEARTBEAT');
   // Before new observations, deliver the existing pending outbox again.
   // Caller must explicitly acknowledge it via an external transactional
   // handler; this tool intentionally cannot claim exactly-once delivery.
@@ -120,14 +140,62 @@ function storeObservation(filename,previous,sentry,jarvis,gamehub=null){
   try{fs.fsyncSync(parent);}finally{fs.closeSync(parent);}
  }
 }
+// Uses a dedicated checkpoint. Alert transitions are written atomically before
+// any delivery attempt; a pending batch is never replaced by a later sample.
+function storeHeartbeatAudit(filename,input){
+ const directory=privateDirectory(filename);
+ let lock;
+ try{lock=fs.openSync(filename+'.lock',fs.constants.O_WRONLY|fs.constants.O_CREAT|
+  fs.constants.O_EXCL|fs.constants.O_NOFOLLOW,0o600);}
+ catch(e){if(e.code==='EEXIST')fail('WATCHDOG_ALREADY_RUNNING_OR_RECOVERY_REQUIRED');throw e;}
+ try{
+  const state=checkedState(filename);
+  if(state&&state.heartbeat===undefined)fail('STATE_FILE_NOT_HEARTBEAT');
+  if(state?.pendingAlerts.length)fail('PENDING_ALERT_DELIVERY_REQUIRED');
+  let audit;
+  try{audit=auditScheduledHeartbeat(input);}
+  catch{audit={verdict:'SCHEDULE_EVIDENCE_UNAVAILABLE',latestRunId:null,
+   latestFailedRunId:null,latestHeadStale:false};}
+  const healthy=audit.verdict==='PUNCTUALITY_OBSERVED_NOT_24X7';
+  const changed=state?.heartbeat.lastVerdict!==audit.verdict;
+  const alerts=[];
+  if(!healthy&&changed)alerts.push({type:'SCHEDULE_HEARTBEAT',
+   verdict:audit.verdict,latestRunId:audit.verdict==='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW'?
+    audit.latestFailedRunId:audit.latestRunId});
+  if(audit.latestFailedRunId!==null&&
+   state?.heartbeat.lastFailureRunId!==audit.latestFailedRunId&&
+   !alerts.some(a=>a.verdict==='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW'))
+   alerts.push({type:'SCHEDULE_HEARTBEAT',verdict:'SCHEDULE_FAILURE_NEEDS_LOG_REVIEW',
+    latestRunId:audit.latestFailedRunId});
+  if(audit.latestHeadStale&&state?.heartbeat.lastHeadStale!==true&&
+   !alerts.some(a=>a.verdict==='STALE_WORKFLOW_SHA'))
+   alerts.push({type:'SCHEDULE_HEARTBEAT',verdict:'STALE_WORKFLOW_SHA',
+    latestRunId:audit.latestRunId});
+  const batchSequence=(state?.batchSequence??0)+1;
+  if(!Number.isSafeInteger(batchSequence))fail('STATE_SEQUENCE_EXHAUSTED');
+  writeAtomic(filename,{schema:'ultra-sentinel-watchdog-checkpoint/v1',
+   checkpoint:{version:1,issues:[],prs:[],gamehub:null},pendingAlerts:alerts,
+   batchSequence,deliveryAcknowledged:false,heartbeat:{lastVerdict:audit.verdict,
+    lastFailureRunId:audit.latestFailedRunId,lastHeadStale:audit.latestHeadStale}});
+  return Object.freeze({status:alerts.length?'HEARTBEAT_ALERT_PENDING':
+   healthy?'HEARTBEAT_HEALTHY':'HEARTBEAT_UNCHANGED',verdict:audit.verdict,
+   sourceAuthenticityVerified:false,deliveryAccepted:false});
+ }finally{
+  fs.closeSync(lock);fs.unlinkSync(filename+'.lock');
+  const parent=fs.openSync(directory,fs.constants.O_RDONLY);
+  try{fs.fsyncSync(parent);}finally{fs.closeSync(parent);}
+ }
+}
 function pendingDigest(events){
  if(!Array.isArray(events)||events.length===0)fail('NO_PENDING_ALERTS');
  return crypto.createHash('sha256').update(JSON.stringify(events)).digest('hex');
 }
 // An external operator must first deliver the alert events. Only then call
 // this acknowledgement with the exact pending digest; no self-acknowledgement.
-function acknowledgeDelivery(filename,digest){
+function acknowledgeDelivery(filename,digest,expectedSequence){
  if(typeof digest!=='string'||!/^[a-f0-9]{64}$/.test(digest))
+  fail('INVALID_DELIVERY_RECEIPT');
+ if(expectedSequence!==undefined&&(!Number.isSafeInteger(expectedSequence)||expectedSequence<0))
   fail('INVALID_DELIVERY_RECEIPT');
  privateDirectory(filename);
  let lock;
@@ -137,7 +205,8 @@ function acknowledgeDelivery(filename,digest){
  try{
   const current=checkedState(filename);
   if(!current?.pendingAlerts.length)fail('NO_PENDING_ALERTS');
-  if(pendingDigest(current.pendingAlerts)!==digest)
+  if(pendingDigest(current.pendingAlerts)!==digest||
+    (expectedSequence!==undefined&&(current.batchSequence??0)!==expectedSequence))
    fail('DELIVERY_RECEIPT_MISMATCH');
   writeAtomic(filename,{...current,pendingAlerts:[],deliveryAcknowledged:false});
   return Object.freeze({status:'DELIVERY_ACKNOWLEDGED',pending:0});
@@ -178,4 +247,4 @@ if(require.main===module){
   process.exitCode=1;
  });
 }
-module.exports={observeOnce,storeObservation,checkedState,pendingDigest,acknowledgeDelivery};
+module.exports={observeOnce,storeObservation,storeHeartbeatAudit,checkedState,pendingDigest,acknowledgeDelivery};

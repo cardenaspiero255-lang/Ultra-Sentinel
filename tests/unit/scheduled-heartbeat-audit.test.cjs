@@ -15,6 +15,12 @@ test('three successive scheduled runs yield a punctuality observation, never cer
  assert.equal(r.sampleCount,3);assert.equal(r.maxGapMinutes,30);
  assert.equal(r.latestAgeMinutes,30);assert.equal(r.certified24x7,false);
 });
+test('GitHub workflow paths with @main count, but a different ref cannot count',()=>{
+ const withMain=base.map(r=>({...r,path:r.path+'@main'}));
+ assert.equal(audit(withMain).verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+ assert.equal(audit(withMain.map(r=>({...r,path:r.path.replace('@main','@other')}))).verdict,
+  'INSUFFICIENT_SCHEDULE_EVIDENCE');
+});
 test('manual and push runs cannot conceal a missing scheduled heartbeat',()=>{
  const r=audit([sample('2026-10-15T16:20:00Z',{event:'workflow_dispatch'}),
    sample('2026-10-15T16:00:00Z',{event:'push'}),sample('2026-10-15T13:00:00Z')]);
@@ -71,4 +77,23 @@ test('calendar rollover cannot manufacture a valid heartbeat timestamp',()=>{
 test('valid leap days and fractional UTC timestamps remain accepted',()=>{
  assert.equal(audit([],{now:'2024-02-29T16:00:00.123456Z'}).verdict,
   'INSUFFICIENT_SCHEDULE_EVIDENCE');
+});
+test('unknown or missing status cannot hide an invalid run behind healthy evidence',()=>{
+ for(const status of [undefined,'invented']){
+  const invalid={...sample('2026-10-15T16:10:00Z'),status,conclusion:'failure'};
+  assert.throws(()=>audit([invalid,...base]),/INVALID_SCHEDULE_EVIDENCE/);
+ }
+});
+test('legitimate queued and in-progress runs remain pending rather than failing',()=>{
+ for(const status of ['queued','in_progress','waiting','requested','pending']){
+  const pending={...sample('2026-10-15T16:10:00Z'),status,conclusion:null};
+  assert.equal(audit([pending,...base]).verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+ }
+});
+test('missing workflow identity cannot hide a malformed scheduled run',()=>{
+ for(const key of ['event','name','path','head_branch']){
+  const invalid={...sample('2026-10-15T16:10:00Z'),conclusion:'failure'};
+  delete invalid[key];
+  assert.throws(()=>audit([invalid,...base]),/INVALID_SCHEDULE_EVIDENCE/);
+ }
 });

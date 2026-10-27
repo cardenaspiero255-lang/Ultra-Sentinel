@@ -1,0 +1,34 @@
+[Unit]
+Description=Ultra Sentinel independent schedule and alert observer
+Documentation=https://github.com/cardenaspiero255-lang/Ultra-Sentinel/blob/main/docs/operations/SCHEDULE-HEARTBEAT-AUDIT.md
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/opt/ultra-sentinel/apps/watchdog/heartbeat-monitor.cjs
+
+[Service]
+Type=oneshot
+User=ultra-sentinel
+Group=ultra-sentinel
+WorkingDirectory=/opt/ultra-sentinel
+EnvironmentFile=/etc/ultra-sentinel/heartbeat.env
+Environment=ULTRA_SENTINEL_HEARTBEAT_STATE_FILE=/var/lib/ultra-sentinel/heartbeat.json
+StateDirectory=ultra-sentinel
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/usr/bin/node /opt/ultra-sentinel/apps/watchdog/heartbeat-monitor.cjs
+TimeoutStartSec=180s
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/var/lib/ultra-sentinel
