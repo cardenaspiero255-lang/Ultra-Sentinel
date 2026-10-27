@@ -30,7 +30,11 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
   const created=timestamp(r.created_at);
   if(created>current)fail();
   if(created<current-24*60*60*1000)continue;
-  if(r.status!=='completed')continue;
+  if(!['completed','queued','in_progress','waiting','requested','pending'].includes(r.status))fail();
+  if(r.status!=='completed'){
+   if(r.conclusion!==null)fail();
+   continue;
+  }
   if(!['success','failure','cancelled','timed_out','action_required','neutral','skipped'].includes(r.conclusion))fail();
   samples.push({id:r.id,at:created,headSha:r.head_sha,conclusion:r.conclusion});
  }

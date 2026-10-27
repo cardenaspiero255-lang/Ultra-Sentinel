@@ -82,3 +82,11 @@ test('a stale newest commit alerts even if an older gap still dominates the verd
   assert.equal(checkedState(file).pendingAlerts[0].verdict,'STALE_WORKFLOW_SHA');
  }finally{fs.rmSync(dir,{recursive:true,force:true})}
 });
+test('failure alert points to the failed run, not a newer successful run',()=>{
+ const {dir,file}=fixture();try{
+  const samples=[run(6,'2026-10-26T16:10:00Z'),run(5,'2026-10-26T15:40:00Z','failure'),run(4,'2026-10-26T15:10:00Z')];
+  storeHeartbeatAudit(file,audit(samples));
+  assert.equal(checkedState(file).pendingAlerts[0].verdict,'SCHEDULE_FAILURE_NEEDS_LOG_REVIEW');
+  assert.equal(checkedState(file).pendingAlerts[0].latestRunId,5);
+ }finally{fs.rmSync(dir,{recursive:true,force:true})}
+});

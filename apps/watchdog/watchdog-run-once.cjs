@@ -160,7 +160,8 @@ function storeHeartbeatAudit(filename,input){
   const changed=state?.heartbeat.lastVerdict!==audit.verdict;
   const alerts=[];
   if(!healthy&&changed)alerts.push({type:'SCHEDULE_HEARTBEAT',
-   verdict:audit.verdict,latestRunId:audit.latestRunId});
+   verdict:audit.verdict,latestRunId:audit.verdict==='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW'?
+    audit.latestFailedRunId:audit.latestRunId});
   if(audit.latestFailedRunId!==null&&
    state?.heartbeat.lastFailureRunId!==audit.latestFailedRunId&&
    !alerts.some(a=>a.verdict==='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW'))

@@ -78,3 +78,15 @@ test('valid leap days and fractional UTC timestamps remain accepted',()=>{
  assert.equal(audit([],{now:'2024-02-29T16:00:00.123456Z'}).verdict,
   'INSUFFICIENT_SCHEDULE_EVIDENCE');
 });
+test('unknown or missing status cannot hide an invalid run behind healthy evidence',()=>{
+ for(const status of [undefined,'invented']){
+  const invalid={...sample('2026-10-15T16:10:00Z'),status,conclusion:'failure'};
+  assert.throws(()=>audit([invalid,...base]),/INVALID_SCHEDULE_EVIDENCE/);
+ }
+});
+test('legitimate queued and in-progress runs remain pending rather than failing',()=>{
+ for(const status of ['queued','in_progress','waiting','requested','pending']){
+  const pending={...sample('2026-10-15T16:10:00Z'),status,conclusion:null};
+  assert.equal(audit([pending,...base]).verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+ }
+});
