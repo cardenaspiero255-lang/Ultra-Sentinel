@@ -109,8 +109,11 @@ function gitScenario(original,next,expectedBlob){
 }
 function bridge(root){
  if(typeof root!=='string'||!path.isAbsolute(root))bad();
- const real=fs.realpathSync(root),tmp=fs.realpathSync(os.tmpdir());
- if(!real.startsWith(tmp+path.sep)||!fs.statSync(real).isDirectory())bad();
+ const real=fs.realpathSync(root);
+ const allowedRoots=[os.tmpdir(),process.env.RUNNER_TEMP].filter(Boolean)
+  .map(value=>fs.realpathSync(value));
+ if(!allowedRoots.some(parent=>real.startsWith(parent+path.sep))||
+  !fs.statSync(real).isDirectory())bad();
  const original=utf8(read(real,'original.kt',100,10000));
  const candidate=utf8(read(real,'candidate.kt',100,12000));
  const unsafe=utf8(read(real,'unsafe.kt',100,12000));
