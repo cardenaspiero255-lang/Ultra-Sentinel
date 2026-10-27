@@ -78,7 +78,7 @@ jobs:
           const receipt=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
           const policy=loadRegisteredPlan(process.cwd(),receipt.planDigest).plan;
           if(policy.id!==receipt.registeredPlanId ||
-             policy.oracle!=='gamehub-kotlin-domain-battery-v1' ||
+             !['gamehub-kotlin-domain-battery-v1','gamehub-kotlin-domain-battery-finite-v2'].includes(policy.oracle) ||
              policy.targetRepo!=='cardenaspiero255-lang/gamehub-ultra' ||
              policy.remoteWrites!==false||policy.mergeAllowed!==false)process.exit(1);
           NODE
@@ -170,8 +170,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "${{ steps.owner_approval.outputs.oracle }}" = gamehub-kotlin-domain-battery-v1
-          bash scripts/gamehub-battery-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate"
+          case "${{ steps.owner_approval.outputs.oracle }}" in
+            gamehub-kotlin-domain-battery-v1)
+              bash scripts/gamehub-battery-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate" ;;
+            gamehub-kotlin-domain-battery-finite-v2)
+              bash scripts/gamehub-battery-finite-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate" ;;
+            *) echo REGISTERED_ORACLE_NOT_ALLOWED >&2; exit 1 ;;
+          esac
       - name: Register exact local Git candidate and prove byte-identical rollback
         if: steps.owner_approval.outputs.plan_kind == 'registered'
         shell: bash
