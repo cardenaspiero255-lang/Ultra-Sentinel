@@ -47,7 +47,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
   rollback.proposedBlob!==plan.candidateBlob||
   !SHA.test(rollback.originalTree||'')||
   rollback.restoredTree!==rollback.originalTree)deny();
- falseOnly(rollback.remoteWrites,rollback.mergeAllowed);
+ falseOnly(rollback.remoteWrites,rollback.mergeAllowed,rollback.productionCertified);
 
  if(kotlin?.schema!=='ultra-sentinel-registered-battery-real-kotlin/v1'||
   kotlin.originalCommit!==plan.baseSha||kotlin.candidateCommit!==plan.candidateSha||
@@ -56,7 +56,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
    .every(d=>DIGEST.test(d||'')))deny();
  truth(kotlin.redOriginalFailedAtExactPredicate,kotlin.greenPatchedPassed,
   kotlin.independentJudgePassed,kotlin.bubblewrapOffline);
- falseOnly(kotlin.remoteWrites);
+ falseOnly(kotlin.remoteWrites,kotlin.productionCertified);
 
  if(sealed?.schema!=='ultra-sentinel-registered-owner-repair/v1'||
   sealed.status!=='REGISTERED_OWNER_APPROVED_SANDBOX_REPAIR_VERIFIED'||
@@ -72,7 +72,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
  // The map is owned by trusted source, not the issue comment, PR or caller.
  const prNumber=245;
  let decision='SANDBOX_E2E_VERIFIED_PR_REVIEW_BLOCKED';
- let car29Verified=false;
+ let car29ChecksVerified=false;
  try{
   const live=await assessLiveRegisteredRepairPr({plan,prNumber,
    token:githubToken,fetchImpl});
@@ -81,8 +81,8 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
    live.car29Required!==true||live.humanReviewRequired!==true||
    live.remoteWrites!==false||live.autoMergeAllowed!==false||
    live.releaseAuthorized!==false)deny();
-  car29Verified=true;
-  decision='SANDBOX_E2E_VERIFIED_PR_REVIEW_READY';
+  car29ChecksVerified=true;
+  decision='SANDBOX_E2E_VERIFIED_CAR29_CHECKS_READY_FOR_REVIEW';
  }catch{
   // Sandbox proof remains valid, but no CI claim or merge authority survives
   // a closed PR, moving SHA, missing permissions or incomplete GitHub pages.
@@ -92,9 +92,10 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
   status:decision,workflowSha:expectedWorkflowSha,runId:expectedRunId,
   approvalCommentId:approval.commentId,planDigest,planId:plan.id,
   targetRepo:REPO,prNumber,baseSha:plan.baseSha,candidateSha:plan.candidateSha,
-  sandboxRecoveryVerified:true,car29Required:true,car29Verified,
+  sandboxRecoveryVerified:true,car29Required:true,car29ChecksVerified,
+  car29FullySatisfied:false,protectedReviewVerified:false,
   sourceOwnerOidcPreviouslyVerified:true,
-  reviewedGitHubPrReady:car29Verified,
+  githubPrReadyForProtectedReview:car29ChecksVerified,
   productionCertified:false,remoteWrites:false,autoMergeAllowed:false,
   releaseAuthorized:false,externalHostRecoveryCertified:false
  });
