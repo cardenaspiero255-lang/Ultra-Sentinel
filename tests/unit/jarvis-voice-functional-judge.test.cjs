@@ -53,6 +53,16 @@ test('read-only JARVIS source-original matrix plus local Git Judge and rollback 
  assert.equal(r.authenticatedRuntimeEvidence,false);
  assert.equal(r.mergeAllowed,false);
 });
+test('failed executable behavior does not invalidate a sound Git Judge or rollback',()=>{
+ const original=local();
+ const broken={...original,scenarios:original.scenarios.map((s,i)=>
+  i===1?{...s,oracleVerdict:'FAIL'}:s)};
+ const r=assessJarvisVoiceMatrix({localProof:broken,logs:logs()});
+ assert.equal(r.status,'VOICE_FUNCTIONAL_JUDGE_VETO');
+ assert.equal(r.gitJudgeApproved,true);
+ assert.equal(r.rollbackVerified,true);
+ assert.equal(r.functionalJudgeApproved,false);
+});
 test('voice regression veto overrides green Git Judge and exact tree restoration',()=>{
  const r=assessJarvisVoiceMatrix({localProof:local(),
   logs:{...logs(),'11':'JARVIS_VOICE_BENIGN_BARGE_STOP_REGRESSION\n'}});
