@@ -2,16 +2,19 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {loadGameHubPullRequest}=require('../../packages/orchestrator/gamehub-live-reader.cjs');
 const repo='cardenaspiero255-lang/gamehub-ultra',sha='a'.repeat(40),base='b'.repeat(40);
+const {source}=require('../helpers/github-source-fixture.cjs');
 const key='testcredential'.repeat(3);
 const api='https://api.github.com/repos/'+repo;
-const file=i=>({filename:'.github/scripts/sample'+i+'.cjs',status:'added',changes:1,additions:1,deletions:0,patch:'@@ -0,0 +1 @@\n+const safe=true;\n'});
+const file=i=>({sha:source('const safe=true;\n','unused').sha,filename:'.github/scripts/sample'+i+'.cjs',status:'added',changes:1,additions:1,deletions:0,patch:'@@ -0,0 +1 @@\n+const safe=true;\n'});
 const pr=(count,head=sha)=>({number:201,base:{repo:{full_name:repo,id:1375408706},sha:base},head:{sha:head},changed_files:count,state:'open',draft:true});
 function mock({first=pr(1),second=first,pages=[[file(0)]],status=200,wrongType=false,redirect=false}={}){
  const calls=[];
  const fetchImpl=async(url,options)=>{
   calls.push({url,options});
   const path=url.slice(api.length);
-  const body=path==='/pulls/201'?(calls.filter(x=>x.url===url).length===1?first:second):
+  const body=path.startsWith('/compare/')?{base_commit:{sha:base},merge_base_commit:{sha:base}}:
+   path.startsWith('/contents/')?source('const safe=true;\n',decodeURIComponent(path.split('?')[0].slice(10))):
+   path==='/pulls/201'?(calls.filter(x=>x.url===url).length===1?first:second):
    pages[Number(new URL(url).searchParams.get('page'))-1]??[];
   return {status,url:redirect?'https://other.example/':url,
    headers:{get:()=>wrongType?'text/html':'application/json'},
@@ -23,8 +26,8 @@ test('authenticated collector binds stable GameHub SHA; cannot approve',async()=
  const m=mock(),r=await loadGameHubPullRequest(201,{token:key,fetchImpl:m.fetchImpl});
  assert.equal(r.authenticated,true);assert.equal(r.headStable,true);assert.equal(r.completeDiff,true);
  assert.equal(r.mergeAllowed,false);assert.equal(r.envelope.evidenceState,'UNVERIFIED');
- assert.equal(r.envelope.headSha,sha);assert.equal(m.calls.length,3);
- for(const c of m.calls){assert.equal(c.options.method,'GET');assert.equal(c.options.redirect,'error');assert.ok(c.url.startsWith(api+'/pulls/201'));}
+ assert.equal(r.envelope.headSha,sha);assert.equal(m.calls.length,5);
+ for(const c of m.calls){assert.equal(c.options.method,'GET');assert.equal(c.options.redirect,'error');assert.ok(c.url.startsWith(api+'/'));}
 });
 test('no credential, untrusted repo or redirect blocks',async()=>{
  await assert.rejects(()=>loadGameHubPullRequest(201,{fetchImpl:mock().fetchImpl}),/AUTHENTICATION_REQUIRED/);
@@ -46,7 +49,7 @@ test('truncated patch and HTTP errors block',async()=>{
 test('100-file pagination includes verified empty terminal page',async()=>{
  const m=mock({first:pr(100),pages:[Array.from({length:100},(_,i)=>file(i)),[]]});
  const r=await loadGameHubPullRequest(201,{token:key,fetchImpl:m.fetchImpl});
- assert.equal(r.changedFiles,100);assert.equal(m.calls.length,4);
+ assert.equal(r.changedFiles,100);assert.equal(m.calls.length,105);
 });
 
 test('all denied, throttled and failing API statuses block read-only ingestion',async()=>{
