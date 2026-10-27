@@ -77,8 +77,12 @@ function checkedState(filename){
   fail('STATE_PENDING_EVENTS_UNVERIFIED');
  validateCheckpoint(raw.checkpoint);
  if(raw.heartbeat!==undefined&&(!raw.heartbeat||
-  Object.keys(raw.heartbeat).length!==1||
-  !HEARTBEAT_VERDICTS.includes(raw.heartbeat.lastVerdict)))fail('STATE_HEARTBEAT_INVALID');
+  Object.keys(raw.heartbeat).sort().join(',')!=='lastFailureRunId,lastHeadStale,lastVerdict'||
+  !HEARTBEAT_VERDICTS.includes(raw.heartbeat.lastVerdict)||
+  typeof raw.heartbeat.lastHeadStale!=='boolean'||
+  !(raw.heartbeat.lastFailureRunId===null||
+   (Number.isSafeInteger(raw.heartbeat.lastFailureRunId)&&raw.heartbeat.lastFailureRunId>0))))
+  fail('STATE_HEARTBEAT_INVALID');
  if(raw.heartbeat!==undefined&&raw.pendingAlerts.some(alert=>alert?.type!=='SCHEDULE_HEARTBEAT'))
   fail('STATE_HEARTBEAT_INVALID');
  if(raw.batchSequence!==undefined&&
@@ -150,16 +154,28 @@ function storeHeartbeatAudit(filename,input){
   if(state?.pendingAlerts.length)fail('PENDING_ALERT_DELIVERY_REQUIRED');
   let audit;
   try{audit=auditScheduledHeartbeat(input);}
-  catch{audit={verdict:'SCHEDULE_EVIDENCE_UNAVAILABLE',latestRunId:null};}
+  catch{audit={verdict:'SCHEDULE_EVIDENCE_UNAVAILABLE',latestRunId:null,
+   latestFailedRunId:null,latestHeadStale:false};}
   const healthy=audit.verdict==='PUNCTUALITY_OBSERVED_NOT_24X7';
   const changed=state?.heartbeat.lastVerdict!==audit.verdict;
-  const alerts=!healthy&&changed?[{type:'SCHEDULE_HEARTBEAT',
-   verdict:audit.verdict,latestRunId:audit.latestRunId}]:[];
+  const alerts=[];
+  if(!healthy&&changed)alerts.push({type:'SCHEDULE_HEARTBEAT',
+   verdict:audit.verdict,latestRunId:audit.latestRunId});
+  if(audit.latestFailedRunId!==null&&
+   state?.heartbeat.lastFailureRunId!==audit.latestFailedRunId&&
+   !alerts.some(a=>a.verdict==='SCHEDULE_FAILURE_NEEDS_LOG_REVIEW'))
+   alerts.push({type:'SCHEDULE_HEARTBEAT',verdict:'SCHEDULE_FAILURE_NEEDS_LOG_REVIEW',
+    latestRunId:audit.latestFailedRunId});
+  if(audit.latestHeadStale&&state?.heartbeat.lastHeadStale!==true&&
+   !alerts.some(a=>a.verdict==='STALE_WORKFLOW_SHA'))
+   alerts.push({type:'SCHEDULE_HEARTBEAT',verdict:'STALE_WORKFLOW_SHA',
+    latestRunId:audit.latestRunId});
   const batchSequence=(state?.batchSequence??0)+1;
   if(!Number.isSafeInteger(batchSequence))fail('STATE_SEQUENCE_EXHAUSTED');
   writeAtomic(filename,{schema:'ultra-sentinel-watchdog-checkpoint/v1',
    checkpoint:{version:1,issues:[],prs:[],gamehub:null},pendingAlerts:alerts,
-   batchSequence,deliveryAcknowledged:false,heartbeat:{lastVerdict:audit.verdict}});
+   batchSequence,deliveryAcknowledged:false,heartbeat:{lastVerdict:audit.verdict,
+    lastFailureRunId:audit.latestFailedRunId,lastHeadStale:audit.latestHeadStale}});
   return Object.freeze({status:alerts.length?'HEARTBEAT_ALERT_PENDING':
    healthy?'HEARTBEAT_HEALTHY':'HEARTBEAT_UNCHANGED',verdict:audit.verdict,
    sourceAuthenticityVerified:false,deliveryAccepted:false});

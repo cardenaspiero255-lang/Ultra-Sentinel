@@ -62,3 +62,23 @@ test('a delayed response for an older batch cannot acknowledge a later identical
   assert.equal(checkedState(file).pendingAlerts.length,1);
  }finally{fs.rmSync(dir,{recursive:true,force:true})}
 });
+test('a new failed run alerts even when a previous schedule gap remains',async()=>{
+ const {dir,file}=fixture();try{
+  const gap=[run(3,'2026-10-26T16:00:00Z'),run(2,'2026-10-26T10:00:00Z'),run(1,'2026-10-26T09:30:00Z')];
+  storeHeartbeatAudit(file,audit(gap));
+  await deliverPending({stateFile:file,...creds,fetchImpl:async url=>({status:202,url})});
+  const failed=[run(4,'2026-10-26T16:15:00Z','failure'),...gap];
+  assert.equal(storeHeartbeatAudit(file,audit(failed)).status,'HEARTBEAT_ALERT_PENDING');
+  assert.equal(checkedState(file).pendingAlerts[0].verdict,'SCHEDULE_FAILURE_NEEDS_LOG_REVIEW');
+ }finally{fs.rmSync(dir,{recursive:true,force:true})}
+});
+test('a stale newest commit alerts even if an older gap still dominates the verdict',async()=>{
+ const {dir,file}=fixture();try{
+  const gap=[run(3,'2026-10-26T16:00:00Z'),run(2,'2026-10-26T10:00:00Z'),run(1,'2026-10-26T09:30:00Z')];
+  storeHeartbeatAudit(file,audit(gap));
+  await deliverPending({stateFile:file,...creds,fetchImpl:async url=>({status:202,url})});
+  const staleHead=[{...run(4,'2026-10-26T16:15:00Z'),head_sha:'b'.repeat(40)},...gap];
+  assert.equal(storeHeartbeatAudit(file,audit(staleHead)).status,'HEARTBEAT_ALERT_PENDING');
+  assert.equal(checkedState(file).pendingAlerts[0].verdict,'STALE_WORKFLOW_SHA');
+ }finally{fs.rmSync(dir,{recursive:true,force:true})}
+});

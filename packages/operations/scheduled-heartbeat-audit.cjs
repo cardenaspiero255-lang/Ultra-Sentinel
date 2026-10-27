@@ -48,6 +48,8 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
  else verdict='PUNCTUALITY_OBSERVED_NOT_24X7';
  return Object.freeze({schema:'ultra-sentinel-scheduled-heartbeat-audit/v1',
   verdict,expectedSha,latestRunId:samples[0]?.id??null,
+  latestFailedRunId:samples.find(x=>x.conclusion!=='success')?.id??null,
+  latestHeadStale:samples.length>0&&samples[0].headSha!==expectedSha,
   sampleCount:samples.length,latestAgeMinutes:latestAge===null?null:Math.round(latestAge*100)/100,
   maxGapMinutes:Math.round(maxGap*100)/100,failedCount:failed,
   sourceAuthenticityVerified:false,certified24x7:false,
