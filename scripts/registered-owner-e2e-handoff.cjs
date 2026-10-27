@@ -41,7 +41,7 @@ async function main({env=process.env,fetchImpl=globalThis.fetch}={}){
   const result=await verifyRegisteredOwnerRepairE2E({
    plan:registered.plan,planDigest:registered.planDigest,
    approval,rollback,kotlin,sealed,
-   expectedWorkflowSha:env.GITHUB_SHA,expectedRunId:Number(env.GITHUB_RUN_ID),
+   expectedWorkflowSha:env.GITHUB_SHA,expectedRunId:env.GITHUB_RUN_ID,
    githubToken:env.ULTRA_READONLY_GITHUB_TOKEN,fetchImpl
   });
   if(result.productionCertified!==false||result.autoMergeAllowed!==false||
