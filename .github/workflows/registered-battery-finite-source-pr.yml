@@ -34,14 +34,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: cardenaspiero255-lang/gamehub-ultra
-          ref: 4bdaf1d35380c7053f836d66ab969afc8040e744
+          ref: 458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7
           path: registered-base
           persist-credentials: false
       - name: Checkout GameHub PR candidate by immutable SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: cardenaspiero255-lang/gamehub-ultra
-          ref: 67ecf5ec5f7517cc75080a6735927f39138b417d
+          ref: b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be
           path: registered-candidate
           persist-credentials: false
       - name: Node 22 and existing strict contract suite
@@ -60,8 +60,8 @@ jobs:
           const digest=crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex');
           const plan=loadRegisteredPlan(process.cwd(),digest).plan;
           if(plan.id!=='gamehub-battery-finite-drain-e2e' ||
-             plan.baseSha!=='4bdaf1d35380c7053f836d66ab969afc8040e744' ||
-             plan.candidateSha!=='67ecf5ec5f7517cc75080a6735927f39138b417d' ||
+             plan.baseSha!=='458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7' ||
+             plan.candidateSha!=='b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be' ||
              plan.remoteWrites!==false)process.exit(1);
           NODE
       - name: Install existing restricted Bubblewrap AppArmor profile
