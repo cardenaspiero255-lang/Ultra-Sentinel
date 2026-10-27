@@ -35,13 +35,31 @@ function checkPatch(item){
   item.changes<1||typeof item.patch!=='string'||
   Buffer.byteLength(item.patch,'utf8')>320000||!item.patch.startsWith('@@ '))
   fail('INCOMPLETE_PR_DIFF');
- let plus=0,minus=0,hunks=0,inside=false;
- for(const line of item.patch.split('\n')){
-  if(/^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@/.test(line)){hunks++;inside=true;}
-  else if(inside&&line.startsWith('+'))plus++;
-  else if(inside&&line.startsWith('-'))minus++;
+ let plus=0,minus=0,hunks=0,oldNeed=0,newNeed=0,oldSeen=0,newSeen=0;
+ const rows=item.patch.split('\n');
+ for(let i=0;i<rows.length;i++){
+  const line=rows[i].endsWith('\r')?rows[i].slice(0,-1):rows[i];
+  if(line===''&&i===rows.length-1)continue;
+  const h=line.match(/^@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@/);
+  if(h){
+   if(hunks&&(oldSeen!==oldNeed||newSeen!==newNeed))fail('INCOMPLETE_PR_DIFF');
+   oldNeed=Number(h[1]===undefined?1:h[1]);newNeed=Number(h[2]===undefined?1:h[2]);
+   if(!Number.isSafeInteger(oldNeed)||!Number.isSafeInteger(newNeed))fail('INCOMPLETE_PR_DIFF');
+   oldSeen=0;newSeen=0;hunks++;continue;
+  }
+  if(!hunks)fail('INCOMPLETE_PR_DIFF');
+  if(line==='\\ No newline at end of file')continue;
+  // The frozen Core's parser treats these valid source rows as headers.
+  // Quarantine the diff until an upgraded parser can analyze it safely.
+  if(line.startsWith('+++')||line.startsWith('---'))fail('INCOMPLETE_PR_DIFF');
+  if(line.startsWith('+')){newSeen++;plus++;}
+  else if(line.startsWith('-')){oldSeen++;minus++;}
+  else if(line.startsWith(' ')){oldSeen++;newSeen++;}
+  else fail('INCOMPLETE_PR_DIFF');
+  if(oldSeen>oldNeed||newSeen>newNeed)fail('INCOMPLETE_PR_DIFF');
  }
- if(!hunks||plus!==item.additions||minus!==item.deletions)
+ if(!hunks||oldSeen!==oldNeed||newSeen!==newNeed||
+    plus!==item.additions||minus!==item.deletions)
   fail('INCOMPLETE_PR_DIFF');
 }
 async function loadGameHubPullRequest(prNumber,{token,fetchImpl=globalThis.fetch,hydrateSource=false}={}){
