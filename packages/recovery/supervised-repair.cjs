@@ -21,4 +21,37 @@ function planRepair({analysis,mode='REVIEW_WITH_SOLUTIONS',authorization=null}={
   steps:Object.freeze(suggestions.map(s=>Object.freeze({rule:s.rule,path:s.path,line:s.line,
    test:s.test,autofix:false})))});
 }
-module.exports={planRepair};
+
+// Read-only investigative handoff; never upgrades an approval object into an
+// execution, merge, remote-write or production-release capability.
+function planSupervisedCrossFileInvestigation({
+ beforeCore,afterCore,mode='REVIEW_WITH_SOLUTIONS',authorization=null
+}={}){
+ const {planCrossFileInterventions}=require('../family-hunter/cross-file-interventions.cjs');
+ const hypothesis=planCrossFileInterventions(beforeCore,afterCore);
+ const modePolicy=resolveMode(mode);
+ const proposal=planRepair({analysis:afterCore,mode,authorization});
+ let status=hypothesis.status;
+ if(modePolicy.status==='INVALID_MODE'||proposal.status.startsWith('BLOCKED_'))
+  status='BLOCKED_REPAIR_PLAN';
+ else if(hypothesis.status==='EXPERIMENTS_REQUIRED')
+  status='REPRODUCTION_AND_JUDGE_REQUIRED';
+ const eligible=new Set(hypothesis.candidates.flatMap(c=>
+  c.files.map(file=>JSON.stringify([c.rule,file]))));
+ const steps=status==='REPRODUCTION_AND_JUDGE_REQUIRED'&&mode!=='REVIEW_ONLY'?
+  proposal.steps.filter(s=>eligible.has(JSON.stringify([s.rule,s.path])))
+   .map(s=>Object.freeze({rule:s.rule,path:s.path,line:s.line,
+    test:s.test,autofix:false})): [];
+ return Object.freeze({
+  schema:'ultra-sentinel-supervised-cross-file-investigation/v1',
+  status,baseSha:hypothesis.baseSha,headSha:hypothesis.headSha,
+  candidates:hypothesis.candidates,
+  repairSteps:Object.freeze(steps),
+  ownerReviewRequired:true,externalOracleVerified:false,
+  causalityVerified:false,commitAllowed:false,mergeAllowed:false,
+  productionReleaseAllowed:false,
+  limitation:'Run each proposed subset against original-source reproductions; the owner and a separate trusted executor must approve any real repair.'
+ });
+}
+
+module.exports={planRepair,planSupervisedCrossFileInvestigation};
