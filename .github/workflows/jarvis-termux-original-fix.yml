@@ -1,0 +1,93 @@
+name: Ultra Sentinel — JARVIS novel original Kotlin RED GREEN Judge rollback
+on:
+  pull_request:
+    paths:
+      - packages/recovery/jarvis-termux-original-fix.cjs
+      - scripts/jarvis-termux-original-red-green.sh
+      - scripts/jarvis-termux-original-judge-bridge.cjs
+      - tests/oracles/jarvis-termux-original.kt
+      - tests/unit/jarvis-termux-original-fix.test.cjs
+      - .github/workflows/jarvis-termux-original-fix.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-termux-pilot-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  jarvis-termux-authentic-source-red-green:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout without writing token to disk
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288ca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify full Node suite
+        run: npm run check
+      - name: Install and validate offline AppArmor Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc && command -v bwrap && command -v gh && command -v jq
+          bash -n scripts/jarvis-termux-original-red-green.sh
+      - name: Fetch pinned original JARVIS Git blob and prove genuine RED GREEN
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JARVIS_TERMUX_ISOLATED: "1"
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          mkdir -p "$root"
+          bash scripts/jarvis-termux-original-red-green.sh "$root"
+      - name: Verify exact Kotlin build receipts local independent Git Judge and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          node scripts/jarvis-termux-original-judge-bridge.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-jarvis-novel-original-functional-pilot/v1" and
+            .status=="PINNED_ORIGINAL_KOTLIN_RED_GREEN_AND_LOCAL_ROLLBACK" and
+            .sourceRepo=="cardenaspiero255-lang/JARVIS" and
+            .sourceBlob=="7c6f326cb267b56f4ca6b2d0614753695259da56" and
+            .originalJVMOracleFailedAsExpected==true and
+            .repairedJVMOraclePassed==true and
+            .unsafeRepairJVMOracleRejected==true and
+            .localGitPolicyJudgeApproved==true and
+            .exactLocalGitRollbackVerified==true and
+            .autonomousRepairProven==false and
+            .androidE2eProven==false and
+            .remoteWrites==false and .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/termux-sanitized-receipt.json"
+      - name: Archive sanitized receipt only
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-termux-novel-original-kotlin-judge-rollback
+          path: ${{ runner.temp }}/jarvis-termux-original-pilot/termux-sanitized-receipt.json
+          retention-days: 14
+          if-no-files-found: error
