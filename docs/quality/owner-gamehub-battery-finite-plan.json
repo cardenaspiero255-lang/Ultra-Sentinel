@@ -1,0 +1,18 @@
+{
+  "schema": "ultra-sentinel-registered-plan/v1",
+  "id": "gamehub-battery-finite-drain-e2e",
+  "operation": "SANDBOX_HUNTER_FIXER_JUDGE",
+  "targetRepo": "cardenaspiero255-lang/gamehub-ultra",
+  "baseSha": "458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7",
+  "baseBlob": "976e3aa53ec94d14317e8caa1e6bf71088553650",
+  "candidateSha": "b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be",
+  "candidateBlob": "28f163b0551479b925d702941c99235eded3a0d3",
+  "targetFile": "app/src/main/java/com/cardenaspiero255/gamehubultra/domain/BatteryAwareGamingEngine.kt",
+  "oracle": "gamehub-kotlin-domain-battery-finite-v2",
+  "rollback": "git-temporary-tree-revert-v1",
+  "maxChangedFiles": 1,
+  "scope": "ONE_KOTLIN_PRODUCTION_FILE",
+  "remoteWrites": false,
+  "mergeAllowed": false,
+  "productionReleaseAllowed": false
+}

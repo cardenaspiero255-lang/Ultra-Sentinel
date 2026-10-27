@@ -14,7 +14,7 @@ function main(){
    throw Error('UNTRUSTED_APPROVAL');
   const found=loadRegisteredPlan(path.resolve(__dirname,'..'),evidence.planDigest);
   if(found.plan.id!==evidence.registeredPlanId||
-   found.plan.oracle!=='gamehub-kotlin-domain-battery-v1')throw Error('UNTRUSTED_PLAN');
+   !['gamehub-kotlin-domain-battery-v1','gamehub-kotlin-domain-battery-finite-v2'].includes(found.plan.oracle))throw Error('UNTRUSTED_PLAN');
   const proof=runRegisteredCandidateRollback({baseRoot,candidateRoot,plan:found.plan});
   const result={...proof,workflowSha:evidence.workflowSha,runId:evidence.runId,
    planDigest:evidence.planDigest,ownerCommentId:evidence.commentId,

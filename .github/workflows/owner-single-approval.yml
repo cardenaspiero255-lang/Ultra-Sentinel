@@ -9,6 +9,7 @@ permissions:
   actions: read
   issues: read
   id-token: write
+  pull-requests: read
 concurrency:
   group: ultra-owner-single-approval-isolated
   cancel-in-progress: false
@@ -77,7 +78,7 @@ jobs:
           const receipt=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
           const policy=loadRegisteredPlan(process.cwd(),receipt.planDigest).plan;
           if(policy.id!==receipt.registeredPlanId ||
-             policy.oracle!=='gamehub-kotlin-domain-battery-v1' ||
+             !['gamehub-kotlin-domain-battery-v1','gamehub-kotlin-domain-battery-finite-v2'].includes(policy.oracle) ||
              policy.targetRepo!=='cardenaspiero255-lang/gamehub-ultra' ||
              policy.remoteWrites!==false||policy.mergeAllowed!==false)process.exit(1);
           NODE
@@ -169,8 +170,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "${{ steps.owner_approval.outputs.oracle }}" = gamehub-kotlin-domain-battery-v1
-          bash scripts/gamehub-battery-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate"
+          case "${{ steps.owner_approval.outputs.oracle }}" in
+            gamehub-kotlin-domain-battery-v1)
+              bash scripts/gamehub-battery-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate" ;;
+            gamehub-kotlin-domain-battery-finite-v2)
+              bash scripts/gamehub-battery-finite-real-red-green-judge.sh "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate" ;;
+            *) echo REGISTERED_ORACLE_NOT_ALLOWED >&2; exit 1 ;;
+          esac
       - name: Register exact local Git candidate and prove byte-identical rollback
         if: steps.owner_approval.outputs.plan_kind == 'registered'
         shell: bash
@@ -216,12 +222,26 @@ jobs:
             {flag:'wx',mode:0o600});
           console.log('REGISTERED_OWNER_APPROVAL_KOTLIN_ROLLBACK_VERIFIED_PR_REVIEW_REQUIRED');
           NODE
+      - name: Reconcile real owner, isolated Kotlin rollback, and live GameHub CAR-29 review
+        if: success() && steps.owner_approval.outputs.plan_kind == 'registered'
+        shell: bash
+        env:
+          ULTRA_READONLY_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/registered-owner-e2e-handoff.cjs
+          test -s "$RUNNER_TEMP/registered-owner-review-handoff.json"
+          # A closed PR is a valid negative gate, never a release authorization.
+          node -e 'const p=require(process.env.RUNNER_TEMP+"/registered-owner-review-handoff.json"); if(p.remoteWrites!==false || p.autoMergeAllowed!==false || p.releaseAuthorized!==false) process.exit(1)'
       - name: Upload registered plan receipt (PR release remains protected)
         if: success() && steps.owner_approval.outputs.plan_kind == 'registered'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
           name: owner-registered-real-kotlin-receipt
-          path: ${{ runner.temp }}/registered-owner-proof.json
+          path: |
+            ${{ runner.temp }}/registered-owner-proof.json
+            ${{ runner.temp }}/registered-owner-review-handoff.json
           retention-days: 14
           if-no-files-found: error
       - name: Publish only bounded, credential-free evidence

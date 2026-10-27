@@ -1,0 +1,112 @@
+name: Registered GameHub Battery Finite Policy — real Kotlin RED GREEN and Git rollback (PR)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/registered-battery-source-pr.yml'
+      - '.github/workflows/owner-single-approval.yml'
+      - 'packages/recovery/registered-owner-plans.cjs'
+      - 'packages/recovery/registered-candidate-rollback.cjs'
+      - 'scripts/gamehub-battery-finite-real-red-green-judge.sh'
+      - 'tests/oracles/gamehub-battery-*.kt'
+      - 'packages/recovery/registered-owner-e2e-handoff.cjs'
+      - 'docs/quality/owner-approved-plans.json'
+      - 'docs/quality/owner-gamehub-battery-finite-plan.json'
+      - 'docs/quality/OWNER-REGISTERED-PLANS-V2.md'
+permissions:
+  contents: read
+concurrency:
+  group: registered-battery-finite-pr-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  actual-source-red-green-judge-revert:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout owner PR SHA without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Checkout live GameHub original by immutable SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: 458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7
+          path: registered-base
+          persist-credentials: false
+      - name: Checkout GameHub PR candidate by immutable SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be
+          path: registered-candidate
+          persist-credentials: false
+      - name: Node 22 and existing strict contract suite
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify registered plan and source blobs with no secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node - <<'NODE'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const {loadRegisteredPlan}=require('./packages/recovery/registered-owner-plans.cjs');
+          const path='docs/quality/owner-gamehub-battery-finite-plan.json';
+          const digest=crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex');
+          const plan=loadRegisteredPlan(process.cwd(),digest).plan;
+          if(plan.id!=='gamehub-battery-finite-drain-e2e' ||
+             plan.baseSha!=='458be1a1c7ec29d6c29f6d0944971f55a0ce8ac7' ||
+             plan.candidateSha!=='b74791d9ea7e1e4b88f0ef1e286d87f036c6e7be' ||
+             plan.remoteWrites!==false)process.exit(1);
+          NODE
+      - name: Install existing restricted Bubblewrap AppArmor profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          src=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$src" && test ! -L "$src"
+          sudo install -o root -g root -m 0644 "$src" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Kotlin original RED and actual candidate GREEN and independent Judge in offline Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/gamehub-battery-finite-real-red-green-judge.sh \
+            "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate"
+      - name: Git exact candidate SHA and byte-identical local tree revert
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - "$GITHUB_WORKSPACE/registered-base" "$GITHUB_WORKSPACE/registered-candidate" <<'NODE'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const {loadRegisteredPlan}=require('./packages/recovery/registered-owner-plans.cjs');
+          const {runRegisteredCandidateRollback}=require('./packages/recovery/registered-candidate-rollback.cjs');
+          const digest=crypto.createHash('sha256').update(fs.readFileSync('docs/quality/owner-gamehub-battery-finite-plan.json')).digest('hex');
+          const plan=loadRegisteredPlan(process.cwd(),digest).plan;
+          const proof=runRegisteredCandidateRollback({
+           baseRoot:process.argv[2],candidateRoot:process.argv[3],plan});
+          if(proof.status!=='REGISTERED_GIT_CANDIDATE_ROLLBACK_VERIFIED' ||
+             proof.originalTree!==proof.restoredTree || proof.remoteWrites!==false)
+            process.exit(1);
+          fs.writeFileSync(process.env.RUNNER_TEMP+'/registered-battery-finite-pr-receipt.json',
+            JSON.stringify({...proof,originalKotlinRedGreenJudgePassed:true,
+             protectedReviewRequired:true})+'\n',{flag:'wx',mode:0o600});
+          console.log('REGISTERED_BATTERY_PR_SOURCE_AND_ROLLBACK_PASS_NO_AUTO_MERGE');
+          NODE
+      - name: Publish no-credential PR source proof
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: registered-battery-finite-original-kotlin-pr-proof
+          path: ${{ runner.temp }}/registered-battery-finite-pr-receipt.json
+          retention-days: 14
+          if-no-files-found: error

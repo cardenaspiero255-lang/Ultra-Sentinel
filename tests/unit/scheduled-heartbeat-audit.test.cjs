@@ -90,3 +90,10 @@ test('legitimate queued and in-progress runs remain pending rather than failing'
   assert.equal(audit([pending,...base]).verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
  }
 });
+test('missing workflow identity cannot hide a malformed scheduled run',()=>{
+ for(const key of ['event','name','path','head_branch']){
+  const invalid={...sample('2026-10-15T16:10:00Z'),conclusion:'failure'};
+  delete invalid[key];
+  assert.throws(()=>audit([invalid,...base]),/INVALID_SCHEDULE_EVIDENCE/);
+ }
+});
