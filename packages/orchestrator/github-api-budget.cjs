@@ -16,7 +16,7 @@ function createApiBudget({maxRequests=320,maxMemoized=300}={}){
  }
  async function run(path,operation,{immutable=false}={}){
   if(typeof path!=='string'||path.length>600||!path.startsWith('/')||
-     path.includes('..')||typeof operation!=='function'||(immutable&&!isPinned(path)))
+     (path.includes('..')&&!/^\/compare\/[a-f0-9]{40}\.\.\.[a-f0-9]{40}$/.test(path))||typeof operation!=='function'||(immutable&&!isPinned(path)))
     fail('INVALID_API_REQUEST');
   if(blocked)fail('GITHUB_RATE_LIMITED');
   if(immutable&&memo.has(path)){

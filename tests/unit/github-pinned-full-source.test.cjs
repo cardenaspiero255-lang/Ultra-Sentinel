@@ -30,6 +30,8 @@ function mock({code,patch,unsafeSource=false}={}){
   let body;
   if(url===URL+'/pulls/132')body=pr;
   else if(url.includes('/pulls/132/files?'))body=[file];
+  else if(url.includes('/compare/'))body={base_commit:{sha:BASE},merge_base_commit:{sha:BASE}};
+  else if(url.includes('/contents/'+PATH+'?ref='+BASE))body=source(code.split('\n').filter(x=>!x.includes('GlobalScope.launch')).join('\n'));
   else if(url.includes('/contents/'+PATH+'?ref='+HEAD))
    body=unsafeSource?{...raw,sha:'f'.repeat(40)}:raw;
   else throw Error('UNEXPECTED_NETWORK_URL');
@@ -76,7 +78,7 @@ test('live reader pins full source to PR HEAD and exposes genuine executable Kot
   f.rule==='UNSCOPED_COROUTINE'&&f.line===3));
  assert.ok(m.calls.some(x=>x.url.endsWith('/contents/'+PATH+'?ref='+HEAD)));
  assert.ok(m.calls.every(x=>x.opt.method==='GET'&&x.opt.redirect==='error'));
- assert.equal(m.calls.length,4);
+ assert.equal(m.calls.length,6);
 });
 test('Kotlin content inside multiline comment never becomes actionable finding after hydrated lexer',async()=>{
  const code=['/* start','  GlobalScope.launch { attack() }','*/',
