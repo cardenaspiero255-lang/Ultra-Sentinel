@@ -49,3 +49,53 @@ function planRegressionBisect(input){
   limitation:'Supplied commit ordering, build outcomes and test receipts are untrusted. Authenticate source Git ancestry and independent CI before any causal conclusion.'});
 }
 module.exports={planRegressionBisect};
+
+/** Verify supplied ordering against local immutable Git objects; never checkout,
+ * execute a project's tests or treat caller observations as authenticated CI.
+ * Only contiguous single-parent histories are supported. Merges require a
+ * separate causal experiment, not an arbitrary first-parent assumption.
+ */
+function planRegressionFromGit({directory,input}={}){
+ try{
+  const fs=require('node:fs'),path=require('node:path');
+  const {spawnSync}=require('node:child_process');
+  const {assertSafeGitCheckout}=require('../recovery/git-sandbox-policy.cjs');
+  const plan=planRegressionBisect(input);
+  if(typeof directory!=='string'||!path.isAbsolute(directory)||
+   fs.realpathSync(directory)!==directory)throw Error('UNSAFE_DIRECTORY');
+  assertSafeGitCheckout(directory);
+  const gitRead=(args,raw=false)=>{
+   const r=spawnSync('git',['--no-replace-objects','-c','core.hooksPath=/dev/null',
+    '-c','core.fsmonitor=false','-c','protocol.allow=never',...args],{
+    cwd:directory,timeout:10000,maxBuffer:200000,
+    env:{PATH:process.env.PATH,HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
+     GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0',GIT_NO_LAZY_FETCH:'1'}
+   });
+   if(r.error||r.status!==0)throw Error('GIT_READ_FAILED');
+   return raw?r.stdout:r.stdout.toString('utf8').trim();
+  };
+  const git=(...args)=>gitRead(args);
+  const config=git('config','--local','--name-only','--list').split('\n');
+  if(config.some(k=>/^extensions\.partialclone$|^remote\..*\.promisor$/i.test(k))||
+   git('rev-parse','--is-shallow-repository')!=='false'||
+   fs.existsSync(path.join(directory,'.git/info/grafts'))||
+   git('for-each-ref','--format=%(refname)','refs/replace')!=='')throw Error('ALTERED_HISTORY');
+  for(let i=0;i<input.commits.length;i++){
+   const sha=input.commits[i];
+   if(git('cat-file','-t',sha)!=='commit')throw Error('NOT_COMMIT');
+   const bytes=gitRead(['cat-file','commit',sha],true);
+   const actual=require('node:crypto').createHash('sha1')
+    .update('commit '+bytes.length+'\0').update(bytes).digest('hex');
+   if(actual!==sha)throw Error('COMMIT_HASH_MISMATCH');
+   const parents=bytes.toString('utf8').split('\n\n',1)[0].split('\n')
+    .filter(line=>line.startsWith('parent ')).map(line=>line.slice(7));
+   if(parents.length>1||parents.some(p=>!SHA.test(p))||
+    (i>0&&(parents.length!==1||parents[0]!==input.commits[i-1])))
+    throw Error('NONCONTIGUOUS_HISTORY');
+  }
+  return Object.freeze({...plan,localGitLineageVerified:true,
+   observationsAuthenticated:false,remoteRepositoryIdentityAuthenticated:false,
+   limitation:'Contiguous single-parent links verified from local Git objects only. Repository identity, CI observations and causal reproduction remain unauthenticated; no project code executed.'});
+ }catch{throw Error('UNVERIFIED_GIT_LINEAGE');}
+}
+module.exports.planRegressionFromGit=planRegressionFromGit;
