@@ -93,13 +93,19 @@ for m in /bin /lib /lib64;do
  elif [ -d "$m" ];then mounts+=(--ro-bind "$m" "$m")
  else exit 2;fi
 done
+# Seal exact inputs BEFORE any compilation, including the independent oracles.
+sha256sum "$root/$first-original.kt" "$root/$first-repair.kt" \
+ "$root/$second-original.kt" "$root/$second-repair.kt" "${abis[@]}" > "$root/inputs.sha256"
 for mode in 00 01 10 11;do
+ sha256sum --check --status "$root/inputs.sha256"
  firstFile="$root/$first-original.kt";secondFile="$root/$second-original.kt"
  case "$mode" in 10|11) firstFile="$root/$first-repair.kt";;esac
  case "$mode" in 01|11) secondFile="$root/$second-repair.kt";;esac
  kotlinc "$firstFile" "$secondFile" "${abis[@]}" -include-runtime -d "$root/$mode.jar" > "$root/$mode.compile" 2>&1 || {
   grep -E 'error:|Exception' "$root/$mode.compile"|head -14 >&2 || :;exit 2;
  }
+ sha256sum --check --status "$root/inputs.sha256"
+ sha256sum "$root/$mode.jar" "$root/$mode.compile" > "$root/$mode.artifacts.sha256"
  env -i PATH=/usr/bin:/bin HOME=/tmp bwrap --die-with-parent \
   --unshare-all --new-session --clearenv --setenv PATH /usr/bin:/bin \
   --setenv HOME /tmp "${mounts[@]}" --ro-bind "$jdk" /jdk \
@@ -108,6 +114,8 @@ for mode in 00 01 10 11;do
   > "$root/$mode.log" 2>&1 || {
    grep -E 'Exception|C2_CROSS' "$root/$mode.log"|head -14 >&2 || :;exit 2;
   }
+ sha256sum --check --status "$root/inputs.sha256"
+ sha256sum --check --status "$root/$mode.artifacts.sha256"
  grep -Fxq "C2_CROSS_SUITE $suite" "$root/$mode.log"
  grep -Fxq C2_CROSS_NORMAL_CONTROLS_PASS "$root/$mode.log"
  a=false;c=false
@@ -115,18 +123,27 @@ for mode in 00 01 10 11;do
  case "$mode" in 01|11) c=true;;esac
  grep -Fxq "C2_CROSS_VECTOR mode=$mode first=$a second=$c" "$root/$mode.log"
 done
-python3 - "$root" "$suite" "$id1" "$id2" "$blob1" "$blob2" <<'PY'
+python3 - "$root" "$suite" "$id1" "$id2" "$blob1" "$blob2" "$first" "$second" <<'PY'
 import json,hashlib,sys
 from pathlib import Path
-root=Path(sys.argv[1]);suite,id1,id2,blob1,blob2=sys.argv[2:]
+root=Path(sys.argv[1]);suite,id1,id2,blob1,blob2,first,second=sys.argv[2:]
 h=lambda f:hashlib.sha256((root/f).read_bytes()).hexdigest()
+# Use the pre-compilation snapshot, never derive provenance from current repairs.
+pinned={line[66:]:line[:64] for line in (root/'inputs.sha256').read_text().splitlines()}
+for name,expected in pinned.items():
+ assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==expected, 'COMPILE_INPUT_CHANGED'
+source_hash=lambda alias,bit:pinned[str(root/(alias+('-repair.kt' if bit=='1' else '-original.kt')))]
 rows=[]
 for mode in ('00','01','10','11'):
  rows.append(dict(mode=mode,firstRepaired=mode[0]=='1',secondRepaired=mode[1]=='1',
  firstCorrect=mode[0]=='1',secondCorrect=mode[1]=='1',benignControlsPassed=True,
- actualJointKotlinJvm=True,javaArtifactSha256=h(mode+'.jar'),executionLogSha256=h(mode+'.log')))
+ actualJointKotlinJvm=True,
+ sourceSha256s=[source_hash(first,mode[0]),source_hash(second,mode[1])],
+ compilationLogSha256=h(mode+'.compile'),
+ javaArtifactSha256=h(mode+'.jar'),executionLogSha256=h(mode+'.log')))
 report=dict(schema='c2-two-real-sources-four-jvm-repair-states/v1',suite=suite,
  identities=[id1,id2],originalSourceGitBlobs=[blob1,blob2],
+ variantSha256s=[source_hash(first,'1'),source_hash(second,'1')],
  originalSourcesVerified=True,originalSourcesUnmodified=True,networkIsolatedJVM=True,
  rows=rows,detectorPredictionsRead=False,externalCandidateSourceRead=False,
  newGoldLabels=0,causalFamiliesCertified=0,holdoutFrozen=False,sssPlusCertified=False)
