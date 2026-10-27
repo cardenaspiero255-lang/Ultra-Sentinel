@@ -15,7 +15,7 @@ function falseOnly(...items){if(items.some(v=>v!==false))deny();}
 async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback,
  kotlin,sealed,expectedWorkflowSha,expectedRunId,githubToken,
  fetchImpl=globalThis.fetch}={}){
- if(!plan||plan.id!=='gamehub-battery-valid-range'||plan.targetRepo!==REPO||
+ if(!plan||!['gamehub-battery-valid-range','gamehub-battery-finite-drain-e2e'].includes(plan.id)||plan.targetRepo!==REPO||
   plan.targetFile!==SOURCE||plan.maxChangedFiles!==1||
   !SHA.test(plan.baseSha||'')||!SHA.test(plan.candidateSha||'')||
   !SHA.test(plan.baseBlob||'')||!SHA.test(plan.candidateBlob||'')||
@@ -49,7 +49,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
   rollback.restoredTree!==rollback.originalTree)deny();
  falseOnly(rollback.remoteWrites,rollback.mergeAllowed,rollback.productionCertified);
 
- if(kotlin?.schema!=='ultra-sentinel-registered-battery-real-kotlin/v1'||
+ if(kotlin?.schema!==(plan.id==='gamehub-battery-finite-drain-e2e'?'ultra-sentinel-registered-battery-finite-kotlin/v2':'ultra-sentinel-registered-battery-real-kotlin/v1')||
   kotlin.originalCommit!==plan.baseSha||kotlin.candidateCommit!==plan.candidateSha||
   kotlin.originalBlob!==plan.baseBlob||kotlin.candidateBlob!==plan.candidateBlob||
   ![kotlin.redLogSha256,kotlin.greenLogSha256,kotlin.judgeLogSha256]
@@ -70,7 +70,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
   sealed.pullRequestReviewRequired,sealed.car29ChecksRequired);
  falseOnly(sealed.remoteWrites,sealed.autoMerge,sealed.productionCertified);
  // The map is owned by trusted source, not the issue comment, PR or caller.
- const prNumber=245;
+ const prNumber=plan.id==='gamehub-battery-finite-drain-e2e'?252:245;
  let decision='SANDBOX_E2E_VERIFIED_PR_REVIEW_BLOCKED';
  let car29ChecksVerified=false;
  try{
