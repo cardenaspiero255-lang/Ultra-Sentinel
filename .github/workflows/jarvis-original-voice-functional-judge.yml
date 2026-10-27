@@ -1,0 +1,100 @@
+name: Ultra Sentinel — original JARVIS voice Kotlin factorial Judge E2E
+on:
+  pull_request:
+    paths:
+      - packages/recovery/jarvis-voice-functional-judge.cjs
+      - packages/recovery/cross-file-sandbox-reproduction.cjs
+      - packages/recovery/repair-judge.cjs
+      - scripts/jarvis-original-voice-factorial.sh
+      - scripts/jarvis-original-voice-judge-bridge.cjs
+      - tests/oracles/jarvis-voice-factorial.kt
+      - tests/unit/jarvis-voice-functional-judge.test.cjs
+      - .github/workflows/jarvis-original-voice-functional-judge.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: original-jarvis-kotlin-voice-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  jarvis-voice-original-jvm:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout trusted Ultra Sentinel without stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run all structural and unit tests
+        run: npm run check
+      - name: Require AppArmor plus networkless Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v bwrap
+          command -v gh
+          command -v jq
+      - name: Fetch two immutable JARVIS Kotlin files and run 4 live JVM variants plus regression
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JARVIS_ORIGINAL_SANDBOX: "1"
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/jarvis-kotlin-voice-safe"
+          mkdir -p "$root"
+          bash scripts/jarvis-original-voice-factorial.sh "$root"
+      - name: Stage local Git originals, independent Judge, verified rollback and functional veto
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/jarvis-kotlin-voice-safe"
+          node scripts/jarvis-original-voice-judge-bridge.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-jarvis-original-kotlin-voice-e2e/v1" and
+            .status=="JARVIS_SOURCE_PINNED_KOTLIN_VOICE_JUDGE_VETO_VERIFIED" and
+            .sourceRepository=="cardenaspiero255-lang/JARVIS" and
+            (.sourceRefs|length)==2 and
+            .realKotlinJVMMatrixScenarios==4 and
+            .benignControlsPassed==true and
+            .realKotlinJvmRegressionDetected==true and
+            .verifiedGitPolicyJudge==true and
+            .exactGitRollbackVerified==true and
+            .functionalJudgeVetoedUnsafeVariant==true and
+            .mutationNotPresentInOriginalJarvis==true and
+            .fullAndroidHardwareIntegrationProven==false and
+            .coreDerivedRootCause==false and
+            .autonomousRepairCompleted==false and
+            .remoteWrites==false and
+            .mergeAllowed==false and .productionReleaseAllowed==false
+          ' "$root/jarvis-voice-safe-receipt.json"
+      - name: Archive only sanitized JARVIS voice evidence, never code/audio/JAR/tokens
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: ultra-jarvis-original-voice-kotlin-git-judge
+          path: ${{ runner.temp }}/jarvis-kotlin-voice-safe/jarvis-voice-safe-receipt.json
+          retention-days: 14
+          if-no-files-found: error
