@@ -19,11 +19,11 @@ const rollback={schema:'ultra-sentinel-registered-candidate-rollback/v1',
  status:'REGISTERED_GIT_CANDIDATE_ROLLBACK_VERIFIED',
  workflowSha:FLOW,runId:'56789',ownerCommentId:21234,planDigest:DIGEST,
  originalCommit:BASE,candidateCommit:HEAD,originalBlob:ORIG,proposedBlob:BLOB,
- originalTree:'1'.repeat(40),restoredTree:'1'.repeat(40),remoteWrites:false,mergeAllowed:false};
+ originalTree:'1'.repeat(40),restoredTree:'1'.repeat(40),remoteWrites:false,mergeAllowed:false,productionCertified:false};
 const kotlin={schema:'ultra-sentinel-registered-battery-real-kotlin/v1',
  originalCommit:BASE,candidateCommit:HEAD,originalBlob:ORIG,candidateBlob:BLOB,
  redOriginalFailedAtExactPredicate:true,greenPatchedPassed:true,independentJudgePassed:true,
- bubblewrapOffline:true,remoteWrites:false,redLogSha256:'2'.repeat(64),
+ bubblewrapOffline:true,remoteWrites:false,productionCertified:false,redLogSha256:'2'.repeat(64),
  greenLogSha256:'3'.repeat(64),judgeLogSha256:'4'.repeat(64)};
 const sealed={schema:'ultra-sentinel-registered-owner-repair/v1',
  status:'REGISTERED_OWNER_APPROVED_SANDBOX_REPAIR_VERIFIED',workflowSha:FLOW,
@@ -59,11 +59,14 @@ function input(extra={}){return {plan,planDigest:DIGEST,approval,rollback,kotlin
  fetchImpl:github(),...extra};}
 test('one authenticated owner receipt + isolated Kotlin + exact rollback + live CAR-29 checks: review only',async()=>{
  const proof=await verifyRegisteredOwnerRepairE2E(input());
- assert.equal(proof.status,'SANDBOX_E2E_VERIFIED_PR_REVIEW_READY');
+ assert.equal(proof.status,'SANDBOX_E2E_VERIFIED_CAR29_CHECKS_READY_FOR_REVIEW');
  assert.equal(proof.workflowSha,FLOW);
  assert.equal(proof.candidateSha,HEAD);
  assert.equal(proof.prNumber,245);
  assert.equal(proof.car29Required,true);
+ assert.equal(proof.car29ChecksVerified,true);
+ assert.equal(proof.car29FullySatisfied,false);
+ assert.equal(proof.protectedReviewVerified,false);
  assert.equal(proof.sandboxRecoveryVerified,true);
  assert.equal(proof.productionCertified,false);
  assert.equal(proof.autoMergeAllowed,false);
@@ -72,7 +75,7 @@ test('one authenticated owner receipt + isolated Kotlin + exact rollback + live 
 test('already merged PR #245 leaves valid sandbox evidence but NEVER yields review clearance',async()=>{
  const proof=await verifyRegisteredOwnerRepairE2E(input({fetchImpl:github({open:false})}));
  assert.equal(proof.status,'SANDBOX_E2E_VERIFIED_PR_REVIEW_BLOCKED');
- assert.equal(proof.car29Verified,false);
+ assert.equal(proof.car29ChecksVerified,false);
  assert.equal(proof.autoMergeAllowed,false);
  assert.equal(proof.sandboxRecoveryVerified,true);
 });
