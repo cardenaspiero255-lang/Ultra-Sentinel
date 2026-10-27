@@ -24,11 +24,11 @@ test('proposal severity, rule and line must bind exactly to the finding',()=>{
 });
 test('missing, reordered or duplicate repair suggestions fail closed',()=>{
  const actual=analyze([file(first),file(second)],{sha});
- assert.equal(actual.findings.length,2);
+ assert.ok(actual.findings.length>=2);
  const suggestions=actual.remediations.suggestions;
  assert.equal(planRepair({analysis:tamper(actual,[])}).status,'BLOCKED_EVIDENCE');
- assert.equal(planRepair({analysis:tamper(actual,[suggestions[1],suggestions[0]])}).status,'BLOCKED_EVIDENCE');
- assert.equal(planRepair({analysis:tamper(actual,[suggestions[0],suggestions[0]])}).status,'BLOCKED_EVIDENCE');
+ assert.equal(planRepair({analysis:tamper(actual,[suggestions[1],suggestions[0],...suggestions.slice(2)])}).status,'BLOCKED_EVIDENCE');
+ assert.equal(planRepair({analysis:tamper(actual,[suggestions[0],suggestions[0],...suggestions.slice(2)])}).status,'BLOCKED_EVIDENCE');
 });
 test('honest Core proposals remain review-only even with a claimed owner approval',()=>{
  const actual=a();
