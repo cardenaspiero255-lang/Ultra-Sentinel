@@ -22,7 +22,7 @@ async function verifyRegisteredOwnerRepairE2E({plan,planDigest,approval,rollback
   plan.baseSha===plan.candidateSha||plan.baseBlob===plan.candidateBlob||
   plan.remoteWrites!==false||plan.mergeAllowed!==false||
   !DIGEST.test(planDigest||'')||!SHA.test(expectedWorkflowSha||'')||
-  !/^[1-9]\\d{0,16}$/.test(expectedRunId||''))deny();
+  !/^[1-9]\d{0,16}$/.test(expectedRunId||''))deny();
  // This receipt is generated after the actual owner GitHub OIDC JWKS and
  // immutable comment nonce gate. Do not reinterpret chat text as approval.
  if(approval?.schema!=='ultra-sentinel-single-approval-github-receipt/v1'||
