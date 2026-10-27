@@ -34,10 +34,10 @@ const fail=()=>{throw Error('PINNED_GAMEHUB_PAIR_GATE_BLOCKED');};
 function hash(bytes,alg){return crypto.createHash(alg).update(bytes).digest('hex');}
 function blob(bytes){return hash(Buffer.concat([
  Buffer.from('blob '+bytes.length+'\0'),bytes]),'sha1');}
-function get(root,name,maximum=60000){
+function get(root,name,maximum=60000,minimum=1){
  const loc=path.join(root,name);const st=fs.lstatSync(loc);
  if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||
-  st.size<1||st.size>maximum)fail();
+  st.size<minimum||st.size>maximum)fail();
  const data=fs.readFileSync(loc);return data;
 }
 function text(bytes){
@@ -139,9 +139,13 @@ function runPinnedPair({root,suite}={}){
    'refresh-battery':['refresh','battery']}[suite];
   const repairs=aliases.map(alias=>text(get(canonical,alias+'-repair.kt')));
   if(repairs[0]===sourceFirst||repairs[1]===sourceSecond)fail();
+  const sourceHashes=[sourceFirst,sourceSecond].map(s=>hash(Buffer.from(s),'sha256'));
+  const repairHashes=repairs.map(s=>hash(Buffer.from(s),'sha256'));
   const receipt=JSON.parse(text(get(canonical,'output/receipt.json',30000)));
   if(receipt.schema!=='c2-two-real-sources-four-jvm-repair-states/v1'||
-   receipt.suite!==suite||JSON.stringify(receipt.identities)!==JSON.stringify(spec.id)||
+   receipt.suite!==suite||
+   !Array.isArray(receipt.variantSha256s)||receipt.variantSha256s.length!==2||
+   receipt.variantSha256s.some((h,i)=>!HEX.test(h)||h!==repairHashes[i])||JSON.stringify(receipt.identities)!==JSON.stringify(spec.id)||
    JSON.stringify(receipt.originalSourceGitBlobs)!==
     JSON.stringify([spec.first.blob,spec.second.blob])||
    receipt.originalSourcesVerified!==true||
@@ -156,8 +160,14 @@ function runPinnedPair({root,suite}={}){
    const row=receipt.rows[Number(mode[0])*2+Number(mode[1])];
    const bytes=get(canonical,mode+'.log',12000);
    const jar=get(canonical,mode+'.jar',8000000);
+   // A successful compiler can emit an empty log; its bytes are still bound.
+   const compile=get(canonical,mode+'.compile',1000000,0);
+   const expectedSources=sourceHashes.map((h,i)=>mode[i]==='1'?repairHashes[i]:h);
    logs[mode]=text(bytes);
    if(!row||row.mode!==mode||
+    !Array.isArray(row.sourceSha256s)||row.sourceSha256s.length!==2||
+    row.sourceSha256s.some((h,i)=>!HEX.test(h)||h!==expectedSources[i])||
+    row.compilationLogSha256!==hash(compile,'sha256')||
     row.firstRepaired!==(mode[0]==='1')||
     row.secondRepaired!==(mode[1]==='1')||
     row.firstCorrect!==(mode[0]==='1')||
@@ -186,6 +196,9 @@ function runPinnedPair({root,suite}={}){
    suite,status:'SOURCE_BLOB_PINNED_LOCAL_GIT_JUDGE_AND_ROLLBACK_VERIFIED',
    sourceRepository:'cardenaspiero255-lang/gamehub-ultra',
    frozenSourceGitBlobs:[spec.first.blob,spec.second.blob],
+   variantSha256s:repairHashes,
+   sourceBytesBoundToJVMReceipt:true,
+   evidenceAuthenticityRequiresTrustedProducer:true,
    sourcePathMapping:[spec.first.path,spec.second.path],
    verifiedJVMScenarioCount:4,localGitScenarios:4,
    allFunctionalControlsPassed:true,gitPolicyJudgeApproved:true,

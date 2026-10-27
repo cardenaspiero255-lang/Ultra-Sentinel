@@ -59,14 +59,18 @@ test('wrong source file order, path traversal, unlisted changes or unchanged con
    versions:entries,independentOracle:oracle}),/INVALID_CROSS_FILE_REPRODUCTION/);
  }
 });
-test('untrusted caller predicate cannot forge checked results and temporary trees are removed after exceptions',()=>{
+test('untrusted caller predicate cannot forge checked results and temporary trees are removed after exceptions',t=>{
  const {plan,versions}=sample();
- const before=new Set(fs.readdirSync(os.tmpdir()).filter(x=>x.startsWith('ultra-factorial-')));
+ // Observe only this process's allocations, not concurrent test workers.
+ const created=[],mkdtemp=fs.mkdtempSync.bind(fs);
+ t.mock.method(fs,'mkdtempSync',(...args)=>{
+  const dir=mkdtemp(...args);created.push(dir);return dir;
+ });
  assert.throws(()=>reproduceCrossFileInterventions({plan,candidateRule:'UNSCOPED_COROUTINE',
   versions,independentOracle:()=>{throw Error('intentional oracle failure')}}),
   /ORACLE_EVALUATION_FAILED/);
- const after=fs.readdirSync(os.tmpdir()).filter(x=>x.startsWith('ultra-factorial-'));
- assert.deepEqual(after.filter(x=>!before.has(x)),[]);
+ assert.ok(created.length>0);
+ assert.ok(created.every(dir=>!fs.existsSync(dir)));
 });
 test('invalid or non-boolean oracle results cannot be certified as passing tests',()=>{
  const {plan,versions}=sample();
