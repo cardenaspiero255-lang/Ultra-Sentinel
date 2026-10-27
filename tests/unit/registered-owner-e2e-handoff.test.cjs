@@ -87,7 +87,7 @@ test('incomplete checks, API failure, or unknown check result blocks CAR-29 revi
  ]){
   const proof=await verifyRegisteredOwnerRepairE2E(input({fetchImpl}));
   assert.equal(proof.status,'SANDBOX_E2E_VERIFIED_PR_REVIEW_BLOCKED');
-  assert.equal(proof.car29Verified,false);
+  assert.equal(proof.car29ChecksVerified,false);
  }
 });
 test('tampered owner authorization, plan, Kotlin proof, or rollback must fail BEFORE any GitHub call',async()=>{
