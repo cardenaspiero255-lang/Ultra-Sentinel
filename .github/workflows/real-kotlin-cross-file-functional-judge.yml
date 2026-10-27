@@ -1,0 +1,105 @@
+name: Ultra Sentinel — original Kotlin cross-file functional Judge E2E
+on:
+  pull_request:
+    paths:
+      - packages/recovery/cross-file-kotlin-functional-judge.cjs
+      - packages/recovery/cross-file-sandbox-reproduction.cjs
+      - scripts/c2-cross-file-kotlin-bridge.cjs
+      - scripts/c2-cross-file-kotlin-negative-control.sh
+      - tests/unit/cross-file-kotlin-functional-judge.test.cjs
+      - .github/workflows/real-kotlin-cross-file-functional-judge.yml
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kotlin-crossfile-functional-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  original-kotlin-cross-file:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang') ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout trusted repository without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: All architecture and regression tests
+        run: npm run check
+      - name: Require real Bubblewrap plus enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          command -v kotlinc
+          command -v gh
+          command -v jq
+          command -v bwrap
+      - name: Fetch SHA-pinned GameHub originals and execute all four real JVM variants offline
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          C2_OWNER_SANDBOX: "1"
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/ultra-original-kotlin-crossfile"
+          mkdir -p "$root"
+          bash scripts/c2-live-causal-campaign.sh numeric "$root"
+          test -s "$root/output/factorial-source-evidence.json"
+      - name: Prove a real Kotlin ordinary-control regression before functional veto
+        shell: bash
+        env:
+          C2_OWNER_SANDBOX: "1"
+        run: |
+          set -euo pipefail
+          bash scripts/c2-cross-file-kotlin-negative-control.sh \
+            "$RUNNER_TEMP/ultra-original-kotlin-crossfile"
+      - name: Stage every Kotlin source pair in disposable local Git, Judge and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/ultra-original-kotlin-crossfile"
+          node scripts/c2-cross-file-kotlin-bridge.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-cross-file-original-kotlin-bridge/v1" and
+            .status=="PINNED_ORIGINAL_KOTLIN_FACTORIAL_JUDGE_AND_ROLLBACK_VERIFIED" and
+            .stagedGitSnapshots==4 and .normalKotlinCases==4 and
+            .allGitJudgeAndRollbackPassed==true and
+            .regressionRejectedByRealJVM==true and
+            .regressionGitJudgeApproved==true and
+            .regressionGitRollbackVerified==true and
+            .regressionFunctionalJudgeStatus=="FUNCTIONAL_JUDGE_VETO" and
+            .sourceBytesPinned==true and .bubblewrapRequired==true and
+            .causalityVerified==false and .commitAllowed==false and
+            .mergeAllowed==false and .remoteWrites==false and .releaseAuthorized==false
+          ' "$root/output/cross-file-kotlin-functional-judge.json"
+      - name: Archive sanitized proof only — never copy source, jars or credentials
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: ultra-kotlin-crossfile-git-judge-rollback
+          path: ${{ runner.temp }}/ultra-original-kotlin-crossfile/output/cross-file-kotlin-functional-judge.json
+          retention-days: 14
+          if-no-files-found: error

@@ -61,11 +61,11 @@ function preflight(plan,candidateRule,versions,independentOracle){
    v.before===v.after||!v.before.endsWith('\n')||!v.after.endsWith('\n')||
    v.before.includes('\0')||v.after.includes('\0')||
    v.before.includes('\r')||v.after.includes('\r')||
-   Buffer.byteLength(v.before,'utf8')>8192||
-   Buffer.byteLength(v.after,'utf8')>8192)invalid();
+   Buffer.byteLength(v.before,'utf8')>50000||
+   Buffer.byteLength(v.after,'utf8')>50000)invalid();
   byteCount+=Buffer.byteLength(v.before,'utf8')+Buffer.byteLength(v.after,'utf8');
  }
- if(byteCount>32768)invalid();
+ if(byteCount>150000)invalid();
  for(let mask=0;mask<chosen.experiments.length;mask++){
   const e=chosen.experiments[mask];
   const expected=files.filter((_,i)=>Boolean(mask&(1<<i)));
