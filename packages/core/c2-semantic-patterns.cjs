@@ -66,6 +66,25 @@ function semanticCandidates({path,lines,added,active}={}){
      'Dos artículos con URLs del mismo hostname y dominios declarados distintos deben causar abstención.');
   }
  }
+ // A start-anchored Regex plus containsMatchIn is only a prefix test.
+ // Flag it when used to accept a COMPLETE result, not for ordinary search.
+ // This is a hypothesis; source code and original execution must corroborate.
+ for(const row of added){
+  const code=active.get(row.line);
+  if(typeof code!=='string')continue;
+  const match=code.match(/\b([A-Za-z_]\w*)\.containsMatchIn\s*\(/);
+  if(!match)continue;
+  const prior=lines.slice(Math.max(0,row.line-5),row.line).join('\n');
+  if(!/\b(?:val|var)\s+(?:outputIs|resultIs|identityIs|evidenceIs|isVerified|isValid|validOutput)[A-Za-z_0-9]*\s*=/i.test(prior))
+   continue;
+  const patternName=match[1];
+  const sourceRegex=new RegExp('\\b(?:val|var)\\s+'+patternName+
+   '\\s*=\\s*Regex\\s*\\(\\s*"\\^');
+  if(!lines.some(line=>sourceRegex.test(line)))continue;
+  emit(row,'REGEX_PREFIX_ACCEPTED_AS_FULL_EVIDENCE',
+   'Un patrón anclado solo al inicio se usa para validar una salida completa; un sufijo inesperado puede pasar.',
+   'Ejecutar con el código original entradas con sufijos extraños y salidas benignas completas; exigir rechazo de sufijos y preservación de formatos válidos.');
+ }
  for(const risk of knownDefectRegressionCandidates({path,lines,added,active}))
   findings.push(risk);
  return findings;
