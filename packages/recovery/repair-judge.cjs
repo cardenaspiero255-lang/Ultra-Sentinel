@@ -8,7 +8,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
-const SAFE=/^(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+$/;
+const SAFE=/^(?:(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+|apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt)$/;
 function git(directory,...args){
  const p=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false',
   '-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{
