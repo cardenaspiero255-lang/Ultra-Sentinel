@@ -182,8 +182,11 @@ function bridge(root){
 function main(){
  try{
   if(process.argv.length!==3)fail();
-  const root=fs.realpathSync(process.argv[2]),temp=fs.realpathSync(os.tmpdir());
-  if(!root.startsWith(temp+path.sep)||!fs.statSync(root).isDirectory())fail();
+  const root=fs.realpathSync(process.argv[2]);
+  const allowedRoots=[os.tmpdir(),process.env.RUNNER_TEMP].filter(Boolean)
+   .map(x=>fs.realpathSync(x));
+  if(!allowedRoots.some(dir=>root.startsWith(dir+path.sep))||
+   !fs.statSync(root).isDirectory()||fs.lstatSync(root).isSymbolicLink())fail();
   const result=bridge(root);
   const out=path.join(root,'output/cross-file-kotlin-functional-judge.json');
   fs.writeFileSync(out,JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
