@@ -9,7 +9,7 @@ function sample(suite='refresh-battery'){
    status:'LOCAL_FACTORIAL_COMPLETED_REQUIRES_EXTERNAL_ORACLE',
    commitAllowed:false,mergeAllowed:false,productionReleaseAllowed:false,
    candidateRule:spec.rule,
-   scenarios:['00','01','10','11'].map((mode,i)=>({
+   scenarios:['00','10','01','11'].map((mode,i)=>({
     selectedFiles:[spec.first.path,spec.second.path].filter((p,j)=>
      p===spec.first.path?mode[0]==='1':mode[1]==='1').sort(),
     oracleVerdict:'PASS',
