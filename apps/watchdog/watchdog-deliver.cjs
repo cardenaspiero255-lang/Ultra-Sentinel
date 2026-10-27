@@ -33,11 +33,15 @@ function validateEndpoint(raw){
 }
 function validSecret(s){return typeof s==='string'&&s.length>=20&&s.length<=2048&&
  /^[\x21-\x7e]+$/.test(s);}
-async function deliverPending({stateFile,endpoint,token,signingSecret,
- fetchImpl=globalThis.fetch}={}){
+function validateDeliveryConfiguration({endpoint,token,signingSecret,fetchImpl=globalThis.fetch}={}){
  const target=validateEndpoint(endpoint);
  if(!validSecret(token)||!validSecret(signingSecret)||typeof fetchImpl!=='function')
   fail('ALERT_DELIVERY_NOT_CONFIGURED');
+ return target;
+}
+async function deliverPending({stateFile,endpoint,token,signingSecret,
+ fetchImpl=globalThis.fetch}={}){
+ const target=validateDeliveryConfiguration({endpoint,token,signingSecret,fetchImpl});
  // A checkpoint is needed to prove an outbox exists and was durable.
  const checkpoint=checkedState(stateFile);
  if(!checkpoint)return Object.freeze({status:'NO_CHECKPOINT_YET',deliveryAccepted:false});
@@ -65,7 +69,7 @@ async function deliverPending({stateFile,endpoint,token,signingSecret,
  if(!result||![200,201,202,204].includes(result.status)||
    result.url&&result.url!==target)fail('ALERT_NOT_ACCEPTED');
  // Never advance checkpoint prior to verified HTTP acknowledgement.
- const confirmation=acknowledgeDelivery(stateFile,digest);
+ const confirmation=acknowledgeDelivery(stateFile,digest,sequence);
  return Object.freeze({status:'HTTP_DELIVERY_ACCEPTED',
   batchId:key,acceptedCount:pending.length,
   acknowledgement:confirmation.status,deliveryAccepted:true,
@@ -82,4 +86,4 @@ if(require.main===module){
   process.exitCode=1;
  });
 }
-module.exports={deliverPending,validateEndpoint};
+module.exports={deliverPending,validateEndpoint,validateDeliveryConfiguration};

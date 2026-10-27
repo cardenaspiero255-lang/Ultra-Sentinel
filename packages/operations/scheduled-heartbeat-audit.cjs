@@ -23,7 +23,8 @@ function auditScheduledHeartbeat({runs,now,expectedSha,maxGapMinutes=120,minSamp
  const current=timestamp(now),seen=new Set(),samples=[];
  for(const r of runs){
   if(!r||typeof r!=='object'||Array.isArray(r))fail();
-  if(r.event!=='schedule'||r.name!==WORKFLOW||r.path!==PATH||r.head_branch!=='main')continue;
+  if(r.event!=='schedule'||r.name!==WORKFLOW||
+   (r.path!==PATH&&r.path!==PATH+'@main')||r.head_branch!=='main')continue;
   if(!Number.isSafeInteger(r.id)||r.id<1||seen.has(r.id)||!SHA.test(r.head_sha||''))fail();
   seen.add(r.id);
   const created=timestamp(r.created_at);

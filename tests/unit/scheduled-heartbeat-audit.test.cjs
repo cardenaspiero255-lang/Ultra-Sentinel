@@ -15,6 +15,12 @@ test('three successive scheduled runs yield a punctuality observation, never cer
  assert.equal(r.sampleCount,3);assert.equal(r.maxGapMinutes,30);
  assert.equal(r.latestAgeMinutes,30);assert.equal(r.certified24x7,false);
 });
+test('GitHub workflow paths with @main count, but a different ref cannot count',()=>{
+ const withMain=base.map(r=>({...r,path:r.path+'@main'}));
+ assert.equal(audit(withMain).verdict,'PUNCTUALITY_OBSERVED_NOT_24X7');
+ assert.equal(audit(withMain.map(r=>({...r,path:r.path.replace('@main','@other')}))).verdict,
+  'INSUFFICIENT_SCHEDULE_EVIDENCE');
+});
 test('manual and push runs cannot conceal a missing scheduled heartbeat',()=>{
  const r=audit([sample('2026-10-15T16:20:00Z',{event:'workflow_dispatch'}),
    sample('2026-10-15T16:00:00Z',{event:'push'}),sample('2026-10-15T13:00:00Z')]);
