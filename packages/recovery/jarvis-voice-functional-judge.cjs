@@ -53,7 +53,7 @@ function assessJarvisVoiceMatrix({localProof,logs}={}){
   if(!s||!Array.isArray(s.selectedFiles)||
    s.selectedFiles.length!==expected.length||
    s.selectedFiles.some((p,j)=>p!==expected[j])||
-   s.remoteWrites!==false||s.oracleVerdict!=='PASS'||
+   s.remoteWrites!==false||
    s.judgeStatus!==(i===0?'BASELINE_NO_COMMIT':'APPROVED_LOCAL_POLICY_ONLY')||
    !SHA.test(s.baselineTree||''))git=false;
   if(!s||s.rollbackVerified!==true||s.baselineTree!==s.restoredTree)
@@ -70,7 +70,8 @@ function assessJarvisVoiceMatrix({localProof,logs}={}){
    'JARVIS_VOICE_VECTOR mode='+mode+' barge='+(mode[0]==='1')+
     ' wake='+(mode[1]==='1'),
    'JARVIS_VOICE_MATRIX_PROBED'];
-  if(rows.length!==3||rows.some((r,i)=>r!==lines[i]))
+  if(scenarios[MODES.indexOf(mode)].oracleVerdict!=='PASS'||
+   rows.length!==3||rows.some((r,i)=>r!==lines[i]))
    return result(false,git,rollback,checked);
   checked++;
  }
