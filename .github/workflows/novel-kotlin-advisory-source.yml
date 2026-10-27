@@ -1,0 +1,81 @@
+name: Sentinel — pinned JARVIS novel Kotlin advisory family scan
+on:
+  pull_request:
+    paths:
+      - packages/investigation/novel-kotlin-hypotheses.cjs
+      - tests/unit/novel-kotlin-hypotheses.test.cjs
+      - scripts/verify-jarvis-novel-hypotheses.cjs
+      - .github/workflows/novel-kotlin-advisory-source.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: pinned-jarvis-advisory-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  pinned-jarvis-original-advisory-scan:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout owner-controlled Sentinel
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run complete Node contract suite
+        run: npm run check
+      - name: Fetch and verify immutable two JARVIS Kotlin Git blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/sentinel-jarvis-novel-advisory"
+          mkdir -p "$root"
+          repo=cardenaspiero255-lang/JARVIS
+          head=f2572a8abb0a1ef5b34d971ea8c4dc5acbecf868
+          prefix=apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core
+          for spec in \
+            'termux.kt:CompanionResultPolicy.kt:7c6f326cb267b56f4ca6b2d0614753695259da56' \
+            'voice.kt:VoiceRecognitionRequestGate.kt:606d1184e7d57e49ef15b983a8646706abadf3da'; do
+            IFS=: read -r local_name remote_name blob <<< "$spec"
+            source_path="$prefix/$remote_name"
+            gh api "/repos/$repo/contents/$source_path?ref=$head" > "$root/metadata.json"
+            jq -e --arg p "$source_path" --arg b "$blob" '
+              .type=="file" and .path==$p and .sha==$b and
+              .encoding=="base64" and .size>100 and .size<60000
+            ' "$root/metadata.json" >/dev/null
+            jq -r .content "$root/metadata.json" | base64 --decode > "$root/$local_name"
+            test "$(git hash-object "$root/$local_name")" = "$blob"
+            rm "$root/metadata.json"
+          done
+          node scripts/verify-jarvis-novel-hypotheses.cjs "$root"
+          jq -e '
+            .status=="PINNED_ORIGINAL_JARVIS_TWO_RISK_FAMILIES_OBSERVED" and
+            .originalGitBlobPinsChecked==2 and
+            (.advisoryFindings | length)==2 and
+            .kotlinRuntimeOracleValidatedHere==false and
+            .sourceGitRepositoryAuthenticatedBySidecar==false and
+            .autoRepairAllowed==false and .remoteWrites==false and
+            .mergeAllowed==false
+          ' "$root/novel-kotlin-receipt.json"
+      - name: Publish non-executable, source-free advisory receipt
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: pinned-original-jarvis-novel-kotlin-advisory
+          path: ${{ runner.temp }}/sentinel-jarvis-novel-advisory/novel-kotlin-receipt.json
+          retention-days: 14
+          if-no-files-found: error
