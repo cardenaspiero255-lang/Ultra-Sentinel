@@ -10,7 +10,20 @@ function planRepair({analysis,mode='REVIEW_WITH_SOLUTIONS',authorization=null}={
  if(policy.status==='INVALID_MODE')return Object.freeze({status:'BLOCKED_MODE',commitAllowed:false,mergeAllowed:false,steps:[]});
  if(mode==='REVIEW_ONLY')return Object.freeze({status:'REVIEW_ONLY',commitAllowed:false,mergeAllowed:false,steps:[]});
  const suggestions=analysis.remediations.suggestions;
- if(!Array.isArray(suggestions)||suggestions.some(s=>s.autofix!==false||s.status!=='DRAFT_REQUIRES_VALIDATION'))
+ const findings=analysis.findings;
+ // Repair proposals must reference exactly the findings produced by Core
+ // in severity/path/line order. Otherwise a caller could substitute an
+ // unrelated target or conceal a finding in a plausible-looking plan.
+ if(!Array.isArray(suggestions)||!Array.isArray(findings)||
+    findings.length>40||analysis.omitted>0||
+    suggestions.length!==Math.min(findings.length,35)||
+    suggestions.some((s,i)=>{
+     const f=findings[i];
+     return !f||!s||typeof s!=='object'||Array.isArray(s)||
+       s.rule!==f.rule||s.path!==f.path||s.line!==f.line||
+       s.severity!==f.severity||
+       s.autofix!==false||s.status!=='DRAFT_REQUIRES_VALIDATION';
+    }))
   return Object.freeze({status:'BLOCKED_EVIDENCE',commitAllowed:false,mergeAllowed:false,steps:[]});
  // Authorization is intentionally NOT an execution capability. M6 only creates
  // a human-supervised plan. Actual writes require a separately reviewed adapter.
