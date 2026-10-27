@@ -11,13 +11,13 @@ const plan={id:'gamehub-battery-valid-range',targetRepo:REPO,targetFile:SOURCE,
  baseSha:BASE,candidateSha:HEAD,baseBlob:ORIG,candidateBlob:BLOB,
  maxChangedFiles:1,remoteWrites:false,mergeAllowed:false};
 const approval={schema:'ultra-sentinel-single-approval-github-receipt/v1',
- status:'SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED',workflowSha:FLOW,runId:56789,
+ status:'SINGLE_GITHUB_OWNER_APPROVAL_VERIFIED',workflowSha:FLOW,runId:'56789',
  ownerId:322222186,commentId:21234,registeredPlanId:plan.id,planDigest:DIGEST,
  planKind:'registered',nonceReplayBlocked:true,githubOwnerIdentityVerified:true,
  ed25519Required:false,remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false};
 const rollback={schema:'ultra-sentinel-registered-candidate-rollback/v1',
  status:'REGISTERED_GIT_CANDIDATE_ROLLBACK_VERIFIED',
- workflowSha:FLOW,runId:56789,ownerCommentId:21234,planDigest:DIGEST,
+ workflowSha:FLOW,runId:'56789',ownerCommentId:21234,planDigest:DIGEST,
  originalCommit:BASE,candidateCommit:HEAD,originalBlob:ORIG,proposedBlob:BLOB,
  originalTree:'1'.repeat(40),restoredTree:'1'.repeat(40),remoteWrites:false,mergeAllowed:false};
 const kotlin={schema:'ultra-sentinel-registered-battery-real-kotlin/v1',
@@ -27,7 +27,7 @@ const kotlin={schema:'ultra-sentinel-registered-battery-real-kotlin/v1',
  greenLogSha256:'3'.repeat(64),judgeLogSha256:'4'.repeat(64)};
 const sealed={schema:'ultra-sentinel-registered-owner-repair/v1',
  status:'REGISTERED_OWNER_APPROVED_SANDBOX_REPAIR_VERIFIED',workflowSha:FLOW,
- runId:56789,ownerId:322222186,commentId:21234,planId:plan.id,planDigest:DIGEST,
+ runId:'56789',ownerId:322222186,commentId:21234,planId:plan.id,planDigest:DIGEST,
  originalCommit:BASE,candidateCommit:HEAD,originalBlob:ORIG,candidateBlob:BLOB,
  realKotlinRedGreenJudge:true,originalGitTreeRestored:true,
  pullRequestReviewRequired:true,car29ChecksRequired:true,
@@ -55,7 +55,7 @@ function github({open=true,checksList=checks}={}){
  };
 }
 function input(extra={}){return {plan,planDigest:DIGEST,approval,rollback,kotlin,sealed,
- expectedWorkflowSha:FLOW,expectedRunId:56789,githubToken:token,
+ expectedWorkflowSha:FLOW,expectedRunId:'56789',githubToken:token,
  fetchImpl:github(),...extra};}
 test('one authenticated owner receipt + isolated Kotlin + exact rollback + live CAR-29 checks: review only',async()=>{
  const proof=await verifyRegisteredOwnerRepairE2E(input());
@@ -99,7 +99,7 @@ test('tampered owner authorization, plan, Kotlin proof, or rollback must fail BE
   {sealed:{...sealed,autoMerge:true}},
   {plan:{...plan,remoteWrites:true}},
   {expectedWorkflowSha:'8'.repeat(40)},
-  {expectedRunId:56790},
+  {expectedRunId:'56790'},
   {planDigest:'0'.repeat(64)}
  ];
  for(const entry of cases){
