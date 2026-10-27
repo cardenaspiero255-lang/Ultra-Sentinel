@@ -48,3 +48,45 @@ The adapter catches network or validation errors and returns only
 
 Production authorization is **not** implied by a successful mocked integration
 or green CI. Preserve `remoteWrites:false` and `autoMergeAllowed:false`.
+
+## E2E encadenado: autorización → Kotlin → rollback → checks
+
+El módulo `packages/recovery/registered-owner-e2e-handoff.cjs` y el
+`scripts/registered-owner-e2e-handoff.cjs` se ejecutan **después** de que el
+workflow `owner-single-approval.yml` haya verificado:
+
+1. Un comentario del propietario en el issue #50, OIDC con claves JWKS
+   originales de GitHub, SHA del workflow, ventana temporal y nonce único.
+2. Plan registrado `gamehub-battery-valid-range`, SHA y blobs Kotlin exactos.
+3. Ejecución RED/GREEN/Judge en JVM real aislada sin red.
+4. Reparación y reversión Git en árbol temporal idéntico al origen.
+5. Recibo previo de `registered-owner-proof.json` con aprobación de sandbox
+   (no autorización de escritura remota).
+
+La etapa nueva lee **solo archivos privados creados dentro del mismo job**
+en `RUNNER_TEMP`, rechaza enlaces simbólicos, permisos inseguros y recibos
+discordantes, y verifica las identidades cruzadas de plan, SHA de ejecución,
+run ID, comentario de propietario y blobs original/candidato. A continuación
+consulta GitHub en modo lectura para examinar el PR #245, los archivos
+modificados y sus checks sobre el HEAD exacto. Genera un segundo recibo
+`registered-owner-review-handoff.json`, incluido en el artifact de la
+ejecución, sin credenciales ni datos privados.
+
+**Situación real de GameHub #245:** está fusionado/cerrado. Aunque las
+pruebas de recuperación aislada estuvieran verificadas, el recibo debe indicar
+`SANDBOX_E2E_VERIFIED_PR_REVIEW_BLOCKED`. No se reactiva ni se autoriza la
+fusión de un PR cerrado. El flujo de revisión positiva solo está probado
+mediante fixtures controladas; se necesita otro PR vigente y un plan nuevo,
+registrado y revisado, para comprobarlo con GitHub real.
+
+**CAR-29 permanece protegido:** `car29ChecksVerified` puede expresar
+éxito de los checks actuales, pero `car29FullySatisfied=false`,
+`protectedReviewVerified=false` y `releaseAuthorized=false` hasta que
+otra verificación autenticada compruebe las aprobaciones protegidas y demás
+reglas de branch protection. No hay permisos para auto-merge o push.
+El éxito de GitHub Actions por sí solo no es una autorización.
+
+**Condición de ejecución:** este tramo solo se activa cuando una aprobación
+auténtica y nueva del propietario inicia el workflow de `main` después de
+fusionar el código. Las pruebas del PR verifican el contrato y la integración
+con HTTP simulado, no alegan haber disparado una autorización real.
