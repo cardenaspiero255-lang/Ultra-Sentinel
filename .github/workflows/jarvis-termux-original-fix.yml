@@ -22,6 +22,7 @@ on:
       - tests/unit/original-oracle-vector-factorial.test.cjs
       - tests/oracles/jarvis-two-policy-factorial.kt
       - scripts/jarvis-dual-policy-factorial-original.sh
+      - docs/quality/KOTLIN_CANDIDATE_ORACLE_FACTORIAL_2026-10-29.md
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
