@@ -7,6 +7,11 @@ on:
       - scripts/jarvis-termux-original-judge-bridge.cjs
       - tests/oracles/jarvis-termux-original.kt
       - tests/unit/jarvis-termux-original-fix.test.cjs
+      - packages/investigation/pinned-novel-oracle-link.cjs
+      - scripts/link-jarvis-novel-oracle.cjs
+      - scripts/verify-jarvis-novel-hypotheses.cjs
+      - tests/unit/pinned-novel-oracle-link.test.cjs
+      - tests/fixtures/pinned-jarvis-termux-original.kt
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
@@ -83,11 +88,48 @@ jobs:
             .remoteWrites==false and .mergeAllowed==false and
             .productionReleaseAllowed==false
           ' "$root/termux-sanitized-receipt.json"
+      - name: Link pinned advisory discovery to original JVM Judge in the same trusted job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          cp -- "$root/original.kt" "$root/termux.kt"
+          repo=cardenaspiero255-lang/JARVIS
+          head=f2572a8abb0a1ef5b34d971ea8c4dc5acbecf868
+          voice_path=apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/VoiceRecognitionRequestGate.kt
+          blob=606d1184e7d57e49ef15b983a8646706abadf3da
+          gh api "/repos/$repo/contents/$voice_path?ref=$head" > "$root/voice-metadata.json"
+          jq -e --arg p "$voice_path" --arg b "$blob" '
+            .type=="file" and .path==$p and .sha==$b and
+            .encoding=="base64" and .size>100 and .size<60000
+          ' "$root/voice-metadata.json" >/dev/null
+          jq -r .content "$root/voice-metadata.json" | base64 --decode > "$root/voice.kt"
+          test "$(git hash-object "$root/voice.kt")" = "$blob"
+          rm -- "$root/voice-metadata.json"
+          node scripts/verify-jarvis-novel-hypotheses.cjs "$root"
+          node scripts/link-jarvis-novel-oracle.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-pinned-novel-oracle-link/v1" and
+            .status=="PINNED_ADVISORY_ORACLE_RECEIPTS_CONSISTENT" and
+            .sourceBytesMatched==true and
+            .sameRunnerProvenByThisFunction==false and
+            .autonomousDetectionProven==false and
+            .autonomousRepairProven==false and
+            .ownerAuthorizationVerified==false and
+            .remoteWrites==false and
+            .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/novel-oracle-linked-receipt.json"
       - name: Archive sanitized receipt only
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: jarvis-termux-novel-original-kotlin-judge-rollback
-          path: ${{ runner.temp }}/jarvis-termux-original-pilot/termux-sanitized-receipt.json
+          path: |
+            ${{ runner.temp }}/jarvis-termux-original-pilot/termux-sanitized-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/novel-oracle-linked-receipt.json
           retention-days: 14
           if-no-files-found: error
