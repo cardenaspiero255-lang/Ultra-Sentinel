@@ -39,6 +39,7 @@ function oracleFor({plan,files}){
 }
 function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false}={}){
  const calls=[],refPath='/repos/'+REPO+'/git/ref/heads/'+BRANCH;
+ const patchPath='/repos/'+REPO+'/git/refs/heads/'+BRANCH;
  let current=stale?'f'.repeat(40):SHA;
  async function fetchImpl(url,options={}){
   const uri=new URL(url),route=uri.pathname,method=options.method||'GET';
@@ -66,7 +67,7 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
    return response(201,{sha:NEW_TREE});
   if(route==='/repos/'+REPO+'/git/commits'&&method==='POST')
    return response(201,{sha:NEW_COMMIT});
-  if(route===refPath&&method==='PATCH'){
+  if(route===patchPath&&method==='PATCH'){
    if(patchFailure)return response(422,{message:'non-fast-forward'});
    current=NEW_COMMIT;
    return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:NEW_COMMIT}});
@@ -107,7 +108,7 @@ test('separately approved commit writes only to existing draft PR branch via ato
  assert.equal(result.mergeAllowed,false);
  const writes=remote.calls.filter(x=>x.method!=='GET');
  assert.equal(writes.filter(x=>x.method==='PATCH').length,1);
- assert.equal(writes.at(-1).route,'/repos/'+REPO+'/git/ref/heads/'+BRANCH);
+ assert.equal(writes.at(-1).route,'/repos/'+REPO+'/git/refs/heads/'+BRANCH);
  assert.deepEqual(writes.at(-1).body,{sha:NEW_COMMIT,force:false});
  assert.equal(writes.some(x=>/pulls\/|\/merge|git\/ref\/heads\/main/.test(x.route)),false);
  assert.equal(writes.filter(x=>x.method==='POST'&&x.route.endsWith('/git/blobs')).length,2);
