@@ -65,7 +65,8 @@ function scanKotlinPolicyBoundaries({expectedCommitSha,files}={}){
   if(/\bLocalGgufPolicy\.validPrompt\s*\(\s*question\s*\)/.test(gate.code)&&
    /\bfun\s+validPrompt\s*\(\s*prompt\s*:\s*String\b/.test(policy.code)&&
    !/\bfun\s+validReadOnlyQuestion\s*\(/.test(policy.code)&&
-   !/\bLocalGgufPolicy\.validReadOnlyQuestion\s*\(/.test(gate.code)){
+   !/\bLocalGgufPolicy\.validReadOnlyQuestion\s*\(/.test(gate.code)&&
+   !/\b(?:reinicia|reiniciar|restablece|restablecer)\b/.test(policy.code)){
    found.push(observation('GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP',
     gate.path,gate.code,gate.expectedBlobSha,'LocalGgufPolicy.validPrompt(question)',
     'medium','A voice-derived question relies on a generic model text check; test operational verbs against a trusted original Kotlin read-only boundary oracle.'));
@@ -80,6 +81,15 @@ function scanKotlinPolicyBoundaries({expectedCommitSha,files}={}){
     file.path,file.code,file.expectedBlobSha,
     'if (nowMillis < began || nowMillis < 0L) return false',
     'low','A preview deadline appears to reject a reversed clock observation without clearing previously pending state; requires Kotlin timeline reproduction.'));
+  }
+  if(/\bclass\s+PreviewTimeGate\b/.test(file.code)&&
+   /\bfun\s+remainingMillis\s*\(/.test(file.code)&&
+   /if\s*\(\s*nowMillis\s*<\s*began\s*\|\|\s*nowMillis\s*<\s*0L\s*\)\s*return\s+0L/.test(file.code)&&
+   /\bfun\s+stop\s*\(/.test(file.code)){
+   found.push(observation('PREVIEW_REMAINING_REVIVAL_AFTER_CLOCK_ROLLBACK',
+    file.path,file.code,file.expectedBlobSha,
+    'if (nowMillis < began || nowMillis < 0L) return 0L',
+    'low','Remaining time can return zero for a reversed-clock sample while retaining prior state; later timestamps might reactivate the session. Requires separate original JVM oracle.'));
   }
  }
  found.sort((a,b)=>a.rule.localeCompare(b.rule)||a.path.localeCompare(b.path));
