@@ -1,8 +1,6 @@
 name: C2 owner full twenty-three historical receipts and causal blockade
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read
@@ -10,7 +8,7 @@ jobs:
   authenticate-development-provenance-without-unblinding:
     if: >-
       github.event.repository.id == 1418338512 &&
-      github.event_name == 'push' &&
+      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
       github.actor == 'cardenaspiero255-lang'
     runs-on: ubuntu-24.04
@@ -88,6 +86,10 @@ jobs:
               echo "C2_ORIGINAL_ZIP_ABSENT_NEW_REPLAY_SEPARATE run=$run"
               continue
             fi
+            if ! jq -e '.total_count>0 and (.artifacts|type=="array")' "$root/artifacts.json" >/dev/null; then
+              echo "::error::HISTORICAL_ORIGINAL_ARTIFACT_UNAVAILABLE key=$key run=$run: pinned original archive is absent; preserve an unverified state, never synthesize evidence"
+              exit 1
+            fi
             jq -e --argjson run "$run" --argjson id "$artifact" \
               --arg name "$name" --arg digest "sha256:$digest" '
               [.artifacts[]|select(.id==$id and .name==$name and
@@ -113,6 +115,10 @@ jobs:
               .repository.id==1418338512
             ' "$root/run.json" >/dev/null
             gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
+            if ! jq -e '.total_count>0 and (.artifacts|type=="array")' "$root/artifacts.json" >/dev/null; then
+              echo "::error::HISTORICAL_DERIVED_ARTIFACT_UNAVAILABLE key=$key run=$run: derived archive absent; independent historical verification blocked"
+              exit 1
+            fi
             jq -e --argjson run "$run" --argjson id "$artifact" \
               --arg name "$name" --arg digest "sha256:$digest" '
               [.artifacts[]|select(.id==$id and .name==$name and
