@@ -26,6 +26,11 @@ const preview=String.raw`class PreviewTimeGate {
   if (nowMillis < began || nowMillis < 0L) return false
   return nowMillis - began < 20000L
  }
+ fun remainingMillis(nowMillis: Long): Long {
+  val began = startedAt ?: return 0L
+  if (nowMillis < began || nowMillis < 0L) return 0L
+  return 20000L - (nowMillis - began)
+ }
  fun stop() { startedAt = null }
 }
 `;
@@ -38,7 +43,9 @@ test('new Kotlin boundary detector surfaces policy mismatch and reversible previ
  const out=scanKotlinPolicyBoundaries(input());
  assert.equal(out.status,'UNVERIFIED_POLICY_BOUNDARY_HYPOTHESES');
  assert.deepEqual(out.findings.map(f=>f.rule).sort(),[
-  'GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP','PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK'
+  'GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP',
+  'PREVIEW_REMAINING_REVIVAL_AFTER_CLOCK_ROLLBACK',
+  'PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK'
  ]);
  assert.ok(out.findings.every(f=>f.status==='HYPOTHESIS_REQUIRES_ORIGINAL_ORACLE'&&!f.autofix));
  assert.equal(out.originalFunctionalOracleVerified,false);
@@ -70,4 +77,21 @@ test('comments alone never authorize a security finding',()=>{
  const fake=file('OfflineVoiceQuestionGate.kt','// LocalGgufPolicy.validPrompt(question)\n'.repeat(3));
  const out=scanKotlinPolicyBoundaries({expectedCommitSha:C,files:[fake,input().files[1]]});
  assert.deepEqual(out.findings,[]);
+});
+
+test('partial preview fix still leaves remainingMillis rollback reactivation risk',()=>{
+ const x=input();
+ x.files[2]=file('HandsFreePreviewPolicy.kt',preview.replace(
+  'if (nowMillis < began || nowMillis < 0L) return false',
+  'if (nowMillis < began || nowMillis < 0L) { stop(); return false }'));
+ const out=scanKotlinPolicyBoundaries(x);
+ assert.equal(out.findings.some(f=>f.rule==='PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK'),false);
+ assert.equal(out.findings.some(f=>f.rule==='PREVIEW_REMAINING_REVIVAL_AFTER_CLOCK_ROLLBACK'),true);
+});
+
+test('existing generic prompt protection is not mislabeled as an unguarded voice policy',()=>{
+ const x=input();
+ x.files[1]=file('LocalGgufPolicy.kt',policy.replace('ejecuta|borra','reinicia|ejecuta|borra'));
+ const out=scanKotlinPolicyBoundaries(x);
+ assert.equal(out.findings.some(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP'),false);
 });
