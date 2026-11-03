@@ -129,7 +129,7 @@ test('all plan, scope, content and owner-signature manipulations fail before Git
   s=>s.plan.operation='MERGE_TO_MAIN'
  ];
  for(const mutate of attacks){
-  await assert.rejects(()=>execute({mutate,apply:true}),/DENIED|INVALID|MISMATCH|STALE|SIGNATURE|SCOPE|HASH|BLOB|PLAN/);
+  await assert.rejects(()=>execute({mutate,apply:true}),/DENIED|INVALID|MISMATCH|STALE|SIGNATURE|SCOPE|HASH|BLOB|PLAN|EXPIRED/);
  }
  await assert.rejects(()=>execute({apply:true,alternateKey:crypto.generateKeyPairSync('ed25519').publicKey}),/SIGNATURE|DENIED/);
 });
