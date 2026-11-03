@@ -29,6 +29,9 @@ on:
       - tests/unit/jarvis-crossfile-policy-proof.test.cjs
       - tests/oracles/jarvis-gguf-readonly-original.kt
       - scripts/jarvis-original-crossfile-readonly.sh
+      - packages/recovery/two-source-kotlin-sandbox.cjs
+      - tests/unit/two-source-kotlin-sandbox.test.cjs
+      - scripts/verify-jarvis-crossfile-sandbox.cjs
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
@@ -203,6 +206,21 @@ jobs:
             .mergeAllowed==false and
             .productionReleaseAllowed==false
           ' "$root/crossfile-jvm-receipt.json"
+      - name: Apply coordinated Kotlin candidate only to disposable Git Judge and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          node scripts/verify-jarvis-crossfile-sandbox.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-two-source-kotlin-sandbox/v1" and
+            .status=="TWO_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED" and
+            .checkedFiles==2 and .exactTreeRollbackVerified==true and
+            .originalOracleVerifiedByThisFunction==false and
+            .ownerAuthorizationVerified==false and
+            .remoteWrites==false and .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/crossfile-sandbox-receipt.json"
       - name: Archive sanitized receipt only
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -216,5 +234,6 @@ jobs:
             ${{ runner.temp }}/jarvis-termux-original-pilot/dual-policy-factorial-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-advisory-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-jvm-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-sandbox-receipt.json
           retention-days: 14
           if-no-files-found: error
