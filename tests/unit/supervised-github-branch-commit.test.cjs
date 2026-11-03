@@ -37,22 +37,23 @@ function oracleFor({plan,files}){
   originalJVMGreen:true,benignControlsPassed:true,isolatedExecution:true,
   remoteWrites:false,mergeAllowed:false};
 }
-function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false}={}){
+function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false,
+  prBecameReady=false,mainMoved=false}={}){
  const calls=[],refPath='/repos/'+REPO+'/git/ref/heads/'+BRANCH;
  const patchPath='/repos/'+REPO+'/git/refs/heads/'+BRANCH;
- let current=stale?'f'.repeat(40):SHA;
+ let current=stale?'f'.repeat(40):SHA,prReads=0,mainReads=0;
  async function fetchImpl(url,options={}){
   const uri=new URL(url),route=uri.pathname,method=options.method||'GET';
   calls.push({route,method,body:options.body&&JSON.parse(options.body)});
   if(uri.origin!=='https://api.github.com')throw Error('BAD_ORIGIN');
   if(route==='/user'&&method==='GET')return response(200,{login:OWNER,id:322222186});
   if(route==='/repos/'+REPO+'/pulls/205')return response(200,{
-   number:205,state:'open',draft:true,merged:false,
+   number:205,state:'open',draft:!(prBecameReady&&prReads++>0),merged:false,
    user:{login:OWNER,id:322222186},
    head:{ref:BRANCH,sha:SHA,repo:{full_name:REPO}},
    base:{ref:'main',sha:BASE,repo:{full_name:REPO}}});
   if(route==='/repos/'+REPO+'/git/ref/heads/main')
-   return response(200,{ref:'refs/heads/main',object:{type:'commit',sha:staleMain?'f'.repeat(40):BASE}});
+   return response(200,{ref:'refs/heads/main',object:{type:'commit',sha:(staleMain||(mainMoved&&mainReads++>0))?'f'.repeat(40):BASE}});
   if(route===refPath&&method==='GET')
    return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:current}});
   if(route==='/repos/'+REPO+'/git/commits/'+SHA&&method==='GET')
@@ -157,4 +158,13 @@ test('persistent owner nonce is single-use across independent successful attempt
   assert.equal(x.result.remoteWrites,true);
   await assert.rejects(()=>execute({apply:true,store}),/NONCE_REPLAY|DENIED/);
  }finally{fs.rmSync(store,{recursive:true,force:true});}
+});
+
+test('new GitHub owner evidence is required again if PR stops being draft during verification',async()=>{
+ await assert.rejects(()=>execute({apply:true,mockOptions:{prBecameReady:true}}),
+  /UNTRUSTED_OR_STALE_DRAFT_PR/);
+});
+test('do not publish candidate when protected main advances after trusted original JVM verification',async()=>{
+ await assert.rejects(()=>execute({apply:true,mockOptions:{mainMoved:true}}),
+  /STALE_MAIN_HEAD/);
 });
