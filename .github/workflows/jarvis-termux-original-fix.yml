@@ -23,6 +23,12 @@ on:
       - tests/oracles/jarvis-two-policy-factorial.kt
       - scripts/jarvis-dual-policy-factorial-original.sh
       - docs/quality/KOTLIN_CANDIDATE_ORACLE_FACTORIAL_2026-10-29.md
+      - packages/investigation/kotlin-policy-boundaries.cjs
+      - packages/investigation/jarvis-crossfile-policy-proof.cjs
+      - tests/unit/kotlin-policy-boundaries.test.cjs
+      - tests/unit/jarvis-crossfile-policy-proof.test.cjs
+      - tests/oracles/jarvis-gguf-readonly-original.kt
+      - scripts/jarvis-original-crossfile-readonly.sh
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
@@ -175,6 +181,28 @@ jobs:
             .androidDeviceTested==false and
             .remoteWrites==false and .mergeAllowed==false
           ' "$root/dual-policy-factorial-receipt.json"
+      - name: Execute original Kotlin Gate to GGUF cross-file repair and independent JVM oracle
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JARVIS_CROSSFILE_ISOLATED: "1"
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-original-crossfile-readonly.sh
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          bash scripts/jarvis-original-crossfile-readonly.sh "$root"
+          jq -e '
+            .schema=="ultra-sentinel-jarvis-crossfile-jvm-matrix/v1" and
+            .status=="JOINT_PATCH_API_DEPENDENCY_REPRODUCED" and
+            .exactFourScenariosChecked==true and
+            (.scenarios | length)==4 and
+            .originalFunctionalOracleProvenByThisFunction==false and
+            .rootCauseGenerallyCertified==false and
+            .androidDeviceObserved==false and
+            .remoteWrites==false and
+            .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/crossfile-jvm-receipt.json"
       - name: Archive sanitized receipt only
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -186,5 +214,7 @@ jobs:
             ${{ runner.temp }}/jarvis-termux-original-pilot/voice-clock-oracle-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/voice-intake-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/dual-policy-factorial-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-advisory-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-jvm-receipt.json
           retention-days: 14
           if-no-files-found: error
