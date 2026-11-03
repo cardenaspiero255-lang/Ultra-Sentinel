@@ -78,11 +78,11 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
 }
 async function execute({mutate=()=>{},apply=false,now=NOW,mockOptions={},oracle=oracleFor,
   store,alternateKey}={}){
- const s=sample();mutate(s);
+ const s=sample(),signedGrant=sig(s.grant);mutate(s);
  const remote=fakeGitHub({plan:s.plan,files:s.files,...mockOptions});
  const dir=store||fs.mkdtempSync(path.join(os.tmpdir(),'us-owner-pr-'));
  const options={plan:s.plan,files:s.files,ownerGrant:s.grant,
-  ownerSignature:sig(s.grant),trustedOwnerPublicKey:alternateKey||publicKey,
+  ownerSignature:signedGrant,trustedOwnerPublicKey:alternateKey||publicKey,
   token:'gh-authenticated-owner-token-for-tests',now,
   fetchImpl:remote.fetchImpl,verifyOriginalJVM:async()=>oracle(s),
   nonceStorePath:path.join(dir,'spent-nonces'),apply};
