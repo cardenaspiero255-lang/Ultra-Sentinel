@@ -34,6 +34,7 @@ on:
       - scripts/verify-jarvis-crossfile-sandbox.cjs
       - scripts/jarvis-preview-clock-original-red-green.sh
       - tests/oracles/jarvis-preview-clock-original.kt
+      - docs/quality/JARVIS_ORIGINAL_KOTLIN_CROSSFILE_POLICY_2026-11-03.md
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
