@@ -17,7 +17,8 @@ The real implementation calls `LocalGgufPolicy.validPrompt(question)` from `Offl
 ## Novel detector families, outside frozen Core
 
 1. `GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP` — inter-file semantic handoff where a voice entry point uses generic `validPrompt` rather than a voice-specific read-only operation gate. Medium-confidence hypothesis only.
-2. `PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK` — `PreviewTimeGate` appears to reject one reversed-clock observation without revoking its stored start time. Low-confidence hypothesis only. No original JVM oracle for this second finding is claimed by this PR.
+2. `PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK` — `PreviewTimeGate.isActiveAt` can reject one reversed-clock observation without revoking stored state. Low-confidence static hypothesis.
+3. `PREVIEW_REMAINING_REVIVAL_AFTER_CLOCK_ROLLBACK` — `PreviewTimeGate.remainingMillis` independently returns zero for a reversed-clock sample without revoking stored state. Low-confidence static hypothesis.
 
 The detector uses bounded source bytes and exact local Git blob consistency, no execution, no changes to frozen Core/C2 and no provenance self-attestation. Semantic conclusions require original Kotlin oracles, not static matching alone.
 
@@ -40,6 +41,16 @@ It executes 2² Kotlin compiler / isolated original-JVM combinations:
 | Yes | Yes | JVM GREEN, benign + STOP controls pass | **Both selected patches function together** |
 
 This demonstrates a **real two-file API/behavior integration for the selected repair strategy**. It does **not** prove no alternative one-file repair exists, that the issue is exploitable, or that a general causal analyzer can solve unseen defects automatically. A compiler failure is not a functional oracle result; these results must remain distinguished.
+
+## Independent original PreviewTimeGate Kotlin oracle
+
+The new `jarvis-preview-clock-original-red-green.sh` executes the **unchanged original** `HandsFreePreviewPolicy.kt` on a restricted JVM, with a separately authored original-source oracle. It contrasts:
+
+- **Original RED:** `isActiveAt` can re-activate after a reversed-clock observation.
+- **Partial repair RED:** repairing `isActiveAt` alone leaves `remainingMillis` capable of restoring the pending state.
+- **Both corrected GREEN:** each reversed-clock observation clears the preview, while normal deadlines and STOP still work.
+
+The test uses deliberately injected monotonic-clock anomalies. No physical Android time rollback is implied and no source is changed in JARVIS. Original and candidate Git blobs, compiler artifacts, JVM logs and verdicts are independently hash-bound by the CI harness.
 
 ## Supervised local application drill
 
