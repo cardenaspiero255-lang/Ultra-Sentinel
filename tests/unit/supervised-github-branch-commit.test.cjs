@@ -30,6 +30,7 @@ function sample(){
  return {files,plan,grant};
 }
 function oracleFor({plan,files}){
+ files=[...files].sort((a,b)=>a.path.localeCompare(b.path));
  return {status:'TRUSTED_ORIGINAL_KOTLIN_JVM_RED_GREEN',baselineHeadSha:plan.expectedHeadSha,
   planDigest:digestBranchCandidate(plan,files),sourceBlobs:files.map(f=>f.beforeBlobSha),
   candidateBlobs:files.map(f=>f.afterBlobSha),genuineOriginalRed:true,
@@ -55,7 +56,7 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
    return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:current}});
   if(route==='/repos/'+REPO+'/git/commits/'+SHA&&method==='GET')
    return response(200,{sha:SHA,tree:{sha:TREE}});
-  if(route==='/repos/'+REPO+'/git/trees/'+TREE+'?recursive=1'&&method==='GET')
+  if(route==='/repos/'+REPO+'/git/trees/'+TREE&&uri.search==='?recursive=1'&&method==='GET')
    return response(200,{sha:TREE,truncated,tree:files.map((f,i)=>({
     path:f.path,type:'blob',mode:symlink&&i===0?'120000':'100644',sha:f.beforeBlobSha
    }))});
