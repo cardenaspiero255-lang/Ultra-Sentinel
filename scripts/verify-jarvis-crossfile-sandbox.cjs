@@ -19,8 +19,11 @@ function read(root,name,max){
 }
 function main(root){
  if(typeof root!=='string'||!p.isAbsolute(root))deny('ROOT_ARGUMENT');
- const real=fs.realpathSync(root),temp=fs.realpathSync(os.tmpdir());
- if(!real.startsWith(temp+p.sep)||!fs.statSync(real).isDirectory())deny('ROOT_LOCATION');
+ const real=fs.realpathSync(root);
+ const allowed=[os.tmpdir(),process.env.RUNNER_TEMP].filter(Boolean)
+  .map(dir=>fs.realpathSync(dir));
+ if(!fs.statSync(real).isDirectory()||
+  !allowed.some(dir=>real.startsWith(dir+p.sep)))deny('ROOT_LOCATION');
  const oracle=JSON.parse(read(real,'crossfile-jvm-receipt.json',20000));
  const advisory=JSON.parse(read(real,'crossfile-advisory-receipt.json',10000));
  if(oracle.status!=='JOINT_PATCH_API_DEPENDENCY_REPRODUCED'||
