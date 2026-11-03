@@ -44,9 +44,10 @@ const files=rows.map(([alias,name,blob])=>{
   source,expectedBlobSha:blob};
 });
 const risk=scanKotlinPolicyBoundaries({expectedCommitSha:commit,files});
-if(risk.status!=='UNVERIFIED_POLICY_BOUNDARY_HYPOTHESES'||risk.findings.length!==2||
+if(risk.status!=='UNVERIFIED_POLICY_BOUNDARY_HYPOTHESES'||risk.findings.length!==3||
  !risk.findings.some(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP')||
  !risk.findings.some(f=>f.rule==='PREVIEW_TIME_REVIVAL_AFTER_CLOCK_ROLLBACK')||
+ !risk.findings.some(f=>f.rule==='PREVIEW_REMAINING_REVIVAL_AFTER_CLOCK_ROLLBACK')||
  risk.originalFunctionalOracleVerified!==false||risk.remoteWrites!==false)
  throw Error('BOUNDARY_SCAN_NOT_OBSERVED');
 const [gate,policy]=files,oldCall='!LocalGgufPolicy.validPrompt(question)';
