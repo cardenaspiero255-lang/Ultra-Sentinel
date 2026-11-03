@@ -142,16 +142,19 @@ async function runSupervisedGitHubBranchCommit({
    deny('GITHUB_API_INVALID_RESPONSE');
   return value;
  }
- const pr=await api('GET',repoApi+'/pulls/'+plan.prNumber);
- if(pr.state!=='open'||pr.draft!==true||pr.merged!==false||
-  pr.number!==plan.prNumber||pr.user?.login!==OWNER||
-  pr.user?.id!==OWNER_ID||pr.head?.repo?.full_name!==REPO||
-  pr.head?.ref!==plan.branch||pr.head?.sha!==plan.expectedHeadSha||
-  pr.base?.repo?.full_name!==REPO||pr.base?.ref!=='main'||
-  pr.base?.sha!==plan.expectedMainSha)deny('UNTRUSTED_OR_STALE_DRAFT_PR');
- const main=await api('GET',repoApi+'/git/ref/heads/main');
- if(main.ref!=='refs/heads/main'||main.object?.type!=='commit'||
-  main.object.sha!==plan.expectedMainSha)deny('STALE_MAIN_HEAD');
+ async function verifyDraftAndMain(){
+  const pr=await api('GET',repoApi+'/pulls/'+plan.prNumber);
+  if(pr.state!=='open'||pr.draft!==true||pr.merged!==false||
+   pr.number!==plan.prNumber||pr.user?.login!==OWNER||
+   pr.user?.id!==OWNER_ID||pr.head?.repo?.full_name!==REPO||
+   pr.head?.ref!==plan.branch||pr.head?.sha!==plan.expectedHeadSha||
+   pr.base?.repo?.full_name!==REPO||pr.base?.ref!=='main'||
+   pr.base?.sha!==plan.expectedMainSha)deny('UNTRUSTED_OR_STALE_DRAFT_PR');
+  const main=await api('GET',repoApi+'/git/ref/heads/main');
+  if(main.ref!=='refs/heads/main'||main.object?.type!=='commit'||
+   main.object.sha!==plan.expectedMainSha)deny('STALE_MAIN_HEAD');
+ }
+ await verifyDraftAndMain();
  const refPath=repoApi+'/git/ref/heads/'+plan.branch;
  const head=await api('GET',refPath);
  if(head.ref!=='refs/heads/'+plan.branch||head.object?.type!=='commit'||
@@ -198,6 +201,7 @@ async function runSupervisedGitHubBranchCommit({
  // All approval and verification gates preceded the first GitHub write.
  // Consume persistently before creating any object, including unattached
  // blobs, to prevent replay across processes/workflow attempts.
+ await verifyDraftAndMain();
  const store=new PersistentNonceStore(nonceStorePath);
  if(store.consume(ownerGrant.nonce)!==true)deny('NONCE_REPLAY_DENIED');
  const objects=[];
@@ -219,6 +223,7 @@ async function runSupervisedGitHubBranchCommit({
   deny('REMOTE_CANDIDATE_COMMIT_INVALID');
  // The only ref write in this module. GitHub rejects non-fast-forwards.
  // Never force; never write to main, delete branches, or call merge.
+ await verifyDraftAndMain();
  const rechecked=await api('GET',refPath);
  if(rechecked.ref!==head.ref||rechecked.object?.sha!==plan.expectedHeadSha)
   deny('STALE_REMOTE_BRANCH_BEFORE_REF_UPDATE');
