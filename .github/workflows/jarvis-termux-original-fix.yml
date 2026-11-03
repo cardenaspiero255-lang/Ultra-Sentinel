@@ -32,6 +32,8 @@ on:
       - packages/recovery/two-source-kotlin-sandbox.cjs
       - tests/unit/two-source-kotlin-sandbox.test.cjs
       - scripts/verify-jarvis-crossfile-sandbox.cjs
+      - scripts/jarvis-preview-clock-original-red-green.sh
+      - tests/oracles/jarvis-preview-clock-original.kt
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
@@ -221,6 +223,23 @@ jobs:
             .remoteWrites==false and .mergeAllowed==false and
             .productionReleaseAllowed==false
           ' "$root/crossfile-sandbox-receipt.json"
+      - name: Reproduce independently pinned PreviewTimeGate double clock rollback
+        shell: bash
+        env:
+          JARVIS_CROSSFILE_ISOLATED: "1"
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-preview-clock-original-red-green.sh
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          bash scripts/jarvis-preview-clock-original-red-green.sh "$root"
+          jq -e '
+            .schema=="ultra-sentinel-original-preview-clock-jvm/v1" and
+            .originalRed==true and .unsafeControlRejected==true and
+            .candidateGreen==true and
+            .physicalAndroidClockRollbackProven==false and
+            .remoteWrites==false and .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/preview-clock-jvm-receipt.json"
       - name: Archive sanitized receipt only
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -235,5 +254,7 @@ jobs:
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-advisory-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-jvm-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-sandbox-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/preview-static-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/preview-clock-jvm-receipt.json
           retention-days: 14
           if-no-files-found: error
