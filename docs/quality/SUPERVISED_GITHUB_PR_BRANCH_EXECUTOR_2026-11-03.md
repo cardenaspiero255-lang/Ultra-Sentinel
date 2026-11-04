@@ -32,6 +32,17 @@ On a separately approved `apply=true`, the sole writer creates **unattached** Gi
 
 If an API call fails after a ref update, the actual remote state may be uncertain. It must **not** be described as safely rolled back without independent inspection. The local exact rollback is a pre-write exercise; a **real remote rollback** would need its own owner authorization and evidence.
 
+## Security review P1/P2 regression closure — 2026-11-04
+
+The latest supervised-executor security review identified two race conditions in the first candidate, both reproduced as failing tests before modification:
+
+- **P1, signed nonce reference:** when a caller mutated `ownerGrant.nonce` while the asynchronous GitHub identity lookup was running, the old executor consumed the caller's replacement nonce instead of the nonce included in the Ed25519-signed plan. The revised executor validates and freezes a canonical copy of the signed grant **before its first `await`**, and independently freezes the plan and both Kotlin file records. It consumes only the verified nonce snapshot.
+- **P2, stale expiration:** a grant could expire while the independently executed JVM oracle or GitHub requests were running, but the old executor checked expiry only at invocation. The revised executor checks the **real system clock**, with monotonic-per-invocation validation, before consuming a nonce, before creating every remote Git object and immediately before attempting the non-forced Git ref update. The clock is **not a caller-supplied callback**. Time simulation exists only in isolated unit tests.
+
+The RED regression suite checks a mutated signed grant and expiration (a) during the original Kotlin/JVM callback and (b) after creating Git objects but before publishing the branch ref. The GREEN workflow must also execute the same original Kotlin JVM RED→GREEN, benign controls, independent Judge and local Git rollback. An expired grant can leave detached Git objects if the failure happens partway through GitHub requests; it must **never** be treated as a successful ref write or proof of remote rollback.
+
+**None of these changes authorizes a real remote write, publication to protected `main`, or bypass of the owner's exact-SHA PR fusion authorization.** The owner must separately authorize the current final HEAD after security review and CI.
+
 ## Security and rollout status
 
 - Unit tests exercise a simulated GitHub service and real disposable local Git Judge/rollback, invalid signing keys and grants, stale main/ref/tree, symlinks and truncated tree, bad oracle, nonce replay, non-fast-forward refusal, and PR/main races. **A passing mock of GitHub is not a real GitHub write.**
