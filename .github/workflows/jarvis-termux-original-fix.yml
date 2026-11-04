@@ -12,6 +12,17 @@ on:
       - scripts/verify-jarvis-novel-hypotheses.cjs
       - tests/unit/pinned-novel-oracle-link.test.cjs
       - tests/fixtures/pinned-jarvis-termux-original.kt
+      - packages/investigation/novel-kotlin-candidate-intake.cjs
+      - tests/unit/novel-kotlin-candidate-intake.test.cjs
+      - tests/oracles/jarvis-voice-clock-original.kt
+      - scripts/jarvis-voice-clock-original-red-green.sh
+      - packages/family-hunter/factorial-oracle-evidence.cjs
+      - packages/family-hunter/original-oracle-vector-factorial.cjs
+      - tests/unit/factorial-oracle-evidence.test.cjs
+      - tests/unit/original-oracle-vector-factorial.test.cjs
+      - tests/oracles/jarvis-two-policy-factorial.kt
+      - scripts/jarvis-dual-policy-factorial-original.sh
+      - docs/quality/KOTLIN_CANDIDATE_ORACLE_FACTORIAL_2026-10-29.md
       - .github/workflows/jarvis-termux-original-fix.yml
   push:
     branches: [main]
@@ -123,6 +134,47 @@ jobs:
             .mergeAllowed==false and
             .productionReleaseAllowed==false
           ' "$root/novel-oracle-linked-receipt.json"
+      - name: Verify second original Kotlin family using independent voice clock oracle
+        shell: bash
+        env:
+          JARVIS_TERMUX_ISOLATED: "1"
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-voice-clock-original-red-green.sh
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          bash scripts/jarvis-voice-clock-original-red-green.sh "$root"
+          jq -e '
+            .schema=="ultra-sentinel-jarvis-original-voice-clock-oracle/v1" and
+            .sourceRepo=="cardenaspiero255-lang/JARVIS" and
+            .originalGitBlob=="606d1184e7d57e49ef15b983a8646706abadf3da" and
+            .riskFamily=="CLOCK_ROLLBACK_WITHOUT_INVALIDATION" and
+            .candidateFromGenericIntake==true and
+            .originalRed==true and .candidateGreen==true and
+            .unsafeControlRejected==true and
+            .originalAndroidDeviceVerified==false and
+            .physicalClockRollbackProven==false and
+            .automaticRootCauseDiscoveryProven==false and
+            .remoteWrites==false and .mergeAllowed==false
+          ' "$root/voice-clock-oracle-receipt.json"
+      - name: Verify four real Kotlin combinations and separate causal evidence
+        shell: bash
+        env:
+          JARVIS_TERMUX_ISOLATED: "1"
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-dual-policy-factorial-original.sh
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          bash scripts/jarvis-dual-policy-factorial-original.sh "$root"
+          jq -e '
+            .schema=="ultra-sentinel-pinned-dual-policy-original-jvm-factorial/v1" and
+            .status=="TWO_ORIGINAL_KOTLIN_ORACLES_INDEPENDENT_NOT_CAUSAL" and
+            (.artifacts | length)==4 and
+            .report.status=="INDEPENDENT_ORACLE_EFFECTS_OBSERVED" and
+            .report.causalityVerified==false and
+            .report.jvmReceiptsAuthenticatedByThisFunction==false and
+            .androidDeviceTested==false and
+            .remoteWrites==false and .mergeAllowed==false
+          ' "$root/dual-policy-factorial-receipt.json"
       - name: Archive sanitized receipt only
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -131,5 +183,8 @@ jobs:
           path: |
             ${{ runner.temp }}/jarvis-termux-original-pilot/termux-sanitized-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/novel-oracle-linked-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/voice-clock-oracle-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/voice-intake-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/dual-policy-factorial-receipt.json
           retention-days: 14
           if-no-files-found: error
