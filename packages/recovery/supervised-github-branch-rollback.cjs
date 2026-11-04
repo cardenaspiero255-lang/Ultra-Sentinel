@@ -117,8 +117,16 @@ function verifyExactRepairDelta(original,repaired,files){
     after.mode!=='100644'||before.type!=='blob'||after.type!=='blob')
     deny('REMOTE_ROLLBACK_SOURCE_BLOB_MISMATCH');
    changes++;
-  }else if(!before||!after||before.sha!==after.sha||
-   before.mode!==after.mode||before.type!==after.type)
+  }else if(!before||!after||before.mode!==after.mode||
+   before.type!==after.type)
+   deny('UNEXPECTED_REMOTE_REPAIR_TREE_DELTA');
+  else if(before.type==='tree'){
+   // Git's recursive tree listing includes parent directory tree SHA values.
+   // Those necessarily change when a nested Kotlin blob changes, even when
+   // the only actual file edits are the two signed leaves.
+   if(before.sha!==after.sha&&!files.some(f=>f.path.startsWith(path+'/')))
+    deny('UNEXPECTED_REMOTE_REPAIR_TREE_DELTA');
+  }else if(before.sha!==after.sha)
    deny('UNEXPECTED_REMOTE_REPAIR_TREE_DELTA');
  }
  if(changes!==2)deny('INVALID_REMOTE_REPAIR_TREE_DELTA');
