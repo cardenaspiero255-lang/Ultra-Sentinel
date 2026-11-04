@@ -113,12 +113,12 @@ function exactStrings(actual,expected){
 async function runSupervisedGitHubBranchCommit({
  plan,files,ownerGrant,ownerSignature,trustedOwnerPublicKey,token,
  nonceStorePath,verifyOriginalJVM,fetchImpl=globalThis.fetch,
- now=Date.now(),readNow=Date.now,apply=false
+ now=Date.now(),apply=false
 }={}){
  if(!validPlan(plan)||!Array.isArray(files)||typeof token!=='string'||
   token.length<16||typeof fetchImpl!=='function'||
   typeof verifyOriginalJVM!=='function'||typeof nonceStorePath!=='string'||
-  typeof readNow!=='function'||!Number.isSafeInteger(now)||
+  !Number.isSafeInteger(now)||
   apply!==false&&apply!==true)deny('INVALID_SUPERVISED_EXECUTOR_INPUT');
  // Snapshot every signed/write-relevant input before the first asynchronous
  // boundary. Later changes by the caller must not alter nonce consumption,
@@ -130,7 +130,9 @@ async function runSupervisedGitHubBranchCommit({
  let lastTime=now;
  function requireLiveGrant(){
   let current;
-  try{current=readNow();}catch{deny('OWNER_TRUSTED_CLOCK_UNAVAILABLE');}
+  // The system wall clock is part of the trusted execution environment.
+  // Never accept a clock callback or timestamp from PR files or grants.
+  try{current=Date.now();}catch{deny('OWNER_TRUSTED_CLOCK_UNAVAILABLE');}
   if(!Number.isSafeInteger(current)||current<lastTime)
    deny('OWNER_TRUSTED_CLOCK_INVALID');
   lastTime=current;
