@@ -37,6 +37,7 @@ function signature(grant,key=privateKey,domain='Ultra-Sentinel:github-pr-branch-
 }
 function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=false,
  changedMode=false,wrongParent=false,patchFailure=false,patchResponseLost=false,
+ folderTrees=false,unrelatedTreeChange=false,
  onRequest}={}){
  const calls=[],root='/repos/'+REPO,refPath=root+'/git/ref/heads/'+BRANCH;
  const patchPath=root+'/git/refs/heads/'+BRANCH;
@@ -46,6 +47,15 @@ function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=
  const repaired=[unchanged,...plan.files.map((f,i)=>({path:f.path,mode:changedMode&&i===0?'100755':'100644',
   type:'blob',sha:f.afterBlobSha}))];
  if(extraChange)repaired.push({path:'injected.kt',mode:'100644',type:'blob',sha:'2'.repeat(40)});
+ if(folderTrees){
+  const parent='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core';
+  original.push({path:parent,type:'tree',mode:'040000',sha:'3'.repeat(40)});
+  repaired.push({path:parent,type:'tree',mode:'040000',sha:'4'.repeat(40)});
+ }
+ if(unrelatedTreeChange){
+  original.push({path:'docs',type:'tree',mode:'040000',sha:'5'.repeat(40)});
+  repaired.push({path:'docs',type:'tree',mode:'040000',sha:'6'.repeat(40)});
+ }
  async function fetchImpl(url,opts={}){
   const u=new URL(url),method=opts.method||'GET',route=u.pathname;
   calls.push({method,route,body:opts.body?JSON.parse(opts.body):undefined});
@@ -171,4 +181,15 @@ test('expired owner grant after detached restore commit vetoes ref publication',
   /OWNER_GRANT_EXPIRED/);
  assert.equal(remote.calls.filter(c=>c.method==='POST').length,1);
  assert.equal(remote.calls.filter(c=>c.method==='PATCH').length,0);
+});
+
+test('Git recursive tree hashes may change for ancestors of the two signed Kotlin blobs',async()=>{
+ const {result}=await execute({apply:true,fake:{folderTrees:true}});
+ assert.equal(result.status,'OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED');
+});
+test('unrelated directory tree mutations still veto rollback',async()=>{
+ let remote;
+ await assert.rejects(()=>execute({apply:true,fake:{unrelatedTreeChange:true},
+  inspect:r=>{remote=r;}}),/UNEXPECTED_REMOTE_REPAIR_TREE_DELTA/);
+ assert.ok(remote.calls.every(x=>x.method==='GET'));
 });
