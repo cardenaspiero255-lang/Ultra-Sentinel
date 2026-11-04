@@ -255,6 +255,21 @@ async function runSupervisedGitHubBranchRollback({
   restoredCommit.parents.length!==1||
   restoredCommit.parents[0]?.sha!==plan.repairHeadSha)
   deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
+ // A ref update is not proof that the PR stayed unmerged. Recheck the live
+ // PR and protected base after publication before claiming restoration.
+ const finalPr=await api('GET',apiRoot+'/pulls/'+plan.prNumber);
+ const finalMain=await api('GET',apiRoot+'/git/ref/heads/main');
+ if(finalPr.number!==plan.prNumber||finalPr.state!=='open'||
+  finalPr.draft!==true||finalPr.merged!==false||
+  finalPr.head?.repo?.full_name!==REPO||
+  finalPr.head?.ref!==plan.branch||
+  finalPr.head?.sha!==restored.sha||
+  finalPr.base?.ref!=='main'||finalPr.base?.repo?.full_name!==REPO||
+  finalPr.base?.sha!==plan.expectedMainSha||
+  finalMain.ref!=='refs/heads/main'||
+  finalMain.object?.type!=='commit'||
+  finalMain.object.sha!==plan.expectedMainSha)
+  deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
  return Object.freeze({...shared,status:'OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED',
   commitSha:restored.sha,remoteWrites:true,ownerNonceConsumed:true,
   limitation:'The original Git tree is restored by a new commit to the signed draft PR branch; history is not rewritten. Separate CI, PR review and release checks remain mandatory.'});
