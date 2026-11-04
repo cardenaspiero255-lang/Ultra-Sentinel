@@ -85,3 +85,29 @@ test('nonce storage refuses a readable parent directory',()=>{
   assert.throws(()=>new PersistentNonceStore(path.join(exposed,'ledger')),/NONCE_DIRECTORY_NOT_PRIVATE/);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
+
+test('RED: interrupted nonce ledger write must fail closed for replay and new grants',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-torn-'));
+ try{
+  const filename=path.join(dir,'ledger'),store=new PersistentNonceStore(filename);
+  assert.equal(store.consume(base.nonce),true);
+  const original=fs.readFileSync(filename,'utf8');
+  assert.match(original,/^[a-f0-9]{64}\\n$/);
+  const torn=original.slice(0,-3);
+  fs.writeFileSync(filename,torn,{mode:0o600});
+  assert.throws(()=>new PersistentNonceStore(filename).consume(base.nonce),/NONCE_STORE_CORRUPTED/);
+  assert.throws(()=>new PersistentNonceStore(filename).consume('a-second-owner-grant-12345'),/NONCE_STORE_CORRUPTED/);
+  assert.equal(fs.readFileSync(filename,'utf8'),torn,'reject without modifying the damaged ledger');
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('RED: malformed or ambiguous nonce ledger contents may not be accepted',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-invalid-'));
+ try{
+  const filename=path.join(dir,'ledger'),store=new PersistentNonceStore(filename);
+  for(const invalid of ['not-a-hash\\n','a'.repeat(64)+'\\n\\n','a'.repeat(64)+'\\r\\n']){
+   fs.writeFileSync(filename,invalid,{mode:0o600});
+   assert.throws(()=>store.consume('new-owner-nonce-1234567890'),/NONCE_STORE_CORRUPTED/);
+   assert.equal(fs.readFileSync(filename,'utf8'),invalid);
+  }
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
