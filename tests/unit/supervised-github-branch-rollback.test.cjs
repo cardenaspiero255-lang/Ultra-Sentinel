@@ -37,7 +37,7 @@ function signature(grant,key=privateKey,domain='Ultra-Sentinel:github-pr-branch-
 }
 function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=false,
  changedMode=false,wrongParent=false,patchFailure=false,patchResponseLost=false,
- folderTrees=false,unrelatedTreeChange=false,
+ folderTrees=false,unrelatedTreeChange=false,prMergedAfterPatch=false,mainMovedAfterPatch=false,
  onRequest}={}){
  const calls=[],root='/repos/'+REPO,refPath=root+'/git/ref/heads/'+BRANCH;
  const patchPath=root+'/git/refs/heads/'+BRANCH;
@@ -63,12 +63,15 @@ function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=
   if(u.origin!=='https://api.github.com')throw Error('BAD_ORIGIN');
   if(route==='/user'&&method==='GET')return response(200,{login:OWNER,id:322222186});
   if(route===root+'/pulls/205'&&method==='GET')return response(200,{
-   number:205,state:'open',draft:!(prReady&&prReads++>=0),merged:false,
+   number:205,state:prMergedAfterPatch&&current===RESTORE?'closed':'open',
+   draft:!(prReady&&prReads++>=0)&&!(prMergedAfterPatch&&current===RESTORE),
+   merged:prMergedAfterPatch&&current===RESTORE,
    user:{login:OWNER,id:322222186},
    head:{repo:{full_name:REPO},ref:BRANCH,sha:current},
    base:{repo:{full_name:REPO},ref:'main',sha:BASE}});
   if(route===root+'/git/ref/heads/main'&&method==='GET')return response(200,{
-   ref:'refs/heads/main',object:{type:'commit',sha:staleMain?'8'.repeat(40):BASE}});
+   ref:'refs/heads/main',object:{type:'commit',
+    sha:(staleMain||(mainMovedAfterPatch&&current===RESTORE))?'8'.repeat(40):BASE}});
   if(route===refPath&&method==='GET')return response(200,{
    ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:current}});
   if(route===root+'/git/commits/'+REPAIR&&method==='GET')return response(200,{
@@ -192,4 +195,13 @@ test('unrelated directory tree mutations still veto rollback',async()=>{
  await assert.rejects(()=>execute({apply:true,fake:{unrelatedTreeChange:true},
   inspect:r=>{remote=r;}}),/UNEXPECTED_REMOTE_REPAIR_TREE_DELTA/);
  assert.ok(remote.calls.every(x=>x.method==='GET'));
+});
+
+test('post-publication verification refuses success if PR is merged or main changes during confirmation',async()=>{
+ for(const fake of [{prMergedAfterPatch:true},{mainMovedAfterPatch:true}]){
+  let remote;
+  await assert.rejects(()=>execute({apply:true,fake,inspect:r=>{remote=r;}}),
+   /REMOTE_ROLLBACK_STATE_UNCERTAIN/);
+  assert.equal(remote.calls.filter(x=>x.method==='PATCH').length,1);
+ }
 });
