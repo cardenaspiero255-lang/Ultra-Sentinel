@@ -1,8 +1,18 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const crypto=require('node:crypto'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {signRollbackRequest}=
+const {signRollbackRequest:trustedSigner}=
  require('../../scripts/sign-supervised-github-rollback.cjs');
+function signRollbackRequest(...args){
+ // Ephemeral test keys only: simulate the owner's non-CI workstation.
+ const prior=process.env.GITHUB_ACTIONS;
+ delete process.env.GITHUB_ACTIONS;
+ try{return trustedSigner(...args);}
+ finally{
+  if(prior===undefined)delete process.env.GITHUB_ACTIONS;
+  else process.env.GITHUB_ACTIONS=prior;
+ }
+}
 const {operatorFile}=
  require('../../scripts/run-supervised-github-rollback.cjs');
 const {digestRollbackPlan,stableOwnerRollbackGrant}=
@@ -66,4 +76,17 @@ test('trusted operator refuses symlinks, world writable request files and nonabs
   assert.throws(()=>operatorFile(config),/UNSAFE_FILE/);
   assert.throws(()=>operatorFile('request.json'),/ABSOLUTE/);
  }finally{fs.rmSync(f.folder,{recursive:true,force:true});}
+});
+
+test('offline signing is denied in GitHub Actions even with a syntactically valid key',()=>{
+ const f=fixture(),prior=process.env.GITHUB_ACTIONS;
+ try{
+  process.env.GITHUB_ACTIONS='true';
+  assert.throws(()=>trustedSigner({plan:f.plan,ownerGrant:f.ownerGrant},f.keyFile),
+   /OWNER_SIGNING_NOT_ALLOWED_IN_CI/);
+ }finally{
+  if(prior===undefined)delete process.env.GITHUB_ACTIONS;
+  else process.env.GITHUB_ACTIONS=prior;
+  fs.rmSync(f.folder,{recursive:true,force:true});
+ }
 });
