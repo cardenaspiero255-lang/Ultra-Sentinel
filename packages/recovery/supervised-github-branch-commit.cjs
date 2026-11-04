@@ -113,15 +113,32 @@ function exactStrings(actual,expected){
 async function runSupervisedGitHubBranchCommit({
  plan,files,ownerGrant,ownerSignature,trustedOwnerPublicKey,token,
  nonceStorePath,verifyOriginalJVM,fetchImpl=globalThis.fetch,
- now=Date.now(),apply=false
+ now=Date.now(),readNow=Date.now,apply=false
 }={}){
  if(!validPlan(plan)||!Array.isArray(files)||typeof token!=='string'||
   token.length<16||typeof fetchImpl!=='function'||
   typeof verifyOriginalJVM!=='function'||typeof nonceStorePath!=='string'||
+  typeof readNow!=='function'||!Number.isSafeInteger(now)||
   apply!==false&&apply!==true)deny('INVALID_SUPERVISED_EXECUTOR_INPUT');
- const sorted=canonicalFiles(files),digest=digestBranchCandidate(plan,sorted);
+ // Snapshot every signed/write-relevant input before the first asynchronous
+ // boundary. Later changes by the caller must not alter nonce consumption,
+ // remote SHA binding, or bytes used in the authorized write.
+ plan=Object.freeze({...plan});
+ const sorted=Object.freeze(canonicalFiles(files).map(f=>Object.freeze({...f})));
+ ownerGrant=Object.freeze(JSON.parse(stableOwnerBranchGrant(ownerGrant)));
+ const digest=digestBranchCandidate(plan,sorted);
+ let lastTime=now;
+ function requireLiveGrant(){
+  let current;
+  try{current=readNow();}catch{deny('OWNER_TRUSTED_CLOCK_UNAVAILABLE');}
+  if(!Number.isSafeInteger(current)||current<lastTime)
+   deny('OWNER_TRUSTED_CLOCK_INVALID');
+  lastTime=current;
+  if(ownerGrant.expiresAt<=current)deny('OWNER_GRANT_EXPIRED');
+  return current;
+ }
  verifyGrant({grant:ownerGrant,signature:ownerSignature,trustedOwnerPublicKey,
-  plan,digest,now});
+  plan,digest,now:requireLiveGrant()});
  // Verify the token against /user; never trust repository event.actor text.
  await authenticateGitHubOwner({token,expectedOwner:OWNER,
   expectedOwnerId:OWNER_ID,fetchImpl});
@@ -129,6 +146,9 @@ async function runSupervisedGitHubBranchCommit({
  const headers={Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
   'X-GitHub-Api-Version':'2022-11-28','User-Agent':'Ultra-Sentinel-Owner-Branch-Executor'};
  async function api(method,route,body){
+  // Detached blobs/trees/commits are writes too. A delayed original oracle,
+  // network round trip, or expired grant must not permit any subsequent write.
+  if(method!=='GET')requireLiveGrant();
   let response;
   try{response=await fetchImpl('https://api.github.com'+route,{
    method,redirect:'error',signal:AbortSignal.timeout(15000),
@@ -202,6 +222,9 @@ async function runSupervisedGitHubBranchCommit({
  // Consume persistently before creating any object, including unattached
  // blobs, to prevent replay across processes/workflow attempts.
  await verifyDraftAndMain();
+ // The nonce must be the exact one captured before /user and verified by
+ // Ed25519, never a mutable reference to the original caller grant.
+ requireLiveGrant();
  const store=new PersistentNonceStore(nonceStorePath);
  if(store.consume(ownerGrant.nonce)!==true)deny('NONCE_REPLAY_DENIED');
  const objects=[];
@@ -227,6 +250,9 @@ async function runSupervisedGitHubBranchCommit({
  const rechecked=await api('GET',refPath);
  if(rechecked.ref!==head.ref||rechecked.object?.sha!==plan.expectedHeadSha)
   deny('STALE_REMOTE_BRANCH_BEFORE_REF_UPDATE');
+ // Re-read the trusted clock at the point of publication; an expired grant
+ // may leave unattached objects but must not move the protected PR branch.
+ requireLiveGrant();
  const updated=await api('PATCH',repoApi+'/git/refs/heads/'+plan.branch,
   {sha:newCommit.sha,force:false});
  if(updated.ref!=='refs/heads/'+plan.branch||
