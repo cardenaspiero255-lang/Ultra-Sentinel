@@ -35,6 +35,19 @@ function codeOnly(s){
  return s.replace(/\/\*[\s\S]*?\*\//g,'')
   .split('\n').filter(x=>!x.trimStart().startsWith('//')).join('\n');
 }
+/**
+ * Only an explicit guard in the INVOKED validPrompt body may suppress a
+ * generic-prompt hypothesis. The presence of a safer but unused function
+ * (or a command word elsewhere in LocalGgufPolicy) proves nothing.
+ *
+ * Recognize just the bounded "return !Regex(...).containsMatchIn(prompt)"
+ * idiom: unrecognized or ambiguous implementations remain hypotheses.
+ * This is syntactic evidence, never functional Kotlin/JVM certification.
+ */
+function genericPromptExplicitlyBlocksOperationalIntent(code){
+ const match=/\bfun\s+validPrompt\s*\(\s*prompt\s*:\s*String\s*\)\s*:\s*Boolean\s*\{\s*return\s+!\s*Regex\s*\(\s*"([^"\r\n]{1,200})"\s*\)\s*\.containsMatchIn\s*\(\s*prompt\s*\)\s*\}/.exec(code);
+ return !!match&&/\b(?:reinicia|reiniciar|restablece|restablecer)\b/.test(match[1]);
+}
 function observation(rule,path,source,blob,needle,confidence,reason){
  const index=source.indexOf(needle);
  const line=index<0?1:source.slice(0,index).split('\n').length;
@@ -64,9 +77,7 @@ function scanKotlinPolicyBoundaries({expectedCommitSha,files}={}){
   if(gate.path===policy.path)continue;
   if(/\bLocalGgufPolicy\.validPrompt\s*\(\s*question\s*\)/.test(gate.code)&&
    /\bfun\s+validPrompt\s*\(\s*prompt\s*:\s*String\b/.test(policy.code)&&
-   !/\bfun\s+validReadOnlyQuestion\s*\(/.test(policy.code)&&
-   !/\bLocalGgufPolicy\.validReadOnlyQuestion\s*\(/.test(gate.code)&&
-   !/\b(?:reinicia|reiniciar|restablece|restablecer)\b/.test(policy.code)){
+   !genericPromptExplicitlyBlocksOperationalIntent(policy.code)){
    found.push(observation('GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP',
     gate.path,gate.code,gate.expectedBlobSha,'LocalGgufPolicy.validPrompt(question)',
     'medium','A voice-derived question relies on a generic model text check; test operational verbs against a trusted original Kotlin read-only boundary oracle.'));

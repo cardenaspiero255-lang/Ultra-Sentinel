@@ -95,3 +95,37 @@ test('existing generic prompt protection is not mislabeled as an unguarded voice
  const out=scanKotlinPolicyBoundaries(x);
  assert.equal(out.findings.some(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP'),false);
 });
+
+test('policy-only addition of validReadOnlyQuestion must not hide an unsafe voice caller',()=>{
+ const x=input();
+ const policyOnly=policy.replace(/\n}\n$/,
+  '\n fun validReadOnlyQuestion(question: String): Boolean {\n'+
+  '  return !Regex("(?:reinicia|reiniciar|restablece)").containsMatchIn(question)\n'+
+  ' }\n}\n');
+ assert.notEqual(policyOnly,policy,'test fixture must contain the policy-only patch');
+ x.files[1]=file('LocalGgufPolicy.kt',policyOnly);
+ const out=scanKotlinPolicyBoundaries(x);
+ assert.equal(out.status,'UNVERIFIED_POLICY_BOUNDARY_HYPOTHESES');
+ assert.equal(out.findings.filter(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP').length,1);
+ assert.equal(out.findings.find(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP').path,x.files[0].path);
+ assert.equal(out.originalFunctionalOracleVerified,false);
+ assert.equal(out.mergeAllowed,false);
+});
+
+test('unrelated operational words in the policy cannot hide the generic validation gap',()=>{
+ const x=input();
+ const patched=policy.replace(/\n}\n$/,
+  '\n private val explanationExample = "reinicia"\n}\n');
+ assert.notEqual(patched,policy);
+ x.files[1]=file('LocalGgufPolicy.kt',patched);
+ const out=scanKotlinPolicyBoundaries(x);
+ assert.equal(out.findings.some(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP'),true);
+});
+
+test('a defined stronger function alone does not complete a cross-file read-only contract',()=>{
+ const x=input();
+ x.files[1]=file('LocalGgufPolicy.kt',policy.replace(/\n}\n$/,
+  '\n fun validReadOnlyQuestion(question: String): Boolean = validPrompt(question)\n}\n'));
+ const out=scanKotlinPolicyBoundaries(x);
+ assert.equal(out.findings.some(f=>f.rule==='GGUF_OPERATIONAL_INTENT_BOUNDARY_GAP'),true);
+});
