@@ -39,6 +39,12 @@ Si se interrumpe una transacción, **no** borrar a mano `.txn`, `.lock` ni el le
 - Se requiere la misma ruta y rama, cero remotos, un journal válido y un HEAD conocido. Si el commit o el estado no coinciden, el proceso se detiene para investigación manual.
 - Un nonce consumido sigue consumido, incluso tras rollback. Una autorización nueva requiere nonce y firma nuevos.
 
+## Fallo de integridad del registro de autorizaciones
+
+Si `PersistentNonceStore` informa `NONCE_STORE_CORRUPTED` o `NONCE_STORE_INCOMPLETE_WRITE`, detener toda reparación nueva: un registro truncado no demuestra que un nonce esté disponible. No eliminar, truncar ni reconstruir automáticamente el archivo. Preservar el ledger y los journals con permisos privados, registrar el SHA y examinar el estado de las operaciones previas antes de recuperar el servicio.
+
+La recuperación requiere una copia íntegra comprobada del historial o una rotación controlada de las claves de autorización que invalide las firmas previas, junto con un nuevo ledger durable. Nunca tratar un archivo vacío recién creado como prueba de que las autorizaciones antiguas no se consumieron. El rollback local no reactiva ningún nonce.
+
 ## Límites para la certificación de producción
 
 - Los tests automatizados comprueban adversarios, firmas, concurrencia y `SIGKILL`, pero **no** sustituyen una validación con credenciales reales autorizadas, permisos mínimos y aislamiento verificable del ejecutor.

@@ -85,3 +85,43 @@ test('nonce storage refuses a readable parent directory',()=>{
   assert.throws(()=>new PersistentNonceStore(path.join(exposed,'ledger')),/NONCE_DIRECTORY_NOT_PRIVATE/);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
+
+test('torn nonce ledger fails closed for replay and all subsequent grants',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-torn-'));
+ try{
+  const filename=path.join(dir,'ledger'),store=new PersistentNonceStore(filename);
+  assert.equal(store.consume(base.nonce),true);
+  const original=fs.readFileSync(filename,'utf8');
+  assert.match(original,/^[a-f0-9]{64}\n$/);
+  const torn=original.slice(0,-3);
+  fs.writeFileSync(filename,torn,{mode:0o600});
+  assert.throws(()=>new PersistentNonceStore(filename).consume(base.nonce),/NONCE_STORE_CORRUPTED/);
+  assert.throws(()=>new PersistentNonceStore(filename).consume('a-second-owner-grant-12345'),/NONCE_STORE_CORRUPTED/);
+  assert.equal(fs.readFileSync(filename,'utf8'),torn,'reject without modifying the damaged ledger');
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('malformed or ambiguous nonce ledger records are refused without mutation',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-invalid-'));
+ try{
+  const filename=path.join(dir,'ledger'),store=new PersistentNonceStore(filename);
+  for(const invalid of ['not-a-hash\n','a'.repeat(64)+'\n\n','a'.repeat(64)+'\r\n']){
+   fs.writeFileSync(filename,invalid,{mode:0o600});
+   assert.throws(()=>store.consume('new-owner-nonce-1234567890'),/NONCE_STORE_CORRUPTED/);
+   assert.equal(fs.readFileSync(filename,'utf8'),invalid);
+  }
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
+test('a valid multi-record nonce ledger allows new grants and denies every replay',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ultra-nonce-multiple-'));
+ try{
+  const filename=path.join(dir,'ledger'),store=new PersistentNonceStore(filename);
+  const first='owner-first-grant-nonce-12345678';
+  const second='owner-second-grant-nonce-12345678';
+  assert.equal(store.consume(first),true);
+  assert.equal(store.consume(second),true);
+  assert.equal(new PersistentNonceStore(filename).consume(first),false);
+  assert.equal(new PersistentNonceStore(filename).consume(second),false);
+  assert.equal(fs.readFileSync(filename,'utf8').trim().split(String.fromCharCode(10)).length,2);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

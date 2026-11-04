@@ -83,8 +83,16 @@ class PersistentNonceStore{
    const stat=fs.fstatSync(fd);
    if(!stat.isFile()||(stat.mode&0o077)!==0||stat.nlink!==1)throw Error('NONCE_STORE_UNSAFE');
    const existing=fs.readFileSync(fd,'utf8');
-   if(existing.split('\n').includes(hash))return false;
-   fs.writeSync(fd,hash+'\n',stat.size,'utf8');
+   // A torn append must never allow replay of an already-consumed grant.
+   // Keep a damaged ledger intact for supervised recovery.
+   if(Buffer.byteLength(existing,'utf8')!==stat.size)
+    throw Error('NONCE_STORE_CORRUPTED');
+   const records=existing===''?[]:existing.split('\n');
+   if(existing!==''&&(records.pop()!==''||records.some(x=>!DIGEST.test(x))))
+    throw Error('NONCE_STORE_CORRUPTED');
+   if(records.includes(hash))return false;
+   const bytesWritten=fs.writeSync(fd,hash+'\n',stat.size,'utf8');
+   if(bytesWritten!==65)throw Error('NONCE_STORE_INCOMPLETE_WRITE');
    fs.fsyncSync(fd);
    return true;
   }finally{if(fd!==undefined)fs.closeSync(fd);fs.closeSync(lockFd);fs.unlinkSync(lock);}
