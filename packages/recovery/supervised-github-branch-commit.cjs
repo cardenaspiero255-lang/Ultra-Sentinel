@@ -15,6 +15,7 @@ const crypto=require('node:crypto');
 const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
 const {PersistentNonceStore}=require('./owner-authorization.cjs');
 const {drillTwoSourceKotlinSandbox}=require('./two-source-kotlin-sandbox.cjs');
+const {digestRollbackPlan}=require('./supervised-github-branch-rollback.cjs');
 
 const REPO='cardenaspiero255-lang/JARVIS',OWNER='cardenaspiero255-lang';
 const OWNER_ID=322222186;
@@ -263,9 +264,24 @@ async function runSupervisedGitHubBranchCommit({
  const confirmed=await api('GET',refPath);
  if(confirmed.object?.sha!==newCommit.sha)
   deny('REMOTE_COMMIT_STATE_UNCERTAIN');
+ // This exact plan is DATA, not a rollback authorization. It requires a
+ // fresh Ed25519 signature under the distinct rollback domain and nonce.
+ const rollbackPlan=Object.freeze({
+  repository:REPO,prNumber:plan.prNumber,branch:plan.branch,
+  operation:'ROLLBACK_EXISTING_DRAFT_PR_BRANCH',
+  expectedMainSha:plan.expectedMainSha,
+  originalHeadSha:plan.expectedHeadSha,
+  originalTreeSha:plan.expectedTreeSha,
+  repairHeadSha:newCommit.sha,repairTreeSha:newTree.sha,
+  files:Object.freeze(sorted.map(f=>Object.freeze({
+   path:f.path,beforeBlobSha:f.beforeBlobSha,afterBlobSha:f.afterBlobSha
+  })))
+ });
+ const rollbackPlanDigest=digestRollbackPlan(rollbackPlan);
  return Object.freeze({...shared,status:'OWNER_APPROVED_PR_BRANCH_COMMIT_CREATED',
   commitSha:newCommit.sha,remoteWrites:true,commitCreated:true,
   ownerNonceConsumed:true,mergeAllowed:false,
-  limitation:'Remote Git ref changed; exact local rollback was only a pre-commit drill. Remote rollback, PR checks and merge still require separate authenticated operations.'});
+  rollbackPlan,rollbackPlanDigest,remoteRollbackExecuted:false,
+  limitation:'Remote repair committed, not yet rolled back. A new owner-signed rollback grant, an unchanged draft PR and a separate non-forced restoring commit are required for remote recovery; CI and merge checks remain separate.'});
 }
 module.exports={runSupervisedGitHubBranchCommit,stableOwnerBranchGrant,digestBranchCandidate};
