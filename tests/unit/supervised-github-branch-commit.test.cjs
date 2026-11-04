@@ -9,6 +9,11 @@ const REPO='cardenaspiero255-lang/JARVIS',OWNER='cardenaspiero255-lang';
 const SHA='a'.repeat(40),BASE='b'.repeat(40),TREE='c'.repeat(40);
 const NEW_TREE='d'.repeat(40),NEW_COMMIT='e'.repeat(40);
 const NOW=1793710000000,BRANCH='fix/ultra-sentinel-gguf-intent';
+// The test file runs in its own Node test worker. Only tests control this
+// simulated wall clock: production callers cannot provide a clock callback.
+let clockNow=NOW;
+require('node:test').mock.method(Date,'now',()=>clockNow);
+test.beforeEach(()=>{clockNow=NOW;});
 const PREFIX='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/';
 const {privateKey,publicKey}=crypto.generateKeyPairSync('ed25519');
 const sig=(grant,key=privateKey)=>crypto.sign(null,Buffer.from(
@@ -79,7 +84,7 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
  return {calls,fetchImpl};
 }
 async function execute({mutate=()=>{},apply=false,now=NOW,mockOptions={},oracle=oracleFor,
-  store,alternateKey,trustedClock=()=>NOW,inspectRemote}={}){
+  store,alternateKey,inspectRemote}={}){
  const s=sample(),signedGrant=sig(s.grant);mutate(s);
  const remote=fakeGitHub({plan:s.plan,files:s.files,...mockOptions});
  if(typeof inspectRemote==='function')inspectRemote(remote);
@@ -88,7 +93,7 @@ async function execute({mutate=()=>{},apply=false,now=NOW,mockOptions={},oracle=
   ownerSignature:signedGrant,trustedOwnerPublicKey:alternateKey||publicKey,
   token:'gh-authenticated-owner-token-for-tests',now,
   fetchImpl:remote.fetchImpl,verifyOriginalJVM:async()=>oracle(s),
-  nonceStorePath:path.join(dir,'spent-nonces'),readNow:trustedClock,apply};
+  nonceStorePath:path.join(dir,'spent-nonces'),apply};
  try{
   const result=await runSupervisedGitHubBranchCommit(options);
   return {result,remote,options};
@@ -181,26 +186,26 @@ test('P1: async grant nonce mutation must consume only the Ed25519-signed snapsh
    trustedOwnerPublicKey:publicKey,token:'gh-authenticated-owner-token-for-tests',
    nonceStorePath:path.join(dir,'spent-nonces'),
    verifyOriginalJVM:async()=>oracleFor(s),
-   fetchImpl:remote.fetchImpl,now:NOW,readNow:()=>NOW,apply:true
+   fetchImpl:remote.fetchImpl,now:NOW,apply:true
   });
   s.grant.nonce='attacker-swapped-nonce-after-signed-check-123456';
   const result=await pending;
   assert.equal(result.status,'OWNER_APPROVED_PR_BRANCH_COMMIT_CREATED');
   assert.equal(result.ownerNonceConsumed,true);
   assert.notEqual(s.grant.nonce,signedNonce);
-  await assert.rejects(()=>execute({apply:true,store:dir,trustedClock:()=>NOW}),
+  await assert.rejects(()=>execute({apply:true,store:dir}),
    /NONCE_REPLAY_DENIED/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
 test('P2: grant expiry during original Kotlin oracle vetoes remote writes',async()=>{
- let observed,clock=NOW;
+ let observed;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'us-expiring-oracle-'));
  try{
   await assert.rejects(()=>execute({
-   apply:true,store:dir,trustedClock:()=>clock,
+   apply:true,store:dir,
    inspectRemote:r=>{observed=r;},
-   oracle:s=>{clock=NOW+600001;return oracleFor(s);}
+   oracle:s=>{clockNow=NOW+600001;return oracleFor(s);}
   }),/OWNER_GRANT_EXPIRED/);
   assert.ok(observed);
   assert.equal(observed.calls.some(c=>c.method!=='GET'),false);
@@ -208,17 +213,17 @@ test('P2: grant expiry during original Kotlin oracle vetoes remote writes',async
 });
 
 test('P2: grant expiry after objects are created vetoes publication of remote ref',async()=>{
- let observed,clock=NOW;
+ let observed;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'us-expiring-publish-'));
  try{
   await assert.rejects(()=>execute({
-   apply:true,store:dir,trustedClock:()=>clock,
+   apply:true,store:dir,
    inspectRemote:r=>{observed=r;},
    mockOptions:{onRequest:({route,method,calls})=>{
     const commitAlreadyCreated=calls.some(c=>c.method==='POST'&&
       c.route==='/repos/'+REPO+'/git/commits');
     if(method==='GET'&&route==='/repos/'+REPO+'/git/ref/heads/'+BRANCH&&commitAlreadyCreated)
-     clock=NOW+600001;
+     clockNow=NOW+600001;
    }}
   }),/OWNER_GRANT_EXPIRED/);
   assert.ok(observed.calls.some(c=>c.method==='POST'));
