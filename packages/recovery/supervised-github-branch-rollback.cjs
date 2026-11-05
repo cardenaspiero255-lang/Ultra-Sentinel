@@ -38,8 +38,9 @@ function canonicalFiles(files){
    !FILE.test(f.path)||f.path.includes('..')||
    !SHA.test(f.beforeBlobSha||'')||!SHA.test(f.afterBlobSha||'')||
    f.beforeBlobSha===f.afterBlobSha)deny('INVALID_TWO_FILE_ROLLBACK_PLAN');
-  return Object.freeze({...f});
- }).sort((a,b)=>a.path.localeCompare(b.path));
+  // Canonical JSON must not depend on incoming property insertion order.
+  return Object.freeze({path:f.path,beforeBlobSha:f.beforeBlobSha,afterBlobSha:f.afterBlobSha});
+ }).sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
  if(ordered[0].path===ordered[1].path)deny('DUPLICATE_ROLLBACK_PATH');
  return Object.freeze(ordered);
 }
@@ -215,9 +216,6 @@ async function runSupervisedGitHubBranchRollback({
  const shared=Object.freeze({repository:REPO,prNumber:plan.prNumber,
   repairHeadSha:plan.repairHeadSha,restoredTreeSha:plan.originalTreeSha,
   planDigest:digest,mergeAllowed:false,productionReleaseCertified:false});
- if(apply===false)return Object.freeze({...shared,
-  status:'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
-  ownerNonceConsumed:false});
  // Retrieve and hash the exact original blobs before publication. The API
  // expects contents rather than blob OIDs in its atomic commit mutation.
  const additions=[];
@@ -235,6 +233,10 @@ async function runSupervisedGitHubBranchRollback({
    deny('REMOTE_ROLLBACK_BLOB_UNTRUSTED');
   additions.push({path:file.path,contents:encoded});
  }
+ if(apply===false)return Object.freeze({...shared,
+  status:'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
+  ownerNonceConsumed:false,ownerNonceChecked:false,
+  limitation:'Preview does not check the persistent nonce ledger. Authorization, ledger availability, PR/main and branch state must be rechecked for publication.'});
  await verifyDraftAndMain();
  const current=await api('GET',branchRef);
  if(current.ref!==head.ref||current.object?.sha!==plan.repairHeadSha)

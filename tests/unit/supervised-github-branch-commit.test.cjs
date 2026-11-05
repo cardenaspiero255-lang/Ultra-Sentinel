@@ -42,7 +42,22 @@ function oracleFor({plan,files}){
   originalJVMGreen:true,benignControlsPassed:true,isolatedExecution:true,
   remoteWrites:false,mergeAllowed:false};
 }
-function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false,raceHead,
+test('repair digest uses the same ASCII path order on different locales',()=>{
+ const {plan,files}=sample();
+ files[0].path=PREFIX+'I.kt';files[1].path=PREFIX+'i.kt';
+ const expected=digestBranchCandidate(plan,files);
+ assert.equal(digestBranchCandidate(plan,[...files].reverse()),expected);
+ const {spawnSync}=require('node:child_process');
+ for(const locale of ['en_US.UTF-8','tr_TR.UTF-8']){
+  const child=spawnSync(process.execPath,['-e',
+   'const m=require(process.argv[1]);const x=JSON.parse(process.argv[2]);process.stdout.write(m.digestBranchCandidate(x.plan,x.files))',
+   require.resolve('../../packages/recovery/supervised-github-branch-commit.cjs'),JSON.stringify({plan,files})],
+   {encoding:'utf8',env:{...process.env,LANG:locale,LC_ALL:locale}});
+  assert.equal(child.status,0,child.stderr);
+  assert.equal(child.stdout,expected);
+ }
+});
+function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,oversized=false,duplicate=false,patchFailure=false,raceHead,
   prBecameReady=false,mainMoved=false,lostResponse=false,wrongPublishedTree=false,onRequest}={}){
  const calls=[],refPath='/repos/'+REPO+'/git/ref/heads/'+BRANCH;
  let current=stale?'f'.repeat(40):SHA,prReads=0,mainReads=0;
@@ -66,9 +81,10 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
   if(route==='/repos/'+REPO+'/git/commits/'+NEW_COMMIT&&method==='GET')
    return response(200,{sha:NEW_COMMIT,tree:{sha:NEW_TREE},parents:[{sha:SHA}]});
   if(route==='/repos/'+REPO+'/git/trees/'+TREE&&uri.search==='?recursive=1'&&method==='GET')
-   return response(200,{sha:TREE,truncated,tree:files.map((f,i)=>({
+   return response(200,{sha:TREE,truncated,tree:[...files.map((f,i)=>({
     path:f.path,type:'blob',mode:symlink&&i===0?'120000':'100644',sha:f.beforeBlobSha
-   }))});
+   })),...(oversized?Array.from({length:20001},(_,i)=>({path:'extra/'+i,type:'blob',mode:'100644',sha:'1'.repeat(40)})):[]),
+   ...(duplicate?[{path:files[0].path,type:'blob',mode:'100644',sha:files[0].beforeBlobSha}]:[])]});
   if(route==='/repos/'+REPO+'/git/trees/'+NEW_TREE&&uri.search==='?recursive=1'&&method==='GET')
    return response(200,{sha:NEW_TREE,truncated:false,tree:files.map(f=>({
     path:f.path,type:'blob',mode:'100644',sha:wrongPublishedTree?f.beforeBlobSha:f.afterBlobSha
@@ -113,6 +129,7 @@ test('signed immutable plan, original Kotlin oracle and local Judge/rollback: pr
  assert.equal(result.originalJVMVerified,true);
  assert.equal(result.localJudgeAndRollbackVerified,true);
  assert.equal(result.remoteWrites,false);
+ assert.equal(result.ownerNonceChecked,false);
  assert.equal(result.mergeAllowed,false);
  assert.equal(remote.calls.some(c=>c.method!=='GET'),false);
 });
@@ -176,6 +193,15 @@ test('trusted oracle veto and missing independent oracle prevent any write',asyn
 test('remote SHA, protected main and symlink/truncated tree invalidate branch preparation',async()=>{
  for(const mockOptions of [{stale:true},{staleMain:true},{symlink:true},{truncated:true}]){
   await assert.rejects(()=>execute({apply:true,mockOptions}),/REMOTE|STALE|TREE|BLOB|SCOPE|DENIED/);
+ }
+});
+test('oversized and duplicate original trees fail before dry-run readiness or any publication',async()=>{
+ for(const mockOptions of [{oversized:true},{duplicate:true}]){
+  for(const apply of [false,true]){
+   let remote;
+   await assert.rejects(()=>execute({apply,mockOptions,inspectRemote:r=>{remote=r;}}),/TREE_UNTRUSTED/);
+   assert.ok(remote.calls.every(c=>c.method==='GET'));
+  }
  }
 });
 test('non-fast-forward refusal does not assert a successful remote write or merge',async()=>{

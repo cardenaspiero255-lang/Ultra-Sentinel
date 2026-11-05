@@ -34,6 +34,8 @@ async function main(){
   apply:mode==='true'
  });
  process.stdout.write(result.status+'\n');
+ if(result.status==='OWNER_SIGNED_REMOTE_ROLLBACK_READY')
+  process.stdout.write('OWNER_NONCE_LEDGER_NOT_CHECKED\n');
  if(result.status==='OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED')
   process.stdout.write('RESTORATION_COMMIT '+result.commitSha+'\n');
  return result;

@@ -35,6 +35,24 @@ function sample(){
 function signature(grant,key=privateKey,domain='Ultra-Sentinel:github-pr-branch-rollback:v1\n'){
  return crypto.sign(null,Buffer.from(domain+stableOwnerRollbackGrant(grant)),key).toString('base64');
 }
+test('rollback digest is independent of JSON property order, input order and host locale',()=>{
+ const {plan}=sample();
+ plan.files=plan.files.map((f,i)=>({...f,path:PREFIX+(i?'i.kt':'I.kt')}));
+ const reordered={...plan,files:[...plan.files].reverse().map(f=>({
+  afterBlobSha:f.afterBlobSha,beforeBlobSha:f.beforeBlobSha,path:f.path
+ }))};
+ const expected=digestRollbackPlan(plan);
+ assert.equal(digestRollbackPlan(reordered),expected);
+ const {spawnSync}=require('node:child_process');
+ for(const locale of ['en_US.UTF-8','tr_TR.UTF-8']){
+  const child=spawnSync(process.execPath,['-e',
+   'const m=require(process.argv[1]);process.stdout.write(m.digestRollbackPlan(JSON.parse(process.argv[2])))',
+   require.resolve('../../packages/recovery/supervised-github-branch-rollback.cjs'),JSON.stringify(reordered)],
+   {encoding:'utf8',env:{...process.env,LANG:locale,LC_ALL:locale}});
+  assert.equal(child.status,0,child.stderr);
+  assert.equal(child.stdout,expected);
+ }
+});
 function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=false,
  changedMode=false,wrongParent=false,patchFailure=false,patchResponseLost=false,
  folderTrees=false,unrelatedTreeChange=false,prMergedAfterPatch=false,mainMovedAfterPatch=false,raceHead,corruptBlob=false,
@@ -128,6 +146,7 @@ test('dry-run proves exact baseline restoration but never consumes nonce or writ
  assert.equal(result.remoteWrites,false);
  assert.equal(result.restoredTreeSha,ORIGINAL_TREE);
  assert.equal(result.ownerNonceConsumed,false);
+ assert.equal(result.ownerNonceChecked,false);
  assert.equal(result.mergeAllowed,false);
  assert.ok(remote.calls.every(c=>c.method==='GET'));
 });
@@ -219,12 +238,14 @@ test('branch advance, rewind or deletion at publication is rejected by the expec
   assert.equal(remote.calls.filter(x=>x.route==='/graphql').length,1);
  }
 });
-test('a blob with the correct claimed SHA but different contents vetoes publication and nonce consumption',async()=>{
+test('a corrupt blob vetoes both readiness and publication without nonce consumption',async()=>{
  const store=fs.mkdtempSync(path.join(os.tmpdir(),'us-blob-integrity-'));
  try{
-  let remote;
-  await assert.rejects(()=>execute({apply:true,store,fake:{corruptBlob:true},inspect:r=>{remote=r;}}),/BLOB_UNTRUSTED/);
-  assert.ok(remote.calls.every(c=>c.method==='GET'));
+  for(const apply of [false,true]){
+   let remote;
+   await assert.rejects(()=>execute({apply,store,fake:{corruptBlob:true},inspect:r=>{remote=r;}}),/BLOB_UNTRUSTED/);
+   assert.ok(remote.calls.every(c=>c.method==='GET'));
+  }
   assert.equal((await execute({apply:true,store})).result.ownerNonceConsumed,true);
  }finally{fs.rmSync(store,{recursive:true,force:true});}
 });

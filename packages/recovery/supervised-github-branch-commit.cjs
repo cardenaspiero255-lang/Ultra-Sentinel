@@ -56,7 +56,8 @@ function validFile(f){
 function canonicalFiles(files){
  if(!Array.isArray(files)||files.length!==2||!files.every(validFile)||
   files[0].path===files[1].path)deny('INVALID_TWO_FILE_CANDIDATE');
- const sorted=[...files].sort((a,b)=>a.path.localeCompare(b.path));
+ // Paths are ASCII by contract; ordinal ordering is identical on all hosts.
+ const sorted=[...files].sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
  if(sorted.reduce((sum,f)=>sum+Buffer.byteLength(f.after,'utf8'),0)>100000)
   deny('PATCH_SIZE_DENIED');
  return sorted;
@@ -189,6 +190,9 @@ async function runSupervisedGitHubBranchCommit({
  const tree=await api('GET',repoApi+'/git/trees/'+plan.expectedTreeSha+'?recursive=1');
  if(tree.sha!==plan.expectedTreeSha||tree.truncated!==false||
   !Array.isArray(tree.tree))deny('UNTRUSTED_REMOTE_GIT_TREE');
+ // Apply the same complete-tree validation that post-publication and the
+ // rollback require, before declaring READY or consuming the owner nonce.
+ const originalTree=treeEntries(tree,plan.expectedTreeSha);
  for(const file of sorted){
   const matching=tree.tree.filter(t=>t.path===file.path);
   if(matching.length!==1||matching[0].type!=='blob'||
@@ -221,7 +225,8 @@ async function runSupervisedGitHubBranchCommit({
   mergeAllowed:false,productionReleaseCertified:false});
  if(apply!==true)return Object.freeze({...shared,
   status:'OWNER_AUTHENTICATED_DRAFT_PR_READY',remoteWrites:false,
-  commitCreated:false,ownerNonceConsumed:false});
+  commitCreated:false,ownerNonceConsumed:false,ownerNonceChecked:false,
+  limitation:'Preview does not check the persistent nonce ledger. Authorization, ledger availability, PR/main and branch state must be rechecked for publication.'});
  // All approval and verification gates preceded the first GitHub write.
  // Consume persistently before creating any object, including unattached
  // blobs, to prevent replay across processes/workflow attempts.
@@ -254,7 +259,7 @@ async function runSupervisedGitHubBranchCommit({
   newCommit.parents.length!==1||newCommit.parents[0]?.sha!==plan.expectedHeadSha)
   deny('REMOTE_COMMIT_STATE_UNCERTAIN');
  const newTree=await api('GET',repoApi+'/git/trees/'+newCommit.tree.sha+'?recursive=1');
- try{verifyExactRepairDelta(treeEntries(tree,plan.expectedTreeSha),
+ try{verifyExactRepairDelta(originalTree,
   treeEntries(newTree,newCommit.tree.sha),sorted);}catch{deny('REMOTE_COMMIT_STATE_UNCERTAIN');}
  const finalPr=await api('GET',repoApi+'/pulls/'+plan.prNumber);
  const finalMain=await api('GET',repoApi+'/git/ref/heads/main');

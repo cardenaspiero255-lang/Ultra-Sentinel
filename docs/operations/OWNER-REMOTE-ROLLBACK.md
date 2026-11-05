@@ -16,6 +16,8 @@ La comparación atómica solo cubre el HEAD de la rama. Las lecturas del PR y de
 
 La firma original de reparación NO sirve para rollback. Se necesita una firma Ed25519 distinta, bajo el dominio Ultra-Sentinel:github-pr-branch-rollback:v1 (con salto de línea final). El permiso debe contener ownerLogin, ownerId=322222186, repo, prNumber, branch, headSha=repairHeadSha, baseSha=expectedMainSha, planDigest calculado sobre rollbackPlan, nonce nuevo aleatorio base64url de 20-96 caracteres, expiresAt en los próximos 15 minutos y operation=ROLLBACK_EXISTING_DRAFT_PR_BRANCH.
 
+El orden de rutas usa comparación ordinal ASCII y las propiedades del plan se serializan en orden fijo. Una firma anterior calculada con la ordenación dependiente del locale o con otro orden de propiedades puede no verificarse: preparar y firmar nuevamente el plan exacto; nunca reutilizar el nonce anterior.
+
 Mantener la clave privada en el dispositivo confiable del propietario, nunca en GitHub ni en CI. La clave pública se configura separadamente. Los nonces se guardan en un ledger privado persistente fuera del repositorio; un nonce consumido nunca se reutiliza.
 
 ## Ejecución en host confiable
@@ -24,7 +26,7 @@ Mantener la clave privada en el dispositivo confiable del propietario, nunca en 
 2. Firmar offline en el equipo del propietario: configurar ULTRA_SENTINEL_OWNER_SIGNING_KEY_FILE con la ruta absoluta de la clave Ed25519 privada; ejecutar node scripts/sign-supervised-github-rollback.cjs /ruta/absoluta/rollback-intent.json. Guardar la firma base64 devuelta como ownerSignature en un JSON local que contenga plan, ownerGrant y ownerSignature.
 3. En el equipo operador confiable, establecer ULTRA_SENTINEL_ROLLBACK_REQUEST_FILE (JSON firmado), ULTRA_SENTINEL_OWNER_PUBLIC_KEY_FILE (clave pública Ed25519), ULTRA_SENTINEL_ROLLBACK_NONCE_LEDGER (ledger privado y persistente): todas como rutas absolutas. La carpeta que contiene el JSON y la clave pública no puede ser modificable por grupo ni otros.
 4. Entregar temporalmente ULTRA_SENTINEL_OWNER_GITHUB_TOKEN mediante un gestor de secretos, con permisos mínimos necesarios de lectura de PR/metadatos y escritura de contenidos únicamente en JARVIS. Nunca subir token, firma privada, stacktraces o claves a PR, artifacts ni logs.
-5. Ejecutar node scripts/run-supervised-github-rollback.cjs sin definir ULTRA_SENTINEL_REMOTE_ROLLBACK_APPLY. Esto solo verifica, no consume nonce ni realiza escrituras.
+5. Ejecutar node scripts/run-supervised-github-rollback.cjs sin definir ULTRA_SENTINEL_REMOTE_ROLLBACK_APPLY. Esto verifica el plan y los blobs originales, no consume ni consulta el ledger de nonces y no realiza escrituras. El resultado READY es parcial: el ledger, la autorización y el estado remoto se comprueban nuevamente al aplicar.
 6. Con nueva confirmación del propietario, establecer ULTRA_SENTINEL_REMOTE_ROLLBACK_APPLY=true y repetir el comando. La operación debe informar OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED y SHA de restauración, sin modificar main ni hacer merge.
 
 Las herramientas de ejecución deniegan GITHUB_ACTIONS=true: un PR o workflow no obtiene permiso de escritura por el mero hecho de estar verde.

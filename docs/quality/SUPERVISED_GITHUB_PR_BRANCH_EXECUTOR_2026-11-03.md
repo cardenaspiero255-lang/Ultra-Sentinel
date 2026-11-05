@@ -26,7 +26,7 @@ The trusted runtime must provide the following, *not from issue/PR text*:
 5. Independent local two-source `judgeLocalRepair` and `rollbackSandbox`, both re-executed through `drillTwoSourceKotlinSandbox` on the actual candidate bytes. The local baseline tree must be restored exactly.
 6. A persistent private `PersistentNonceStore` outside the checkout; on `apply=true`, its nonce is consumed **before** creating any remote Git object.
 
-The default `apply=false` performs a read-only preflight and returns `OWNER_AUTHENTICATED_DRAFT_PR_READY`; no nonce is consumed and no remote write occurs.
+The default `apply=false` performs a read-only preflight and returns `OWNER_AUTHENTICATED_DRAFT_PR_READY`; no nonce is consumed and no remote write occurs. The nonce ledger is not inspected, so READY is partial and does not guarantee that the nonce remains usable or that remote state will remain unchanged.
 
 On a separately approved `apply=true`, the sole writer creates **unattached** Git blobs/tree/commit through GitHub's Git API; checks the draft PR and `main` again, checks the target ref again and then uses a single **non-forced fast-forward** `PATCH /git/refs/heads/fix/ultra-sentinel-...`. A post-write ref read must confirm the new commit. The module contains no endpoints for protected-main pushes, PR creation, merge, branch deletion or permissions changes.
 
