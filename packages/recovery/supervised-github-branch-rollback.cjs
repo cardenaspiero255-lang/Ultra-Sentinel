@@ -11,6 +11,7 @@
 const crypto=require('node:crypto');
 const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
 const {PersistentNonceStore}=require('./owner-authorization.cjs');
+const {publishAtomicBranchCommit}=require('./github-atomic-branch-commit.cjs');
 
 const REPO='cardenaspiero255-lang/JARVIS',OWNER='cardenaspiero255-lang',OWNER_ID=322222186;
 const DOMAIN='Ultra-Sentinel:github-pr-branch-rollback:v1\n';
@@ -192,7 +193,6 @@ async function runSupervisedGitHubBranchRollback({
    main.object.sha!==plan.expectedMainSha)deny('STALE_MAIN_HEAD');
  }
  const branchRef=apiRoot+'/git/ref/heads/'+plan.branch;
- const branchWrite=apiRoot+'/git/refs/heads/'+plan.branch;
  await verifyDraftAndMain();
  const head=await api('GET',branchRef);
  if(head.ref!=='refs/heads/'+plan.branch||head.object?.type!=='commit'||
@@ -218,6 +218,23 @@ async function runSupervisedGitHubBranchRollback({
  if(apply===false)return Object.freeze({...shared,
   status:'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
   ownerNonceConsumed:false});
+ // Retrieve and hash the exact original blobs before publication. The API
+ // expects contents rather than blob OIDs in its atomic commit mutation.
+ const additions=[];
+ for(const file of plan.files){
+  const blob=await api('GET',apiRoot+'/git/blobs/'+file.beforeBlobSha);
+  if(blob.sha!==file.beforeBlobSha||blob.encoding!=='base64'||
+   !Number.isSafeInteger(blob.size)||blob.size<1||blob.size>60000||
+   typeof blob.content!=='string')deny('REMOTE_ROLLBACK_BLOB_UNTRUSTED');
+  const encoded=blob.content.replace(/\n/g,'');
+  if(!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded))
+   deny('REMOTE_ROLLBACK_BLOB_UNTRUSTED');
+  const bytes=Buffer.from(encoded,'base64');
+  const actual=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+  if(bytes.length!==blob.size||bytes.toString('base64')!==encoded||actual!==file.beforeBlobSha)
+   deny('REMOTE_ROLLBACK_BLOB_UNTRUSTED');
+  additions.push({path:file.path,contents:encoded});
+ }
  await verifyDraftAndMain();
  const current=await api('GET',branchRef);
  if(current.ref!==head.ref||current.object?.sha!==plan.repairHeadSha)
@@ -225,31 +242,24 @@ async function runSupervisedGitHubBranchRollback({
  liveGrantClock();
  const store=new PersistentNonceStore(nonceStorePath);
  if(store.consume(ownerGrant.nonce)!==true)deny('NONCE_REPLAY_DENIED');
- // Restore via a fresh CHILD commit: a non-forced update to the ancestor is
- // non-fast-forward and must never be used, even as an emergency fallback.
- const restored=await api('POST',apiRoot+'/git/commits',{
-  message:'revert(android): owner-approved Ultra Sentinel remote rollback (PR #'+plan.prNumber+')',
-  tree:plan.originalTreeSha,parents:[plan.repairHeadSha]});
- if(!SHA.test(restored.sha||'')||
-  [plan.repairHeadSha,plan.originalHeadSha].includes(restored.sha))
-  deny('REMOTE_ROLLBACK_COMMIT_INVALID');
- // Last pre-publication checks ensure the PR is still a draft and protected
- // main/head have not moved. The ref update is non-forced and atomic at GitHub.
+ // A GraphQL expectedHeadOid check is atomic with creating the child commit.
+ // PR/main state is separate and is rechecked before and after publication.
  await verifyDraftAndMain();
  const beforeUpdate=await api('GET',branchRef);
  if(beforeUpdate.ref!==head.ref||beforeUpdate.object?.sha!==plan.repairHeadSha)
   deny('STALE_REMOTE_ROLLBACK_BRANCH');
  liveGrantClock();
- const updated=await api('PATCH',branchWrite,{sha:restored.sha,force:false});
- if(updated.ref!=='refs/heads/'+plan.branch||
-  updated.object?.sha!==restored.sha)
-  deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
+ const restoredSha=await publishAtomicBranchCommit({repository:REPO,branch:plan.branch,
+  expectedHeadSha:plan.repairHeadSha,files:additions,
+  message:'revert(android): owner-approved Ultra Sentinel remote rollback (PR #'+plan.prNumber+')',
+  token,fetchImpl,beforePublish:liveGrantClock});
+ if(restoredSha===plan.originalHeadSha)deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
  const confirmed=await api('GET',branchRef);
  if(confirmed.ref!=='refs/heads/'+plan.branch||
-  confirmed.object?.sha!==restored.sha)
+  confirmed.object?.type!=='commit'||confirmed.object?.sha!==restoredSha)
   deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
- const restoredCommit=await api('GET',apiRoot+'/git/commits/'+restored.sha);
- if(restoredCommit.sha!==restored.sha||
+ const restoredCommit=await api('GET',apiRoot+'/git/commits/'+restoredSha);
+ if(restoredCommit.sha!==restoredSha||
   restoredCommit.tree?.sha!==plan.originalTreeSha||
   !Array.isArray(restoredCommit.parents)||
   restoredCommit.parents.length!==1||
@@ -263,7 +273,7 @@ async function runSupervisedGitHubBranchRollback({
   finalPr.draft!==true||finalPr.merged!==false||
   finalPr.head?.repo?.full_name!==REPO||
   finalPr.head?.ref!==plan.branch||
-  finalPr.head?.sha!==restored.sha||
+  finalPr.head?.sha!==restoredSha||
   finalPr.base?.ref!=='main'||finalPr.base?.repo?.full_name!==REPO||
   finalPr.base?.sha!==plan.expectedMainSha||
   finalMain.ref!=='refs/heads/main'||
@@ -271,7 +281,7 @@ async function runSupervisedGitHubBranchRollback({
   finalMain.object.sha!==plan.expectedMainSha)
   deny('REMOTE_ROLLBACK_STATE_UNCERTAIN');
  return Object.freeze({...shared,status:'OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED',
-  commitSha:restored.sha,remoteWrites:true,ownerNonceConsumed:true,
+  commitSha:restoredSha,remoteWrites:true,ownerNonceConsumed:true,
   limitation:'The original Git tree is restored by a new commit to the signed draft PR branch; history is not rewritten. Separate CI, PR review and release checks remain mandatory.'});
 }
-module.exports={runSupervisedGitHubBranchRollback,stableOwnerRollbackGrant,digestRollbackPlan};
+module.exports={runSupervisedGitHubBranchRollback,stableOwnerRollbackGrant,digestRollbackPlan,treeEntries,verifyExactRepairDelta};

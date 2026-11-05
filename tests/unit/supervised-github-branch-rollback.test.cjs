@@ -37,10 +37,9 @@ function signature(grant,key=privateKey,domain='Ultra-Sentinel:github-pr-branch-
 }
 function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=false,
  changedMode=false,wrongParent=false,patchFailure=false,patchResponseLost=false,
- folderTrees=false,unrelatedTreeChange=false,prMergedAfterPatch=false,mainMovedAfterPatch=false,
+ folderTrees=false,unrelatedTreeChange=false,prMergedAfterPatch=false,mainMovedAfterPatch=false,raceHead,corruptBlob=false,
  onRequest}={}){
  const calls=[],root='/repos/'+REPO,refPath=root+'/git/ref/heads/'+BRANCH;
- const patchPath=root+'/git/refs/heads/'+BRANCH;
  let current=stale?'9'.repeat(40):REPAIR,prReads=0;
  const unchanged={path:'README.md',mode:'100644',type:'blob',sha:'1'.repeat(40)};
  const original=[unchanged,...plan.files.map(f=>({path:f.path,mode:'100644',type:'blob',sha:f.beforeBlobSha}))];
@@ -84,12 +83,22 @@ function fakeGitHub({plan,stale=false,staleMain=false,prReady=false,extraChange=
    return response(200,{sha:ORIGINAL_TREE,truncated:false,tree:original});
   if(route===root+'/git/trees/'+REPAIR_TREE&&method==='GET'&&u.search==='?recursive=1')
    return response(200,{sha:REPAIR_TREE,truncated:false,tree:repaired});
+  if(route.startsWith(root+'/git/blobs/')&&method==='GET'){
+   const file=plan.files.find(f=>route.endsWith(f.beforeBlobSha));
+   if(!file)throw Error('UNKNOWN_BLOB');
+   const i=plan.files.findIndex(f=>f.path===file.path);
+   const contents=Buffer.from('package sample\nclass Gate'+i+' { fun safe() = false }\n');
+   return response(200,{sha:file.beforeBlobSha,encoding:'base64',size:contents.length,
+    content:corruptBlob?Buffer.alloc(contents.length).toString('base64'):contents.toString('base64')});
+  }
   if(route===root+'/git/commits'&&method==='POST')return response(201,{sha:RESTORE});
-  if(route===patchPath&&method==='PATCH'){
-   if(patchFailure)return response(422,{message:'non-fast-forward'});
+  if(route==='/graphql'&&method==='POST'){
+   const input=JSON.parse(opts.body).variables.input;
+   if(raceHead)current=raceHead;
+   if(patchFailure||current!==input.expectedHeadOid)return response(200,{errors:[{message:'stale'}]});
    current=RESTORE;
    if(patchResponseLost)throw Error('NETWORK_LOST_AFTER_ACCEPTED_REF');
-   return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:RESTORE}});
+   return response(200,{data:{createCommitOnBranch:{commit:{oid:RESTORE}}}});
   }
   throw Error('UNEXPECTED_REQUEST '+method+' '+route);
  }
@@ -122,7 +131,7 @@ test('dry-run proves exact baseline restoration but never consumes nonce or writ
  assert.equal(result.mergeAllowed,false);
  assert.ok(remote.calls.every(c=>c.method==='GET'));
 });
-test('signed rollback appends only one restoring commit and atomically fast-forwards the draft branch',async()=>{
+test('signed rollback atomically compares the expected repair SHA and restores the tree',async()=>{
  const {result,remote}=await execute({apply:true});
  assert.equal(result.status,'OWNER_APPROVED_REMOTE_ROLLBACK_VERIFIED');
  assert.equal(result.commitSha,RESTORE);
@@ -130,11 +139,10 @@ test('signed rollback appends only one restoring commit and atomically fast-forw
  assert.equal(result.ownerNonceConsumed,true);
  assert.equal(result.mergeAllowed,false);
  const writes=remote.calls.filter(c=>c.method!=='GET');
- assert.equal(writes.filter(c=>c.method==='POST').length,1);
- assert.deepEqual(writes[0].body.tree,ORIGINAL_TREE);
- assert.deepEqual(writes[0].body.parents,[REPAIR]);
- assert.equal(writes[1].method,'PATCH');
- assert.deepEqual(writes[1].body,{sha:RESTORE,force:false});
+ assert.equal(writes.length,1);
+ assert.equal(writes[0].route,'/graphql');
+ assert.equal(writes[0].body.variables.input.expectedHeadOid,REPAIR);
+ assert.equal(writes[0].body.variables.input.fileChanges.additions.length,2);
  assert.equal(writes.some(c=>/merge|\/git\/refs\/heads\/main/.test(c.route)),false);
 });
 test('fresh rollback-specific signature and immutable head, tree, branch, base and plan digest are mandatory',async()=>{
@@ -164,7 +172,7 @@ test('ref refusal and uncertainty never claim remote rollback success',async()=>
   let remote;
   await assert.rejects(()=>execute({apply:true,fake,inspect:r=>{remote=r;}}),
    /UNCERTAIN|REF_UPDATE|GITHUB_API|TRANSPORT/);
-  assert.equal(remote.calls.filter(c=>c.method==='PATCH').length,1);
+  assert.equal(remote.calls.filter(c=>c.route==='/graphql').length,1);
  }
 });
 test('one-time rollback nonce cannot be replayed even after a successful rollback',async()=>{
@@ -174,16 +182,15 @@ test('one-time rollback nonce cannot be replayed even after a successful rollbac
   await assert.rejects(()=>execute({apply:true,store}),/NONCE_REPLAY_DENIED/);
  }finally{fs.rmSync(store,{recursive:true,force:true});}
 });
-test('expired owner grant after detached restore commit vetoes ref publication',async()=>{
+test('expired owner grant before atomic mutation vetoes publication',async()=>{
  let remote;
  const fake={onRequest:({method,route,calls})=>{
   if(method==='GET'&&route.endsWith('/git/ref/heads/'+BRANCH)&&
-   calls.some(c=>c.method==='POST'))now=NOW+600001;
+   calls.filter(c=>c.method==='GET'&&c.route.endsWith('/git/ref/heads/'+BRANCH)).length===3)now=NOW+600001;
  }};
  await assert.rejects(()=>execute({apply:true,fake,inspect:r=>{remote=r;}}),
   /OWNER_GRANT_EXPIRED/);
- assert.equal(remote.calls.filter(c=>c.method==='POST').length,1);
- assert.equal(remote.calls.filter(c=>c.method==='PATCH').length,0);
+ assert.equal(remote.calls.filter(c=>c.method==='POST').length,0);
 });
 
 test('Git recursive tree hashes may change for ancestors of the two signed Kotlin blobs',async()=>{
@@ -202,6 +209,22 @@ test('post-publication verification refuses success if PR is merged or main chan
   let remote;
   await assert.rejects(()=>execute({apply:true,fake,inspect:r=>{remote=r;}}),
    /REMOTE_ROLLBACK_STATE_UNCERTAIN/);
-  assert.equal(remote.calls.filter(x=>x.method==='PATCH').length,1);
+  assert.equal(remote.calls.filter(x=>x.route==='/graphql').length,1);
  }
+});
+test('branch advance, rewind or deletion at publication is rejected by the expected HEAD',async()=>{
+ for(const raceHead of [ORIGINAL,'9'.repeat(40),'deleted']){
+  let remote;
+  await assert.rejects(()=>execute({apply:true,fake:{raceHead},inspect:r=>{remote=r;}}),/PUBLICATION_UNCERTAIN/);
+  assert.equal(remote.calls.filter(x=>x.route==='/graphql').length,1);
+ }
+});
+test('a blob with the correct claimed SHA but different contents vetoes publication and nonce consumption',async()=>{
+ const store=fs.mkdtempSync(path.join(os.tmpdir(),'us-blob-integrity-'));
+ try{
+  let remote;
+  await assert.rejects(()=>execute({apply:true,store,fake:{corruptBlob:true},inspect:r=>{remote=r;}}),/BLOB_UNTRUSTED/);
+  assert.ok(remote.calls.every(c=>c.method==='GET'));
+  assert.equal((await execute({apply:true,store})).result.ownerNonceConsumed,true);
+ }finally{fs.rmSync(store,{recursive:true,force:true});}
 });

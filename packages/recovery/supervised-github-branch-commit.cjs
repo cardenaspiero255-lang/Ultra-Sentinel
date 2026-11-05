@@ -15,7 +15,8 @@ const crypto=require('node:crypto');
 const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
 const {PersistentNonceStore}=require('./owner-authorization.cjs');
 const {drillTwoSourceKotlinSandbox}=require('./two-source-kotlin-sandbox.cjs');
-const {digestRollbackPlan}=require('./supervised-github-branch-rollback.cjs');
+const {digestRollbackPlan,treeEntries,verifyExactRepairDelta}=require('./supervised-github-branch-rollback.cjs');
+const {publishAtomicBranchCommit}=require('./github-atomic-branch-commit.cjs');
 
 const REPO='cardenaspiero255-lang/JARVIS',OWNER='cardenaspiero255-lang';
 const OWNER_ID=322222186;
@@ -230,25 +231,8 @@ async function runSupervisedGitHubBranchCommit({
  requireLiveGrant();
  const store=new PersistentNonceStore(nonceStorePath);
  if(store.consume(ownerGrant.nonce)!==true)deny('NONCE_REPLAY_DENIED');
- const objects=[];
- for(const file of sorted){
-  const blob=await api('POST',repoApi+'/git/blobs',{
-   content:Buffer.from(file.after,'utf8').toString('base64'),encoding:'base64'});
-  if(blob.sha!==file.afterBlobSha)
-   deny('REMOTE_CREATED_BLOB_MISMATCH');
-  objects.push({path:file.path,mode:'100644',type:'blob',sha:blob.sha});
- }
- const newTree=await api('POST',repoApi+'/git/trees',{
-  base_tree:plan.expectedTreeSha,tree:objects});
- if(!SHA.test(newTree.sha||'')||newTree.sha===plan.expectedTreeSha)
-  deny('REMOTE_CANDIDATE_TREE_INVALID');
- const newCommit=await api('POST',repoApi+'/git/commits',{
-  message:'fix(android): owner-approved Ultra Sentinel supervised repair (PR #'+plan.prNumber+')',
-  tree:newTree.sha,parents:[plan.expectedHeadSha]});
- if(!SHA.test(newCommit.sha||'')||newCommit.sha===plan.expectedHeadSha)
-  deny('REMOTE_CANDIDATE_COMMIT_INVALID');
- // The only ref write in this module. GitHub rejects non-fast-forwards.
- // Never force; never write to main, delete branches, or call merge.
+ // The GraphQL mutation creates the commit and compares expectedHeadOid
+ // against the branch HEAD atomically. A fast-forward REST PATCH is not CAS.
  await verifyDraftAndMain();
  const rechecked=await api('GET',refPath);
  if(rechecked.ref!==head.ref||rechecked.object?.sha!==plan.expectedHeadSha)
@@ -256,14 +240,31 @@ async function runSupervisedGitHubBranchCommit({
  // Re-read the trusted clock at the point of publication; an expired grant
  // may leave unattached objects but must not move the protected PR branch.
  requireLiveGrant();
- const updated=await api('PATCH',repoApi+'/git/refs/heads/'+plan.branch,
-  {sha:newCommit.sha,force:false});
- if(updated.ref!=='refs/heads/'+plan.branch||
-  updated.object?.sha!==newCommit.sha)
-  deny('REMOTE_COMMIT_STATE_UNCERTAIN');
+ const newCommitSha=await publishAtomicBranchCommit({repository:REPO,branch:plan.branch,
+  expectedHeadSha:plan.expectedHeadSha,
+  files:sorted.map(f=>({path:f.path,contents:Buffer.from(f.after,'utf8').toString('base64')})),
+  message:'fix(android): owner-approved Ultra Sentinel supervised repair (PR #'+plan.prNumber+')',
+  token,fetchImpl,beforePublish:requireLiveGrant});
  const confirmed=await api('GET',refPath);
- if(confirmed.object?.sha!==newCommit.sha)
+ if(confirmed.ref!==head.ref||confirmed.object?.type!=='commit'||confirmed.object.sha!==newCommitSha)
   deny('REMOTE_COMMIT_STATE_UNCERTAIN');
+ const newCommit=await api('GET',repoApi+'/git/commits/'+newCommitSha);
+ if(newCommit.sha!==newCommitSha||!SHA.test(newCommit.tree?.sha||'')||
+  newCommit.tree.sha===plan.expectedTreeSha||!Array.isArray(newCommit.parents)||
+  newCommit.parents.length!==1||newCommit.parents[0]?.sha!==plan.expectedHeadSha)
+  deny('REMOTE_COMMIT_STATE_UNCERTAIN');
+ const newTree=await api('GET',repoApi+'/git/trees/'+newCommit.tree.sha+'?recursive=1');
+ try{verifyExactRepairDelta(treeEntries(tree,plan.expectedTreeSha),
+  treeEntries(newTree,newCommit.tree.sha),sorted);}catch{deny('REMOTE_COMMIT_STATE_UNCERTAIN');}
+ const finalPr=await api('GET',repoApi+'/pulls/'+plan.prNumber);
+ const finalMain=await api('GET',repoApi+'/git/ref/heads/main');
+ if(finalPr.number!==plan.prNumber||finalPr.state!=='open'||finalPr.draft!==true||
+  finalPr.merged!==false||finalPr.user?.login!==OWNER||finalPr.user?.id!==OWNER_ID||
+  finalPr.head?.repo?.full_name!==REPO||finalPr.head?.ref!==plan.branch||
+  finalPr.head?.sha!==newCommitSha||finalPr.base?.repo?.full_name!==REPO||
+  finalPr.base?.ref!=='main'||finalPr.base?.sha!==plan.expectedMainSha||
+  finalMain.ref!=='refs/heads/main'||finalMain.object?.type!=='commit'||
+  finalMain.object.sha!==plan.expectedMainSha)deny('REMOTE_COMMIT_STATE_UNCERTAIN');
  // This exact plan is DATA, not a rollback authorization. It requires a
  // fresh Ed25519 signature under the distinct rollback domain and nonce.
  const rollbackPlan=Object.freeze({
@@ -272,14 +273,14 @@ async function runSupervisedGitHubBranchCommit({
   expectedMainSha:plan.expectedMainSha,
   originalHeadSha:plan.expectedHeadSha,
   originalTreeSha:plan.expectedTreeSha,
-  repairHeadSha:newCommit.sha,repairTreeSha:newTree.sha,
+  repairHeadSha:newCommitSha,repairTreeSha:newCommit.tree.sha,
   files:Object.freeze(sorted.map(f=>Object.freeze({
    path:f.path,beforeBlobSha:f.beforeBlobSha,afterBlobSha:f.afterBlobSha
   })))
  });
  const rollbackPlanDigest=digestRollbackPlan(rollbackPlan);
  return Object.freeze({...shared,status:'OWNER_APPROVED_PR_BRANCH_COMMIT_CREATED',
-  commitSha:newCommit.sha,remoteWrites:true,commitCreated:true,
+  commitSha:newCommitSha,remoteWrites:true,commitCreated:true,
   ownerNonceConsumed:true,mergeAllowed:false,
   rollbackPlan,rollbackPlanDigest,remoteRollbackExecuted:false,
   limitation:'Remote repair committed, not yet rolled back. A new owner-signed rollback grant, an unchanged draft PR and a separate non-forced restoring commit are required for remote recovery; CI and merge checks remain separate.'});

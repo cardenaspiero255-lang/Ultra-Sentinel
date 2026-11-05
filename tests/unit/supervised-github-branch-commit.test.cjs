@@ -42,10 +42,9 @@ function oracleFor({plan,files}){
   originalJVMGreen:true,benignControlsPassed:true,isolatedExecution:true,
   remoteWrites:false,mergeAllowed:false};
 }
-function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false,
-  prBecameReady=false,mainMoved=false,onRequest}={}){
+function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,truncated=false,patchFailure=false,raceHead,
+  prBecameReady=false,mainMoved=false,lostResponse=false,wrongPublishedTree=false,onRequest}={}){
  const calls=[],refPath='/repos/'+REPO+'/git/ref/heads/'+BRANCH;
- const patchPath='/repos/'+REPO+'/git/refs/heads/'+BRANCH;
  let current=stale?'f'.repeat(40):SHA,prReads=0,mainReads=0;
  async function fetchImpl(url,options={}){
   const uri=new URL(url),route=uri.pathname,method=options.method||'GET';
@@ -56,7 +55,7 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
   if(route==='/repos/'+REPO+'/pulls/205')return response(200,{
    number:205,state:'open',draft:!(prBecameReady&&prReads++>0),merged:false,
    user:{login:OWNER,id:322222186},
-   head:{ref:BRANCH,sha:SHA,repo:{full_name:REPO}},
+   head:{ref:BRANCH,sha:current,repo:{full_name:REPO}},
    base:{ref:'main',sha:BASE,repo:{full_name:REPO}}});
   if(route==='/repos/'+REPO+'/git/ref/heads/main')
    return response(200,{ref:'refs/heads/main',object:{type:'commit',sha:(staleMain||(mainMoved&&mainReads++>0))?'f'.repeat(40):BASE}});
@@ -64,9 +63,15 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
    return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:current}});
   if(route==='/repos/'+REPO+'/git/commits/'+SHA&&method==='GET')
    return response(200,{sha:SHA,tree:{sha:TREE}});
+  if(route==='/repos/'+REPO+'/git/commits/'+NEW_COMMIT&&method==='GET')
+   return response(200,{sha:NEW_COMMIT,tree:{sha:NEW_TREE},parents:[{sha:SHA}]});
   if(route==='/repos/'+REPO+'/git/trees/'+TREE&&uri.search==='?recursive=1'&&method==='GET')
    return response(200,{sha:TREE,truncated,tree:files.map((f,i)=>({
     path:f.path,type:'blob',mode:symlink&&i===0?'120000':'100644',sha:f.beforeBlobSha
+   }))});
+  if(route==='/repos/'+REPO+'/git/trees/'+NEW_TREE&&uri.search==='?recursive=1'&&method==='GET')
+   return response(200,{sha:NEW_TREE,truncated:false,tree:files.map(f=>({
+    path:f.path,type:'blob',mode:'100644',sha:wrongPublishedTree?f.beforeBlobSha:f.afterBlobSha
    }))});
   if(route==='/repos/'+REPO+'/git/blobs'&&method==='POST')
    return response(201,{sha:blobSha(Buffer.from(options.body&&JSON.parse(options.body).content||'','base64').toString('utf8'))});
@@ -74,10 +79,13 @@ function fakeGitHub({plan,files,stale=false,staleMain=false,symlink=false,trunca
    return response(201,{sha:NEW_TREE});
   if(route==='/repos/'+REPO+'/git/commits'&&method==='POST')
    return response(201,{sha:NEW_COMMIT});
-  if(route===patchPath&&method==='PATCH'){
-   if(patchFailure)return response(422,{message:'non-fast-forward'});
+  if(route==='/graphql'&&method==='POST'){
+   const input=JSON.parse(options.body).variables.input;
+   if(raceHead)current=raceHead;
+   if(patchFailure||current!==input.expectedHeadOid)return response(200,{errors:[{message:'stale'}]});
    current=NEW_COMMIT;
-   return response(200,{ref:'refs/heads/'+BRANCH,object:{type:'commit',sha:NEW_COMMIT}});
+   if(lostResponse)throw Error('RESPONSE_LOST_AFTER_PUBLICATION');
+   return response(200,{data:{createCommitOnBranch:{commit:{oid:NEW_COMMIT}}}});
   }
   throw Error('UNEXPECTED_GITHUB_API '+method+' '+route);
  }
@@ -108,7 +116,7 @@ test('signed immutable plan, original Kotlin oracle and local Judge/rollback: pr
  assert.equal(result.mergeAllowed,false);
  assert.equal(remote.calls.some(c=>c.method!=='GET'),false);
 });
-test('separately approved commit writes only to existing draft PR branch via atomic non-forced fast-forward',async()=>{
+test('separately approved commit publishes with the exact expected branch SHA',async()=>{
  const {result,remote}=await execute({apply:true});
  assert.equal(result.status,'OWNER_APPROVED_PR_BRANCH_COMMIT_CREATED');
  assert.equal(result.commitSha,NEW_COMMIT);
@@ -129,11 +137,12 @@ test('separately approved commit writes only to existing draft PR branch via ato
  const {digestRollbackPlan}=require('../../packages/recovery/supervised-github-branch-rollback.cjs');
  assert.equal(result.rollbackPlanDigest,digestRollbackPlan(result.rollbackPlan));
  const writes=remote.calls.filter(x=>x.method!=='GET');
- assert.equal(writes.filter(x=>x.method==='PATCH').length,1);
- assert.equal(writes.at(-1).route,'/repos/'+REPO+'/git/refs/heads/'+BRANCH);
- assert.deepEqual(writes.at(-1).body,{sha:NEW_COMMIT,force:false});
+ assert.equal(writes.length,1);
+ assert.equal(writes[0].route,'/graphql');
+ assert.equal(writes[0].body.variables.input.expectedHeadOid,SHA);
+ assert.equal(writes[0].body.variables.input.branch.branchName,BRANCH);
  assert.equal(writes.some(x=>/pulls\/|\/merge|git\/ref\/heads\/main/.test(x.route)),false);
- assert.equal(writes.filter(x=>x.method==='POST'&&x.route.endsWith('/git/blobs')).length,2);
+ assert.equal(writes[0].body.variables.input.fileChanges.additions.length,2);
 });
 test('all plan, scope, content and owner-signature manipulations fail before GitHub writes',async()=>{
  const attacks=[
@@ -170,7 +179,21 @@ test('remote SHA, protected main and symlink/truncated tree invalidate branch pr
  }
 });
 test('non-fast-forward refusal does not assert a successful remote write or merge',async()=>{
- await assert.rejects(()=>execute({apply:true,mockOptions:{patchFailure:true}}),/REF_UPDATE|REMOTE|GITHUB/);
+ await assert.rejects(()=>execute({apply:true,mockOptions:{patchFailure:true}}),/PUBLICATION_UNCERTAIN/);
+});
+test('branch advance, rewind or deletion at publication is rejected by the expected HEAD',async()=>{
+ for(const raceHead of [BASE,'f'.repeat(40),'deleted']){
+  let remote;
+  await assert.rejects(()=>execute({apply:true,mockOptions:{raceHead},inspectRemote:r=>{remote=r;}}),/PUBLICATION_UNCERTAIN/);
+  assert.equal(remote.calls.filter(x=>x.route==='/graphql').length,1);
+ }
+});
+test('a lost mutation response or incorrect published tree never reports success',async()=>{
+ for(const mockOptions of [{lostResponse:true},{wrongPublishedTree:true}]){
+  let remote;
+  await assert.rejects(()=>execute({apply:true,mockOptions,inspectRemote:r=>{remote=r;}}),/UNCERTAIN/);
+  assert.equal(remote.calls.filter(c=>c.route==='/graphql').length,1);
+ }
 });
 test('persistent owner nonce is single-use across independent successful attempts',async()=>{
  const store=fs.mkdtempSync(path.join(os.tmpdir(),'us-owner-nonce-'));
@@ -226,7 +249,7 @@ test('P2: grant expiry during original Kotlin oracle vetoes remote writes',async
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
-test('P2: grant expiry after objects are created vetoes publication of remote ref',async()=>{
+test('P2: grant expiry immediately before publication vetoes remote write',async()=>{
  let observed;
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'us-expiring-publish-'));
  try{
@@ -234,13 +257,11 @@ test('P2: grant expiry after objects are created vetoes publication of remote re
    apply:true,store:dir,
    inspectRemote:r=>{observed=r;},
    mockOptions:{onRequest:({route,method,calls})=>{
-    const commitAlreadyCreated=calls.some(c=>c.method==='POST'&&
-      c.route==='/repos/'+REPO+'/git/commits');
-    if(method==='GET'&&route==='/repos/'+REPO+'/git/ref/heads/'+BRANCH&&commitAlreadyCreated)
+    const reads=calls.filter(c=>c.method==='GET'&&c.route==='/repos/'+REPO+'/git/ref/heads/'+BRANCH).length;
+    if(method==='GET'&&route==='/repos/'+REPO+'/git/ref/heads/'+BRANCH&&reads===2)
      clockNow=NOW+600001;
    }}
   }),/OWNER_GRANT_EXPIRED/);
-  assert.ok(observed.calls.some(c=>c.method==='POST'));
-  assert.equal(observed.calls.some(c=>c.method==='PATCH'),false);
+  assert.equal(observed.calls.some(c=>c.method==='POST'),false);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

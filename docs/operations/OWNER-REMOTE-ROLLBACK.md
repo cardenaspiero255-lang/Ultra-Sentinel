@@ -8,7 +8,9 @@ El ejecutor de reparación devuelve rollbackPlan y rollbackPlanDigest únicament
 
 El ejecutor de rollback obtiene desde GitHub el PR, main, HEAD, parentesco de commits y los dos árboles Git recursivos completos (no truncados). Deniega modificaciones fuera de esos dos archivos, modos alterados, firmas inválidas y árboles o SHA divergentes. Los SHA de carpetas ancestras pueden cambiar legítimamente por las dos modificaciones aprobadas.
 
-Para restaurar, CREA un nuevo commit con el árbol Git original y padre igual al commit reparado. Lo publica mediante una actualización fast-forward sin force. Volver directamente al SHA anterior mediante reset remoto está prohibido. Verifica el HEAD remoto, el árbol y el padre del nuevo commit antes de anunciar éxito.
+Para restaurar, recupera los dos blobs originales y verifica sus hashes Git y tamaños. `createCommitOnBranch` recibe sus contenidos y `expectedHeadOid` igual al SHA reparado; GitHub compara el HEAD al crear el nuevo commit hijo. Volver directamente al SHA anterior mediante reset remoto está prohibido. Verifica después el HEAD remoto, el árbol original y el padre del nuevo commit antes de anunciar éxito. El mismo mecanismo de comparación se usa al publicar la reparación.
+
+La comparación atómica solo cubre el HEAD de la rama. Las lecturas del PR y de `main` antes y después de la mutación no son una transacción conjunta: si cambian durante la operación, esta puede haber escrito y se informa un resultado incierto; no se afirma que se haya impedido la escritura. La API no protege frente a una secuencia ABA en la que el HEAD cambia y vuelve al mismo SHA antes de la mutación.
 
 ## Autorización única del propietario
 
@@ -30,7 +32,7 @@ Las herramientas de ejecución deniegan GITHUB_ACTIONS=true: un PR o workflow no
 ## Incertidumbre y recuperación
 
 - Si cambian el PR, main, SHA, árbol, firma o expiración, abortar. No hacer force push ni auto-merge.
-- Si GitHub pierde la respuesta de PATCH después de aceptar el commit, el resultado es INCIERTO. Inspeccionar de manera independiente la referencia remota, padre y árbol del commit antes de atribuir éxito; no reintentar ciegamente ni reutilizar un nonce.
+- Si GitHub pierde la respuesta de la mutación o devuelve un error, el resultado es INCIERTO. Inspeccionar de manera independiente la referencia remota, padre y árbol del commit antes de atribuir éxito; no reintentar ciegamente ni reutilizar un nonce.
 - Ante corrupción del ledger, detener nuevas escrituras y preservar los registros para recuperación supervisada.
 - La restauración añade un nuevo commit, por lo que el commit defectuoso seguirá en el historial, deliberadamente. Las pruebas de CI y los controles de fusión del nuevo SHA siguen siendo obligatorios.
 
