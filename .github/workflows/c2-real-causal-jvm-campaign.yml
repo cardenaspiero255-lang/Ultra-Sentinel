@@ -1,5 +1,12 @@
 name: C2 REAL original Kotlin ten JVM causal campaign
 on:
+  workflow_call:
+    inputs:
+      original_replay:
+        description: Replay the pinned original Kotlin campaign in the caller's run
+        required: false
+        type: boolean
+        default: false
   pull_request:
     paths:
       - .github/workflows/c2-real-causal-jvm-campaign.yml
@@ -44,6 +51,13 @@ jobs:
           node-version: '22'
       - name: All regression and architecture checks
         run: npm run check
+      - name: Checkout the original campaign scripts and oracles
+        if: ${{ inputs.original_replay }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7c9d0e459974a48367aed99c2c86853160fa3f82
+          path: original-c2-campaign
+          persist-credentials: false
       - name: Require AppArmor Bubblewrap networkless isolation
         shell: bash
         run: |
@@ -64,11 +78,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           C2_OWNER_SANDBOX: "1"
           SUITE: ${{ matrix.suite }}
+          ORIGINAL_REPLAY: ${{ inputs.original_replay && '1' || '0' }}
         run: |
           set -euo pipefail
           umask 077
           root="$RUNNER_TEMP/c2-real-campaign/$SUITE"
           mkdir -p "$root"
+          if [ "$ORIGINAL_REPLAY" = 1 ]; then cd original-c2-campaign; fi
           bash scripts/c2-live-causal-campaign.sh "$SUITE" "$root"
           test -s "$root/output/evidence.json"
           mkdir -p "$RUNNER_TEMP/c2-real-artifacts"
@@ -78,7 +94,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-real-causal-${{ matrix.suite }}
+          name: ${{ inputs.original_replay && format('c2-real-causal-{0}-{1}-a{2}', matrix.suite, github.run_id, github.run_attempt) || format('c2-real-causal-{0}', matrix.suite) }}
           path: ${{ runner.temp }}/c2-real-artifacts/evidence.json
           retention-days: 14
           if-no-files-found: error
@@ -90,26 +106,40 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+      - name: Checkout the original campaign adjudicator
+        if: ${{ inputs.original_replay }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7c9d0e459974a48367aed99c2c86853160fa3f82
+          path: original-c2-campaign
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
-          pattern: c2-real-causal-*
+          pattern: ${{ inputs.original_replay && format('c2-real-causal-*-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-real-causal-*' }}
           path: ${{ runner.temp }}/c2-real-adjudication/inputs
           merge-multiple: false
       - name: Admit only genuine expected ten source-level JVM results
         shell: bash
+        env:
+          ORIGINAL_REPLAY: ${{ inputs.original_replay && '1' || '0' }}
+          NUMERIC_ARTIFACT: ${{ inputs.original_replay && format('c2-real-causal-numeric-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-real-causal-numeric' }}
+          CONFIDENCE_ARTIFACT: ${{ inputs.original_replay && format('c2-real-causal-confidence-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-real-causal-confidence' }}
+          THERMAL_ARTIFACT: ${{ inputs.original_replay && format('c2-real-causal-thermal-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-real-causal-thermal' }}
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/c2-real-adjudication"
           mkdir -p "$root/output"
           test "$(find "$root/inputs" -type f|wc -l)" -eq 3
           test "$(find "$root/inputs" -type l|wc -l)" -eq 0
-          node scripts/c2-real-causal-campaign-consolidate.cjs \
-            "$root/inputs/c2-real-causal-numeric/evidence.json" \
-            "$root/inputs/c2-real-causal-confidence/evidence.json" \
-            "$root/inputs/c2-real-causal-thermal/evidence.json" \
+          probe=.
+          if [ "$ORIGINAL_REPLAY" = 1 ]; then probe=original-c2-campaign; fi
+          node "$probe/scripts/c2-real-causal-campaign-consolidate.cjs" \
+            "$root/inputs/$NUMERIC_ARTIFACT/evidence.json" \
+            "$root/inputs/$CONFIDENCE_ARTIFACT/evidence.json" \
+            "$root/inputs/$THERMAL_ARTIFACT/evidence.json" \
             "$root/output/source-kotlin-causal-campaign.json"
           jq -e '
             .schema=="c2-original-kotlin-real-causal-campaign/v1" and
@@ -125,7 +155,7 @@ jobs:
           ' "$root/output/source-kotlin-causal-campaign.json"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-real-kotlin-causal-campaign-21-unresolved
+          name: ${{ inputs.original_replay && format('c2-ten-jvm-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-real-kotlin-causal-campaign-21-unresolved' }}
           path: ${{ runner.temp }}/c2-real-adjudication/output/source-kotlin-causal-campaign.json
           retention-days: 30
           if-no-files-found: error
