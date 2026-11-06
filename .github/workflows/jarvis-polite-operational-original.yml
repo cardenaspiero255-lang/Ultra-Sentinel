@@ -4,10 +4,16 @@ on:
     paths:
       - .github/workflows/jarvis-polite-operational-original.yml
       - packages/investigation/jarvis-polite-operational-original-proof.cjs
+      - packages/investigation/jarvis-polite-candidate.cjs
       - scripts/jarvis-polite-operational-original-red.sh
+      - scripts/jarvis-polite-build-candidate.cjs
+      - scripts/jarvis-polite-candidate-matrix.sh
+      - scripts/verify-jarvis-polite-candidate.cjs
       - scripts/verify-jarvis-polite-operational-original.cjs
       - tests/oracles/jarvis-polite-operational-original.kt
+      - tests/oracles/jarvis-polite-candidate-adversarial.kt
       - tests/unit/jarvis-polite-operational-original-proof.test.cjs
+      - tests/unit/jarvis-polite-candidate.test.cjs
   push:
     branches: [main]
 permissions:
@@ -40,8 +46,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Validate isolated receipt contract
-        run: node --test tests/unit/jarvis-polite-operational-original-proof.test.cjs
+      - name: Validate isolated receipt and candidate contracts
+        run: node --test tests/unit/jarvis-polite-operational-original-proof.test.cjs tests/unit/jarvis-polite-candidate.test.cjs
       - name: Install AppArmor and Bubblewrap
         shell: bash
         run: |
@@ -95,5 +101,30 @@ jobs:
         with:
           name: jarvis-polite-original-observation
           path: ${{ runner.temp }}/jarvis-polite-original/polite-original-receipt.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Test two-source candidate matrix and local Judge rollback
+        shell: bash
+        env:
+          JARVIS_POLITE_ISOLATED: '1'
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-polite-candidate-matrix.sh
+          root="$RUNNER_TEMP/jarvis-polite-original"
+          bash scripts/jarvis-polite-candidate-matrix.sh "$root"
+          jq -e '
+            .status=="PINNED_SOURCE_MATRIX_AND_LOCAL_ROLLBACK_OBSERVED" and
+            (.matrix|length)==4 and .localStructuralJudgeApproved==true and
+            .localExactTreeRollbackVerified==true and
+            .sourceAndRunnerAuthenticatedByThisFunction==false and
+            .ownerAuthorizationVerified==false and .androidDeviceObserved==false and
+            .deviceActionProven==false and .remoteWrites==false and
+            .mergeAllowed==false and .productionReleaseCertified==false
+          ' "$root/polite-candidate-receipt.json"
+      - name: Archive sanitized candidate matrix receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-polite-candidate-matrix
+          path: ${{ runner.temp }}/jarvis-polite-original/polite-candidate-receipt.json
           retention-days: 14
           if-no-files-found: error
