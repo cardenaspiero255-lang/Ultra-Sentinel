@@ -3,16 +3,65 @@ on:
   pull_request:
     paths:
       - .github/workflows/c2-152-158-mechanism-cross.yml
+      - .github/workflows/c2-pr186-four-source-cross.yml
+      - .github/workflows/c2-rollback-cross-owner.yml
+      - .github/workflows/c2-real-causal-jvm-campaign.yml
       - packages/quality-gates/c2-152-158-mechanism-cross.cjs
+      - packages/quality-gates/c2-replay-origin.cjs
       - scripts/c2-152-158-mechanism-cross.cjs
+      - scripts/c2-replay-origin.cjs
       - tests/unit/c2-152-158-mechanism-cross.test.cjs
+      - tests/unit/c2-replay-origin.test.cjs
   push:
     branches: [main]
 permissions:
   contents: read
   actions: read
 jobs:
+  replay-original-pr186:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    uses: ./.github/workflows/c2-pr186-four-source-cross.yml
+    with:
+      original_replay: true
+    permissions:
+      contents: read
+      actions: read
+  replay-original-owner-rollback:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    uses: ./.github/workflows/c2-rollback-cross-owner.yml
+    with:
+      original_replay: true
+    permissions:
+      contents: read
+      actions: read
+  replay-original-ten-jvm:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    uses: ./.github/workflows/c2-real-causal-jvm-campaign.yml
+    with:
+      original_replay: true
+    permissions:
+      contents: read
+      actions: read
   adjudicate-source-causal-pairs:
+    needs: [replay-original-pr186, replay-original-owner-rollback, replay-original-ten-jvm]
     if: >-
       github.event.repository.id == 1418338512 &&
       ((github.event_name == 'pull_request' &&
@@ -31,50 +80,54 @@ jobs:
           node-version: '22'
       - name: Focused and complete unit regression
         run: |
-          node --test tests/unit/c2-152-158-mechanism-cross.test.cjs
+          node --test tests/unit/c2-152-158-mechanism-cross.test.cjs tests/unit/c2-replay-origin.test.cjs
           npm run check
-      - name: Authenticate three owner-run source experiments and compare mechanisms
+      - name: Authenticate regenerated source experiments and compare mechanisms
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           umask 077
           repo=cardenaspiero255-lang/Ultra-Sentinel
           root="$RUNNER_TEMP/c2-152-158-cross"
           mkdir -p "$root/output" "$root/inputs"
-          cat > "$root/source-manifest.tsv" <<'PINS'
-          json-query|39726814046|3ae25092c30a5274d790bc4954707fda06edc0bc|.github/workflows/c2-pr186-four-source-cross.yml|pull_request|12403905316|c2-pr186-json-query|175e3c829390f35d1bab575a3788cd6bacd2e512c7060be8c9752d867498e290|proof.json
-          rollback-ttl|39726814046|3ae25092c30a5274d790bc4954707fda06edc0bc|.github/workflows/c2-pr186-four-source-cross.yml|pull_request|12402464380|c2-pr186-rollback-ttl|024637e78f0b26b5e72f0f90fc0ff6ce0955de1312e260fac188791e97b83e5c|proof.json
-          owner-replay|39952600537|f1e65032d65e84907b8f2d52fcaa7b1610d4ba0b|.github/workflows/c2-rollback-cross-owner.yml|pull_request|12501326370|c2-rollback-original-six-jvm-not-certified|0cc4fdcb3c672ddfe6f6aeba35fd63cff5a909f79b1105aa9d7c34cb1532c910|rollback-cross.json
-          ten-jvm|39955735158|7c9d0e459974a48367aed99c2c86853160fa3f82|.github/workflows/c2-real-causal-jvm-campaign.yml|push|12502631435|c2-real-kotlin-causal-campaign-21-unresolved|662664d8336836aa70a2bab7e259486f4a575f52fca73ea5ae206b5bff24c798|source-kotlin-causal-campaign.json
-          PINS
-          while IFS='|' read -r key run head wf event artifact name digest filename;do
-            gh api "/repos/$repo/actions/runs/$run" > "$root/run.json"
-            jq -e --argjson id "$run" --arg h "$head" --arg wf "$wf" --arg ev "$event" '
-              .id==$id and .head_sha==$h and .path==$wf and
-              .event==$ev and .status=="completed" and .conclusion=="success" and
-              .actor.id==322222186 and .repository.id==1418338512
-            ' "$root/run.json" >/dev/null
-            gh api "/repos/$repo/actions/runs/$run/artifacts" > "$root/artifacts.json"
-            jq -e --argjson id "$artifact" --argjson run "$run" --arg name "$name" --arg digest "sha256:$digest" '
-              [.artifacts[]|select(.id==$id and .name==$name and .digest==$digest and
-                .expired==false and .workflow_run.id==$run and
-                .workflow_run.repository_id==1418338512)]|length==1
-            ' "$root/artifacts.json" >/dev/null
+          # Regenerate all four receipts in this run. Never substitute new bytes
+          # under an expired historical artifact ID or digest.
+          gh api "/repos/$repo/actions/runs/$GITHUB_RUN_ID" > "$root/current-run.json"
+          for key in json-query rollback-ttl owner-replay ten-jvm; do
+            case "$key" in
+              json-query|rollback-ttl) name="c2-pr186-${key}-${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}"; filename=proof.json ;;
+              owner-replay) name="c2-${key}-${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}"; filename=rollback-cross.json ;;
+              ten-jvm) name="c2-${key}-${GITHUB_RUN_ID}-a${GITHUB_RUN_ATTEMPT}"; filename=source-kotlin-causal-campaign.json ;;
+            esac
+            gh api "/repos/$repo/actions/runs/$GITHUB_RUN_ID/artifacts?name=$name&per_page=100" > "$root/current-artifacts.json"
+            selected="$(node scripts/c2-replay-origin.cjs "$root/current-run.json" "$root/current-artifacts.json" \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$EXPECTED_HEAD_SHA" "$GITHUB_EVENT_NAME" "$key")"
+            read -r artifact digest <<< "$selected"
+            gh api "/repos/$repo/actions/artifacts/$artifact/zip" > "$root/$key.zip"
+            test "$(stat -c %s "$root/$key.zip")" -le 1000000
+            test "$(sha256sum "$root/$key.zip" | cut -d' ' -f1)" = "$digest"
+            unzip -Z1 "$root/$key.zip" > "$root/$key.entries"
+            test "$(wc -l < "$root/$key.entries")" -eq 1
+            grep -Fxq "$filename" "$root/$key.entries"
             mkdir -p "$root/inputs/$key"
-            gh run download "$run" --repo "$repo" --name "$name" --dir "$root/inputs/$key"
-            test "$(find "$root/inputs/$key" -type f|wc -l)" = 1
-            test "$(find "$root/inputs/$key" -type l|wc -l)" = 0
-            test -s "$root/inputs/$key/$filename"
-            echo "SOURCE_CAUSAL_OWNER_RECEIPT_VERIFIED $key"
-          done < "$root/source-manifest.tsv"
-          node scripts/c2-152-158-mechanism-cross.cjs             "$root/inputs/json-query/proof.json"             "$root/inputs/rollback-ttl/proof.json"             "$root/inputs/owner-replay/rollback-cross.json"             "$root/inputs/ten-jvm/source-kotlin-causal-campaign.json"             "$root/output/causal-cross-evidence.json"
+            unzip -p "$root/$key.zip" "$filename" | head -c 1800001 > "$root/inputs/$key/$filename"
+            test "$(stat -c %s "$root/inputs/$key/$filename")" -le 1800000
+            echo "SOURCE_CAUSAL_CURRENT_REPLAY_VERIFIED $key artifact=$artifact"
+          done
+          node scripts/c2-152-158-mechanism-cross.cjs --same-run-replay \
+            "$root/inputs/json-query/proof.json" "$root/inputs/rollback-ttl/proof.json" \
+            "$root/inputs/owner-replay/rollback-cross.json" "$root/inputs/ten-jvm/source-kotlin-causal-campaign.json" \
+            "$root/output/causal-cross-evidence.json"
           jq -e '
             .schema=="c2-152-158-cross-known-mechanisms/v1" and
             .originalJointJVMRuns==8 and
             .additionalOriginalKotlinJVMExecutions==16 and
-            .currentWorkflowNewJVMExecutions==0 and
+            .currentWorkflowNewJVMExecutions==24 and
+            .crossProbeEvidenceOrigin=="SAME_RUN_ORIGINAL_SOURCE_REPLAY" and
+            .additionalEvidenceOrigin=="SAME_RUN_ORIGINAL_SOURCE_REPLAY" and
             .directJointInterventionContrasts==2 and
             .separateJVMContrasts==1 and .untestedCrossRelations==4 and
             .causalFamiliesIndependentlyCertified==0 and
@@ -84,7 +137,7 @@ jobs:
             .precision==null and .recall==null and .f1==null and
             .sssPlusCertified==false
           ' "$root/output/causal-cross-evidence.json" >/dev/null
-          rm -rf "$root/inputs" "$root/run.json" "$root/artifacts.json" "$root/source-manifest.tsv"
+          rm -rf "$root/inputs" "$root/current-run.json" "$root/current-artifacts.json"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: c2-152-158-evidence-two-pairs-crossed-four-untested
