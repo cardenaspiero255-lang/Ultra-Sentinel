@@ -10,11 +10,14 @@ function read(s){
  return JSON.parse(fs.readFileSync(s,'utf8'));
 }
 function main(paths){
+ const sameRun=paths[0]==='--same-run-replay';
+ if(sameRun)paths=paths.slice(1);
  if(paths.length!==5||paths.some(p=>!path.isAbsolute(p))||
    new Set(paths).size!==5||fs.existsSync(paths[4]))
   throw Error('C2_CAUSAL_CROSS_UNSAFE_OUTPUT');
  const [jsonQuery,rollbackTtl,replay,campaign]=paths.slice(0,4).map(read);
- const result=adjudicateCrossWithKnownMechanisms({jsonQuery,rollbackTtl,replay,campaign});
+ const result=adjudicateCrossWithKnownMechanisms({jsonQuery,rollbackTtl,replay,campaign,
+  evidenceMode:sameRun?'same-run-replay':'historical'});
  fs.writeFileSync(paths[4],JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
  process.stdout.write(JSON.stringify({direct:result.directJointInterventionContrasts,
   separate:result.separateJVMContrasts,unknown:result.untestedCrossRelations,
