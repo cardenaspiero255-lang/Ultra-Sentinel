@@ -46,6 +46,14 @@ test('rejects malformed execution context before selecting artifacts',()=>{
   assert.throws(()=>verifyReplayOrigin({...x,context:bad}),/C2_REPLAY_ORIGIN_BLOCKED/);
  }
 });
+test('all four replay receipts must belong to the same current attempt',()=>{
+ for(const suite of ['owner-replay','ten-jvm']){
+  const x=fixture();x.listing.artifacts[0].name=`c2-${suite}-123456-a2`;
+  assert.deepEqual(verifyReplayOrigin({...x,context:{...context,suite}}),{artifactId:765432,digest:'b'.repeat(64)});
+  x.listing.artifacts[0].name=`c2-${suite}-123456-a1`;
+  assert.throws(()=>verifyReplayOrigin({...x,context:{...context,suite}}),/C2_REPLAY_ORIGIN_BLOCKED/);
+ }
+});
 test('CLI selects metadata and exits nonzero if the current attempt is missing',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'c2-replay-origin-'));
  try{
@@ -59,7 +67,8 @@ test('CLI selects metadata and exits nonzero if the current attempt is missing',
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 test('C2 workflows use full Git commit IDs for external actions',()=>{
- for(const file of ['c2-pr186-four-source-cross.yml','c2-152-158-mechanism-cross.yml']){
+ for(const file of ['c2-pr186-four-source-cross.yml','c2-152-158-mechanism-cross.yml',
+  'c2-rollback-cross-owner.yml','c2-real-causal-jvm-campaign.yml']){
   const source=fs.readFileSync(path.join(__dirname,'../../.github/workflows',file),'utf8');
   const actions=[...source.matchAll(/^\s*(?:-\s*)?uses:\s*([^\s#]+)/gm)].map(x=>x[1]);
   assert.ok(actions.some(x=>x.startsWith('actions/checkout@')));

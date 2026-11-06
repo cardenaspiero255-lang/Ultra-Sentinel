@@ -1,5 +1,12 @@
 name: C2 original rollback cross PR153 PR152 and PR153 benign mutant
 on:
+  workflow_call:
+    inputs:
+      original_replay:
+        description: Replay the pinned original owner experiment in the caller's run
+        required: false
+        type: boolean
+        default: false
   pull_request:
     paths:
       - .github/workflows/c2-rollback-cross-owner.yml
@@ -14,8 +21,11 @@ jobs:
   original-rollback-source-jvms:
     if: >-
       github.event.repository.id == 1418338512 &&
-      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
-      github.event.pull_request.user.login == 'cardenaspiero255-lang'
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (inputs.original_replay && github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor == 'cardenaspiero255-lang'))
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -32,6 +42,13 @@ jobs:
           set -euo pipefail
           node --test tests/unit/c2-rollback-cross-owner.test.cjs
           npm run check
+      - name: Checkout the original rollback experiment
+        if: ${{ inputs.original_replay }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: f1e65032d65e84907b8f2d52fcaa7b1610d4ba0b
+          path: original-c2-rollback
+          persist-credentials: false
       - name: Enforce AppArmor and Bubblewrap
         shell: bash
         run: |
@@ -50,11 +67,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           C2_OWNER_SANDBOX: '1'
+          ORIGINAL_REPLAY: ${{ inputs.original_replay && '1' || '0' }}
         run: |
           set -euo pipefail
           umask 077
           root="$RUNNER_TEMP/c2-rollback-cross"
           mkdir -p "$root"
+          if [ "$ORIGINAL_REPLAY" = 1 ]; then cd original-c2-rollback; fi
           bash scripts/c2-rollback-cross-owner.sh "$root"
           jq -e '.schema=="c2-rollback-153-152-original-cross-verified/v1" and
            .originalKotlinJvmExecutions==6 and (.matrix|length)==4' "$root/output/rollback-cross.json" >/dev/null
@@ -67,7 +86,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-rollback-original-six-jvm-not-certified
+          name: ${{ inputs.original_replay && format('c2-owner-replay-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-rollback-original-six-jvm-not-certified' }}
           path: ${{ runner.temp }}/c2-rollback-cross/output/rollback-cross.json
           retention-days: 30
           if-no-files-found: error

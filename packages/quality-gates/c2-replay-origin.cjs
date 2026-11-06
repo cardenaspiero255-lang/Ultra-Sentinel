@@ -10,13 +10,14 @@ function verifyReplayOrigin({run,listing,context}={}){
    !Number.isSafeInteger(c.attempt)||c.attempt<1||
    !/^[a-f0-9]{40}$/.test(c.headSha)||
    !['push','pull_request'].includes(c.event)||
-   !['json-query','rollback-ttl'].includes(c.suite))die();
+   !['json-query','rollback-ttl','owner-replay','ten-jvm'].includes(c.suite))die();
   if(!run||run.id!==c.runId||run.run_attempt!==c.attempt||
    run.head_sha!==c.headSha||run.event!==c.event||run.status!=='in_progress'||
    run.path!=='.github/workflows/c2-152-158-mechanism-cross.yml'||
    run.actor?.id!==322222186||run.repository?.id!==1418338512||
    run.head_repository?.id!==1418338512)die();
-  const expected=`c2-pr186-${c.suite}-${c.runId}-a${c.attempt}`;
+  const prefix=['json-query','rollback-ttl'].includes(c.suite)?'c2-pr186':'c2';
+  const expected=`${prefix}-${c.suite}-${c.runId}-a${c.attempt}`;
   if(!listing||listing.total_count!==1||!Array.isArray(listing.artifacts)||
    listing.artifacts.length!==1)die();
   const artifact=listing.artifacts[0];

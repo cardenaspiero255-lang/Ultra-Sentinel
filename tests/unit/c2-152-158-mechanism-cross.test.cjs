@@ -75,12 +75,15 @@ test('RED: reject fabricated orthogonality, missing benign canary, wrong cases, 
 test('same-run regeneration records new executions and does not accept missing or unknown evidence',()=>{
  const x=fixture();
  const report=adjudicateCrossWithKnownMechanisms({...x,evidenceMode:'same-run-replay'});
- assert.equal(report.currentWorkflowNewJVMExecutions,8);
+ assert.equal(report.currentWorkflowNewJVMExecutions,24);
  assert.equal(report.crossProbeEvidenceOrigin,'SAME_RUN_ORIGINAL_SOURCE_REPLAY');
+ assert.equal(report.additionalEvidenceOrigin,'SAME_RUN_ORIGINAL_SOURCE_REPLAY');
  assert.equal(report.originalOlderExperimentDigest,null);
  assert.equal(report.originalOlderRollbackTtlExperimentDigest,null);
  assert.match(report.replayedJsonQueryExperimentDigest,/^[a-f0-9]{64}$/);
  assert.match(report.replayedRollbackTtlExperimentDigest,/^[a-f0-9]{64}$/);
  assert.throws(()=>adjudicateCrossWithKnownMechanisms({...x,evidenceMode:'invented'}),/C2_152_158_CAUSAL_CROSS_BLOCKED/);
- assert.throws(()=>adjudicateCrossWithKnownMechanisms({...x,jsonQuery:undefined,evidenceMode:'same-run-replay'}),/C2_152_158_CAUSAL_CROSS_BLOCKED/);
+ for(const key of ['jsonQuery','rollbackTtl','replay','campaign']){
+  assert.throws(()=>adjudicateCrossWithKnownMechanisms({...x,[key]:undefined,evidenceMode:'same-run-replay'}),/C2_152_158_CAUSAL_CROSS_BLOCKED/);
+ }
 });
