@@ -1,0 +1,130 @@
+name: Ultra Sentinel - pinned JARVIS polite intent original RED
+on:
+  pull_request:
+    paths:
+      - .github/workflows/jarvis-polite-operational-original.yml
+      - packages/investigation/jarvis-polite-operational-original-proof.cjs
+      - packages/investigation/jarvis-polite-candidate.cjs
+      - scripts/jarvis-polite-operational-original-red.sh
+      - scripts/jarvis-polite-build-candidate.cjs
+      - scripts/jarvis-polite-candidate-matrix.sh
+      - scripts/verify-jarvis-polite-candidate.cjs
+      - scripts/verify-jarvis-polite-operational-original.cjs
+      - tests/oracles/jarvis-polite-operational-original.kt
+      - tests/oracles/jarvis-polite-candidate-adversarial.kt
+      - tests/unit/jarvis-polite-operational-original-proof.test.cjs
+      - tests/unit/jarvis-polite-candidate.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-polite-original-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  pinned-original-red:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Validate isolated receipt and candidate contracts
+        run: node --test tests/unit/jarvis-polite-operational-original-proof.test.cjs tests/unit/jarvis-polite-candidate.test.cjs
+      - name: Install AppArmor and Bubblewrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch fixed Kotlin compiler archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          compiler="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' \
+            /repos/JetBrains/kotlin/releases/assets/198150667 > "$compiler"
+          test "$(sha256sum "$compiler" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/jarvis-polite-kotlin"
+          unzip -q "$compiler" -d "$RUNNER_TEMP/jarvis-polite-kotlin"
+          test -x "$RUNNER_TEMP/jarvis-polite-kotlin/kotlinc/bin/kotlinc"
+          echo "JARVIS_KOTLIN_HOME=$RUNNER_TEMP/jarvis-polite-kotlin/kotlinc" >> "$GITHUB_ENV"
+      - name: Verify original behavior and benign controls in isolated JVM
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JARVIS_POLITE_ISOLATED: '1'
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-polite-operational-original-red.sh
+          root="$RUNNER_TEMP/jarvis-polite-original"
+          mkdir "$root"
+          bash scripts/jarvis-polite-operational-original-red.sh "$root"
+          jq -e '
+            .status=="ORIGINAL_VOICE_INTENT_RED_OBSERVED" and
+            .originalPolicyRed==true and .originalGateRed==true and
+            .originalBenignControlsPassed==true and .candidateGreen==false and
+            .sourceAndRunnerAuthenticatedByThisFunction==false and
+            .automaticDiscoveryProven==false and .androidDeviceObserved==false and
+            .deviceActionProven==false and .remoteWrites==false and
+            .mergeAllowed==false and .productionReleaseCertified==false
+          ' "$root/polite-original-receipt.json"
+      - name: Archive sanitized receipt
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-polite-original-observation
+          path: ${{ runner.temp }}/jarvis-polite-original/polite-original-receipt.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Test two-source candidate matrix and local Judge rollback
+        shell: bash
+        env:
+          JARVIS_POLITE_ISOLATED: '1'
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-polite-candidate-matrix.sh
+          root="$RUNNER_TEMP/jarvis-polite-original"
+          bash scripts/jarvis-polite-candidate-matrix.sh "$root"
+          jq -e '
+            .status=="PINNED_SOURCE_MATRIX_AND_LOCAL_ROLLBACK_OBSERVED" and
+            (.matrix|length)==4 and .localStructuralJudgeApproved==true and
+            .localExactTreeRollbackVerified==true and
+            .sourceAndRunnerAuthenticatedByThisFunction==false and
+            .ownerAuthorizationVerified==false and .androidDeviceObserved==false and
+            .deviceActionProven==false and .remoteWrites==false and
+            .mergeAllowed==false and .productionReleaseCertified==false
+          ' "$root/polite-candidate-receipt.json"
+      - name: Archive sanitized candidate matrix receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-polite-candidate-matrix
+          path: ${{ runner.temp }}/jarvis-polite-original/polite-candidate-receipt.json
+          retention-days: 14
+          if-no-files-found: error
