@@ -1,5 +1,12 @@
 name: Ultra Sentinel C2 PR186 four source-level crossed causal probes
 on:
+  workflow_call:
+    inputs:
+      original_replay:
+        description: Replay the original pinned PR186 experiment in the caller's run
+        required: false
+        type: boolean
+        default: false
   pull_request:
     paths:
       - .github/workflows/c2-pr186-four-source-cross.yml
@@ -21,7 +28,11 @@ jobs:
   regression:
     if: >-
       github.event.repository.id == 1418338512 &&
-      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel'
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (inputs.original_replay && github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor == 'cardenaspiero255-lang'))
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -43,6 +54,13 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          persist-credentials: false
+      - name: Checkout the original experiment scripts and oracles
+        if: ${{ inputs.original_replay }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9afbd3f7d6820020
+        with:
+          ref: 3ae25092c30a5274d790bc4954707fda06edc0bc
+          path: original-pr186
           persist-credentials: false
       - name: Authenticate original GitHub Kotlin blobs at historical frozen HEADs
         shell: bash
@@ -100,14 +118,17 @@ jobs:
         shell: bash
         env:
           SUITE: ${{ matrix.suite }}
+          ORIGINAL_REPLAY: ${{ inputs.original_replay && '1' || '0' }}
         run: |
           set -euo pipefail
-          C2_OWNER_SANDBOX=1 bash scripts/c2-pr186-cross.sh "$RUNNER_TEMP/c2-pr186/$SUITE" "$SUITE"
+          probe=.
+          if [ "$ORIGINAL_REPLAY" = 1 ]; then probe=original-pr186; fi
+          C2_OWNER_SANDBOX=1 bash "$probe/scripts/c2-pr186-cross.sh" "$RUNNER_TEMP/c2-pr186/$SUITE" "$SUITE"
           test -s "$RUNNER_TEMP/c2-pr186/$SUITE/output/proof.json"
       - name: Preserve only source-effect receipts, no JAR or GitHub source
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-pr186-${{ matrix.suite }}
+          name: ${{ inputs.original_replay && format('c2-pr186-{0}-{1}-a{2}', matrix.suite, github.run_id, github.run_attempt) || format('c2-pr186-{0}', matrix.suite) }}
           path: ${{ runner.temp }}/c2-pr186/${{ matrix.suite }}/output/proof.json
           if-no-files-found: error
           retention-days: 14
@@ -124,18 +145,21 @@ jobs:
           node-version: '22'
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
-          pattern: c2-pr186-*
+          pattern: ${{ inputs.original_replay && format('c2-pr186-*-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-pr186-*' }}
           path: ${{ runner.temp }}/c2-pr186/summary/stages
           merge-multiple: false
       - name: Reconcile eight execution-log hashes and refuse new causal-family certification
         shell: bash
+        env:
+          JSON_ARTIFACT: ${{ inputs.original_replay && format('c2-pr186-json-query-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-pr186-json-query' }}
+          ROLLBACK_ARTIFACT: ${{ inputs.original_replay && format('c2-pr186-rollback-ttl-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-pr186-rollback-ttl' }}
         run: |
           set -euo pipefail
           root="$RUNNER_TEMP/c2-pr186/summary"
           mkdir -p "$root"
           node scripts/c2-pr186-adjudicate.cjs \
-            "$root/stages/c2-pr186-json-query/proof.json" \
-            "$root/stages/c2-pr186-rollback-ttl/proof.json" \
+            "$root/stages/$JSON_ARTIFACT/proof.json" \
+            "$root/stages/$ROLLBACK_ARTIFACT/proof.json" \
             "$root/summary.json"
           jq -e '
             .schema=="c2-pr186-four-mechanism-orthogonal-source-evidence/v1" and
@@ -147,7 +171,7 @@ jobs:
             .precision==null and .recall==null and .f1==null' "$root/summary.json"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: c2-pr186-four-orthogonal-causal-effects-not-certified
+          name: ${{ inputs.original_replay && format('c2-pr186-summary-{0}-a{1}', github.run_id, github.run_attempt) || 'c2-pr186-four-orthogonal-causal-effects-not-certified' }}
           path: ${{ runner.temp }}/c2-pr186/summary/summary.json
           retention-days: 14
           if-no-files-found: error

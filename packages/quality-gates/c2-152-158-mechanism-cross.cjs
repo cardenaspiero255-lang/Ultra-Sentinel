@@ -9,8 +9,9 @@ const expectedSources=[
  {id:'152:41',head:'104b7dc33e4c0341cec3fca81e3c8fbe3625357f',blob:'ed936aa687b08cf8d964d54f9d88e68bb12344ec'},
  {id:'153:69',head:'6508cc124076b9dea437ea1efc213d3ce55d7baf',blob:'18911c26a9afaf051fda0e9ea14cdaccf943a47b'}
 ];
-function adjudicateCrossWithKnownMechanisms({jsonQuery,rollbackTtl,replay,campaign}={}){
+function adjudicateCrossWithKnownMechanisms({jsonQuery,rollbackTtl,replay,campaign,evidenceMode='historical'}={}){
  try{
+  if(!['historical','same-run-replay'].includes(evidenceMode))die();
   const original=adjudicateFour([jsonQuery,rollbackTtl]);
   if(original.originalKotlinJointRuns!==8||
    !replay||replay.schema!=='c2-rollback-153-152-original-cross-verified/v1'||
@@ -73,11 +74,14 @@ function adjudicateCrossWithKnownMechanisms({jsonQuery,rollbackTtl,replay,campai
    status:'TWO_DIRECT_ORTHOGONAL_SOURCE_PAIRS_ONE_SEPARATE_PAIR_FOUR_UNTESTED_NOT_CERTIFIED',
    historicalSourceRepo:'cardenaspiero255-lang/gamehub-ultra',
    originalJointJVMRuns:8,additionalOriginalKotlinJVMExecutions:16,
-   currentWorkflowNewJVMExecutions:0,
+   currentWorkflowNewJVMExecutions:evidenceMode==='same-run-replay'?8:0,
+   crossProbeEvidenceOrigin:evidenceMode==='same-run-replay'?'SAME_RUN_ORIGINAL_SOURCE_REPLAY':'HISTORICAL_RECEIPTS',
    directJointInterventionContrasts:2,separateJVMContrasts:1,untestedCrossRelations:4,
    originalFourCases:['152:110','152:41','158:114','158:144'],
-   originalOlderExperimentDigest:original.jsonQueryExperimentSha256,
-   originalOlderRollbackTtlExperimentDigest:original.rollbackTtlExperimentSha256,
+   originalOlderExperimentDigest:evidenceMode==='historical'?original.jsonQueryExperimentSha256:null,
+   originalOlderRollbackTtlExperimentDigest:evidenceMode==='historical'?original.rollbackTtlExperimentSha256:null,
+   replayedJsonQueryExperimentDigest:evidenceMode==='same-run-replay'?original.jsonQueryExperimentSha256:null,
+   replayedRollbackTtlExperimentDigest:evidenceMode==='same-run-replay'?original.rollbackTtlExperimentSha256:null,
    originalFreshRollbackDigest:replay.evidenceSha256,
    originalFreshTenJVMReceiptDigest:campaign.receiptSha256,
    edges,
