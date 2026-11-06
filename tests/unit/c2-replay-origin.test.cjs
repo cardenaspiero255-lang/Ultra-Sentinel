@@ -58,3 +58,14 @@ test('CLI selects metadata and exits nonzero if the current attempt is missing',
   assert.match(bad.stderr,/C2_REPLAY_ORIGIN_BLOCKED/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('C2 workflows use full Git commit IDs for external actions',()=>{
+ for(const file of ['c2-pr186-four-source-cross.yml','c2-152-158-mechanism-cross.yml']){
+  const source=fs.readFileSync(path.join(__dirname,'../../.github/workflows',file),'utf8');
+  const actions=[...source.matchAll(/^\s*(?:-\s*)?uses:\s*([^\s#]+)/gm)].map(x=>x[1]);
+  assert.ok(actions.some(x=>x.startsWith('actions/checkout@')));
+  for(const action of actions){
+   if(action.startsWith('./'))continue;
+   assert.match(action,/^[^\s@]+@[a-f0-9]{40}$/,`${file}: ${action}`);
+  }
+ }
+});

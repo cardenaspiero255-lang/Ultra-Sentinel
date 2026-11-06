@@ -57,7 +57,7 @@ jobs:
           persist-credentials: false
       - name: Checkout the original experiment scripts and oracles
         if: ${{ inputs.original_replay }}
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9afbd3f7d6820020
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: 3ae25092c30a5274d790bc4954707fda06edc0bc
           path: original-pr186
