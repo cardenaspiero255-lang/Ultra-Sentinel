@@ -16,7 +16,7 @@ const API='https://api.github.com/repos/'+REPOSITORY;
 const SHA=/^[a-f0-9]{40}$/,MAX_BYTES=1024*1024;
 function fail(code){throw Error('PRIVATE_MAIN_CI_'+code);}
 function validRun(x,{runId,headSha}){
- return x&&x.id===runId&&x.workflow_id===WORKFLOW_ID&&x.event==='push'&&
+ return x&&x.id===runId&&x.workflow_id===WORKFLOW_ID&&x.path===WORKFLOW_PATH&&x.event==='push'&&
   x.head_branch==='main'&&x.head_sha===headSha&&x.head_commit?.id===headSha&&
   x.status==='completed'&&x.conclusion==='success'&&
   Number.isSafeInteger(x.run_attempt)&&x.run_attempt>0&&

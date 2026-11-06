@@ -7,7 +7,7 @@ const PATH='.github/workflows/architecture.yml';
 const blob=fs.readFileSync(path.join(__dirname,'../../',PATH));
 function fixture(){
  const repo={id:1418338512,full_name:REPO,owner:{id:322222186}};
- const run={id:ID,workflow_id:383941728,event:'push',head_branch:'main',head_sha:SHA,
+ const run={id:ID,workflow_id:383941728,path:PATH,event:'push',head_branch:'main',head_sha:SHA,
   head_commit:{id:SHA},status:'completed',conclusion:'success',run_attempt:1,
   repository:repo,head_repository:{id:repo.id,full_name:REPO}};
  const source={type:'file',path:PATH,sha:'1a211ffa81107f6caa6f31eb6d67680cb3b943a9',
@@ -53,7 +53,8 @@ test('rejects wrong SHA, fork, branch, workflow, failure, incomplete or wrong ru
   f=>{f.run.head_sha='b'.repeat(40);},f=>{f.run.head_commit.id='b'.repeat(40);},
   f=>{f.run.head_repository.id=42;},f=>{f.run.repository.owner.id=1;},
   f=>{f.run.head_branch='other';},f=>{f.run.event='pull_request';},
-  f=>{f.run.workflow_id=7;},f=>{f.run.id++;},f=>{f.run.status='in_progress';},
+  f=>{f.run.workflow_id=7;},f=>{f.run.path='.github/workflows/other.yml';},
+  f=>{delete f.run.path;},f=>{f.run.id++;},f=>{f.run.status='in_progress';},
   f=>{f.run.conclusion='failure';},f=>{f.run.run_attempt=0;}
  ])await assert.rejects(()=>execute(mutate),/RUN_MISMATCH/);
 });
