@@ -61,3 +61,15 @@ test('dedicated Linux original JVM runner is syntax-valid and forbids signing or
  assert.match(source,/POLITE_ADVERSARIAL_CONTROLS_PASS/);
  assert.doesNotMatch(source,/gh\s+(api|pr)|git\s+push|curl\s+|wget\s+/);
 });
+
+test('nonce ledger rejects dangling symlink instead of following an unsafe target',()=>{
+ const fs=require('node:fs');
+ const dir=fs.mkdtempSync(path.join(process.cwd(),'tests','.owner-nonce-'));
+ try{
+  const ledger=path.join(dir,'ledger');
+  fs.symlinkSync(path.join(dir,'absent-target'),ledger);
+  const {validateLedgerPath}=require('../../scripts/run-owner-jarvis-polite-repair.cjs');
+  assert.throws(()=>validateLedgerPath(ledger),/OWNER_POLITE_OPERATOR_BLOCKED/);
+  assert.equal(validateLedgerPath(path.join(dir,'fresh-ledger')),path.join(dir,'fresh-ledger'));
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
