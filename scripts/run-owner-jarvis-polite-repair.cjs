@@ -46,11 +46,16 @@ function readCanonicalJSON(filename){
 }
 function validateLedgerPath(filename){
  secureAncestors(filename);
- if(fs.existsSync(filename)){
-  const st=fs.lstatSync(filename);
-  if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||
-   st.uid!==process.geteuid()||(st.mode&0o077)!==0)deny();
+ let st;
+ try{st=fs.lstatSync(filename);}
+ catch(error){
+  // existsSync() is unsafe here: it follows dangling symlinks and returns
+  // false, incorrectly treating a malicious existing path as new.
+  if(error&&error.code==='ENOENT')return filename;
+  deny();
  }
+ if(!st.isFile()||st.isSymbolicLink()||st.nlink!==1||
+  st.uid!==process.geteuid()||(st.mode&0o077)!==0)deny();
  return filename;
 }
 function writeResult(filename,result){
