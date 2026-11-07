@@ -185,9 +185,13 @@ async function runSupervisedGitHubBranchCommit({
   verifyGrant({grant:ownerGrant,signature:ownerSignature,trustedOwnerPublicKey,
    plan,digest,now:requireLiveGrant()});
  else requireLiveGrant();
- // Verify the token against /user; never trust repository event.actor text.
- await authenticateGitHubOwner({token,expectedOwner:OWNER,
-  expectedOwnerId:OWNER_ID,fetchImpl});
+ // A *read-only* GitHub owner preview is already authenticated via the
+ // issuer-signed OIDC JWT and the live issue comment. It must neither
+ // require nor touch the powerful JARVIS PAT. Actual branch writes MUST
+ // authenticate that PAT independently using /user.
+ if(githubOwnerSingleApproval!==true||apply===true)
+  await authenticateGitHubOwner({token,expectedOwner:OWNER,
+   expectedOwnerId:OWNER_ID,fetchImpl});
  const repoApi='/repos/'+REPO;
  const headers={Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
   'X-GitHub-Api-Version':'2022-11-28','User-Agent':'Ultra-Sentinel-Owner-Branch-Executor'};
