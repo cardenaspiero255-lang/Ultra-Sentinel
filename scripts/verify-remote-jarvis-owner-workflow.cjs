@@ -85,7 +85,7 @@ async function verifyLiveTargetAndSource({fetchImpl,readToken,workflowSha}){
  return Object.freeze({sourceAuthenticatedAtCheck:true,sourceHeadSha:SOURCE_HEAD,
   sourceMainSha:SOURCE_MAIN,sourceTreeSha:SOURCE_TREE});
 }
-async function main({env=process.env,fetchImpl=fetch}={}){
+async function main({env=process.env,fetchImpl=fetch,writeReceipt=true}={}){
  try{
   const context=trustedContext(env);
   const event=JSON.parse(fs.readFileSync(env.GITHUB_EVENT_PATH,'utf8'));
@@ -125,8 +125,10 @@ async function main({env=process.env,fetchImpl=fetch}={}){
    mergeAllowed:false,releaseAuthorized:false,
    requiresSeparateWriteExecutor:true
   });
-  fs.writeFileSync(path.join(env.RUNNER_TEMP,'owner-remote-approval-receipt.json'),
-   JSON.stringify(receipt)+'\n',{flag:'wx',mode:0o600});
+  if(writeReceipt!==true&&writeReceipt!==false)denied();
+  if(writeReceipt)
+   fs.writeFileSync(path.join(env.RUNNER_TEMP,'owner-remote-approval-receipt.json'),
+    JSON.stringify(receipt)+'\n',{flag:'wx',mode:0o600});
   process.stdout.write('OWNER_REMOTE_APPROVAL_VERIFIED_NO_REMOTE_WRITE\n');
   return receipt;
  }catch{denied();}
