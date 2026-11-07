@@ -108,3 +108,27 @@ test('a forged GitHub approval flag cannot call rollback executor, even in apply
  /OWNER_REMOTE_ROLLBACK_WORKFLOW_BLOCKED/);
  assert.equal(mock.requests.length,0);
 });
+
+test('reverse replay: legacy repair and sandbox approval reject a reused rollback nonce',async()=>{
+ const {verifyUniqueRemoteOwnerComment}=
+  require('../../packages/recovery/github-remote-owner-approval.cjs');
+ const {verifyUniqueOwnerComment}=
+  require('../../packages/recovery/owner-comment-replay-gate.cjs');
+ const nonce='same-owner-nonce-across-operation-12345',date=new Date().toISOString();
+ const make=(id,body)=>({id,body,user:{id:322222186,login:'cardenaspiero255-lang'},
+  created_at:date,updated_at:date});
+ const repair=make(11,'ULTRA_SENTINEL_REMOTE_APPROVAL_V1|COMMIT_TO_EXISTING_DRAFT_PR_BRANCH|'+
+  'a'.repeat(40)+'|'+'b'.repeat(64)+'|'+nonce+'|1794000120000');
+ const sandbox=make(12,'ULTRA_SENTINEL_OWNER_APPROVAL_V1|SANDBOX_HUNTER_FIXER_JUDGE|'+
+  'a'.repeat(40)+'|'+'b'.repeat(64)+'|'+nonce+'|1794000120000');
+ const rollback=make(13,'ULTRA_SENTINEL_REMOTE_ROLLBACK_V1|ROLLBACK_EXISTING_DRAFT_PR_BRANCH|'+
+  'a'.repeat(40)+'|'+'b'.repeat(64)+'|'+'d'.repeat(40)+'|'+nonce+'|1794000120000');
+ const event=comment=>({action:'created',repository:{id:1418338512},
+  issue:{number:50,pull_request:null},sender:{id:322222186},comment});
+ const fetchImpl=async()=>({ok:true,json:async()=>[repair,sandbox,rollback]});
+ const args={token:'github-readable-owner-token',fetchImpl};
+ await assert.rejects(()=>verifyUniqueRemoteOwnerComment({
+  ...args,event:event(repair)}),/REMOTE_OWNER_NONCE_REPLAY_DENIED/);
+ await assert.rejects(()=>verifyUniqueOwnerComment({
+  ...args,event:event(sandbox)}),/OWNER_NONCE_REPLAY_OR_UNVERIFIED/);
+});
