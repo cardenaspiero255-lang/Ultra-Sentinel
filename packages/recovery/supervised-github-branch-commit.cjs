@@ -1,7 +1,7 @@
 'use strict';
 /**
- * Explicitly owner-signed commit of exactly two Kotlin files to an EXISTING
- * draft GitHub PR branch. Never calls merge, creates a PR, writes main or
+ * Owner-authorized commit of exactly two Kotlin files to an EXISTING
+ * draft GitHub PR branch. Either a validated Ed25519 signature or a LIVE\n * issuer-signed GitHub OIDC approval of exact PR #105 is required.\n * Never calls merge, creates a PR, writes main or
  * bypasses GitHub branch protection. No Actions entrypoint has write scope.
  *
  * Security boundary: this module and its verifyOriginalJVM callback must run
@@ -116,20 +116,53 @@ function exactStrings(actual,expected){
 async function runSupervisedGitHubBranchCommit({
  plan,files,ownerGrant,ownerSignature,trustedOwnerPublicKey,token,
  nonceStorePath,verifyOriginalJVM,fetchImpl=globalThis.fetch,
- now=Date.now(),apply=false
+ now=Date.now(),apply=false,githubOwnerSingleApproval=false
 }={}){
  if(!validPlan(plan)||!Array.isArray(files)||typeof token!=='string'||
   token.length<16||typeof fetchImpl!=='function'||
   typeof verifyOriginalJVM!=='function'||typeof nonceStorePath!=='string'||
   !Number.isSafeInteger(now)||
   apply!==false&&apply!==true)deny('INVALID_SUPERVISED_EXECUTOR_INPUT');
- // Snapshot every signed/write-relevant input before the first asynchronous
- // boundary. Later changes by the caller must not alter nonce consumption,
- // remote SHA binding, or bytes used in the authorized write.
+ if(githubOwnerSingleApproval!==true&&githubOwnerSingleApproval!==false)
+  deny('INVALID_GITHUB_APPROVAL_MODE');
+ if(githubOwnerSingleApproval===true&&
+   (ownerGrant!==undefined||ownerSignature!==undefined||
+    trustedOwnerPublicKey!==undefined))
+  deny('AMBIGUOUS_OWNER_AUTHORIZATION_MODES');
+ // Freeze write-relevant plan and Kotlin bytes before any async approval call.
  plan=Object.freeze({...plan});
  const sorted=Object.freeze(canonicalFiles(files).map(f=>Object.freeze({...f})));
- ownerGrant=Object.freeze(JSON.parse(stableOwnerBranchGrant(ownerGrant)));
  const digest=digestBranchCandidate(plan,sorted);
+ if(githubOwnerSingleApproval===true){
+  // Reissue and verify GitHub issuer-signed OIDC + owner issue_comment
+  // against LIVE GitHub refs and global nonce uniqueness. No receipt JSON,
+  // spoofable caller boolean, or GitHub Actions env string is sufficient.
+  const {main:verifyLiveGitHubApproval}=
+   require('../../scripts/verify-remote-jarvis-owner-workflow.cjs');
+  const approval=await verifyLiveGitHubApproval({fetchImpl,writeReceipt:false});
+  if(approval.status!=='REMOTE_OWNER_GITHUB_APPROVAL_VERIFIED'||
+   approval.githubOIDCVerified!==true||
+   approval.nonceReplayBlocked!==true||
+   approval.sourceAuthenticatedAtCheck!==true||
+   approval.requiresSeparateWriteExecutor!==true||
+   approval.planDigest!==digest||
+   approval.targetRepo!==REPO||approval.prNumber!==plan.prNumber||
+   approval.branch!==plan.branch||
+   approval.sourceHeadSha!==plan.expectedHeadSha||
+   approval.sourceMainSha!==plan.expectedMainSha||
+   approval.sourceTreeSha!==plan.expectedTreeSha||
+   approval.rollbackAuthorized!==false||approval.mergeAllowed!==false||
+   approval.remoteWrites!==false)
+   deny('REMOTE_GITHUB_APPROVAL_SCOPE_MISMATCH');
+  ownerGrant={
+   ownerLogin:OWNER,ownerId:OWNER_ID,repo:REPO,prNumber:plan.prNumber,
+   branch:plan.branch,headSha:plan.expectedHeadSha,
+   baseSha:plan.expectedMainSha,planDigest:digest,
+   nonce:approval.nonce,expiresAt:approval.expiresAt,
+   operation:plan.operation
+  };
+ }
+ ownerGrant=Object.freeze(JSON.parse(stableOwnerBranchGrant(ownerGrant)));
  let lastTime=now;
  function requireLiveGrant(){
   let current;
@@ -142,8 +175,10 @@ async function runSupervisedGitHubBranchCommit({
   if(ownerGrant.expiresAt<=current)deny('OWNER_GRANT_EXPIRED');
   return current;
  }
- verifyGrant({grant:ownerGrant,signature:ownerSignature,trustedOwnerPublicKey,
-  plan,digest,now:requireLiveGrant()});
+ if(githubOwnerSingleApproval!==true)
+  verifyGrant({grant:ownerGrant,signature:ownerSignature,trustedOwnerPublicKey,
+   plan,digest,now:requireLiveGrant()});
+ else requireLiveGrant();
  // Verify the token against /user; never trust repository event.actor text.
  await authenticateGitHubOwner({token,expectedOwner:OWNER,
   expectedOwnerId:OWNER_ID,fetchImpl});
