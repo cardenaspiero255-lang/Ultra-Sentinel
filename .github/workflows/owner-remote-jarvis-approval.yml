@@ -8,7 +8,7 @@ permissions:
   issues: read
   id-token: write
 concurrency:
-  group: ultra-owner-remote-jarvis-single-approval
+  group: ultra-owner-remote-jarvis-transaction
   cancel-in-progress: false
 jobs:
   verify-owner-remote-approval:
