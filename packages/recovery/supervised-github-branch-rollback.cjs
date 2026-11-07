@@ -5,8 +5,9 @@
  * new commit to the existing draft PR branch; never force-reset a ref.
  *
  * No GitHub Actions workflow exposes this function to untrusted PR content.
- * A separate domain-scoped Ed25519 signature and persistent one-use nonce
- * are mandatory. The trusted operator pins the owner's public key.
+ * Either a separate domain-scoped Ed25519 signature or a NEW live
+ * issuer-signed GitHub OIDC owner rollback approval is required. A
+ * persistent one-use nonce is mandatory. The legacy Ed25519 path remains.
  */
 const crypto=require('node:crypto');
 const {authenticateGitHubOwner}=require('./github-owner-identity.cjs');
@@ -136,14 +137,47 @@ function verifyExactRepairDelta(original,repaired,files){
 /** Default dry-run; this module never creates a PR, merges or touches main. */
 async function runSupervisedGitHubBranchRollback({
  plan,ownerGrant,ownerSignature,trustedOwnerPublicKey,token,
- nonceStorePath,fetchImpl=globalThis.fetch,apply=false
+ nonceStorePath,fetchImpl=globalThis.fetch,apply=false,
+ githubOwnerRollbackApproval=false
 }={}){
  if(typeof token!=='string'||token.length<16||
   typeof nonceStorePath!=='string'||typeof fetchImpl!=='function'||
   (apply!==true&&apply!==false))deny('INVALID_REMOTE_ROLLBACK_INPUT');
+ if(githubOwnerRollbackApproval!==true&&githubOwnerRollbackApproval!==false)
+  deny('INVALID_GITHUB_OWNER_ROLLBACK_MODE');
+ if(githubOwnerRollbackApproval===true&&
+  (ownerGrant!==undefined||ownerSignature!==undefined||
+   trustedOwnerPublicKey!==undefined))
+  deny('AMBIGUOUS_ROLLBACK_AUTHORIZATION');
  plan=canonicalPlan(plan);
- ownerGrant=Object.freeze(JSON.parse(stableOwnerRollbackGrant(ownerGrant)));
  const digest=digestRollbackPlan(plan);
+ let approvalCommentId=null;
+ if(githubOwnerRollbackApproval===true){
+  const {main:verifyLiveOwnerRollback}=
+   require('../../scripts/verify-remote-jarvis-rollback-workflow.cjs');
+  const verified=await verifyLiveOwnerRollback({fetchImpl,writeReceipt:false});
+  if(verified.status!=='GITHUB_REMOTE_ROLLBACK_OWNER_VERIFIED'||
+   verified.authenticatedLiveSource!==true||
+   verified.nonceReplayBlocked!==true||
+   verified.requiresSeparateWriteExecutor!==true||
+   verified.planDigest!==digest||
+   verified.repairHeadSha!==plan.repairHeadSha||
+   verified.originalHeadSha!==plan.originalHeadSha||
+   verified.prNumber!==plan.prNumber||verified.branch!==plan.branch||
+   verified.targetRepo!==plan.repository||
+   verified.rollbackAuthorized!==true||
+   verified.remoteWrites!==false||verified.mergeAllowed!==false||
+   digestRollbackPlan(verified.rollbackPlan)!==digest)
+   deny('GITHUB_ROLLBACK_PLAN_MISMATCH');
+  approvalCommentId=verified.commentId;
+  ownerGrant={
+   ownerLogin:OWNER,ownerId:OWNER_ID,repo:REPO,prNumber:plan.prNumber,
+   branch:plan.branch,headSha:plan.repairHeadSha,
+   baseSha:plan.expectedMainSha,planDigest:digest,
+   nonce:verified.nonce,expiresAt:verified.expiresAt,operation:OP
+  };
+ }
+ ownerGrant=Object.freeze(JSON.parse(stableOwnerRollbackGrant(ownerGrant)));
  let lastTime=0;
  function liveGrantClock(){
   let current;
@@ -154,8 +188,10 @@ async function runSupervisedGitHubBranchRollback({
   if(ownerGrant.expiresAt<=current)deny('OWNER_GRANT_EXPIRED');
   return current;
  }
- verifySignature(ownerGrant,ownerSignature,trustedOwnerPublicKey,plan,digest,
-  liveGrantClock());
+ if(githubOwnerRollbackApproval!==true)
+  verifySignature(ownerGrant,ownerSignature,trustedOwnerPublicKey,plan,digest,
+   liveGrantClock());
+ else liveGrantClock();
  await authenticateGitHubOwner({token,expectedOwner:OWNER,
   expectedOwnerId:OWNER_ID,fetchImpl});
  const apiRoot='/repos/'+REPO;
@@ -233,10 +269,25 @@ async function runSupervisedGitHubBranchRollback({
    deny('REMOTE_ROLLBACK_BLOB_UNTRUSTED');
   additions.push({path:file.path,contents:encoded});
  }
+ async function reverifyGitHubRollback(){
+  if(githubOwnerRollbackApproval!==true)return;
+  const {main:verifyLiveOwnerRollback}=
+   require('../../scripts/verify-remote-jarvis-rollback-workflow.cjs');
+  const fresh=await verifyLiveOwnerRollback({fetchImpl,writeReceipt:false});
+  if(fresh.status!=='GITHUB_REMOTE_ROLLBACK_OWNER_VERIFIED'||
+   fresh.commentId!==approvalCommentId||
+   fresh.nonce!==ownerGrant.nonce||fresh.expiresAt!==ownerGrant.expiresAt||
+   fresh.planDigest!==digest||fresh.repairHeadSha!==plan.repairHeadSha||
+   fresh.rollbackAuthorized!==true||fresh.remoteWrites!==false||
+   fresh.nonceReplayBlocked!==true||
+   digestRollbackPlan(fresh.rollbackPlan)!==digest)
+   deny('GITHUB_ROLLBACK_AUTHORIZATION_REVOKED');
+ }
  if(apply===false)return Object.freeze({...shared,
   status:'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
   ownerNonceConsumed:false,ownerNonceChecked:false,
   limitation:'Preview does not check the persistent nonce ledger. Authorization, ledger availability, PR/main and branch state must be rechecked for publication.'});
+ await reverifyGitHubRollback();
  await verifyDraftAndMain();
  const current=await api('GET',branchRef);
  if(current.ref!==head.ref||current.object?.sha!==plan.repairHeadSha)
@@ -250,6 +301,7 @@ async function runSupervisedGitHubBranchRollback({
  const beforeUpdate=await api('GET',branchRef);
  if(beforeUpdate.ref!==head.ref||beforeUpdate.object?.sha!==plan.repairHeadSha)
   deny('STALE_REMOTE_ROLLBACK_BRANCH');
+ await reverifyGitHubRollback();
  liveGrantClock();
  const restoredSha=await publishAtomicBranchCommit({repository:REPO,branch:plan.branch,
   expectedHeadSha:plan.repairHeadSha,files:additions,
