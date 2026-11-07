@@ -21,7 +21,8 @@ async function verifyUniqueOwnerComment({event,token,fetchImpl=fetch}={}){
    event.issue?.pull_request!=null||event.repository?.id!==1418338512||
    event.comment?.user?.id!==322222186||event.sender?.id!==322222186||
    !Number.isSafeInteger(event.comment?.id)||
-   event.comment.id<1||typeof token!=='string'||token.length<16||
+   event.comment.id<1||event.comment?.body?.split('|')[0]!==MARKER||
+   typeof token!=='string'||token.length<16||
    typeof fetchImpl!=='function'||!nonce(event.comment.body))deny();
   const target=nonce(event.comment.body);
   let count=0,found=false,complete=false;
