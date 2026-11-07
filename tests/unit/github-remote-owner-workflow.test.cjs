@@ -153,11 +153,14 @@ test('GitHub runner refuses unsigned, non-owner and unconfigured real writes',()
   ULTRA_OWNER_COMMENT_READ_TOKEN:'owner-github-issue-read-token',
   ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:'owner-remote-write-token'};
  assert.equal(environment(good),false);
+ // Read-only GitHub OIDC verification must never require a write-scoped PAT.
+ assert.equal(environment({...good,ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:''}),false);
+ assert.equal(environment({...good,ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:undefined}),false);
  for(const changes of [
   {GITHUB_ACTIONS:'false'},
   {GITHUB_ACTOR_ID:'123'},
   {GITHUB_WORKFLOW_REF:'attacker.yml'},
-  {ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:''},
+  {ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'true',ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:''},
   {ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'true'},
   {ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'unknown'},
   {JARVIS_KOTLIN_HOME:'relative/path'}
@@ -276,7 +279,9 @@ test('GitHub OIDC authorization reaches original signed executor in NO-WRITE pre
   assert.equal(proof.planDigest,TARGET_PLAN_DIGEST);
   assert.equal(proof.remoteWrites,false);
   assert.equal(calls.every(x=>x.method==='GET'),true);
-  assert.equal(calls.some(x=>x.p==='/user'),true);
+  // The issuer-signed OIDC JWT is the owner identity for read-only previews.
+  // /user must remain mandatory when apply=true (tested by the write path).
+  assert.equal(calls.some(x=>x.p==='/user'),false);
  }finally{
   for(const [k,v] of Object.entries(old)){
    if(v===undefined)delete process.env[k];else process.env[k]=v;
