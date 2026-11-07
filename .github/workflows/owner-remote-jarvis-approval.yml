@@ -1,0 +1,74 @@
+name: Ultra Sentinel — Aprobación GitHub remota JARVIS #105 (sin Termux)
+# GitHub-authenticated owner approval. No source edits or remote writes.
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+  issues: read
+  id-token: write
+concurrency:
+  group: ultra-owner-remote-jarvis-single-approval
+  cancel-in-progress: false
+jobs:
+  verify-owner-remote-approval:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'issue_comment' &&
+      github.event.action == 'created' &&
+      github.event.repository.id == 1418338512 &&
+      github.actor == 'cardenaspiero255-lang' &&
+      github.actor_id == '322222186' &&
+      github.event.sender.id == 322222186 &&
+      github.event.comment.user.id == 322222186 &&
+      github.event.issue.number == 50 &&
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, 'ULTRA_SENTINEL_REMOTE_APPROVAL_V1|') &&
+      github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout protected main commit without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Setup Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check exact immutable workflow source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_REF" = refs/heads/main
+          node --test tests/unit/github-remote-owner-approval.test.cjs
+      - name: Verify OIDC signature, live nonce uniqueness and exact JARVIS draft PR
+        shell: bash
+        env:
+          ULTRA_OWNER_COMMENT_READ_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/verify-remote-jarvis-owner-workflow.cjs
+          test -s "$RUNNER_TEMP/owner-remote-approval-receipt.json"
+          node - "$RUNNER_TEMP/owner-remote-approval-receipt.json" <<'NODE'
+          const fs=require('node:fs');
+          const data=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          if(data.status!=='REMOTE_OWNER_GITHUB_APPROVAL_VERIFIED'||
+             data.prNumber!==105||data.githubOIDCVerified!==true||
+             data.nonceReplayBlocked!==true||
+             data.sourceAuthenticatedAtCheck!==true||
+             data.remoteWrites!==false||data.remoteWriteExecuted!==false||
+             data.rollbackAuthorized!==false||data.mergeAllowed!==false||
+             data.requiresSeparateWriteExecutor!==true)process.exit(1);
+          NODE
+      - name: Archive bounded read-only authorization observation
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: owner-jarvis-remote-approval-no-write
+          path: ${{ runner.temp }}/owner-remote-approval-receipt.json
+          retention-days: 7
+          if-no-files-found: error
