@@ -176,3 +176,108 @@ test('remote JARVIS source loader rejects tampered, redirected and noncanonical 
  await assert.rejects(()=>fetchOriginalFile('OfflineVoiceQuestionGate.kt',expected,
   'owner-read-token',async()=>({status:302})),/OWNER_GITHUB_REMOTE_REPAIR_BLOCKED/);
 });
+
+test('byte-pinned original JARVIS Kotlin yields the exact expected proposed remote repair digest',()=>{
+ const {PLAN,validateTrialFiles}=require('../../packages/recovery/owner-jarvis-polite-operator.cjs');
+ const {makePoliteCandidate}=require('../../packages/investigation/jarvis-polite-candidate.cjs');
+ const {digestBranchCandidate}=require('../../packages/recovery/supervised-github-branch-commit.cjs');
+ const {blobSha}=require('../../packages/investigation/novel-kotlin-hypotheses.cjs');
+ const base=path.resolve(__dirname,'../fixtures/jarvis-polite-original');
+ const gate=fs.readFileSync(path.join(base,'OfflineVoiceQuestionGate.kt'),'utf8');
+ const policy=fs.readFileSync(path.join(base,'LocalGgufPolicy.kt'),'utf8');
+ const generated=makePoliteCandidate({gate,policy});
+ const prefix='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/';
+ const files=validateTrialFiles([
+  {path:prefix+'OfflineVoiceQuestionGate.kt',before:gate,after:generated.gate,
+   beforeBlobSha:blobSha(gate),afterBlobSha:blobSha(generated.gate)},
+  {path:prefix+'LocalGgufPolicy.kt',before:policy,after:generated.policy,
+   beforeBlobSha:blobSha(policy),afterBlobSha:blobSha(generated.policy)}
+ ]);
+ assert.equal(digestBranchCandidate(PLAN,files),TARGET_PLAN_DIGEST);
+});
+test('trusted JARVIS source loader reconstructs real Kotlin candidate from pinned Git blobs',async()=>{
+ const {buildPinnedCandidate}=require('../../scripts/run-github-owner-jarvis-remote.cjs');
+ const {digestBranchCandidate}=require('../../packages/recovery/supervised-github-branch-commit.cjs');
+ const base=path.resolve(__dirname,'../fixtures/jarvis-polite-original');
+ const {blobSha}=require('../../packages/investigation/novel-kotlin-hypotheses.cjs');
+ let reads=0;
+ const fake=async url=>{
+  reads++;
+  const name=url.includes('OfflineVoiceQuestionGate.kt')?'OfflineVoiceQuestionGate.kt':
+   url.includes('LocalGgufPolicy.kt')?'LocalGgufPolicy.kt':null;
+  assert.ok(name,'unexpected path');
+  assert.match(url,/ref=747c14b5d97750a7b2736968e2d516f02448558d/);
+  const content=fs.readFileSync(path.join(base,name),'utf8');
+  const bytes=Buffer.from(content,'utf8');
+  return {status:200,json:async()=>({type:'file',
+   path:'apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/'+name,
+   sha:blobSha(content),encoding:'base64',
+   size:bytes.length,content:bytes.toString('base64')})};
+ };
+ const candidate=await buildPinnedCandidate('trusted-read-only-token',fake);
+ assert.equal(reads,2);
+ assert.equal(candidate.plan.prNumber,105);
+ assert.equal(candidate.files.length,2);
+ assert.equal(digestBranchCandidate(candidate.plan,candidate.files),TARGET_PLAN_DIGEST);
+});
+test('GitHub OIDC authorization reaches original signed executor in NO-WRITE preview without Ed25519',async()=>{
+ const {runSupervisedGitHubBranchCommit,digestBranchCandidate}=
+  require('../../packages/recovery/supervised-github-branch-commit.cjs');
+ const {PLAN,validateTrialFiles}=require('../../packages/recovery/owner-jarvis-polite-operator.cjs');
+ const {makePoliteCandidate}=require('../../packages/investigation/jarvis-polite-candidate.cjs');
+ const {blobSha}=require('../../packages/investigation/novel-kotlin-hypotheses.cjs');
+ const base=path.resolve(__dirname,'../fixtures/jarvis-polite-original');
+ const gate=fs.readFileSync(path.join(base,'OfflineVoiceQuestionGate.kt'),'utf8');
+ const policy=fs.readFileSync(path.join(base,'LocalGgufPolicy.kt'),'utf8');
+ const generated=makePoliteCandidate({gate,policy});
+ const prefix='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/';
+ const files=validateTrialFiles([
+  {path:prefix+'OfflineVoiceQuestionGate.kt',before:gate,after:generated.gate,
+   beforeBlobSha:blobSha(gate),afterBlobSha:blobSha(generated.gate)},
+  {path:prefix+'LocalGgufPolicy.kt',before:policy,after:generated.policy,
+   beforeBlobSha:blobSha(policy),afterBlobSha:blobSha(generated.policy)}
+ ]);
+ const f=fixture(),old={};
+ for(const [k,v] of Object.entries(f.env)){old[k]=process.env[k];process.env[k]=v;}
+ const originalTransport=transport(f);
+ const calls=[];
+ const mockedFetch=async (url,options={})=>{
+  const u=new URL(url),p=u.pathname;calls.push({p,method:options.method||'GET'});
+  if(p==='/user')return {ok:true,status:200,json:async()=>({login:OWNER,id:322222186})};
+  if(p==='/repos/'+TARGET+'/git/ref/heads/fix/ultra-sentinel-polite-voice-20261106')
+   return {ok:true,status:200,json:async()=>({ref:'refs/heads/fix/ultra-sentinel-polite-voice-20261106',
+    object:{type:'commit',sha:HEAD}})};
+  if(p==='/repos/'+TARGET+'/git/trees/'+TREE)
+   return {ok:true,status:200,json:async()=>({sha:TREE,truncated:false,
+    tree:files.map(x=>({path:x.path,type:'blob',mode:'100644',sha:x.beforeBlobSha}))})};
+  const result=await originalTransport(url,options);
+  return {...result,status:200};
+ };
+ try{
+  const proof=await runSupervisedGitHubBranchCommit({
+   plan:PLAN,files,ownerSignature:undefined,ownerGrant:undefined,
+   trustedOwnerPublicKey:undefined,
+   token:'owner-finegrained-pat-placeholder',githubOwnerSingleApproval:true,
+   nonceStorePath:path.join(f.dir,'nonce.ledger'),fetchImpl:mockedFetch,
+   verifyOriginalJVM:async({plan,files,planDigest})=>({
+    status:'TRUSTED_ORIGINAL_KOTLIN_JVM_RED_GREEN',
+    baselineHeadSha:plan.expectedHeadSha,planDigest,
+    sourceBlobs:files.map(x=>x.beforeBlobSha),
+    candidateBlobs:files.map(x=>x.afterBlobSha),
+    genuineOriginalRed:true,originalJVMGreen:true,
+    benignControlsPassed:true,isolatedExecution:true,
+    remoteWrites:false,mergeAllowed:false
+   }),apply:false
+  });
+  assert.equal(proof.status,'OWNER_AUTHENTICATED_DRAFT_PR_READY');
+  assert.equal(proof.planDigest,TARGET_PLAN_DIGEST);
+  assert.equal(proof.remoteWrites,false);
+  assert.equal(calls.every(x=>x.method==='GET'),true);
+  assert.equal(calls.some(x=>x.p==='/user'),true);
+ }finally{
+  for(const [k,v] of Object.entries(old)){
+   if(v===undefined)delete process.env[k];else process.env[k]=v;
+  }
+  fs.rmSync(f.dir,{recursive:true,force:true});
+ }
+});
