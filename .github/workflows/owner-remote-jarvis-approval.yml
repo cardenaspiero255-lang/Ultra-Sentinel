@@ -78,7 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \\
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
             apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
           profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
           test -f "$profile" && test ! -L "$profile"
@@ -93,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           compiler="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
-          gh api -H 'Accept: application/octet-stream' \\
+          gh api -H 'Accept: application/octet-stream' \
             /repos/JetBrains/kotlin/releases/assets/198150667 > "$compiler"
           test "$(sha256sum "$compiler" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
           mkdir "$RUNNER_TEMP/jarvis-polite-kotlin"
