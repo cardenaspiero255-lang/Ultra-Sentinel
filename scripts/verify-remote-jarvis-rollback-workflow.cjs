@@ -39,7 +39,8 @@ function parseRollbackComment(text,sha){
  const p=text.split('|');
  if(p.length!==7||p[0]!==MARKER||p[1]!=='ROLLBACK_EXISTING_DRAFT_PR_BRANCH'||
   p[2]!==sha||!/^[a-f0-9]{64}$/.test(p[3]||'')||
-  !/^[a-f0-9]{40}$/.test(p[4]||'')||
+  (!/^[a-f0-9]{40}$/.test(p[4]||'')||
+   p[4]==='a88a29ba4119d3f68b2268367f594a0ac1168f9e')||
   !/^[A-Za-z0-9_-]{20,96}$/.test(p[5]||'')||
   !/^\d{13}$/.test(p[6]||''))deny();
  const expiresAt=Number(p[6]);
