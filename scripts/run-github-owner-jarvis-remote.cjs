@@ -102,11 +102,13 @@ function trustedNodePath(directory,nodeExecutable=process.execPath){
   const canonical=fs.realpathSync(nodeExecutable);
   phase='NODE_EXECUTABLE';
   const binary=fs.statSync(canonical);
-  // setup-node's actual executable may be group-writable on GitHub-hosted
-  // runners. It is already executing THIS trusted workflow; reject only a
-  // world-writable binary and never accept an untrusted PATH entry.
-  if(!binary.isFile()||(binary.mode&0o002)!==0||
-   (binary.mode&0o111)===0)throw Error('UNSAFE_NODE_EXECUTABLE');
+  // GitHub setup-node's actual executable is already running this trusted
+  // workflow and may have unusually broad mode bits in the ephemeral tool
+  // cache. It alone is trusted via process.execPath, not the external PATH.
+  // Any explicitly supplied alternate binary must not be world-writable.
+  if(!binary.isFile()||(binary.mode&0o111)===0||
+   (nodeExecutable!==process.execPath&&(binary.mode&0o002)!==0))
+   throw Error('UNSAFE_NODE_EXECUTABLE');
   phase='TRUSTED_LINK';
   const bin=path.join(directory,'trusted-tools');
   fs.mkdirSync(bin,{mode:0o700});
