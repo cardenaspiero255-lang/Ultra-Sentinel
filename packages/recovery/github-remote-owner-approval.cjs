@@ -109,6 +109,8 @@ function verifyRemoteOwnerApproval({jwt,jwks,context,event,request,now=Date.now(
 function extractNonce(body){
  if(typeof body!=='string')return null;
  const a=body.split('|');
+ if(a.length===7&&a[0]==='ULTRA_SENTINEL_REMOTE_ROLLBACK_V1'&&
+  NONCE.test(a[5]||''))return a[5];
  if(a.length!==6||![MARKER,'ULTRA_SENTINEL_OWNER_APPROVAL_V1'].includes(a[0])||
   !NONCE.test(a[4]||''))return null;
  return a[4];
