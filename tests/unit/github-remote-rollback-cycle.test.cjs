@@ -156,6 +156,7 @@ async function runMock(opts={}){
 }
 test('GitHub/OIDC owner rollback preflight validates actual source blobs, independent nonce and creates NO commit',async()=>{
  const {outcome,calls,head}=await runMock();
+ assert.equal(outcome.status,'OWNER_GITHUB_AUTHENTICATED_REMOTE_ROLLBACK_READY');
  assert.equal(outcome.remoteWrites,false);
  assert.equal(outcome.ownerNonceConsumed,false);
  assert.equal(outcome.restoredTreeSha,plan.originalTreeSha);
