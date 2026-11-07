@@ -109,6 +109,8 @@ function verifyRemoteOwnerApproval({jwt,jwks,context,event,request,now=Date.now(
 function extractNonce(body){
  if(typeof body!=='string')return null;
  const a=body.split('|');
+ if(a.length===7&&a[0]==='ULTRA_SENTINEL_REMOTE_ROLLBACK_V1'&&
+  NONCE.test(a[5]||''))return a[5];
  if(a.length!==6||![MARKER,'ULTRA_SENTINEL_OWNER_APPROVAL_V1'].includes(a[0])||
   !NONCE.test(a[4]||''))return null;
  return a[4];
@@ -119,6 +121,7 @@ async function verifyUniqueRemoteOwnerComment({event,token,fetchImpl=fetch}={}){
    event.issue?.number!==50||event.issue?.pull_request!=null||
    event.sender?.id!==322222186||event.comment?.user?.id!==322222186||
    !Number.isSafeInteger(event.comment?.id)||event.comment.id<1||
+   event.comment?.body?.split('|')[0]!==MARKER||
    typeof token!=='string'||token.length<16||
    typeof fetchImpl!=='function')throw Error('BAD_EVENT');
   const n=extractNonce(event.comment.body);

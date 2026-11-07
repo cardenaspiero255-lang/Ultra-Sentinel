@@ -9,7 +9,11 @@ function deny(){throw Error('OWNER_NONCE_REPLAY_OR_UNVERIFIED');}
 function nonce(body){
  if(typeof body!=='string')return null;
  const p=body.split('|');
- return p.length===6&&p[0]===MARKER&&/^[A-Za-z0-9_-]{20,96}$/.test(p[4]||'')?p[4]:null;
+ const valid=x=>/^[A-Za-z0-9_-]{20,96}$/.test(x||'');
+ if(p.length===7&&p[0]==='ULTRA_SENTINEL_REMOTE_ROLLBACK_V1'&&valid(p[5]))return p[5];
+ if(p.length===6&&[MARKER,'ULTRA_SENTINEL_REMOTE_APPROVAL_V1'].includes(p[0])&&
+  valid(p[4]))return p[4];
+ return null;
 }
 async function verifyUniqueOwnerComment({event,token,fetchImpl=fetch}={}){
  try{
@@ -17,7 +21,8 @@ async function verifyUniqueOwnerComment({event,token,fetchImpl=fetch}={}){
    event.issue?.pull_request!=null||event.repository?.id!==1418338512||
    event.comment?.user?.id!==322222186||event.sender?.id!==322222186||
    !Number.isSafeInteger(event.comment?.id)||
-   event.comment.id<1||typeof token!=='string'||token.length<16||
+   event.comment.id<1||event.comment?.body?.split('|')[0]!==MARKER||
+   typeof token!=='string'||token.length<16||
    typeof fetchImpl!=='function'||!nonce(event.comment.body))deny();
   const target=nonce(event.comment.body);
   let count=0,found=false,complete=false;
