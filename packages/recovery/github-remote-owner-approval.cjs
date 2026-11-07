@@ -121,6 +121,7 @@ async function verifyUniqueRemoteOwnerComment({event,token,fetchImpl=fetch}={}){
    event.issue?.number!==50||event.issue?.pull_request!=null||
    event.sender?.id!==322222186||event.comment?.user?.id!==322222186||
    !Number.isSafeInteger(event.comment?.id)||event.comment.id<1||
+   event.comment?.body?.split('|')[0]!==MARKER||
    typeof token!=='string'||token.length<16||
    typeof fetchImpl!=='function')throw Error('BAD_EVENT');
   const n=extractNonce(event.comment.body);
