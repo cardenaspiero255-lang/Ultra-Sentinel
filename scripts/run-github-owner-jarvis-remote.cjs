@@ -98,7 +98,10 @@ function trustedNodePath(directory,nodeExecutable=process.execPath){
    (root.mode&0o077)!==0)throw Error('UNSAFE_PRIVATE_DIRECTORY');
   const canonical=fs.realpathSync(nodeExecutable);
   const binary=fs.statSync(canonical);
-  if(!binary.isFile()||(binary.mode&0o022)!==0||
+  // setup-node's actual executable may be group-writable on GitHub-hosted
+  // runners. It is already executing THIS trusted workflow; reject only a
+  // world-writable binary and never accept an untrusted PATH entry.
+  if(!binary.isFile()||(binary.mode&0o002)!==0||
    (binary.mode&0o111)===0)throw Error('UNSAFE_NODE_EXECUTABLE');
   const bin=path.join(directory,'trusted-tools');
   fs.mkdirSync(bin,{mode:0o700});
