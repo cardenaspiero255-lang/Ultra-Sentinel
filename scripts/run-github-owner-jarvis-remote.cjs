@@ -82,6 +82,32 @@ async function buildPinnedCandidate(readToken,fetchImpl=fetch){
  if(digestBranchCandidate(PLAN,files)!==TARGET_PLAN_DIGEST)fail();
  return Object.freeze({plan:validateTrialPlan(PLAN),files});
 }
+/**
+ * Host-side Kotlin oracle helper scripts invoke 'node' after we deliberately
+ * sanitize PATH. actions/setup-node installs Node outside /usr/bin on hosted
+ * runners. Expose ONLY the already running, trusted Node binary through a
+ * fresh private symlink directory; never import an event/PR supplied PATH.
+ */
+function trustedNodePath(directory,nodeExecutable=process.execPath){
+ try{
+  if(typeof directory!=='string'||!path.isAbsolute(directory)||
+   typeof nodeExecutable!=='string'||!path.isAbsolute(nodeExecutable))
+   throw Error('BAD_PATH');
+  const root=fs.lstatSync(directory);
+  if(!root.isDirectory()||root.isSymbolicLink()||
+   (root.mode&0o077)!==0)throw Error('UNSAFE_PRIVATE_DIRECTORY');
+  const canonical=fs.realpathSync(nodeExecutable);
+  const binary=fs.statSync(canonical);
+  if(!binary.isFile()||(binary.mode&0o022)!==0||
+   (binary.mode&0o111)===0)throw Error('UNSAFE_NODE_EXECUTABLE');
+  const bin=path.join(directory,'trusted-tools');
+  fs.mkdirSync(bin,{mode:0o700});
+  fs.symlinkSync(canonical,path.join(bin,'node'),'file');
+  if(fs.realpathSync(path.join(bin,'node'))!==canonical)
+   throw Error('NODE_SYMLINK_INCONSISTENT');
+  return bin+':/usr/local/bin:/usr/bin:/bin';
+ }catch{throw Error('OWNER_TRUSTED_NODE_PATH_UNAVAILABLE');}
+}
 function spawnIsolated(label,args,env){
  const result=spawnSync('/bin/bash',args,{encoding:'utf8',timeout:240000,
   maxBuffer:65536,env,stdio:['ignore','pipe','pipe']});
@@ -103,7 +129,7 @@ function makeOriginalJvmVerifier({plan,files},env=process.env){
   const dir=fs.mkdtempSync(path.join(env.RUNNER_TEMP,'owner-remote-jvm-'));
   try{
    const subprocessEnv={
-    PATH:'/usr/local/bin:/usr/bin:/bin',HOME:env.HOME||'/tmp',
+    PATH:trustedNodePath(dir),HOME:env.HOME||'/tmp',
     GITHUB_ACTIONS:'true',JARVIS_POLITE_ISOLATED:'1',
     JARVIS_KOTLIN_HOME:env.JARVIS_KOTLIN_HOME,
     GH_TOKEN:env.ULTRA_OWNER_COMMENT_READ_TOKEN
@@ -185,4 +211,4 @@ async function main({env=process.env,fetchImpl=fetch}={}){
 if(require.main===module)main().catch(()=>{
  process.stderr.write('OWNER_GITHUB_REMOTE_REPAIR_BLOCKED\n');process.exitCode=1;
 });
-module.exports={environment,fetchOriginalFile,buildPinnedCandidate,makeOriginalJvmVerifier,main};
+module.exports={environment,fetchOriginalFile,buildPinnedCandidate,trustedNodePath,makeOriginalJvmVerifier,main};
