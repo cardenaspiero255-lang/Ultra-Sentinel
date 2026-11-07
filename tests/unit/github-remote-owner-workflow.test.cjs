@@ -114,3 +114,27 @@ test('only exact pinned digest is approved, never remote deployment or other PR'
  assert.throws(()=>trustedContext({GITHUB_ACTIONS:'true'}),/REMOTE_OWNER_WORKFLOW_BLOCKED/);
  assert.match(WORKFLOW,/remoteWrites!==false/);
 });
+
+test('unsigned GitHub-mode remote executor cannot bypass a trusted live issue_comment/OIDC run',async()=>{
+ const {runSupervisedGitHubBranchCommit}=
+  require('../../packages/recovery/supervised-github-branch-commit.cjs');
+ const {blobSha}=require('../../packages/investigation/novel-kotlin-hypotheses.cjs');
+ const before='package p\nclass Original { fun okay() = true }\n';
+ const after='package p\nclass Original { fun okay() = false }\n';
+ const prefix='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/';
+ const files=['OfflineVoiceQuestionGate.kt','LocalGgufPolicy.kt'].map(name=>({
+  path:prefix+name,before,after,beforeBlobSha:blobSha(before),afterBlobSha:blobSha(after)
+ }));
+ const plan={repository:TARGET,prNumber:105,
+  branch:'fix/ultra-sentinel-polite-voice-20261106',
+  expectedHeadSha:HEAD,expectedMainSha:BASE,expectedTreeSha:TREE,
+  operation:'COMMIT_TO_EXISTING_DRAFT_PR_BRANCH'};
+ const calls=[];
+ await assert.rejects(()=>runSupervisedGitHubBranchCommit({
+  plan,files,token:'test-owner-token-placeholder',githubOwnerSingleApproval:true,
+  nonceStorePath:path.join(os.tmpdir(),'nonexistent-github-mode-ledger'),
+  verifyOriginalJVM:async()=>{throw Error('SHOULD_NOT_RUN');},
+  fetchImpl:async()=>{calls.push(1);throw Error('BAD_REQUEST');},apply:true
+ }),/REMOTE_OWNER_WORKFLOW_BLOCKED|REMOTE_GITHUB_APPROVAL/);
+ assert.equal(calls.length,0);
+});
