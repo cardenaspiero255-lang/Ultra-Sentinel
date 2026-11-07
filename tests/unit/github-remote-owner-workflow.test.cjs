@@ -244,6 +244,9 @@ test('GitHub OIDC authorization reaches original signed executor in NO-WRITE pre
  const mockedFetch=async (url,options={})=>{
   const u=new URL(url),p=u.pathname;calls.push({p,method:options.method||'GET'});
   if(p==='/user')return {ok:true,status:200,json:async()=>({login:OWNER,id:322222186})};
+  if(p==='/repos/'+TARGET+'/git/ref/heads/main')
+   return {ok:true,status:200,json:async()=>({ref:'refs/heads/main',
+    object:{type:'commit',sha:BASE}})};
   if(p==='/repos/'+TARGET+'/git/ref/heads/fix/ultra-sentinel-polite-voice-20261106')
    return {ok:true,status:200,json:async()=>({ref:'refs/heads/fix/ultra-sentinel-polite-voice-20261106',
     object:{type:'commit',sha:HEAD}})};
