@@ -284,7 +284,9 @@ async function runSupervisedGitHubBranchRollback({
    deny('GITHUB_ROLLBACK_AUTHORIZATION_REVOKED');
  }
  if(apply===false)return Object.freeze({...shared,
-  status:'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
+  status:githubOwnerRollbackApproval===true?
+   'OWNER_GITHUB_AUTHENTICATED_REMOTE_ROLLBACK_READY':
+   'OWNER_SIGNED_REMOTE_ROLLBACK_READY',remoteWrites:false,
   ownerNonceConsumed:false,ownerNonceChecked:false,
   limitation:'Preview does not check the persistent nonce ledger. Authorization, ledger availability, PR/main and branch state must be rechecked for publication.'});
  await reverifyGitHubRollback();
