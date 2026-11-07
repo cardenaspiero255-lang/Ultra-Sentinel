@@ -64,6 +64,62 @@ jobs:
              data.rollbackAuthorized!==false||data.mergeAllowed!==false||
              data.requiresSeparateWriteExecutor!==true)process.exit(1);
           NODE
+      # Optional owner-configured stage; disabled when repository variable
+      # ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED is not exactly 'true'.
+      - name: Prepare independent original Kotlin/JVM oracle for owner-approved draft repair
+        if: success() && vars.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true'
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install strict Bubblewrap and AppArmor for owner-controlled draft repair
+        if: success() && vars.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \\
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch pinned Kotlin compiler binary
+        if: success() && vars.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          compiler="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' \\
+            /repos/JetBrains/kotlin/releases/assets/198150667 > "$compiler"
+          test "$(sha256sum "$compiler" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/jarvis-polite-kotlin"
+          unzip -q "$compiler" -d "$RUNNER_TEMP/jarvis-polite-kotlin"
+          test -x "$RUNNER_TEMP/jarvis-polite-kotlin/kotlinc/bin/kotlinc"
+          echo "JARVIS_KOTLIN_HOME=$RUNNER_TEMP/jarvis-polite-kotlin/kotlinc" >> "$GITHUB_ENV"
+      - name: Reauthenticate owner OIDC and run the pinned original JVM, Judge and optional branch commit
+        if: success() && vars.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true'
+        shell: bash
+        env:
+          ULTRA_OWNER_COMMENT_READ_TOKEN: ${{ github.token }}
+          ULTRA_SENTINEL_JARVIS_OWNER_TOKEN: ${{ secrets.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN }}
+          ULTRA_SENTINEL_REMOTE_REPAIR_APPLY: ${{ vars.ULTRA_SENTINEL_REMOTE_DRAFT_APPLY }}
+          ULTRA_SENTINEL_REMOTE_DRAFT_APPLY_CONFIRMED: ${{ vars.ULTRA_SENTINEL_REMOTE_DRAFT_APPLY_CONFIRMED }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/run-github-owner-jarvis-remote.cjs
+      - name: Archive only exact draft branch recovery plan (never a token or signature)
+        if: success() && vars.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true' && vars.ULTRA_SENTINEL_REMOTE_DRAFT_APPLY == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        with:
+          name: owner-jarvis-remote-draft-repair-recovery-plan
+          path: ${{ runner.temp }}/owner-remote-jarvis-rollback-plan.json
+          retention-days: 7
+          if-no-files-found: error
       - name: Archive bounded read-only authorization observation
         if: success()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
