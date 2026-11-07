@@ -45,6 +45,7 @@ test('trustedNodePath rejects untrusted executable and unsafe work directory',()
  const root=temp(),bad=path.join(root,'bad-node');
  try{
   fs.writeFileSync(bad,'#!/bin/sh\necho untrusted\n',{mode:0o777});
+  fs.chmodSync(bad,0o777); // umask could otherwise turn 0777 into 0755.
   assert.throws(()=>trustedNodePath(root,bad),/OWNER_TRUSTED_NODE_/);
   fs.chmodSync(root,0o777);
   assert.throws(()=>trustedNodePath(root),/OWNER_TRUSTED_NODE_/);
