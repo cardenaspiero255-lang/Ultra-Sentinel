@@ -1,8 +1,12 @@
 'use strict';
 /**
  * Owner-authorized commit of exactly two Kotlin files to an EXISTING
- * draft GitHub PR branch. Either a validated Ed25519 signature or a LIVE\n * issuer-signed GitHub OIDC approval of exact PR #105 is required.\n * Never calls merge, creates a PR, writes main or
- * bypasses GitHub branch protection. No Actions entrypoint has write scope.
+ * draft GitHub PR branch. Either a validated Ed25519 signature or a LIVE
+ * issuer-signed GitHub OIDC approval of exact PR #105 is required.
+ * Never calls merge, creates a PR, writes main or
+ * bypasses GitHub branch protection. GitHub Actions' own GITHUB_TOKEN
+ * stays read-only; optional JARVIS write credentials must be explicitly
+ * configured as an owner secret and are never passed to the Kotlin sandbox.
  *
  * Security boundary: this module and its verifyOriginalJVM callback must run
  * in a trusted operator, NOT inside untrusted PR/workflow code. The public key
@@ -133,6 +137,7 @@ async function runSupervisedGitHubBranchCommit({
  plan=Object.freeze({...plan});
  const sorted=Object.freeze(canonicalFiles(files).map(f=>Object.freeze({...f})));
  const digest=digestBranchCandidate(plan,sorted);
+ let approvedRemoteCommentId=null;
  if(githubOwnerSingleApproval===true){
   // Reissue and verify GitHub issuer-signed OIDC + owner issue_comment
   // against LIVE GitHub refs and global nonce uniqueness. No receipt JSON,
@@ -154,6 +159,7 @@ async function runSupervisedGitHubBranchCommit({
    approval.rollbackAuthorized!==false||approval.mergeAllowed!==false||
    approval.remoteWrites!==false)
    deny('REMOTE_GITHUB_APPROVAL_SCOPE_MISMATCH');
+  approvedRemoteCommentId=approval.commentId;
   ownerGrant={
    ownerLogin:OWNER,ownerId:OWNER_ID,repo:REPO,prNumber:plan.prNumber,
    branch:plan.branch,headSha:plan.expectedHeadSha,
@@ -258,6 +264,25 @@ async function runSupervisedGitHubBranchCommit({
   initialHeadSha:plan.expectedHeadSha,planDigest:digest,
   originalJVMVerified:true,localJudgeAndRollbackVerified:true,
   mergeAllowed:false,productionReleaseCertified:false});
+ // A GitHub comment may be edited or deleted during the independent
+ // Kotlin/JVM oracle. Reauthenticate OIDC and the LIVE comment immediately
+ // before applying. A stale grant cannot become a remote write.
+ async function reverifyGitHubRemoteOwner(){
+  if(githubOwnerSingleApproval!==true)return;
+  const {main:verifyLiveGitHubApproval}=
+   require('../../scripts/verify-remote-jarvis-owner-workflow.cjs');
+  const fresh=await verifyLiveGitHubApproval({fetchImpl,writeReceipt:false});
+  if(fresh.status!=='REMOTE_OWNER_GITHUB_APPROVAL_VERIFIED'||
+   fresh.commentId!==approvedRemoteCommentId||
+   fresh.nonce!==ownerGrant.nonce||
+   fresh.planDigest!==digest||
+   fresh.expiresAt!==ownerGrant.expiresAt||
+   fresh.sourceHeadSha!==plan.expectedHeadSha||
+   fresh.sourceMainSha!==plan.expectedMainSha||
+   fresh.sourceTreeSha!==plan.expectedTreeSha||
+   fresh.nonceReplayBlocked!==true||fresh.rollbackAuthorized!==false||
+   fresh.remoteWrites!==false)deny('STALE_OR_REVOKED_GITHUB_OWNER_APPROVAL');
+ }
  if(apply!==true)return Object.freeze({...shared,
   status:'OWNER_AUTHENTICATED_DRAFT_PR_READY',remoteWrites:false,
   commitCreated:false,ownerNonceConsumed:false,ownerNonceChecked:false,
@@ -265,6 +290,7 @@ async function runSupervisedGitHubBranchCommit({
  // All approval and verification gates preceded the first GitHub write.
  // Consume persistently before creating any object, including unattached
  // blobs, to prevent replay across processes/workflow attempts.
+ await reverifyGitHubRemoteOwner();
  await verifyDraftAndMain();
  // The nonce must be the exact one captured before /user and verified by
  // Ed25519, never a mutable reference to the original caller grant.
@@ -277,6 +303,7 @@ async function runSupervisedGitHubBranchCommit({
  const rechecked=await api('GET',refPath);
  if(rechecked.ref!==head.ref||rechecked.object?.sha!==plan.expectedHeadSha)
   deny('STALE_REMOTE_BRANCH_BEFORE_REF_UPDATE');
+ await reverifyGitHubRemoteOwner();
  // Re-read the trusted clock at the point of publication; an expired grant
  // may leave unattached objects but must not move the protected PR branch.
  requireLiveGrant();
