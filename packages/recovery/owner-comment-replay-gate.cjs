@@ -9,7 +9,11 @@ function deny(){throw Error('OWNER_NONCE_REPLAY_OR_UNVERIFIED');}
 function nonce(body){
  if(typeof body!=='string')return null;
  const p=body.split('|');
- return p.length===6&&p[0]===MARKER&&/^[A-Za-z0-9_-]{20,96}$/.test(p[4]||'')?p[4]:null;
+ const valid=x=>/^[A-Za-z0-9_-]{20,96}$/.test(x||'');
+ if(p.length===7&&p[0]==='ULTRA_SENTINEL_REMOTE_ROLLBACK_V1'&&valid(p[5]))return p[5];
+ if(p.length===6&&[MARKER,'ULTRA_SENTINEL_REMOTE_APPROVAL_V1'].includes(p[0])&&
+  valid(p[4]))return p[4];
+ return null;
 }
 async function verifyUniqueOwnerComment({event,token,fetchImpl=fetch}={}){
  try{
