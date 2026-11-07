@@ -80,7 +80,11 @@ test('GitHub workflow grants read-only and OIDC only, keeps source and merge pro
  assert.match(WORKFLOW,/github\.event\.issue\.number == 50/);
  assert.match(WORKFLOW,/github\.event\.comment\.user\.id == 322222186/);
  assert.match(WORKFLOW,/cancel-in-progress: false/);
- assert.doesNotMatch(WORKFLOW,/contents: write|pull-requests: write|secrets\./);
+ assert.doesNotMatch(WORKFLOW,/contents: write|pull-requests: write/);
+ assert.match(WORKFLOW,/vars\.ULTRA_SENTINEL_GITHUB_REMOTE_ENABLED == 'true'/);
+ assert.match(WORKFLOW,/vars\.ULTRA_SENTINEL_REMOTE_DRAFT_APPLY/);
+ assert.match(WORKFLOW,/secrets\.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN/);
+ assert.match(WORKFLOW,/Reauthenticate owner OIDC and run the pinned original JVM/);
  assert.doesNotMatch(WORKFLOW,/git push|createCommitOnBranch|merge_pull_request/);
 });
 test('read-only OIDC live verification accepts exact owner comment and authentic JARVIS ref',async()=>{
@@ -137,4 +141,38 @@ test('unsigned GitHub-mode remote executor cannot bypass a trusted live issue_co
   fetchImpl:async()=>{calls.push(1);throw Error('BAD_REQUEST');},apply:true
  }),/REMOTE_OWNER_WORKFLOW_BLOCKED|REMOTE_GITHUB_APPROVAL/);
  assert.equal(calls.length,0);
+});
+
+test('GitHub runner refuses unsigned, non-owner and unconfigured real writes',()=>{
+ const {environment}=require('../../scripts/run-github-owner-jarvis-remote.cjs');
+ const good={GITHUB_ACTIONS:'true',GITHUB_WORKFLOW_REF:REMOTE_WORKFLOW,
+  GITHUB_ACTOR_ID:'322222186',GITHUB_EVENT_NAME:'issue_comment',
+  GITHUB_REPOSITORY:US,GITHUB_REF:'refs/heads/main',
+  GITHUB_RUN_ATTEMPT:'1',RUNNER_TEMP:'/tmp',
+  JARVIS_KOTLIN_HOME:'/trusted/kotlinc',
+  ULTRA_OWNER_COMMENT_READ_TOKEN:'owner-github-issue-read-token',
+  ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:'owner-remote-write-token'};
+ assert.equal(environment(good),false);
+ for(const changes of [
+  {GITHUB_ACTIONS:'false'},
+  {GITHUB_ACTOR_ID:'123'},
+  {GITHUB_WORKFLOW_REF:'attacker.yml'},
+  {ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:''},
+  {ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'true'},
+  {ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'unknown'},
+  {JARVIS_KOTLIN_HOME:'relative/path'}
+ ])assert.throws(()=>environment({...good,...changes}),/OWNER_GITHUB_REMOTE_REPAIR_BLOCKED/);
+ assert.equal(environment({...good,ULTRA_SENTINEL_REMOTE_REPAIR_APPLY:'true',
+  ULTRA_SENTINEL_REMOTE_DRAFT_APPLY_CONFIRMED:'true'}),true);
+});
+test('remote JARVIS source loader rejects tampered, redirected and noncanonical Git blobs',async()=>{
+ const {fetchOriginalFile}=require('../../scripts/run-github-owner-jarvis-remote.cjs');
+ const expected='bdc3a6a576b3473454df232cd21e3a9a3c4e6465';
+ const response=async()=>({status:200,json:async()=>({type:'file',
+  path:'apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/OfflineVoiceQuestionGate.kt',
+  sha:expected,encoding:'base64',size:999,content:Buffer.from('forged Kotlin').toString('base64')})});
+ await assert.rejects(()=>fetchOriginalFile('OfflineVoiceQuestionGate.kt',expected,
+  'owner-read-token',response),/OWNER_GITHUB_REMOTE_REPAIR_BLOCKED/);
+ await assert.rejects(()=>fetchOriginalFile('OfflineVoiceQuestionGate.kt',expected,
+  'owner-read-token',async()=>({status:302})),/OWNER_GITHUB_REMOTE_REPAIR_BLOCKED/);
 });
