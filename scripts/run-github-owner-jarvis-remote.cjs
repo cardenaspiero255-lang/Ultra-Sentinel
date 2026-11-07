@@ -37,8 +37,10 @@ function environment(env=process.env){
  const apply=env.ULTRA_SENTINEL_REMOTE_REPAIR_APPLY==='true';
  if(!['true','false',undefined].includes(env.ULTRA_SENTINEL_REMOTE_REPAIR_APPLY))fail();
  if(apply&&env.ULTRA_SENTINEL_REMOTE_DRAFT_APPLY_CONFIRMED!=='true')fail();
- if(typeof env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN!=='string'||
-  env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN.length<16)fail();
+ // The owner PAT is a write-only capability. Read-only OIDC previews run
+ // entirely with the GitHub Actions read token and no JARVIS secret.
+ if(apply&&(typeof env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN!=='string'||
+  env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN.length<16))fail();
  return apply;
 }
 async function fetchOriginalFile(name,expectedSha,readToken,fetchImpl=fetch){
@@ -85,7 +87,10 @@ function spawnIsolated(label,args,env){
   maxBuffer:65536,env,stdio:['ignore','pipe','pipe']});
  if(result.error||result.status!==0||
   typeof result.stdout!=='string'||
-  !result.stdout.includes(label))fail();
+  !result.stdout.includes(label))
+  throw Error(label==='ORIGINAL_VOICE_INTENT_RED_OBSERVED'?
+   'OWNER_ORIGINAL_KOTLIN_ORACLE_FAILED':
+   'OWNER_KOTLIN_MATRIX_OR_JUDGE_FAILED');
 }
 function makeOriginalJvmVerifier({plan,files},env=process.env){
  const digest=digestBranchCandidate(plan,files);
@@ -127,12 +132,16 @@ function makeOriginalJvmVerifier({plan,files},env=process.env){
  };
 }
 async function main({env=process.env,fetchImpl=fetch}={}){
+ let stage='ENVIRONMENT';
  try{
   const apply=environment(env);
+  stage='PINNED_SOURCE_CANDIDATE';
   const candidate=await buildPinnedCandidate(env.ULTRA_OWNER_COMMENT_READ_TOKEN,fetchImpl);
   const verifyOriginalJVM=makeOriginalJvmVerifier(candidate,env);
+  stage='SUPERVISED_EXECUTOR';
   const result=await runSupervisedGitHubBranchCommit({
-   ...candidate,token:env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN,
+   ...candidate,
+   token:apply?env.ULTRA_SENTINEL_JARVIS_OWNER_TOKEN:env.ULTRA_OWNER_COMMENT_READ_TOKEN,
    nonceStorePath:path.join(env.RUNNER_TEMP,'owner-remote-jarvis-nonces'),
    verifyOriginalJVM,githubOwnerSingleApproval:true,fetchImpl,apply
   });
@@ -153,7 +162,25 @@ async function main({env=process.env,fetchImpl=fetch}={}){
    process.stdout.write('OWNER_GITHUB_REMOTE_DRAFT_PREFLIGHT_VERIFIED_NO_WRITE\n');
   }
   return result;
- }catch{fail();}
+ }catch(error){
+  // Never print remote response bodies, tokens, URLs or untrusted exceptions.
+  // Only fixed, locally authored error codes and the stage are diagnostic.
+  const allowed=new Set([
+   'REMOTE_OWNER_WORKFLOW_BLOCKED',
+   'REMOTE_GITHUB_APPROVAL_SCOPE_MISMATCH',
+   'GITHUB_AUTHENTICATION_FAILED','OWNER_IDENTITY_MISMATCH',
+   'UNTRUSTED_OR_STALE_DRAFT_PR','STALE_MAIN_HEAD',
+   'STALE_REMOTE_BRANCH_HEAD','REMOTE_BASELINE_TREE_MISMATCH',
+   'UNTRUSTED_REMOTE_GIT_TREE','REMOTE_SOURCE_BLOB_MISMATCH',
+   'GITHUB_API_REFUSED','GITHUB_API_TRANSPORT_UNCERTAIN',
+   'OWNER_ORIGINAL_KOTLIN_ORACLE_FAILED','OWNER_KOTLIN_MATRIX_OR_JUDGE_FAILED',
+   'LOCAL_JUDGE_OR_EXACT_ROLLBACK_VETO','TRUSTED_ORIGINAL_ORACLE_VETO'
+  ]);
+  const reason=allowed.has(error?.message)?error.message:'REDACTED_INTERNAL_FAILURE';
+  process.stderr.write('OWNER_GITHUB_REMOTE_DIAGNOSTIC_STAGE='+stage+'\n');
+  process.stderr.write('OWNER_GITHUB_REMOTE_DIAGNOSTIC_REASON='+reason+'\n');
+  fail();
+ }
 }
 if(require.main===module)main().catch(()=>{
  process.stderr.write('OWNER_GITHUB_REMOTE_REPAIR_BLOCKED\n');process.exitCode=1;
