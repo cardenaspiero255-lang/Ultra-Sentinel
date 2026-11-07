@@ -57,7 +57,7 @@ async function main({env=process.env,fetchImpl=fetch}={}){
     {flag:'wx',mode:0o600});
    process.stdout.write('OWNER_GITHUB_REMOTE_ROLLBACK_TREE_RESTORED\n');
   }else{
-   if(result.status!=='OWNER_SIGNED_REMOTE_ROLLBACK_READY'||
+   if(result.status!=='OWNER_GITHUB_AUTHENTICATED_REMOTE_ROLLBACK_READY'||
     result.remoteWrites!==false||result.ownerNonceConsumed!==false)deny();
    process.stdout.write('OWNER_GITHUB_REMOTE_ROLLBACK_PREFLIGHT_NO_WRITE\n');
   }
