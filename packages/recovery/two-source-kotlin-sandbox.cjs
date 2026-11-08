@@ -107,7 +107,7 @@ function drillSources(files,count){
 function drillTwoSourceKotlinSandbox({files}={}){return drillSources(files,2);}
 function drillOneSourceKotlinSandbox({file}={}){return drillSources([file],1);}
 function drillKotlinSourceBatchSandbox({files}={}){
- if(!Array.isArray(files)||files.length<1||files.length>4)
+ if(!Array.isArray(files)||files.length<1||files.length>12)
   return outcome('BLOCKED_INPUT_CONTRACT',0,false,3);
  return drillSources(files,files.length);
 }

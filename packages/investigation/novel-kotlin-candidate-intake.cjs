@@ -10,7 +10,7 @@ const {scanNovelKotlinHypotheses,blobSha}=
  require('./novel-kotlin-hypotheses.cjs');
 const SHA=/^[a-f0-9]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
-const MAX_FILES=4,MAX_BYTES=60000;
+const MAX_FILES=12,MAX_BYTES=60000;
 const {isSafeNovelKotlinPath}=require('./novel-kotlin-path-policy.cjs');
 const hex256=s=>createHash('sha256').update(s,'utf8').digest('hex');
 function plain(x,keys){
