@@ -111,7 +111,7 @@ function adjudicate(root){
   rows[kind]={};
   for(const mode of ['original','candidate','unsafe']){
    const a=artifact(real,kind,mode);
-   const receipt=kind==='termux'?termuxReceipt.artifacts?.[mode]:
+   const receipt=kind==='termux'?termuxReceipt.artifactDigests?.[mode]:
     voiceReceipt.receipts?.[mode];
    if(!receipt||receipt.sourceSha256!==a.sourceSha256||
     receipt.jarSha256!==a.jarSha256||
