@@ -72,6 +72,26 @@ jobs:
           node-version: '22'
       - name: Verify full Node suite
         run: npm run check
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch and verify Kotlin compiler 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          compiler="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' \
+            /repos/JetBrains/kotlin/releases/assets/198150667 > "$compiler"
+          test "$(sha256sum "$compiler" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/oracle-kotlin"
+          unzip -q "$compiler" -d "$RUNNER_TEMP/oracle-kotlin"
+          test -x "$RUNNER_TEMP/oracle-kotlin/kotlinc/bin/kotlinc"
+          echo "$RUNNER_TEMP/oracle-kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Install and validate offline AppArmor Bubblewrap
         shell: bash
         run: |
