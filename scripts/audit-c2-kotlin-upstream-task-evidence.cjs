@@ -22,7 +22,7 @@ function read(root,rel,maxBytes){
  if(!filename.startsWith(root+path.sep))fail();
  let fd,bytes;
  try{
-  fd=fs.openSync(filename,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW);
+  fd=fs.openSync(filename,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);
   const stat=fs.fstatSync(fd);
   if(!stat.isFile()||stat.nlink!==1||stat.size>maxBytes||stat.size<20)fail();
   const buffer=Buffer.alloc(stat.size+1);
