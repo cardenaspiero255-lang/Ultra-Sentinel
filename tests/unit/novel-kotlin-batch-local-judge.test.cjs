@@ -95,3 +95,15 @@ test('destructive source replacement cannot become a partially approved batch',(
  assert.equal(r.cases.length,0);
  assert.equal(r.mergeAllowed,false);
 });
+test('the Hunter to Judge handoff rejects accessors without evaluating them',()=>{
+ let invoked=0;
+ for(const place of ['root','file','proposal']){
+  const input=suite(1);
+  const bad=()=>{invoked++;throw Error('unexpected getter');};
+  if(place==='root')Object.defineProperty(input,'expectedCommitSha',{enumerable:true,get:bad});
+  if(place==='file')Object.defineProperty(input.files[0],'source',{enumerable:true,get:bad});
+  if(place==='proposal')Object.defineProperty(input.proposals[0],'candidateSource',{enumerable:true,get:bad});
+  assert.match(drillNovelKotlinCandidateBatch(input).status,/^BLOCKED_/);
+ }
+ assert.equal(invoked,0);
+});
