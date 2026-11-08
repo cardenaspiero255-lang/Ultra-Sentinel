@@ -37,13 +37,31 @@ fun main(args: Array<String>) {
             fun choose(x: CharSequence?) = Unit
             fun choose(x: java.io.Serializable?) = Unit
         """.trimIndent()) }
+        val locals = File(dir, "locals.kt").apply { writeText("""
+            package locals
+            fun outer(flag: Boolean) {
+                if (flag) {
+                    fun helper() = 1
+                    helper()
+                } else {
+                    fun helper() = 2
+                    helper()
+                }
+            }
+        """.trimIndent()) }
+        val inheritance = File(dir, "inheritance.kt").apply { writeText("""
+            package hierarchy
+            open class Parent { fun finalRun() {} }
+            class Child : Parent()
+            fun use(parent: Parent, child: Child) { parent.finalRun(); child.finalRun() }
+        """.trimIndent()) }
         val config = CompilerConfiguration().apply {
             put(CommonConfigurationKeys.MODULE_NAME, "c2-integration")
             put(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
             put(JVMConfigurationKeys.JDK_HOME, File(System.getProperty("java.home")))
             configureJdkClasspathRoots()
             addJvmClasspathRoot(File(args.single()))
-            listOf(caller, target, ambiguous).forEach { addKotlinSourceRoot(it.path) }
+            listOf(caller, target, ambiguous, locals, inheritance).forEach { addKotlinSourceRoot(it.path) }
         }
         val env = KotlinCoreEnvironment.createForProduction(disposable, config, EnvironmentConfigFiles.JVM_CONFIG_FILES)
         val result = TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
@@ -51,10 +69,12 @@ fun main(args: Array<String>) {
             env::createPackagePartProvider,
         )
         val calls = mutableMapOf<String, com.ultrasentinel.experimental.kotlin.C2ResolvedSymbol>()
+        val allCalls = mutableListOf<com.ultrasentinel.experimental.kotlin.C2ResolvedSymbol>()
         env.getSourceFiles().forEach { file -> file.accept(object : KtTreeVisitorVoid() {
             override fun visitCallExpression(expression: KtCallExpression) {
                 val symbol = C2OptionalKotlinSemantic.resolveCall(expression, result.bindingContext)
                 calls[symbol.calledName] = symbol
+                allCalls.add(symbol)
                 super.visitCallExpression(expression)
             }
         }) }
@@ -74,6 +94,13 @@ fun main(args: Array<String>) {
         val external = calls.getValue("println")
         check(external.origin == C2SymbolOrigin.EXTERNAL_OR_UNAVAILABLE && external.identity == null)
         check(external.declarationSite == null)
+        val localCalls = allCalls.filter { it.calledName == "helper" }
+        check(localCalls.size == 2)
+        check(localCalls.all { it.identity == null })
+        val inheritedCalls = allCalls.filter { it.calledName == "finalRun" }
+        check(inheritedCalls.size == 2)
+        check(inheritedCalls.all { it.identity != null && it.declarationSite?.path == inheritance.path })
+        check(inheritedCalls[0].identity == inheritedCalls[1].identity)
         println("Kotlin compiler multi-file semantic assertions passed")
     } finally {
         Disposer.dispose(disposable)
