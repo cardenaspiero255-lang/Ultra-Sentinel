@@ -6,6 +6,7 @@
  */
 const {parseLedger,entryDigest,verifiedEntries,searchVerified}=
  require('./ultra_sentinel_memory_ledger.cjs');
+const {inspectLocalRevocations}=require('./memory-local-revocation-journal.cjs');
 const MAX_REVOKES=200,ASCII_ID=/^[A-Za-z0-9_-]{6,80}$/;
 function fail(reason){throw Error(reason);}
 function validateRevocations(raw){
@@ -18,14 +19,21 @@ function validateRevocations(raw){
  }
  return set;
 }
-function quarantineMemoryCandidates(ledger,{untrustedRevokedIds=[]}={}){
+function quarantineMemoryCandidates(ledger,{untrustedRevokedIds=[],localRevocationJournal=null}={}){
  // The parser snapshots/validates all untrusted fields and rejects duplicates,
  // forged types, malformed URLs and unchecked bot evidence.
  const entries=parseLedger(ledger),revoked=validateRevocations(untrustedRevokedIds);
+ // These journal hashes are consistency hints only, never trusted approval.
+ const local=localRevocationJournal===null?null:inspectLocalRevocations({
+  journal:localRevocationJournal,
+  entries:entries.map(e=>({id:e.id,digest:entryDigest(e)}))
+ });
+ const localIds=new Set(local?.revokedIds||[]);
  const pending=entries.map(e=>Object.freeze({
   id:e.id,rule:e.rule,domain:e.domain,fixSha:e.fixSha,testSha:e.testSha,
   digest:entryDigest(e),
-  status:revoked.has(e.id)?'EXCLUDED_BY_UNTRUSTED_REVOCATION_HINT':'QUARANTINED',
+  status:localIds.has(e.id)?'EXCLUDED_BY_LOCAL_REVOCATION_JOURNAL':
+   revoked.has(e.id)?'EXCLUDED_BY_UNTRUSTED_REVOCATION_HINT':'QUARANTINED',
   promotionAuthorized:false,independentlyVerified:false,
   source:'untrusted-repair-claim'
  }));
@@ -33,9 +41,11 @@ function quarantineMemoryCandidates(ledger,{untrustedRevokedIds=[]}={}){
   schema:'ultra-sentinel-memory-quarantine/v1',
   total:entries.length,
   quarantined:pending.filter(x=>x.status==='QUARANTINED').length,
-  excludedByHint:pending.filter(x=>x.status!=='QUARANTINED').length,
+  excludedByHint:pending.filter(x=>x.status==='EXCLUDED_BY_UNTRUSTED_REVOCATION_HINT').length,
+  excludedByLocalJournal:pending.filter(x=>x.status==='EXCLUDED_BY_LOCAL_REVOCATION_JOURNAL').length,
   entries:Object.freeze(pending),
   trustedPromotionCount:0,
+  localJournalAuthenticated:false,
   independentRedGreenVerified:false,
   githubMutationAllowed:false,mergeAllowed:false,
   limitation:'Caller-supplied revocation hints may only suppress candidates. An authenticated independent review and main-pinned evidence digest are required to promote a fix.'
