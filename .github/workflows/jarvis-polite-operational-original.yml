@@ -92,6 +92,7 @@ jobs:
           jq -e '
             .status=="ORIGINAL_VOICE_INTENT_RED_OBSERVED" and
             .originalPolicyRed==true and .originalGateRed==true and
+            .originalIntegrationRed==true and
             .originalBenignControlsPassed==true and .candidateGreen==false and
             .sourceAndRunnerAuthenticatedByThisFunction==false and
             .automaticDiscoveryProven==false and .androidDeviceObserved==false and
