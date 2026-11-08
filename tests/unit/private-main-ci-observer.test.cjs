@@ -10,7 +10,7 @@ function fixture(){
  const run={id:ID,workflow_id:383941728,path:PATH,event:'push',head_branch:'main',head_sha:SHA,
   head_commit:{id:SHA},status:'completed',conclusion:'success',run_attempt:1,
   repository:repo,head_repository:{id:repo.id,full_name:REPO}};
- const source={type:'file',path:PATH,sha:'1a211ffa81107f6caa6f31eb6d67680cb3b943a9',
+ const source={type:'file',path:PATH,sha:'e9463946d6496765e123c259d8f350c41fe96502',
   encoding:'base64',size:blob.length,content:blob.toString('base64')};
  const job={id:102,run_id:ID,head_sha:SHA,name:'structure-and-contracts',
   status:'completed',conclusion:'success',steps:[{name:'Verify architecture (no external integrations)',
