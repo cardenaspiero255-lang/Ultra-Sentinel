@@ -89,3 +89,42 @@ test('snapshots real Buffers without calling user hooks and rejects shared backi
  assert.throws(()=>planSourceImports({...opts,sources:[{...s,content:shared}]}),/INVALID_SOURCE_IMPORT_GRAPH/);
  assert.throws(()=>planSourceImports({...opts,sources:new Proxy([s],{})}),/INVALID_SOURCE_IMPORT_GRAPH/);
 });
+
+test('indexes supported top-level functions and properties without treating members or comments as declarations',()=>{
+ const s=[source('A.kt','package app\nimport lib.work as execute\nimport lib.count\nimport lib.hidden\nimport lib.fake\nclass A\n'),
+  source('Functions.kt','package lib\n// fun fake() {}\nfun work() {}\nclass Container {\n fun hidden() {}\n}\n'),
+  source('Properties.kt','package lib\nval count: Int = 1\n')];
+ const r=planSourceImports({...input(),sources:s,seeds:['A.kt']});
+ assert.deepEqual(r.plan.files.map(x=>x.path),['A.kt','Functions.kt','Properties.kt']);
+ assert.deepEqual(r.unresolved.map(x=>x.import),['lib.fake','lib.hidden']);
+ assert.equal(r.semanticAnalysisPerformed,false);
+});
+
+test('keeps overloaded functions ambiguous and does not resolve receiver declarations',()=>{
+ const s=[source('A.kt','package app\nimport lib.work\nimport lib.extend\nclass A\n'),
+  source('B.kt','package lib\nfun work() {}\nfun work(x: Int) {}\nfun String.extend() {}\n')];
+ const r=planSourceImports({...input(),sources:s,seeds:['A.kt']});
+ assert.deepEqual(r.unresolved.map(x=>[x.import,x.reason]),[['lib.extend','UNSUPPORTED_DECLARATION'],['lib.work','UNSUPPORTED_DECLARATION']]);
+ assert.equal(r.edges.length,0);
+});
+
+test('unsupported generic and receiver overloads prevent a falsely unique callable edge',()=>{
+ for(const declaration of ['fun <T> work(x: T) {}','fun String.work() {}']){
+  const s=[source('A.kt','package app\nimport lib.work\nclass A\n'),
+   source('B.kt','package lib\nfun work() {}\n'),source('C.kt',`package lib\n${declaration}\n`)];
+  const r=planSourceImports({...input(),sources:s,seeds:['A.kt']});
+  assert.equal(r.edges.length,0);
+  assert.deepEqual(r.unresolved,[{from:'A.kt',import:'lib.work',reason:'UNSUPPORTED_DECLARATION'}]);
+  assert.equal(r.status,'INCOMPLETE_UNRESOLVED_IMPORTS');
+ }
+});
+
+test('annotated declarations conservatively block imports from their package',()=>{
+ for(const declaration of ['@Deprecated("old") fun <T> work(x: T) {}','@A @B fun String.work() {}','@JvmField val work: Int = 1']){
+  const s=[source('A.kt','package app\nimport lib.work\nclass A\n'),source('B.kt','package lib\nfun work() {}\n'),source('C.kt',`package lib\n${declaration}\n`)];
+  const r=planSourceImports({...input(),sources:s,seeds:['A.kt']});
+  assert.equal(r.edges.length,0);
+  assert.equal(r.unresolved[0].reason,'UNSUPPORTED_DECLARATION');
+  assert.equal(r.status,'INCOMPLETE_UNRESOLVED_IMPORTS');
+ }
+});

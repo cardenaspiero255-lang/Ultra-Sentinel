@@ -44,6 +44,11 @@ const id='[A-Za-z_][A-Za-z0-9_]*', qualified=`${id}(?:\\.${id})*`;
 const pkgRe=new RegExp(`^\\s*package\\s+(${qualified})\\s*;?\\s*$`);
 const importRe=new RegExp(`^\\s*import\\s+(${qualified}(?:\\.\\*)?)(?:\\s+as\\s+${id})?\\s*;?\\s*$`);
 const declRe=new RegExp(`^\\s*(?:(?:public|internal|private|protected|open|abstract|sealed|data|value|enum|annotation|expect|actual|final|external)\\s+)*(?:class|interface|object|typealias)\\s+(${id})\\b`);
+// Deliberately limited to non-receiver, non-generic declarations with a simple name.
+const callableRe=new RegExp(`^\\s*(?:(?:public|internal|private|expect|actual|external|inline|infix|operator|suspend|tailrec|const|lateinit)\\s+)*(?:fun\\s+(${id})\\s*\\(|(?:val|var)\\s+(${id})\\s*(?=[:=]))`);
+// Any unrecognized declaration-like token at top level taints the package.
+// This intentionally includes annotated declarations and may over-report.
+const callableStartRe=/\b(?:fun|val|var)\b/;
 function scrub(s){
  let out='',state='code',depth=0;
  for(let i=0;i<s.length;i++){
@@ -72,24 +77,27 @@ function planSourceImports(options={}){
   dataFields(options,['headSha','sources','seeds','maxFiles','maxDepth']);
  const sources=dataArray(inputSources,300),seeds=dataArray(inputSeeds,300);
  if(!sources.length)fail();
- const seen=new Set(),parsed=[],symbols=new Map();let total=0;
+ const seen=new Set(),parsed=[],symbols=new Map(),unsupportedPackages=new Set();let total=0;
  for(const source of sources){
   const s=dataFields(source,['path','blobSha','content']);
   if(!pathOk(s.path)||seen.has(s.path)||typeof s.blobSha!=='string'||!/^[a-f0-9]{40}$/.test(s.blobSha)||types.isProxy(s.content)||!(typeof s.content==='string'||Buffer.isBuffer(s.content)))fail();
   seen.add(s.path);const bytes=copyContent(s.content);total+=bytes.length;if(bytes.length>262144||total>4194304)fail();
   const actual=crypto.createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');if(actual!==s.blobSha)fail();
   let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{fail();}
-  const lines=scrub(text).split(/\r?\n/);let pkg=null,level=0;const imports=[],decls=[];
+  const lines=scrub(text).split(/\r?\n/);let pkg=null,level=0,unsupported=false;const imports=[],decls=[];
   for(const line of lines){
    if(level===0){
-    const p=line.match(pkgRe),im=line.match(importRe),d=line.match(declRe);
+    const p=line.match(pkgRe),im=line.match(importRe),d=line.match(declRe),callable=line.match(callableRe);
     if(/^\s*package\b/.test(line)){if(!p||pkg!==null)fail();pkg=p[1];}
     if(/^\s*import\b/.test(line)){if(!im)fail();imports.push(im[1]);}
     if(d)decls.push(d[1]);
+    if(callable)decls.push(callable[1]||callable[2]);
+    else if(callableStartRe.test(line))unsupported=true;
    }
    for(const c of line){if(c==='{')level++;if(c==='}'&&--level<0)fail();}
   }
   if(level!==0)fail();
+  if(unsupported)unsupportedPackages.add(pkg||'');
   for(const d of decls){const name=pkg?pkg+'.'+d:d;if(!symbols.has(name))symbols.set(name,[]);symbols.get(name).push(s.path);}
   parsed.push({path:s.path,blobSha:s.blobSha,imports});
  }
@@ -98,7 +106,7 @@ function planSourceImports(options={}){
  for(const s of parsed.sort((a,b)=>a.path.localeCompare(b.path))){
   for(const name of [...new Set(s.imports)].sort()){
    const targets=symbols.get(name);let reason;
-   if(name.endsWith('.*'))reason='WILDCARD';else if(!targets)reason='NOT_FOUND';else if(targets.length!==1)reason='AMBIGUOUS';
+   if(name.endsWith('.*'))reason='WILDCARD';else if(unsupportedPackages.has(name.slice(0,name.lastIndexOf('.'))))reason='UNSUPPORTED_DECLARATION';else if(!targets)reason='NOT_FOUND';else if(targets.length!==1)reason='AMBIGUOUS';
    if(reason){unresolved.push({from:s.path,import:name,reason});continue;}
    const to=[...targets][0];if(to===s.path)continue;const key=JSON.stringify([s.path,to]);if(pairs.has(key))continue;pairs.add(key);
    const evidenceSha256=crypto.createHash('sha256').update(JSON.stringify({from:s.path,to,import:name,blobSha:s.blobSha})).digest('hex');edges.push({from:s.path,to,evidenceSha256});
@@ -106,7 +114,7 @@ function planSourceImports(options={}){
  }
  const plan=planDependencyExpansion({headSha,seeds,edges,maxFiles,maxDepth});
  const status=plan.status!=='COMPLETE_WITHIN_SUPPLIED_GRAPH'?'INCOMPLETE_PLANNER':
-  unresolved.length?'INCOMPLETE_UNRESOLVED_IMPORTS':'COMPLETE_WITHIN_SUPPORTED_IMPORTS';
- return {status,edges,unresolved,plan,blobIdsVerified:true,repositoryMembershipVerified:false,semanticAnalysisPerformed:false,causalityVerified:false,limitation:'Caller-declared blob IDs verify bytes only; commit membership is not verified. Only supported explicit imports and top-level declarations are considered.'};
+  unresolved.length?'INCOMPLETE_UNRESOLVED_IMPORTS':unsupportedPackages.size?'INCOMPLETE_UNSUPPORTED_DECLARATIONS':'COMPLETE_WITHIN_SUPPORTED_IMPORTS';
+ return {status,edges,unresolved,plan,blobIdsVerified:true,repositoryMembershipVerified:false,semanticAnalysisPerformed:false,causalityVerified:false,limitation:'Caller-declared blob IDs verify bytes only; commit membership is not verified. Only supported explicit imports and lexically recognized top-level declarations are considered. Unrecognized callable declaration lines block imports from their package; this is not a complete Kotlin parser.'};
 }
 module.exports={planSourceImports};
