@@ -55,3 +55,72 @@ test('pinned detekt 7212 expected manifest fits bounded size policy',()=>{
  assert.ok(MAX_EXPECTED_TEST_BYTES<=8388608);
  assert.equal(MAX_TASK_TOML_BYTES,65536);
 });
+
+test('source reader rejects a Git replacement that changes the committed blob',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {execFileSync}=require('node:child_process');
+ const {read}=require('../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'c2-replace-test-'));
+ const git=(...args)=>execFileSync('git',['-C',root,...args],{encoding:'utf8'}).trim();
+ try{
+  git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');
+  const rel='task.toml',file=path.join(root,rel);
+  fs.writeFileSync(file,'original source content\n');
+  git('add',rel);git('commit','-qm','original');
+  const original=git('rev-parse','HEAD');
+  assert.equal(read(root,rel,65536).content,'original source content\n');
+  fs.writeFileSync(file,'substituted source content\n');
+  git('add',rel);git('commit','-qm','substituted');
+  const replacement=git('rev-parse','HEAD');
+  git('replace',original,replacement);git('update-ref','HEAD',original);
+  assert.equal(git('rev-parse','HEAD'),original);
+  assert.equal(git('status','--porcelain','--untracked-files=no'),'');
+  assert.equal(git('rev-parse','HEAD:'+rel),git('hash-object','--',rel));
+  assert.notEqual(git('--no-replace-objects','rev-parse','HEAD:'+rel),git('hash-object','--',rel));
+  assert.throws(()=>read(root,rel,65536),/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED/);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('source reader rejects bytes changed between identity check and read',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {execFileSync}=require('node:child_process');
+ const {read}=require('../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'c2-read-race-'));
+ const originalRead=fs.readFileSync,originalReadSync=fs.readSync;
+ try{
+  const git=(...args)=>execFileSync('git',['-C',root,...args],{encoding:'utf8'}).trim();
+  git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');
+  const rel='task.toml',file=path.join(root,rel);
+  fs.writeFileSync(file,'original source content\n');git('add',rel);git('commit','-qm','original');
+  let injected=false;
+  fs.readFileSync=function(target,...args){
+   if(!injected&&(target===file||typeof target==='number')){
+    injected=true;fs.writeFileSync(file,'modified source content\n');
+   }
+   return originalRead.call(this,target,...args);
+  };
+  fs.readSync=function(...args){
+   if(!injected){injected=true;fs.writeFileSync(file,'modified source content\n');}
+   return originalReadSync.apply(this,args);
+  };
+  assert.throws(()=>read(root,rel,65536),/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED/);
+  assert.equal(injected,true);
+ }finally{fs.readFileSync=originalRead;fs.readSync=originalReadSync;fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('source reader rejects FIFO substitution without blocking on open', {skip:process.platform!=='linux'},()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {execFileSync,spawnSync}=require('node:child_process');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'c2-fifo-'));
+ try{
+  execFileSync('mkfifo',[path.join(root,'task.toml')],{timeout:5000});
+  const scriptPath=require.resolve('../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+  const source='const {read}=require('+JSON.stringify(scriptPath)+');'+
+   'try { read('+JSON.stringify(root)+',"task.toml",65536); process.exit(2); }'+
+   'catch(e) { process.exit(/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED/.test(String(e.message))?0:3); }';
+  const child=spawnSync(process.execPath,['-e',source],
+   {encoding:'utf8',timeout:2500,killSignal:'SIGKILL'});
+  assert.equal(child.error,undefined,'the FIFO reader must fail closed, not hang');
+  assert.equal(child.status,0,'the reader must safely reject a non-regular file');
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});

@@ -3,6 +3,7 @@
 // Offline preflight only: NEVER executes upstream source, Gradle, shell scripts or Docker.
 const fs=require('node:fs');
 const path=require('node:path');
+const crypto=require('node:crypto');
 const {execFileSync}=require('node:child_process');
 const {UPSTREAM}=require('../packages/quality-gates/c2-kotlin-upstream-candidate-index.cjs');
 const {auditTask,summarizeTasks}=require('../packages/quality-gates/c2-upstream-task-triage.cjs');
@@ -12,20 +13,28 @@ const MAX_TASK_TOML_BYTES=65_536;
 const MAX_EXPECTED_TEST_BYTES=8_388_608;
 function fail(){throw Error('C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED');}
 function git(root,args){
- try{return execFileSync('git',['-C',root,...args],{encoding:'utf8',timeout:15000,maxBuffer:65536}).trim();}
+ try{return execFileSync('git',['--no-replace-objects','-C',root,...args],{encoding:'utf8',timeout:15000,maxBuffer:65536}).trim();}
  catch{fail();}
 }
 function read(root,rel,maxBytes){
  if(!Number.isSafeInteger(maxBytes)||maxBytes<20||maxBytes>MAX_EXPECTED_TEST_BYTES)fail();
  const filename=path.resolve(root,rel);
  if(!filename.startsWith(root+path.sep))fail();
- let stat;
- try{stat=fs.lstatSync(filename);}catch{fail();}
- if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>maxBytes||stat.size<20)fail();
- const hash=git(root,['hash-object','--',rel]);
+ let fd,bytes;
+ try{
+  fd=fs.openSync(filename,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);
+  const stat=fs.fstatSync(fd);
+  if(!stat.isFile()||stat.nlink!==1||stat.size>maxBytes||stat.size<20)fail();
+  const buffer=Buffer.alloc(stat.size+1);
+  let size=0,n;
+  while(size<buffer.length&&(n=fs.readSync(fd,buffer,size,buffer.length-size,null))>0)size+=n;
+  if(size!==stat.size)fail();
+  bytes=buffer.subarray(0,size);
+ }catch{fail();}finally{if(fd!==undefined)fs.closeSync(fd);}
+ const hash=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
  const tracked=git(root,['rev-parse',`HEAD:${rel}`]);
  if(hash!==tracked||!/^[a-f0-9]{40}$/.test(hash))fail();
- return {content:fs.readFileSync(filename,'utf8'),sha:hash};
+ return {content:bytes.toString('utf8'),sha:hash};
 }
 function run(args){
  let stage='ARGUMENTS';
@@ -84,4 +93,4 @@ if(require.main===module){
   process.exitCode=2;
  }
 }
-module.exports={run,MAX_TASK_TOML_BYTES,MAX_EXPECTED_TEST_BYTES};
+module.exports={run,read,MAX_TASK_TOML_BYTES,MAX_EXPECTED_TEST_BYTES};
