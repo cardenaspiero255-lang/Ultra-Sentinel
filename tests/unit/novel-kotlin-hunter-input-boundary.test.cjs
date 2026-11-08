@@ -41,7 +41,11 @@ test('Hunter rejects Proxy traps and hidden coercion before inspecting attacker 
   {...original(),files:[new Proxy(original().files[0],traps)]},
   {...original(),expectedCommitSha:{toString(){trapped++;return COMMIT;}}},
   {...original(),files:[{...original().files[0],
-   expectedBlobSha:{toString(){trapped++;return blobSha(SOURCE);}}}]}
+   expectedBlobSha:{toString(){trapped++;return blobSha(SOURCE);}}}]},
+  (()=>{const payload=original();
+   Object.defineProperty(payload.files[0],'expectedBlobSha',{enumerable:false,
+    value:{toString(){trapped++;return blobSha(SOURCE);}}});
+   return payload;})()
  ];
  for(const input of samples)
   assert.equal(scanNovelKotlinHypotheses(input).status,'BLOCKED_INPUT_CONTRACT');
