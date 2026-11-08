@@ -17,6 +17,13 @@ const SHA=/^[a-f0-9]{40}$/,HASH=/^[a-f0-9]{64}$/;
 const SIGNATURE=/^[A-Za-z0-9+/]{86}==$/;
 const MAX_BYTES=160000;
 function denied(reason='CHECKPOINT_INVALID'){throw Error(reason);}
+function snapshotPublicKey(input){
+ try{
+  const key=input instanceof crypto.KeyObject?input:crypto.createPublicKey(input);
+  if(key.type!=='public'||key.asymmetricKeyType!=='ed25519')denied('CHECKPOINT_SIGNATURE_INVALID');
+  return key;
+ }catch{denied('CHECKPOINT_SIGNATURE_INVALID');}
+}
 function plain(value,fields){
  return value!==null&&typeof value==='object'&&!Array.isArray(value)&&
   !types.isProxy(value)&&Object.getPrototypeOf(value)===Object.prototype&&
@@ -109,10 +116,8 @@ function verifySignedRevocationCheckpoint({journal,checkpoint,entries,trustedPub
   denied('CHECKPOINT_SIGNATURE_INVALID');
  let key;
  try{
-  key=trustedPublicKey instanceof crypto.KeyObject?trustedPublicKey:
-   crypto.createPublicKey(trustedPublicKey);
-  if(key.type!=='public'||key.asymmetricKeyType!=='ed25519'||
-   !crypto.verify(null,Buffer.from(canonical.signingMessage,'utf8'),
+  key=snapshotPublicKey(trustedPublicKey);
+  if(!crypto.verify(null,Buffer.from(canonical.signingMessage,'utf8'),
     key,Buffer.from(stableCheckpoint.signature,'base64')))
    denied('CHECKPOINT_SIGNATURE_INVALID');
  }catch{denied('CHECKPOINT_SIGNATURE_INVALID');}
@@ -134,13 +139,14 @@ function verifySignedRevocationCheckpoint({journal,checkpoint,entries,trustedPub
  * This module verifies signatures and prefix history, NOT witness custody.
  */
 function verifyPinnedRevocationHighWater({journal,checkpoint,entries,trustedPublicKey,witness}={}){
+ const stableKey=snapshotPublicKey(trustedPublicKey);
  const stableJournal=snapshotJournal(journal);
  const stableCheckpoint=snapshotCheckpoint(checkpoint);
  const stableEntries=snapshotEntries(entries);
  const stableWitness=snapshotCheckpoint(witness);
  const current=verifySignedRevocationCheckpoint({
   journal:stableJournal,checkpoint:stableCheckpoint,
-  entries:stableEntries,trustedPublicKey
+  entries:stableEntries,trustedPublicKey:stableKey
  });
  const expectedMessage=PREFIX+JSON.stringify([REPO,stableWitness.anchorSha,
   stableWitness.eventCount,stableWitness.headHash]);
@@ -151,10 +157,7 @@ function verifyPinnedRevocationHighWater({journal,checkpoint,entries,trustedPubl
   Buffer.from(stableWitness.signature,'base64').toString('base64')!==
     stableWitness.signature)denied('CHECKPOINT_SIGNATURE_INVALID');
  try{
-  const key=trustedPublicKey instanceof crypto.KeyObject?trustedPublicKey:
-   crypto.createPublicKey(trustedPublicKey);
-  if(key.type!=='public'||key.asymmetricKeyType!=='ed25519'||
-   !crypto.verify(null,Buffer.from(expectedMessage,'utf8'),key,
+  if(!crypto.verify(null,Buffer.from(expectedMessage,'utf8'),stableKey,
     Buffer.from(stableWitness.signature,'base64')))
    denied('CHECKPOINT_SIGNATURE_INVALID');
  }catch{denied('CHECKPOINT_SIGNATURE_INVALID');}
@@ -231,12 +234,13 @@ class PersistentSignedRevocationStore{
  }
  commit({journal,checkpoint,entries,trustedPublicKey}={}){
   privateLocation(this.filename);
+  const stableKey=snapshotPublicKey(trustedPublicKey);
   const stableJournal=snapshotJournal(journal),
    stableCheckpoint=snapshotCheckpoint(checkpoint),
    stableEntries=snapshotEntries(entries);
   const current=verifySignedRevocationCheckpoint({
    journal:stableJournal,checkpoint:stableCheckpoint,
-   entries:stableEntries,trustedPublicKey
+   entries:stableEntries,trustedPublicKey:stableKey
   });
   const lock=this.filename+'.lock',temp=this.filename+'.tmp';
   let lockfd=null,fd=null;
@@ -246,7 +250,7 @@ class PersistentSignedRevocationStore{
     0o600);
    let previous=null;
    if(fs.existsSync(this.filename))
-    previous=inspectStored(readFile(this.filename),stableEntries,trustedPublicKey);
+    previous=inspectStored(readFile(this.filename),stableEntries,stableKey);
    if(previous){
     if(previous.anchorSha!==current.anchorSha||
      current.eventCount<=previous.eventCount)
