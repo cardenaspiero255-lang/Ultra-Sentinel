@@ -41,7 +41,7 @@ jobs:
           [[ "$PR_HEAD" =~ ^[a-f0-9]{40}$ ]] || exit 2
           git cat-file -e "$PR_BASE^{commit}"
           git cat-file -e "$PR_HEAD^{commit}"
-          git diff --name-only --diff-filter=ACDMRT -z "$PR_BASE" "$PR_HEAD" > "$RUNNER_TEMP/c2-semantic-changed-paths"
+          git diff --name-only --no-renames --diff-filter=ACDMRT -z "$PR_BASE" "$PR_HEAD" > "$RUNNER_TEMP/c2-semantic-changed-paths"
           required=false
           while IFS= read -r -d '' path; do
             case "$path" in
