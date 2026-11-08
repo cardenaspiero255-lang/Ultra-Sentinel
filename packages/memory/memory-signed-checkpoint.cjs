@@ -35,6 +35,19 @@ function snapshotRecord(value,fields){
   fields.some(k=>!Object.hasOwn(descriptors,k)||
     !Object.hasOwn(descriptors[k],'value')))
   denied('CHECKPOINT_UNSAFE_OBJECT');
+ // Never retain caller-owned mutable scalar objects. Some objects implement
+ // coercion/toJSON that yields different values during chain inspection and
+ // disk serialization, corrupting an otherwise valid signed checkpoint.
+ for(const key of fields){
+  const data=descriptors[key].value;
+  if(key==='events'){
+   if(!Array.isArray(data)||types.isProxy(data))
+    denied('CHECKPOINT_UNSAFE_OBJECT');
+  }else if(key==='seq'||key==='eventCount'){
+   if(!Number.isSafeInteger(data)||data<0)
+    denied('CHECKPOINT_UNSAFE_OBJECT');
+  }else if(typeof data!=='string')denied('CHECKPOINT_UNSAFE_OBJECT');
+ }
  return Object.freeze(Object.fromEntries(
   fields.map(k=>[k,descriptors[k].value])));
 }
