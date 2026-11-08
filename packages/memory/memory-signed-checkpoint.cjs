@@ -232,9 +232,16 @@ class PersistentSignedRevocationStore{
   return Object.freeze({...proof,journal:payload.journal,
    checkpoint:payload.checkpoint});
  }
- commit({journal,checkpoint,entries,trustedPublicKey}={}){
+ commit(input={}){
+  return this._commit(input,false);
+ }
+ commitWithWitness(input={}){
+  return this._commit(input,true);
+ }
+ _commit({journal,checkpoint,entries,trustedPublicKey,witness}={},requireWitness){
   privateLocation(this.filename);
   const stableKey=snapshotPublicKey(trustedPublicKey);
+  const stableWitness=requireWitness?snapshotCheckpoint(witness):null;
   const stableJournal=snapshotJournal(journal),
    stableCheckpoint=snapshotCheckpoint(checkpoint),
    stableEntries=snapshotEntries(entries);
@@ -251,6 +258,15 @@ class PersistentSignedRevocationStore{
    let previous=null;
    if(fs.existsSync(this.filename))
     previous=inspectStored(readFile(this.filename),stableEntries,stableKey);
+   if(requireWitness){
+    if(!previous)denied('CHECKPOINT_NOT_FOUND');
+    verifyPinnedRevocationHighWater({journal:previous.journal,
+     checkpoint:previous.checkpoint,entries:stableEntries,
+     trustedPublicKey:stableKey,witness:stableWitness});
+    verifyPinnedRevocationHighWater({journal:stableJournal,
+     checkpoint:stableCheckpoint,entries:stableEntries,
+     trustedPublicKey:stableKey,witness:stableWitness});
+   }
    if(previous){
     if(previous.anchorSha!==current.anchorSha||
      current.eventCount<=previous.eventCount)
