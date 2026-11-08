@@ -115,7 +115,9 @@ function trustedNodePath(directory,nodeExecutable=process.execPath){
   fs.symlinkSync(canonical,path.join(bin,'node'),'file');
   if(fs.realpathSync(path.join(bin,'node'))!==canonical)
    throw Error('NODE_SYMLINK_INCONSISTENT');
-  return bin+':/usr/local/bin:/usr/bin:/bin';
+  // Ubuntu's sysctl lives in /usr/sbin, outside the ordinary executable
+  // paths. Both original-oracle scripts require it for the AppArmor gate.
+  return bin+':/usr/local/bin:/usr/bin:/bin:/usr/sbin';
  }catch{throw Error('OWNER_TRUSTED_NODE_'+phase+'_UNAVAILABLE');}
 }
 function spawnIsolated(label,args,env){

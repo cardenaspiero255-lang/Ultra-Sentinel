@@ -16,7 +16,7 @@ test('original Kotlin/JVM subprocess locates precisely the current trusted Node 
   const entry=path.join(root,'trusted-tools','node');
   assert.equal(fs.lstatSync(entry).isSymbolicLink(),true);
   assert.equal(fs.realpathSync(entry),fs.realpathSync(process.execPath));
-  assert.equal(value,root+'/trusted-tools:/usr/local/bin:/usr/bin:/bin');
+  assert.equal(value,root+'/trusted-tools:/usr/local/bin:/usr/bin:/bin:/usr/sbin');
   const checked=spawnSync('/bin/bash',['-c','command -v node; node -p "process.execPath"'],{
    encoding:'utf8',env:{PATH:value}});
   assert.equal(checked.status,0,checked.stderr);
@@ -39,6 +39,17 @@ test('trusted Node executable is not injected through parent runner PATH',()=>{
   assert.equal(checked.status,0);
   assert.match(checked.stdout,/^v\d+/);
   assert.ok(!checked.stdout.includes('ATTACKER'));
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('the restricted host PATH also resolves the sysctl needed by both Kotlin scripts',
+ {skip:process.platform!=='linux'},()=>{
+ const root=temp();
+ try{
+  const restrictedPath=trustedNodePath(root);
+  const checked=spawnSync('/bin/bash',['-c','command -v sysctl && sysctl --version'],{
+   encoding:'utf8',env:{PATH:restrictedPath}});
+  assert.equal(checked.status,0,checked.stderr);
+  assert.match(checked.stdout,/sysctl/);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
 test('trustedNodePath rejects untrusted executable and unsafe work directory',()=>{
