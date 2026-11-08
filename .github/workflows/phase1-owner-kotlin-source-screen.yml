@@ -1,0 +1,55 @@
+name: Ultra Sentinel — Phase 1 owner Kotlin source eligibility (read-only)
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase1-owner-kotlin-source-screen.yml
+      - packages/kotlin-semantic/C2OptionalKotlinSemantic.kt
+      - packages/investigation/phase1-owner-kotlin-source-screen.cjs
+      - packages/investigation/novel-kotlin-hypotheses.cjs
+      - scripts/phase1-screen-own-kotlin.cjs
+      - tests/unit/phase1-owner-kotlin-source-screen.test.cjs
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/phase1-owner-kotlin-source-screen.yml
+      - packages/kotlin-semantic/C2OptionalKotlinSemantic.kt
+      - packages/investigation/phase1-owner-kotlin-source-screen.cjs
+      - packages/investigation/novel-kotlin-hypotheses.cjs
+      - scripts/phase1-screen-own-kotlin.cjs
+      - tests/unit/phase1-owner-kotlin-source-screen.test.cjs
+permissions:
+  contents: read
+concurrency:
+  group: phase1-owner-kotlin-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  own-kotlin-eligibility:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Unit-test source restriction and adversarial source payloads
+        run: node --test tests/unit/phase1-owner-kotlin-source-screen.test.cjs
+      - name: Verify original Kotlin bytes from Git and publish eligibility result
+        run: node scripts/phase1-screen-own-kotlin.cjs "${{ runner.temp }}/phase1-owner-kotlin-screen-receipt.json"
+      - name: Archive read-only eligibility receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase1-owner-kotlin-source-eligibility
+          path: ${{ runner.temp }}/phase1-owner-kotlin-screen-receipt.json
+          if-no-files-found: error
+          retention-days: 14
