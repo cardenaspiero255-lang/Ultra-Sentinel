@@ -128,6 +128,55 @@ function verifySignedRevocationCheckpoint({journal,checkpoint,entries,trustedPub
   limitation:'A signature is cryptographically valid only for the separately configured public key. Authentic owner provenance, external checkpoint monotonicity and deployment are not established by this local helper.'
  });
 }
+
+/*
+ * Compare a signed checkpoint against an independently pinned high-water mark.
+ * This module verifies signatures and prefix history, NOT witness custody.
+ */
+function verifyPinnedRevocationHighWater({journal,checkpoint,entries,trustedPublicKey,witness}={}){
+ const stableJournal=snapshotJournal(journal);
+ const stableCheckpoint=snapshotCheckpoint(checkpoint);
+ const stableEntries=snapshotEntries(entries);
+ const stableWitness=snapshotCheckpoint(witness);
+ const current=verifySignedRevocationCheckpoint({
+  journal:stableJournal,checkpoint:stableCheckpoint,
+  entries:stableEntries,trustedPublicKey
+ });
+ const expectedMessage=PREFIX+JSON.stringify([REPO,stableWitness.anchorSha,
+  stableWitness.eventCount,stableWitness.headHash]);
+ if(stableWitness.schema!==SCHEMA||stableWitness.repository!==REPO||
+  !SHA.test(stableWitness.anchorSha)||!HASH.test(stableWitness.headHash)||
+  stableWitness.signingMessage!==expectedMessage||
+  !SIGNATURE.test(stableWitness.signature)||
+  Buffer.from(stableWitness.signature,'base64').toString('base64')!==
+    stableWitness.signature)denied('CHECKPOINT_SIGNATURE_INVALID');
+ try{
+  const key=trustedPublicKey instanceof crypto.KeyObject?trustedPublicKey:
+   crypto.createPublicKey(trustedPublicKey);
+  if(key.type!=='public'||key.asymmetricKeyType!=='ed25519'||
+   !crypto.verify(null,Buffer.from(expectedMessage,'utf8'),key,
+    Buffer.from(stableWitness.signature,'base64')))
+   denied('CHECKPOINT_SIGNATURE_INVALID');
+ }catch{denied('CHECKPOINT_SIGNATURE_INVALID');}
+ if(stableWitness.anchorSha!==current.anchorSha)
+  denied('CHECKPOINT_HISTORY_FORKED');
+ if(stableWitness.eventCount>current.eventCount)
+  denied('CHECKPOINT_ROLLBACK_DETECTED');
+ const pinnedHash=stableWitness.eventCount===0?'0'.repeat(64):
+  stableJournal.events[stableWitness.eventCount-1]?.hash;
+ if(pinnedHash!==stableWitness.headHash)
+  denied('CHECKPOINT_HISTORY_FORKED');
+ return Object.freeze({...current,
+  status:'CURRENT_REVOCATIONS_EXTEND_PINNED_WITNESS',
+  witnessEventCount:stableWitness.eventCount,
+  witnessSignatureValidForConfiguredKey:true,
+  independentWitnessStorageVerified:false,
+  ownerAuthorizationGranted:false,promotionAuthorized:false,
+  productionReleaseAllowed:false,remoteWrites:false,mergeAllowed:false,
+  limitation:'The signed history extends the supplied witness. The host must authenticate and retain the trusted key and witness separately; this module does not certify witness storage or authority.'
+ });
+}
+
 function privateLocation(filename){
  if(typeof filename!=='string'||!path.isAbsolute(filename)||
   filename.length>500||filename.includes('\0'))denied('CHECKPOINT_PATH_UNSAFE');
@@ -172,6 +221,13 @@ class PersistentSignedRevocationStore{
  }
  load({entries,trustedPublicKey}={}){
   return inspectStored(readFile(this.filename),entries,trustedPublicKey);
+ }
+ loadWithWitness({entries,trustedPublicKey,witness}={}){
+  const payload=readFile(this.filename);
+  const proof=verifyPinnedRevocationHighWater({...payload,
+   entries,trustedPublicKey,witness});
+  return Object.freeze({...proof,journal:payload.journal,
+   checkpoint:payload.checkpoint});
  }
  commit({journal,checkpoint,entries,trustedPublicKey}={}){
   privateLocation(this.filename);
@@ -234,4 +290,5 @@ class PersistentSignedRevocationStore{
  }
 }
 module.exports=Object.freeze({createSignedRevocationCheckpoint,
- verifySignedRevocationCheckpoint,PersistentSignedRevocationStore});
+ verifySignedRevocationCheckpoint,verifyPinnedRevocationHighWater,
+ PersistentSignedRevocationStore});
