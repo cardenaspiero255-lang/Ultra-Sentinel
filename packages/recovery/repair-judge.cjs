@@ -7,6 +7,7 @@
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
+const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
 const SAFE=/^(?:(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+|apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt)$/;
 function git(directory,...args){
@@ -44,7 +45,8 @@ function judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan}={}){
   const known=new Set();
   for(const change of plan.changes){
    if(!change||typeof change!=='object'||Array.isArray(change)||
-    typeof change.path!=='string'||!SAFE.test(change.path)||
+    typeof change.path!=='string'||
+    !(SAFE.test(change.path)||isSafeNovelKotlinPath(change.path))||
     change.path.includes('..')||change.path.includes('\\')||
     known.has(change.path)||!SHA.test(change.beforeBlobSha||'')||
     !SHA.test(change.afterBlobSha||'')||change.beforeBlobSha===change.afterBlobSha||

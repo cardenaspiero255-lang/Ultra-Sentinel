@@ -11,17 +11,14 @@ const {scanNovelKotlinHypotheses,blobSha}=
 const SHA=/^[a-f0-9]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const MAX_FILES=4,MAX_BYTES=60000;
-const PATH=/^(?:(?:apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core|app\/src\/main\/(?:java|kotlin)|[A-Za-z0-9_-]+\/src\/main\/(?:java|kotlin))\/[A-Za-z0-9_./-]+)\.kt$/;
+const {isSafeNovelKotlinPath}=require('./novel-kotlin-path-policy.cjs');
 const hex256=s=>createHash('sha256').update(s,'utf8').digest('hex');
 function plain(x,keys){
  return x!==null&&typeof x==='object'&&!Array.isArray(x)&&
   Object.getPrototypeOf(x)===Object.prototype&&
   Object.keys(x).sort().join(',')===keys.slice().sort().join(',');
 }
-function safePath(s){
- return typeof s==='string'&&s.length<=300&&PATH.test(s)&&
-  !s.includes('//')&&!s.split('/').some(x=>x===''||x==='.'||x==='..');
-}
+const safePath=isSafeNovelKotlinPath;
 function safeSource(s){
  return typeof s==='string'&&s.length>=10&&s.endsWith('\n')&&
   !s.includes('\r')&&!s.includes('\0')&&
