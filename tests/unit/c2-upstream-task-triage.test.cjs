@@ -107,3 +107,20 @@ test('source reader rejects bytes changed between identity check and read',()=>{
   assert.equal(injected,true);
  }finally{fs.readFileSync=originalRead;fs.readSync=originalReadSync;fs.rmSync(root,{recursive:true,force:true});}
 });
+
+test('source reader rejects FIFO substitution without blocking on open', {skip:process.platform!=='linux'},()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {execFileSync,spawnSync}=require('node:child_process');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'c2-fifo-'));
+ try{
+  execFileSync('mkfifo',[path.join(root,'task.toml')],{timeout:5000});
+  const scriptPath=require.resolve('../../scripts/audit-c2-kotlin-upstream-task-evidence.cjs');
+  const source='const {read}=require('+JSON.stringify(scriptPath)+');'+
+   'try { read('+JSON.stringify(root)+',"task.toml",65536); process.exit(2); }'+
+   'catch(e) { process.exit(/C2_UPSTREAM_TASK_SOURCE_ATTESTATION_BLOCKED/.test(String(e.message))?0:3); }';
+  const child=spawnSync(process.execPath,['-e',source],
+   {encoding:'utf8',timeout:2500,killSignal:'SIGKILL'});
+  assert.equal(child.error,undefined,'the FIFO reader must fail closed, not hang');
+  assert.equal(child.status,0,'the reader must safely reject a non-regular file');
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
