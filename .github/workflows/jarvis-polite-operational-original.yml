@@ -10,10 +10,13 @@ on:
       - scripts/jarvis-polite-candidate-matrix.sh
       - scripts/verify-jarvis-polite-candidate.cjs
       - scripts/verify-jarvis-polite-operational-original.cjs
+      - scripts/run-github-owner-jarvis-remote.cjs
+      - scripts/verify-remote-jarvis-jvm-readonly.cjs
       - tests/oracles/jarvis-polite-operational-original.kt
       - tests/oracles/jarvis-polite-candidate-adversarial.kt
       - tests/unit/jarvis-polite-operational-original-proof.test.cjs
       - tests/unit/jarvis-polite-candidate.test.cjs
+      - tests/unit/github-remote-owner-oracle-workspace.test.cjs
   push:
     branches: [main]
 permissions:
@@ -126,5 +129,19 @@ jobs:
         with:
           name: jarvis-polite-candidate-matrix
           path: ${{ runner.temp }}/jarvis-polite-original/polite-candidate-receipt.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Exercise the production remote JVM verifier without authorization or writes
+        shell: bash
+        env:
+          ULTRA_OWNER_COMMENT_READ_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/verify-remote-jarvis-jvm-readonly.cjs
+      - name: Archive sanitized read-only remote JVM proof
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-remote-jvm-readonly-proof
+          path: ${{ runner.temp }}/readonly-remote-jarvis-jvm.json
           retention-days: 14
           if-no-files-found: error
