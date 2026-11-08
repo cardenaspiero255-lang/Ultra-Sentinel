@@ -13,6 +13,8 @@ import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.isReallySuccess
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 
 /**
  * Optional symbol-resolution-only JVM Kotlin bridge, compiled against the
@@ -32,8 +34,15 @@ enum class C2SymbolKind {
 enum class C2SymbolOrigin { SOURCE_UNAUTHENTICATED, EXTERNAL_OR_UNAVAILABLE, UNKNOWN }
 enum class C2Dispatch { STATIC, OPEN, UNKNOWN }
 
-/** A compiler PSI location; line and column are one-based. Paths are compiler inputs. */
-data class C2SourceLocation(val path: String, val line: Int, val column: Int)
+/**
+ * A compiler PSI location; line and column are one-based. Paths are compiler
+ * inputs. The blob hashes the UTF-8 encoding of the PSI text, which may be
+ * normalized; consumers must compare it to the bytes of an authenticated Git
+ * tree. This does not establish tree membership, trusted execution, or causality.
+ * The text is hashed for each location rather than cached across PSI changes;
+ * callers must budget for work proportional to file size and call count.
+ */
+data class C2SourceLocation(val path: String, val line: Int, val column: Int, val gitBlobSha: String)
 
 data class C2ResolvedSymbol(
     val calledName: String,
@@ -109,6 +118,10 @@ object C2OptionalKotlinSemantic {
         val text = file.text
         val offset = element.textOffset.coerceIn(0, text.length)
         val lineStart = if (offset == 0) 0 else text.lastIndexOf('\n', offset - 1) + 1
-        return C2SourceLocation(path, text.substring(0, offset).count { it == '\n' } + 1, offset - lineStart + 1)
+        val bytes = text.toByteArray(StandardCharsets.UTF_8)
+        val digest = MessageDigest.getInstance("SHA-1")
+        digest.update("blob ${bytes.size}\u0000".toByteArray(StandardCharsets.US_ASCII))
+        val gitBlobSha = digest.digest(bytes).joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        return C2SourceLocation(path, text.substring(0, offset).count { it == '\n' } + 1, offset - lineStart + 1, gitBlobSha)
     }
 }

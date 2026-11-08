@@ -2,11 +2,20 @@ name: Ultra Sentinel — original Kotlin cross-file functional Judge E2E
 on:
   pull_request:
     paths:
-      - packages/recovery/cross-file-kotlin-functional-judge.cjs
-      - packages/recovery/cross-file-sandbox-reproduction.cjs
+      - packages/recovery/**
+      - packages/investigation/**
+      - packages/kotlin-semantic/**
+      - packages/family-hunter/**
+      - scripts/c2-live-causal-campaign.sh
+      - scripts/c2-pr185-numeric-factorial.sh
       - scripts/c2-cross-file-kotlin-bridge.cjs
       - scripts/c2-cross-file-kotlin-negative-control.sh
+      - tests/oracles/c2-run17-battery-abi.kt
+      - tests/oracles/c2-pr185-numeric-factorial-oracle.kt
+      - tests/fixtures/c2-kotlin-semantic/**
+      - tests/unit/committed-kotlin-semantic-claims.test.cjs
       - tests/unit/cross-file-kotlin-functional-judge.test.cjs
+      - tests/unit/kotlin-cross-file-workflow-scope.test.cjs
       - .github/workflows/real-kotlin-cross-file-functional-judge.yml
   push:
     branches: [main]
@@ -60,6 +69,12 @@ jobs:
           unzip -q "$compiler" -d "$RUNNER_TEMP/oracle-kotlin"
           test -x "$RUNNER_TEMP/oracle-kotlin/kotlinc/bin/kotlinc"
           echo "$RUNNER_TEMP/oracle-kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Check compiler symbols and local blob binding on synthetic sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tests/fixtures/c2-kotlin-semantic/run-compiler-integration.sh "$RUNNER_TEMP/oracle-kotlin/kotlinc"
+          bash tests/fixtures/c2-kotlin-semantic/run-compiler-binding-integration.sh "$RUNNER_TEMP/oracle-kotlin/kotlinc"
       - name: Require real Bubblewrap plus enforced AppArmor
         shell: bash
         run: |

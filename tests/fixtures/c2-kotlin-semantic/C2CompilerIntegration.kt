@@ -18,6 +18,14 @@ import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 import java.io.File
 import java.nio.file.Files
 
+private fun gitBlob(file: File): String {
+    val process = ProcessBuilder("git", "hash-object", "--stdin").start()
+    process.outputStream.use { output -> file.inputStream().use { it.copyTo(output) } }
+    val result = process.inputStream.bufferedReader().use { it.readText().trim() }
+    check(process.waitFor() == 0)
+    return result
+}
+
 fun main(args: Array<String>) {
     val dir = Files.createTempDirectory("c2-semantic-compiler").toFile()
     val disposable = Disposer.newDisposable()
@@ -29,7 +37,7 @@ fun main(args: Array<String>) {
         """.trimIndent()) }
         val target = File(dir, "target.kt").apply { writeText("""
             package target
-            fun work(n: Int) = n
+            fun work(n: Int) = n // π😀
             open class Base { open fun run() {} }
         """.trimIndent()) }
         val ambiguous = File(dir, "ambiguous.kt").apply { writeText("""
@@ -55,13 +63,16 @@ fun main(args: Array<String>) {
             class Child : Parent()
             fun use(parent: Parent, child: Child) { parent.finalRun(); child.finalRun() }
         """.trimIndent()) }
+        val crlf = File(dir, "crlf.kt").apply {
+            writeText("package crlf\r\nfun acceptLineEndings() {}\r\nfun use() { acceptLineEndings() }\r\n")
+        }
         val config = CompilerConfiguration().apply {
             put(CommonConfigurationKeys.MODULE_NAME, "c2-integration")
             put(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
             put(JVMConfigurationKeys.JDK_HOME, File(System.getProperty("java.home")))
             configureJdkClasspathRoots()
             addJvmClasspathRoot(File(args.single()))
-            listOf(caller, target, ambiguous, locals, inheritance).forEach { addKotlinSourceRoot(it.path) }
+            listOf(caller, target, ambiguous, locals, inheritance, crlf).forEach { addKotlinSourceRoot(it.path) }
         }
         val env = KotlinCoreEnvironment.createForProduction(disposable, config, EnvironmentConfigFiles.JVM_CONFIG_FILES)
         val result = TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
@@ -83,6 +94,8 @@ fun main(args: Array<String>) {
         check(alias.identity?.contains("kotlin.Int") == true)
         check(alias.callSite?.path == caller.path && alias.callSite?.line == 3)
         check(alias.declarationSite?.path == target.path && alias.declarationSite?.line == 2)
+        check(alias.callSite?.gitBlobSha == gitBlob(caller))
+        check(alias.declarationSite?.gitBlobSha == gitBlob(target))
         check(alias.origin == C2SymbolOrigin.SOURCE_UNAUTHENTICATED && alias.dispatch == C2Dispatch.STATIC)
         val virtual = calls.getValue("run")
         check(virtual.dispatch == C2Dispatch.OPEN && virtual.identity == null)
@@ -101,6 +114,12 @@ fun main(args: Array<String>) {
         check(inheritedCalls.size == 2)
         check(inheritedCalls.all { it.identity != null && it.declarationSite?.path == inheritance.path })
         check(inheritedCalls[0].identity == inheritedCalls[1].identity)
+        // The PSI normalizes these line endings. A verifier comparing against
+        // the Git blob of the original bytes must reject the mismatch.
+        check(calls.getValue("acceptLineEndings").callSite?.gitBlobSha != gitBlob(crlf))
+        // A later filesystem change is not silently treated as the analyzed text.
+        caller.appendText("\n// modificación\n")
+        check(alias.callSite?.gitBlobSha != gitBlob(caller))
         println("Kotlin compiler multi-file semantic assertions passed")
     } finally {
         Disposer.dispose(disposable)

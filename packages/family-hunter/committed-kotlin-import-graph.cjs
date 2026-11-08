@@ -73,6 +73,7 @@ function planCommittedKotlinSourceImports(options={}){
   const report=planSourceImports({headSha:baseline,sources,seeds,
    maxFiles:options.maxFiles,maxDepth:options.maxDepth});
   return Object.freeze({...report,localCommitVerified:true,
+   sourceBlobs:Object.freeze(sources.map(s=>Object.freeze({path:s.path,blobSha:s.blobSha}))),
    repositoryMembershipVerified:true,externalRepositoryAuthenticated:false,
    ownerAuthorizationGranted:false,remoteWrites:false,mergeAllowed:false,
    limitation:'The source belongs to an immutable local Git tree at the declared HEAD. No proof that the repository is the authenticated remote owner, nor evidence of Kotlin functional correctness or causality.'});
