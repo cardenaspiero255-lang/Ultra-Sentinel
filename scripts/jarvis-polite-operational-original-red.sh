@@ -65,7 +65,7 @@ test "$(git hash-object "$root/input/gate.kt")" = bdc3a6a576b3473454df232cd21e3a
 test "$(git hash-object "$root/input/policy.kt")" = 46e9dd8b4d0fe861935bfb5ee5160cd39f3b5a78
 test "$(sha256sum "$root/input/oracle.kt" | cut -d' ' -f1)" = "$expected_oracle"
 jar_hash="$(sha256sum "$root/out/oracle.jar" | cut -d' ' -f1)"
-for mode in policy gate controls; do
+for mode in policy gate integration controls; do
  set +e
  isolated run /jdk/bin/java -Xmx512m -jar /out/oracle.jar "$mode" > "$root/$mode.log" 2>&1
  code=$?

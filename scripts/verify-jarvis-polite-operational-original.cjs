@@ -19,7 +19,8 @@ function main(root){
  const result=assessOriginalVoiceIntent({sourceCommit:COMMIT,gateBlob:GATE,policyBlob:POLICY,
   oracleSha256:sha(bounded(path.join(root,'input/oracle.kt'),65536)),
   jarSha256:sha(bounded(path.join(root,'out/oracle.jar'),50000000)),
-  policy:readMode('policy'),gate:readMode('gate'),controls:readMode('controls')});
+  policy:readMode('policy'),gate:readMode('gate'),integration:readMode('integration'),
+  controls:readMode('controls')});
  fs.writeFileSync(path.join(root,'polite-original-receipt.json'),JSON.stringify(result,null,2)+'\n',
   {flag:'wx',mode:0o600});
  process.stdout.write(result.status+'\n');
