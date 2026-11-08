@@ -6,6 +6,7 @@
  */
 const {analyzeFamilies}=require('./ultra_sentinel_family_fingerprints.cjs');
 const {compareFamilySnapshots}=require('./family-delta.cjs');
+const {planDependencyExpansion}=require('./dependency-expansion-planner.cjs');
 const MAX_FACTORIAL_FILES=4;
 function locationsByRule(report){
  const result=new Map();
@@ -71,4 +72,6 @@ function planCrossFileInterventions(beforeCore,afterCore){
  return result(before.sha,after.sha,candidates.length?
   'EXPERIMENTS_REQUIRED':'NO_CROSS_FILE_TRANSITIONS_OBSERVED',candidates);
 }
-module.exports={planCrossFileInterventions};
+// Relationship expansion is a planning input only. It does not enlarge the
+// factorial experiment limit or turn unverified links into causal evidence.
+module.exports={planCrossFileInterventions,planDependencyExpansion};
