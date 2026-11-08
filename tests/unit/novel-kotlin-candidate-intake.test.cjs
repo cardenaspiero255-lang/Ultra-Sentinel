@@ -99,3 +99,33 @@ test('reject false success for a candidate that still exhibits its original risk
  assert.equal(out.status,'BLOCKED_TARGET_RISK_REMAINS');
  assert.equal(out.candidates.length,0);
 });
+test('rejects getters and proxies in candidate inputs without invoking them',()=>{
+ let invoked=0;
+ for(const place of ['root','file','proposal','array']){
+  const x=input();
+  if(place==='root')Object.defineProperty(x,'expectedCommitSha',{enumerable:true,get(){invoked++;return HEAD;}});
+  if(place==='file')Object.defineProperty(x.files[0],'source',{enumerable:true,get(){invoked++;return termux;}});
+  if(place==='proposal')Object.defineProperty(x.proposals[0],'candidateSource',{enumerable:true,get(){invoked++;return termux;}});
+  if(place==='array')Object.defineProperty(x.files,'0',{get(){invoked++;return input().files[0];}});
+  assert.match(planNovelKotlinCandidates(x).status,/^BLOCKED_/);
+ }
+ assert.equal(invoked,0);
+ let traps=0;const x=input();x.files[0]=new Proxy(x.files[0],{ownKeys(){traps++;throw Error('trap');}});
+ assert.match(planNovelKotlinCandidates(x).status,/^BLOCKED_/);assert.equal(traps,0);
+ const y=input();y.proposals=new Proxy(y.proposals,{get(){traps++;throw Error('trap');}});
+ assert.match(planNovelKotlinCandidates(y).status,/^BLOCKED_/);assert.equal(traps,0);
+});
+test('rejects non-string identifiers without invoking coercion',()=>{
+ let coerced=0;
+ const suspicious={toString(){coerced++;return HEAD;}};
+ for(const mutate of [
+  x=>{x.expectedCommitSha=suspicious;},
+  x=>{x.files[0].expectedBlobSha=suspicious;},
+  x=>{x.proposals[0].rule=suspicious;},
+  x=>{x.proposals[0].expectedCandidateBlobSha=suspicious;},
+ ]){
+  const x=input();mutate(x);
+  assert.equal(planNovelKotlinCandidates(x).status,'BLOCKED_INPUT_CONTRACT');
+ }
+ assert.equal(coerced,0);
+});

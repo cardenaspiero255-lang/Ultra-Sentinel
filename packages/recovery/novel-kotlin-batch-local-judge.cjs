@@ -1,6 +1,6 @@
 'use strict';
 /** Combine unregistered Kotlin candidate intake with disposable Git Judge. */
-const {planNovelKotlinCandidates}=
+const {planNovelKotlinCandidates,snapshotNovelKotlinInput}=
  require('../investigation/novel-kotlin-candidate-intake.cjs');
 const {drillKotlinSourceBatchSandbox}=
  require('./two-source-kotlin-sandbox.cjs');
@@ -43,8 +43,9 @@ function linesChanged(before,after){
  removed+=a.length-i;added+=b.length-j;
  return hunks>0&&hunks<=3&&removed<=3&&added<=12&&removed+added>0;
 }
-function drillNovelKotlinCandidateBatch({expectedCommitSha,files,proposals}={}){
+function drillNovelKotlinCandidateBatch(options={}){
  try{
+  const {expectedCommitSha,files,proposals}=snapshotNovelKotlinInput(options);
   const plan=planNovelKotlinCandidates({expectedCommitSha,files,proposals});
   if(plan.status!=='CANDIDATES_REQUIRE_TRUSTED_ORIGINAL_ORACLE'||
    !Array.isArray(plan.candidates)||plan.candidates.length===0||

@@ -108,4 +108,31 @@ test('functional Judge rejects a candidate that passes structural Git checks but
   junitExit:0,junitLog:'OK (6 tests)\n'}};
  assert.equal(judgeReadProgressEvidence({...input,results:forged}).status,'FUNCTIONAL_JUDGE_VETO');
  assert.equal(judgeReadProgressEvidence({...input,candidateSource:unsafe}).status,'FUNCTIONAL_JUDGE_VETO');
+ let invoked=0;
+ const accessor={...results,original:{...results.original}};
+ Object.defineProperty(accessor.original,'oracleExit',{enumerable:true,get(){invoked++;return 1;}});
+ assert.equal(judgeReadProgressEvidence({...input,results:accessor}).status,'FUNCTIONAL_JUDGE_VETO');
+ const fileAccessor={...file};
+ Object.defineProperty(fileAccessor,'path',{enumerable:true,get(){invoked++;return FILE;}});
+ assert.equal(judgeReadProgressEvidence({...input,file:fileAccessor}).status,'FUNCTIONAL_JUDGE_VETO');
+ const coercion={...results,candidate:{...results.candidate,oracleLog:{trim(){invoked++;return 'READ_PROGRESS_ORACLE_PASS';}}}};
+ assert.equal(judgeReadProgressEvidence({...input,results:coercion}).status,'FUNCTIONAL_JUDGE_VETO');
+ assert.equal(invoked,0);
+});
+test('read-progress Fixer and Judge reject accessors without executing them',()=>{
+ const {draftBoundedReadProgressRepair}=
+  require('../../packages/investigation/bounded-read-progress-repair.cjs');
+ const {judgeReadProgressEvidence}=
+  require('../../packages/recovery/bounded-read-progress-functional-judge.cjs');
+ const file=()=>({path:FILE,source:original,expectedBlobSha:blobSha(original)});
+ let invoked=0;const bad=()=>{invoked++;throw Error('unexpected getter');};
+ for(const run of [draftBoundedReadProgressRepair,judgeReadProgressEvidence]){
+  const root={expectedCommitSha:HEAD,file:file()};
+  Object.defineProperty(root,'expectedCommitSha',{enumerable:true,get:bad});
+  assert.match(run(root).status,/^(BLOCKED_|FUNCTIONAL_JUDGE_VETO)/);
+  const nested={expectedCommitSha:HEAD,file:file()};
+  Object.defineProperty(nested.file,'path',{enumerable:true,get:bad});
+  assert.match(run(nested).status,/^(BLOCKED_|FUNCTIONAL_JUDGE_VETO)/);
+ }
+ assert.equal(invoked,0);
 });

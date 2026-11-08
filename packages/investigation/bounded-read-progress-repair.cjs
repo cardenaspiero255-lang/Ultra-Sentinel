@@ -2,12 +2,17 @@
 /* Draft a single syntactic change for a narrow unregistered Kotlin pattern.
  * This is not an authorization, a Kotlin compiler, or a functional Judge. */
 const {scanNovelKotlinHypotheses,blobSha}=require('./novel-kotlin-hypotheses.cjs');
-const {planNovelKotlinCandidates}=require('./novel-kotlin-candidate-intake.cjs');
+const {planNovelKotlinCandidates,snapshotRecord}=require('./novel-kotlin-candidate-intake.cjs');
 const RULE='BOUNDED_READ_ZERO_PROGRESS';
 function blocked(){return Object.freeze({status:'BLOCKED_NO_UNAMBIGUOUS_DRAFT',
  originalFunctionalOracleVerified:false,remoteWrites:false,mergeAllowed:false});}
-function draftBoundedReadProgressRepair({expectedCommitSha,file}={}){
+function draftBoundedReadProgressRepair(options={}){
  try{
+  const input=snapshotRecord(options,['expectedCommitSha','file'],false);
+  const expectedCommitSha=input.expectedCommitSha;
+  const file=snapshotRecord(input.file,['path','source','expectedBlobSha']);
+  if(typeof expectedCommitSha!=='string'||typeof file.path!=='string'||
+   typeof file.source!=='string'||typeof file.expectedBlobSha!=='string')return blocked();
   const observed=scanNovelKotlinHypotheses({expectedCommitSha,files:[file]});
   if(observed.status.startsWith('BLOCKED_'))return blocked();
   const hits=observed.findings.filter(f=>f.rule===RULE);

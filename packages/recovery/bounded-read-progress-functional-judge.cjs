@@ -4,6 +4,7 @@
 const {blobSha}=require('../investigation/novel-kotlin-hypotheses.cjs');
 const {draftBoundedReadProgressRepair}=
  require('../investigation/bounded-read-progress-repair.cjs');
+const {snapshotRecord}=require('../investigation/novel-kotlin-candidate-intake.cjs');
 const {drillOneSourceKotlinSandbox}=require('./two-source-kotlin-sandbox.cjs');
 function makeUnsafeReadProgressControl(candidate){
  if(typeof candidate!=='string'||candidate.length>60000)throw Error('UNSAFE_CONTROL_INVALID');
@@ -23,8 +24,19 @@ function exactLine(text,marker){
  return typeof text==='string'&&text.length<=30000&&
   text.split(/\r?\n/).filter(line=>line===marker).length===1;
 }
-function judgeReadProgressEvidence({expectedCommitSha,file,candidateSource,unsafeSource,results}={}){
+function judgeReadProgressEvidence(options={}){
  try{
+  const input=snapshotRecord(options,['expectedCommitSha','file','candidateSource','unsafeSource','results'],false);
+  const {expectedCommitSha,candidateSource,unsafeSource}=input;
+  const file=snapshotRecord(input.file,['path','source','expectedBlobSha']);
+  const rows=snapshotRecord(input.results,['original','candidate','unsafe']);
+  const resultFields=['oracleExit','oracleLog','junitExit','junitLog'];
+  const results={original:snapshotRecord(rows.original,resultFields,false),
+   candidate:snapshotRecord(rows.candidate,resultFields,false),
+   unsafe:snapshotRecord(rows.unsafe,resultFields,false)};
+  if(Object.values(results).some(row=>!Number.isSafeInteger(row.oracleExit)||
+   !Number.isSafeInteger(row.junitExit)||typeof row.oracleLog!=='string'||typeof row.junitLog!=='string'))
+   return outcome('FUNCTIONAL_JUDGE_VETO');
   const draft=draftBoundedReadProgressRepair({expectedCommitSha,file});
   if(draft.status!=='CANDIDATE_REQUIRES_TRUSTED_ORIGINAL_ORACLE'||
    candidateSource!==draft.candidateSource||
