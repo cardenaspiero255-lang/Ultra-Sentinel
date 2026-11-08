@@ -18,11 +18,30 @@ function outcome(status,cases=[],checkedFiles=0,localGitRollbackVerified=false){
  });
 }
 function linesChanged(before,after){
+ // A bounded line-level resynchronization permits a safe multi-line fix
+ // without accepting an arbitrary rewrite. Syntax success is NEVER a JVM
+ // oracle: independently executed original tests remain mandatory.
  const a=before.split('\n'),b=after.split('\n');
- if(a.length!==b.length)return false;
- let changed=0;
- for(let i=0;i<a.length;i++)if(a[i]!==b[i])changed++;
- return changed>0&&changed<=3;
+ if(a.length>1501||b.length>1501||
+  Math.abs(Buffer.byteLength(after)-Buffer.byteLength(before))>1800)return false;
+ let i=0,j=0,removed=0,added=0,hunks=0;
+ while(i<a.length&&j<b.length){
+  if(a[i]===b[j]){i++;j++;continue;}
+  let match=null;
+  for(let cost=1;cost<=16&&match===null;cost++){
+   for(let ra=0;ra<=Math.min(4,cost);ra++){
+    const rb=cost-ra;
+    if(rb>12||i+ra>=a.length||j+rb>=b.length)continue;
+    if(a[i+ra]===b[j+rb]){match={ra,rb};break;}
+   }
+  }
+  if(!match)return false;
+  removed+=match.ra;added+=match.rb;hunks++;
+  if(removed>3||added>12||hunks>3)return false;
+  i+=match.ra;j+=match.rb;
+ }
+ removed+=a.length-i;added+=b.length-j;
+ return hunks>0&&hunks<=3&&removed<=3&&added<=12&&removed+added>0;
 }
 function drillNovelKotlinCandidateBatch({expectedCommitSha,files,proposals}={}){
  try{
