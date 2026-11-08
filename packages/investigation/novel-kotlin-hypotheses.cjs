@@ -50,7 +50,8 @@ function validFile(file){
    Object.getPrototypeOf(file)!==Object.prototype||
    Object.keys(file).sort().join(',')!=='expectedBlobSha,path,source'||
    typeof file.path!=='string'||file.path.length>300||
-   !isSafeNovelKotlinPath(file.path)||!SHA.test(file.expectedBlobSha||'')||
+   !isSafeNovelKotlinPath(file.path)||typeof file.expectedBlobSha!=='string'||
+   !SHA.test(file.expectedBlobSha)||
    typeof file.source!=='string'||file.source.includes('\0')||
    file.source.includes('\r')||!file.source.endsWith('\n')||
    Buffer.byteLength(file.source,'utf8')>MAX_BYTES||
