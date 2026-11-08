@@ -7,7 +7,8 @@ const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 function git(cwd,...args){
  const r=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{cwd,encoding:'utf8',timeout:10000,
   env:{PATH:process.env.PATH,HOME:cwd,GIT_CONFIG_NOSYSTEM:'1',
-   GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}});
+   GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0',
+   GIT_NO_REPLACE_OBJECTS:'1'}});
  if(r.error||r.status!==0)throw Error('ROLLBACK_GIT_FAILED');
  return r.stdout.trim();
 }
