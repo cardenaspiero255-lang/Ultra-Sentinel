@@ -10,7 +10,7 @@ const REPOSITORY='cardenaspiero255-lang/Ultra-Sentinel';
 const REPOSITORY_ID=1418338512,OWNER_ID=322222186,WORKFLOW_ID=383941728;
 const WORKFLOW_PATH='.github/workflows/architecture.yml';
 // The known workflow policy must be independently reviewed before updating.
-const WORKFLOW_BLOB='1a211ffa81107f6caa6f31eb6d67680cb3b943a9';
+const WORKFLOW_BLOB='e9463946d6496765e123c259d8f350c41fe96502';
 const JOB='structure-and-contracts',STEP='Verify architecture (no external integrations)';
 const API='https://api.github.com/repos/'+REPOSITORY;
 const SHA=/^[a-f0-9]{40}$/,MAX_BYTES=1024*1024;
