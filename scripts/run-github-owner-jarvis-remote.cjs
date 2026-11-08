@@ -115,7 +115,9 @@ function trustedNodePath(directory,nodeExecutable=process.execPath){
   fs.symlinkSync(canonical,path.join(bin,'node'),'file');
   if(fs.realpathSync(path.join(bin,'node'))!==canonical)
    throw Error('NODE_SYMLINK_INCONSISTENT');
-  return bin+':/usr/local/bin:/usr/bin:/bin';
+  // Ubuntu's sysctl lives in /usr/sbin, outside the ordinary executable
+  // paths. Both original-oracle scripts require it for the AppArmor gate.
+  return bin+':/usr/local/bin:/usr/bin:/bin:/usr/sbin';
  }catch{throw Error('OWNER_TRUSTED_NODE_'+phase+'_UNAVAILABLE');}
 }
 function spawnIsolated(label,args,env){
@@ -136,10 +138,14 @@ function makeOriginalJvmVerifier({plan,files},env=process.env){
    verificationPlan.expectedMainSha!==PLAN.expectedMainSha||
    digestBranchCandidate(verificationPlan,
     validateTrialFiles(verificationFiles))!==digest)fail();
-  const dir=fs.mkdtempSync(path.join(env.RUNNER_TEMP,'owner-remote-jvm-'));
+  const parent=fs.mkdtempSync(path.join(env.RUNNER_TEMP,'owner-remote-jvm-'));
   try{
+   // The original oracle requires its work directory to be empty. Keep the
+   // trusted executable link beside, not inside, that private directory.
+   const dir=path.join(parent,'oracle');
+   fs.mkdirSync(dir,{mode:0o700});
    const subprocessEnv={
-    PATH:trustedNodePath(dir),HOME:env.HOME||'/tmp',
+    PATH:trustedNodePath(parent),HOME:env.HOME||'/tmp',
     GITHUB_ACTIONS:'true',JARVIS_POLITE_ISOLATED:'1',
     JARVIS_KOTLIN_HOME:env.JARVIS_KOTLIN_HOME,
     GH_TOKEN:env.ULTRA_OWNER_COMMENT_READ_TOKEN
@@ -164,7 +170,7 @@ function makeOriginalJvmVerifier({plan,files},env=process.env){
     benignControlsPassed:true,isolatedExecution:true,
     remoteWrites:false,mergeAllowed:false
    });
-  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+  }finally{fs.rmSync(parent,{recursive:true,force:true});}
  };
 }
 async function main({env=process.env,fetchImpl=fetch}={}){
