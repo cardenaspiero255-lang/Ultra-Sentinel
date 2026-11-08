@@ -29,7 +29,7 @@ function git(root,...args){
   cwd:root,encoding:null,timeout:10000,maxBuffer:350000,
   env:{PATH:process.env.PATH,HOME:root,GIT_CONFIG_NOSYSTEM:'1',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_OPTIONAL_LOCKS:'0',
-   GIT_TERMINAL_PROMPT:'0',GIT_CONFIG_COUNT:'0'}
+   GIT_TERMINAL_PROMPT:'0',GIT_CONFIG_COUNT:'0',GIT_NO_REPLACE_OBJECTS:'1'}
  });
  if(p.error||p.status!==0||!Buffer.isBuffer(p.stdout))reject();
  return p.stdout;
@@ -38,8 +38,16 @@ function plain(root,...args){return git(root,...args).toString('utf8').trim();}
 function planCommittedKotlinSourceImports(options={}){
  try{
   if(!options||typeof options!=='object'||types.isProxy(options)||
-   typeof options.directory!=='string'||!path.isAbsolute(options.directory)||
-   !SHA.test(options.expectedCommitSha||''))reject();
+   Array.isArray(options))reject();
+  const snapshot={};
+  for(const key of ['directory','expectedCommitSha','paths','seeds','maxFiles','maxDepth']){
+   const d=Object.getOwnPropertyDescriptor(options,key);
+   if(d&&!Object.hasOwn(d,'value'))reject();
+   snapshot[key]=d?.value;
+  }
+  options=snapshot;
+  if(typeof options.directory!=='string'||!path.isAbsolute(options.directory)||
+   typeof options.expectedCommitSha!=='string'||!SHA.test(options.expectedCommitSha))reject();
   const paths=copyArray(options.paths,64),seeds=copyArray(options.seeds,64);
   if(!paths.every(isSafeNovelKotlinPath)||new Set(paths).size!==paths.length||
    !seeds.every(isSafeNovelKotlinPath)||new Set(seeds).size!==seeds.length||

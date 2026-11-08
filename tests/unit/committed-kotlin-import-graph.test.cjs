@@ -68,3 +68,32 @@ test('rejects path traversal and directory shadowing without performing network 
   assert.equal(git(f.directory,'remote'),'');
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
+
+test('does not attribute replacement commit contents to the declared commit',()=>{
+ const f=fixture(1);try{
+  const original=f.expectedCommitSha, target=path.join(f.directory,f.paths[0]);
+  fs.writeFileSync(target,'package demo\nclass Replacement\n');
+  git(f.directory,'add','.');git(f.directory,'commit','-qm','replacement');
+  const replacement=git(f.directory,'rev-parse','HEAD');
+  git(f.directory,'checkout','-q',original);git(f.directory,'replace',original,replacement);
+  git(f.directory,'reset','--hard','-q',original);
+  const originalBlob=git(f.directory,'--no-replace-objects','rev-parse',`${original}:${f.paths[0]}`);
+  const replacementBlob=git(f.directory,'rev-parse',`${original}:${f.paths[0]}`);
+  assert.notEqual(originalBlob,replacementBlob);
+  // The worktree and index match replacement B, so they are dirty against A.
+  assert.throws(()=>run(f),/PINNED_KOTLIN_SOURCE_REJECTED/);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
+
+test('rejects option getters and proxies without invoking them',()=>{
+ let reads=0;const opts={};Object.defineProperty(opts,'directory',{get(){reads++;return '/tmp';}});
+ assert.throws(()=>planCommittedKotlinSourceImports(opts),/PINNED_KOTLIN_SOURCE_REJECTED/);
+ assert.equal(reads,0);
+ assert.throws(()=>planCommittedKotlinSourceImports(new Proxy({},{})),/PINNED_KOTLIN_SOURCE_REJECTED/);
+ const f=fixture(1);try{
+  let coercions=0;
+  const obj={toString(){coercions++;return f.expectedCommitSha;}};
+  assert.throws(()=>run({...f,expectedCommitSha:obj}),/PINNED_KOTLIN_SOURCE_REJECTED/);
+  assert.equal(coercions,0);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
