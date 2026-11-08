@@ -23,7 +23,7 @@ function run(f,nonceStore={consume:()=>true},changes=[{path:f.file,content:f.pro
  const nonce='nonce-1234567890123456';
  const plan={status:'REVIEW_READY_NO_EXECUTOR',commitAllowed:false,mergeAllowed:false,
  expectedHeadSha:f.head,authorizationNonce:nonce,patchBytes:100,
- changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:10}]};
+ changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:12}]};
  return executeSandboxRepair({directory:f.directory,plan,changes,nonceStore,nonce,expectedHeadSha:f.head});
 }
 test('isolated sandbox commits without a remote and rejects nonce replay',()=>{
