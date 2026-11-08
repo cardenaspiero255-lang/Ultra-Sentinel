@@ -164,5 +164,40 @@ class C2SymbolResolutionOracleTest(val env: KotlinCoreEnvironment) {
         assertThat(symbol.dispatch.name).isEqualTo("OPEN")
         assertThat(symbol.identity).isNull()
         assertThat(symbol.origin.name).isEqualTo("SOURCE_UNAUTHENTICATED")
+
+        // Distinct local functions with the same safe-looking FQ name must
+        // never receive an identical authoritative declaration identity.
+        val localProbe = SymbolProbe()
+        localProbe.lintWithContext(env, """
+            fun outer(flag: Boolean) {
+                if (flag) {
+                    fun helper() = 1
+                    helper()
+                } else {
+                    fun helper() = 2
+                    helper()
+                }
+            }
+        """.trimIndent())
+        val localSymbols = localProbe.symbols.filter { it.calledName == "helper" }
+        assertThat(localSymbols).hasSize(2)
+        assertThat(localSymbols.map { it.identity }).containsOnlyNulls()
+
+        // A fake override of an inherited final member is the same source
+        // declaration regardless of the receiver's static type.
+        val inheritanceProbe = SymbolProbe()
+        inheritanceProbe.lintWithContext(env, """
+            open class Parent { fun finalRun() {} }
+            class Child : Parent()
+            fun test(parent: Parent, child: Child) {
+                parent.finalRun()
+                child.finalRun()
+            }
+        """.trimIndent())
+        val inherited = inheritanceProbe.symbols.filter { it.calledName == "finalRun" }
+        assertThat(inherited).hasSize(2)
+        assertThat(inherited[0].identity).isNotNull()
+        assertThat(inherited[0].identity).isEqualTo(inherited[1].identity)
+        assertThat(inherited[0].declarationSite?.path).isEqualTo(inherited[1].declarationSite?.path)
     }
 }
