@@ -37,7 +37,7 @@ function judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan}={}){
   if(git(directory,'remote')!==''||git(directory,'branch','--show-current')!==plan.branch||
    git(directory,'status','--porcelain')!==''||
    git(directory,'rev-parse','HEAD')!==repairHeadSha||
-   git(directory,'rev-parse',repairHeadSha+'^')!==baselineHeadSha)
+   git(directory,'rev-list','--parents','-n','1',repairHeadSha)!==repairHeadSha+' '+baselineHeadSha)
    return rejected();
   const all=git(directory,'diff','--name-only','-z',baselineHeadSha,repairHeadSha)
    .split('\0').filter(Boolean);
@@ -53,7 +53,10 @@ function judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan}={}){
     !Number.isSafeInteger(change.patchBytes)||change.patchBytes<1||
     !all.includes(change.path))return rejected();
    known.add(change.path);
-   if(git(directory,'rev-parse',baselineHeadSha+':'+change.path)!==change.beforeBlobSha||
+   if(!['100644','100755'].includes(git(directory,'ls-tree',baselineHeadSha,'--',change.path).split(' ')[0])||
+    git(directory,'ls-tree',baselineHeadSha,'--',change.path).split(' ')[0]!==
+     git(directory,'ls-tree',repairHeadSha,'--',change.path).split(' ')[0]||
+    git(directory,'rev-parse',baselineHeadSha+':'+change.path)!==change.beforeBlobSha||
     git(directory,'rev-parse',repairHeadSha+':'+change.path)!==change.afterBlobSha)
     return rejected();
   }
