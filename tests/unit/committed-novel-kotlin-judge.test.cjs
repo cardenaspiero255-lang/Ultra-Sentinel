@@ -76,8 +76,9 @@ test('committed original bytes flow through Hunter, Fixer and disposable local J
   assert.equal(result.externalRepositoryAuthenticated,false);
   assert.equal(result.mergeAllowed,false);
   assert.equal(result.remoteWrites,false);
-  assert.deepEqual(result.cases.map(c=>c.originalBlobSha),[
-   git(f.directory,'rev-parse','HEAD:'+ID),git(f.directory,'rev-parse','HEAD:'+CLOCK)]);
+  assert.deepEqual(result.cases.map(c=>[c.path,c.originalBlobSha]),[
+   [CLOCK,git(f.directory,'rev-parse','HEAD:'+CLOCK)],
+   [ID,git(f.directory,'rev-parse','HEAD:'+ID)]]);
   assert.equal(git(f.directory,'status','--porcelain'),'');
   assert.equal(git(f.directory,'remote'),'');
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
