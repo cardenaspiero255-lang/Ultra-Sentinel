@@ -4,7 +4,7 @@ const {planNovelKotlinCandidates}=
  require('../investigation/novel-kotlin-candidate-intake.cjs');
 const {drillKotlinSourceBatchSandbox}=
  require('./two-source-kotlin-sandbox.cjs');
-const MAX_FILES=4;
+const MAX_FILES=12;
 function outcome(status,cases=[],checkedFiles=0,localGitRollbackVerified=false){
  return Object.freeze({
   schema:'ultra-sentinel-novel-kotlin-batch-local-judge/v1',
