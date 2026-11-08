@@ -14,7 +14,7 @@ const SOURCE=fs.readFileSync(path.join(__dirname,
 const candidate=draftBoundedReadProgressRepair({expectedCommitSha:SHA,
  file:{path:FILE,source:SOURCE,expectedBlobSha:blobSha(SOURCE)}}).candidateSource;
 
-test('pinned original source and generated Fixer candidate are linked by local Git Judge',()=>{
+test('pinned original bytes match the generated Fixer candidate without claiming a JVM oracle or rollback',()=>{
  const r=bindPinnedBoundedReadCandidate({source:SOURCE,candidateSource:candidate});
  assert.equal(r.status,'PINNED_LOCAL_FIXER_CANDIDATE_MATCHED_NOT_JVM_ATTESTED');
  assert.equal(r.originalBlobSha,'fd061b9dad636684184ccf2e96f87084d3b99df5');
