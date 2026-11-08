@@ -118,6 +118,7 @@ node - "$root" <<'JS'
 const fs=require('node:fs'),p=require('node:path'),crypto=require('node:crypto');
 const {blobSha}=require('./packages/investigation/novel-kotlin-hypotheses.cjs');
 const {bindPinnedBoundedReadFunctionalEvidence}=require('./packages/recovery/pinned-bounded-read-local-bridge.cjs');
+const {assessPhaseOneCase}=require('./packages/recovery/phase1-same-case-evidence-gate.cjs');
 const root=process.argv[2],sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 function read(name,max=30000){
  const file=p.join(root,name),s=fs.lstatSync(file);
@@ -142,6 +143,22 @@ const file={path:'apps/android/app/src/main/java/com/cardenaspiero255/jarvis/cor
 const result=bindPinnedBoundedReadFunctionalEvidence({source,
  candidateSource:read('candidate/input/source.kt').toString('utf8'),
  unsafeSource:read('unsafe/input/source.kt').toString('utf8'),results});
+const originalCommittedCase=assessPhaseOneCase({
+ expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',
+ files:[file],
+ proposals:[{path:file.path,rule:'BOUNDED_READ_ZERO_PROGRESS',
+  candidateSource:read('candidate/input/source.kt').toString('utf8'),
+  expectedCandidateBlobSha:artifacts.candidate.sourceBlob}],
+ localEvidence:[{path:file.path,rule:'BOUNDED_READ_ZERO_PROGRESS',
+  originalBlobSha:file.expectedBlobSha,candidateBlobSha:artifacts.candidate.sourceBlob}]
+});
+if(originalCommittedCase.status!=='LOCAL_HISTORICAL_CASE_VERIFIED_NOT_PHASE_ONE_CLOSED'||
+ originalCommittedCase.localGitRollbackVerified!==true||
+ originalCommittedCase.phaseOneClosed!==false||
+ originalCommittedCase.originalJVMExecutionAuthenticated!==false||
+ originalCommittedCase.novelCaseProven!==false||
+ originalCommittedCase.remoteWrites!==false)
+ throw Error('PHASE_ONE_SAME_CASE_GATE_VETO');
 if(result.status!=='PINNED_FIXER_LOCAL_FUNCTIONAL_JUDGE_MATCHED_UNATTESTED'||
  result.functionalEvidenceConsistent!==true||
  result.sourceBlobSha!==file.expectedBlobSha||
@@ -163,6 +180,9 @@ fs.writeFileSync(p.join(root,'receipt.json'),JSON.stringify({
  sourceAndCandidateBlobsMatchedActualArtifacts:true,
  pinnedFixerLocalGitJudgeRollbackVerified:true,
  executionAuthenticatedByBindingModule:false,
+ phaseOneSameCaseGateStatus:originalCommittedCase.status,
+ phaseOneClosed:false,novelOriginalCaseProven:false,
+ sameCaseLocalRollbackVerified:originalCommittedCase.localGitRollbackVerified,
  sourceAuthenticationByThisReceipt:false,androidDeviceObserved:false,
  remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false
 },null,2)+'\n',{flag:'wx',mode:0o600});
