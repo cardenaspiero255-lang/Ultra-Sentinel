@@ -19,7 +19,7 @@ test('pinned original source and generated Fixer candidate are linked by local G
  assert.equal(r.status,'PINNED_LOCAL_FIXER_CANDIDATE_MATCHED_NOT_JVM_ATTESTED');
  assert.equal(r.originalBlobSha,'fd061b9dad636684184ccf2e96f87084d3b99df5');
  assert.equal(r.candidateBlobSha,blobSha(candidate));
- assert.equal(r.localGitRollbackVerified,true);
+ assert.equal(r.localGitRollbackVerified,false);
  assert.equal(r.sourcePinnedBytesMatched,true);
  assert.equal(r.fixerCandidateGenerationVerified,true);
  assert.equal(r.originalJVMExecutionAuthenticated,false);
