@@ -19,4 +19,61 @@ function bindPinnedBoundedReadCandidate(options={}){
    externalRepositoryAuthenticated:false,causalityVerified:false,remoteWrites:false,mergeAllowed:false});
  }catch{return blocked();}
 }
-module.exports=Object.freeze({bindPinnedBoundedReadCandidate});
+
+/* Bind Fixer's exact pinned candidate to the existing functional Judge. The
+ * caller supplies JVM outcomes: this module verifies their consistency, NOT
+ * their execution origin. A trusted CI job must execute and hash the binaries.
+ */
+const {judgeReadProgressEvidence}=
+ require('./bounded-read-progress-functional-judge.cjs');
+function blockedFunctional(){return Object.freeze({
+ schema:'ultra-sentinel-pinned-bounded-read-functional-handoff/v1',
+ status:'BLOCKED_PINNED_FIXER_FUNCTIONAL_EVIDENCE',
+ functionalEvidenceConsistent:false,unsafeCandidateRejected:false,
+ localGitRollbackVerified:false,originalJVMExecutionAuthenticated:false,
+ remoteRepositoryAuthenticated:false,remoteWrites:false,mergeAllowed:false,
+ productionReleaseAllowed:false
+});}
+function bindPinnedBoundedReadFunctionalEvidence(options={}){
+ try{
+  const input=snapshotRecord(options,
+   ['source','candidateSource','unsafeSource','results']);
+  if(typeof input.source!=='string'||typeof input.candidateSource!=='string'||
+   typeof input.unsafeSource!=='string')return blockedFunctional();
+  const binding=bindPinnedBoundedReadCandidate({
+   source:input.source,candidateSource:input.candidateSource
+  });
+  if(binding.status!=='PINNED_LOCAL_FIXER_CANDIDATE_MATCHED_NOT_JVM_ATTESTED'||
+   binding.originalBlobSha!==ORIGINAL||
+   binding.candidateBlobSha!==blobSha(input.candidateSource)||
+   binding.fixerCandidateGenerationVerified!==true)return blockedFunctional();
+  const judge=judgeReadProgressEvidence({
+   expectedCommitSha:COMMIT,
+   file:{path:PATH,source:input.source,expectedBlobSha:ORIGINAL},
+   candidateSource:input.candidateSource,unsafeSource:input.unsafeSource,
+   results:input.results
+  });
+  if(judge.status!=='LOCAL_FUNCTIONAL_JUDGE_ACCEPTED_NOT_AUTHENTICATED'||
+   judge.functionalCandidateAccepted!==true||
+   judge.unsafeCandidateRejected!==true||
+   judge.exactTreeRollbackVerified!==true||
+   judge.remoteWrites!==false||judge.mergeAllowed!==false)
+   return blockedFunctional();
+  return Object.freeze({
+   schema:'ultra-sentinel-pinned-bounded-read-functional-handoff/v1',
+   status:'PINNED_FIXER_LOCAL_FUNCTIONAL_JUDGE_MATCHED_UNATTESTED',
+   sourceCommit:COMMIT,sourceBlobSha:ORIGINAL,
+   candidateBlobSha:binding.candidateBlobSha,
+   fixerCandidateGenerationVerified:true,sourcePinnedBytesMatched:true,
+   functionalEvidenceConsistent:true,unsafeCandidateRejected:true,
+   localGitRollbackVerified:true,
+   originalJVMExecutionAuthenticated:false,
+   remoteRepositoryAuthenticated:false,causalityVerified:false,
+   remoteWrites:false,mergeAllowed:false,productionReleaseAllowed:false,
+   limitation:'Only consistency of caller-provided JVM logs, pinned source/candidate bytes and disposable local Git Judge/rollback is verified. Authenticated JVM execution must be established by a trusted runner.'
+  });
+ }catch{return blockedFunctional();}
+}
+module.exports=Object.freeze({
+ bindPinnedBoundedReadCandidate,bindPinnedBoundedReadFunctionalEvidence
+});
