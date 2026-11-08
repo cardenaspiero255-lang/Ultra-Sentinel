@@ -8,7 +8,7 @@ const {createHash}=require('node:crypto'),{spawnSync}=require('node:child_proces
 const {judgeLocalRepair}=require('./repair-judge.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const SHA=/^[0-9a-f]{40}$/;
-const FILE=/^(?:apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt|app\/src\/main\/(?:java|kotlin)\/[A-Za-z0-9_./-]+\.kt)$/;
+const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 function outcome(status,checkedFiles=0,exactTreeRollbackVerified=false,count=2){
  return Object.freeze({
   schema:count===1?'ultra-sentinel-one-source-kotlin-sandbox/v1':
@@ -28,7 +28,7 @@ function good(f){
  if(!f||typeof f!=='object'||Array.isArray(f)||
   Object.getPrototypeOf(f)!==Object.prototype||
   Object.keys(f).sort().join(',')!=='after,afterBlobSha,before,beforeBlobSha,path'||
-  typeof f.path!=='string'||f.path.length>280||!FILE.test(f.path)||
+  typeof f.path!=='string'||f.path.length>300||!isSafeNovelKotlinPath(f.path)||
   f.path.includes('..')||f.path.includes('//')||
   !SHA.test(f.beforeBlobSha||'')||!SHA.test(f.afterBlobSha||'')||
   f.beforeBlobSha===f.afterBlobSha)return false;

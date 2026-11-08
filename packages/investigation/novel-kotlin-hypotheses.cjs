@@ -10,7 +10,7 @@ const {createHash}=require('node:crypto');
 const {fingerprint}=require('../family-hunter/ultra_sentinel_family_fingerprints.cjs');
 const {makeSuggestion}=require('../core/ultra_sentinel_remediation.cjs');
 const SHA=/^[0-9a-f]{40}$/;
-const PATH=/^(?:(?:apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core|app\/src\/main\/(?:java|kotlin)|[A-Za-z0-9_-]+\/src\/main\/(?:java|kotlin))\/[A-Za-z0-9_./-]+)\.kt$/;
+const {isSafeNovelKotlinPath}=require('./novel-kotlin-path-policy.cjs');
 const MAX_FILES=12,MAX_BYTES=60000,MAX_LINES=1500;
 const META=Object.freeze({
  REGEX_PREFIX_AS_COMPLETE_VALIDATION:Object.freeze({
@@ -49,8 +49,7 @@ function validFile(file){
    Object.getPrototypeOf(file)!==Object.prototype||
    Object.keys(file).sort().join(',')!=='expectedBlobSha,path,source'||
    typeof file.path!=='string'||file.path.length>300||
-   !PATH.test(file.path)||file.path.split('/').some(s=>s==='.'||s==='..'||s==='')||
-   file.path.includes('//')||!SHA.test(file.expectedBlobSha||'')||
+   !isSafeNovelKotlinPath(file.path)||!SHA.test(file.expectedBlobSha||'')||
    typeof file.source!=='string'||file.source.includes('\0')||
    file.source.includes('\r')||!file.source.endsWith('\n')||
    Buffer.byteLength(file.source,'utf8')>MAX_BYTES||
