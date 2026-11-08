@@ -9,9 +9,10 @@ const {judgeLocalRepair}=require('./repair-judge.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 const FILE=/^(?:apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt|app\/src\/main\/(?:java|kotlin)\/[A-Za-z0-9_./-]+\.kt)$/;
-function outcome(status,checkedFiles=0,exactTreeRollbackVerified=false){
+function outcome(status,checkedFiles=0,exactTreeRollbackVerified=false,count=2){
  return Object.freeze({
-  schema:'ultra-sentinel-two-source-kotlin-sandbox/v1',
+  schema:count===1?'ultra-sentinel-one-source-kotlin-sandbox/v1':
+   'ultra-sentinel-two-source-kotlin-sandbox/v1',
   status,checkedFiles,exactTreeRollbackVerified,
   originalOracleVerifiedByThisFunction:false,
   remoteRepositoryIdentityAuthenticated:false,
@@ -55,14 +56,16 @@ function commit(root,label){
   '-c','user.email=sandbox@example.invalid','commit','-qm',label);
  return git(root,'rev-parse','HEAD');
 }
-function drillTwoSourceKotlinSandbox({files}={}){
- if(!Array.isArray(files)||files.length!==2||!files.every(good)||
-  files[0].path===files[1].path)return outcome('BLOCKED_INPUT_CONTRACT');
+function drillSources(files,count){
+ if(!Array.isArray(files)||files.length!==count||!files.every(good)||
+  (count===2&&files[0].path===files[1].path))
+  return outcome('BLOCKED_INPUT_CONTRACT',0,false,count);
  const ordered=[...files].sort((a,b)=>a.path.localeCompare(b.path));
  let root=null;
  try{
-  root=fs.mkdtempSync(path.join(os.tmpdir(),'us-two-source-kotlin-'));
-  git(root,'init','-q','-b','sandbox/two-source-kotlin');
+  const branch=count===1?'sandbox/one-source-kotlin':'sandbox/two-source-kotlin';
+  root=fs.mkdtempSync(path.join(os.tmpdir(),'us-kotlin-sandbox-'));
+  git(root,'init','-q','-b',branch);
   if(git(root,'remote')!=='')throw Error('REMOTE_NOT_EMPTY');
   for(const f of ordered){
    const dest=path.join(root,f.path);
@@ -79,12 +82,12 @@ function drillTwoSourceKotlinSandbox({files}={}){
   }
   git(root,'add','--',...ordered.map(f=>f.path));
   const candidate=commit(root,'supervised local candidate');
-  const plan={branch:'sandbox/two-source-kotlin',expectedHeadSha:baseline,
+  const plan={branch,expectedHeadSha:baseline,
    changes:ordered.map(f=>({path:f.path,beforeBlobSha:f.beforeBlobSha,
     afterBlobSha:f.afterBlobSha,patchBytes:Buffer.byteLength(f.after,'utf8')}))};
   const judge=judgeLocalRepair({directory:root,baselineHeadSha:baseline,
    repairHeadSha:candidate,plan});
-  if(!judge.approved||judge.checkedFiles!==2||
+  if(!judge.approved||judge.checkedFiles!==count||
    judge.status!=='APPROVED_LOCAL_POLICY_ONLY')throw Error('JUDGE_VETO');
   const recovery=rollbackSandbox({directory:root,baselineHeadSha:baseline,
    repairHeadSha:candidate});
@@ -93,8 +96,11 @@ function drillTwoSourceKotlinSandbox({files}={}){
    git(root,'status','--porcelain')!==''||git(root,'remote')!=='')throw Error('ROLLBACK_VETO');
   for(const f of ordered)if(git(root,'rev-parse','HEAD:'+f.path)!==f.beforeBlobSha)
    throw Error('SOURCE_NOT_RESTORED');
-  return outcome('TWO_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED',2,true);
- }catch{return outcome('BLOCKED_LOCAL_JUDGE_OR_ROLLBACK');}
+  return outcome(count===1?'ONE_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED':
+   'TWO_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED',count,true,count);
+ }catch{return outcome('BLOCKED_LOCAL_JUDGE_OR_ROLLBACK',0,false,count);}
  finally{if(root!==null)fs.rmSync(root,{recursive:true,force:true});}
 }
-module.exports={drillTwoSourceKotlinSandbox};
+function drillTwoSourceKotlinSandbox({files}={}){return drillSources(files,2);}
+function drillOneSourceKotlinSandbox({file}={}){return drillSources([file],1);}
+module.exports={drillTwoSourceKotlinSandbox,drillOneSourceKotlinSandbox};
