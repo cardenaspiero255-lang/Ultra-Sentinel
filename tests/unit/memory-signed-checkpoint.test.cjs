@@ -87,3 +87,30 @@ test('RED: corrupt file and symlink are never treated as valid persisted proof',
    .load({entries:evidences(),trustedPublicKey:key.publicKey}));
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('cleanup preserves a replacement lock owned by another writer',()=>{
+ const key=owner(),s=snapshot(key.privateKey);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-lock-replaced-'));
+ const file=path.join(dir,'checkpoint.json'),lock=file+'.lock';
+ const originalClose=fs.closeSync;
+ let replaced=false;
+ try{
+  fs.closeSync=function(fd){
+   if(!replaced&&fs.existsSync(lock)){
+    const open=fs.fstatSync(fd),current=fs.lstatSync(lock);
+    if(open.dev===current.dev&&open.ino===current.ino){
+     replaced=true;
+     fs.unlinkSync(lock);
+     fs.writeFileSync(lock,'other writer',{mode:0o600,flag:'wx'});
+    }
+   }
+   return originalClose(fd);
+  };
+  new PersistentSignedRevocationStore(file).commit({...s,entries:evidences(),
+   trustedPublicKey:key.publicKey});
+  assert.equal(replaced,true);
+  assert.equal(fs.readFileSync(lock,'utf8'),'other writer');
+ }finally{
+  fs.closeSync=originalClose;
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});

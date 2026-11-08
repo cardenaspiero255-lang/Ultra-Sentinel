@@ -218,10 +218,14 @@ class PersistentSignedRevocationStore{
   }finally{
    if(fd!==null)fs.closeSync(fd);
    if(lockfd!==null){
+    const owned=fs.fstatSync(lockfd);
     fs.closeSync(lockfd);
-    // Do not touch a replaced lock target.
-    const stat=fs.lstatSync(lock);
-    if(stat.isFile()&&!stat.isSymbolicLink()&&stat.nlink===1)fs.unlinkSync(lock);
+    // Compare identity before cleanup; this is not an atomic conditional
+    // unlink against a writer able to modify the private directory.
+    let stat;
+    try{stat=fs.lstatSync(lock);}catch(e){if(e.code!=='ENOENT')throw e;}
+    if(stat&&stat.isFile()&&!stat.isSymbolicLink()&&stat.nlink===1&&
+     stat.dev===owned.dev&&stat.ino===owned.ino)fs.unlinkSync(lock);
    }
    // A crashed commit leaves .tmp and blocks the next attempt until
    // supervised recovery; never remove an unknown file automatically.
