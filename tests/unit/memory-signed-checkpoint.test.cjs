@@ -114,3 +114,15 @@ test('cleanup preserves a replacement lock owned by another writer',()=>{
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+
+test('rejects noncanonical base64 encoding of an otherwise valid signature',()=>{
+ const key=owner(),s=snapshot(key.privateKey);
+ const signature=s.checkpoint.signature;
+ const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+ const finalIndex=alphabet.indexOf(signature[85]);
+ const noncanonical=signature.slice(0,85)+alphabet[finalIndex+1]+'==';
+ assert.deepEqual(Buffer.from(noncanonical,'base64'),Buffer.from(signature,'base64'));
+ assert.throws(()=>verifySignedRevocationCheckpoint({...s,
+  checkpoint:{...s.checkpoint,signature:noncanonical},entries:evidences(),
+  trustedPublicKey:key.publicKey}),/CHECKPOINT_SIGNATURE_INVALID/);
+});
