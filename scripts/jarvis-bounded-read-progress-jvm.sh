@@ -32,6 +32,7 @@ const fs=require('node:fs'),p=require('node:path');
 const {blobSha}=require('./packages/investigation/novel-kotlin-hypotheses.cjs');
 const {draftBoundedReadProgressRepair}=require('./packages/investigation/bounded-read-progress-repair.cjs');
 const {makeUnsafeReadProgressControl}=require('./packages/recovery/bounded-read-progress-functional-judge.cjs');
+const {bindPinnedBoundedReadCandidate}=require('./packages/recovery/pinned-bounded-read-local-bridge.cjs');
 const root=process.argv[2],source=fs.readFileSync(p.join(root,'source.kt'),'utf8');
 const fixture=fs.readFileSync('tests/fixtures/jarvis-bounded-image/BoundedImageInputStream.kt','utf8');
 const pathname='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/BoundedImageInputStream.kt';
@@ -41,6 +42,12 @@ const draft=draftBoundedReadProgressRepair({expectedCommitSha:'747c14b5d97750a7b
  file:{path:pathname,source,expectedBlobSha:blobSha(source)}});
 if(draft.status!=='CANDIDATE_REQUIRES_TRUSTED_ORIGINAL_ORACLE'||draft.remoteWrites!==false)
  throw Error('GENERIC_DRAFT_REJECTED');
+const binding=bindPinnedBoundedReadCandidate({source,candidateSource:draft.candidateSource});
+if(binding.status!=='PINNED_LOCAL_FIXER_CANDIDATE_MATCHED_NOT_JVM_ATTESTED'||
+ binding.originalBlobSha!==blobSha(source)||
+ binding.candidateBlobSha!==blobSha(draft.candidateSource)||
+ binding.originalJVMExecutionAuthenticated!==false||binding.remoteWrites!==false)
+ throw Error('PINNED_FIXER_BEFORE_JVM_VETO');
 const inputs={original:source,candidate:draft.candidateSource,
  unsafe:makeUnsafeReadProgressControl(draft.candidateSource)};
 for(const [mode,value] of Object.entries(inputs)){
@@ -110,7 +117,7 @@ node - "$root" <<'JS'
 'use strict';
 const fs=require('node:fs'),p=require('node:path'),crypto=require('node:crypto');
 const {blobSha}=require('./packages/investigation/novel-kotlin-hypotheses.cjs');
-const {judgeReadProgressEvidence}=require('./packages/recovery/bounded-read-progress-functional-judge.cjs');
+const {bindPinnedBoundedReadFunctionalEvidence}=require('./packages/recovery/pinned-bounded-read-local-bridge.cjs');
 const root=process.argv[2],sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 function read(name,max=30000){
  const file=p.join(root,name),s=fs.lstatSync(file);
@@ -132,12 +139,18 @@ for(const mode of ['original','candidate','unsafe']){
 const source=read('source.kt').toString('utf8');
 const file={path:'apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/BoundedImageInputStream.kt',
  source,expectedBlobSha:'fd061b9dad636684184ccf2e96f87084d3b99df5'};
-const result=judgeReadProgressEvidence({expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',file,
+const result=bindPinnedBoundedReadFunctionalEvidence({source,
  candidateSource:read('candidate/input/source.kt').toString('utf8'),
  unsafeSource:read('unsafe/input/source.kt').toString('utf8'),results});
-if(result.status!=='LOCAL_FUNCTIONAL_JUDGE_ACCEPTED_NOT_AUTHENTICATED'||
- !result.unsafeCandidateRejected||!result.exactTreeRollbackVerified||result.remoteWrites!==false)
- throw Error('FUNCTIONAL_JUDGE_VETO');
+if(result.status!=='PINNED_FIXER_LOCAL_FUNCTIONAL_JUDGE_MATCHED_UNATTESTED'||
+ result.functionalEvidenceConsistent!==true||
+ result.sourceBlobSha!==file.expectedBlobSha||
+ result.candidateBlobSha!==artifacts.candidate.sourceBlob||
+ result.sourceBlobSha!==artifacts.original.sourceBlob||
+ result.candidateBlobSha===artifacts.unsafe.sourceBlob||
+ result.unsafeCandidateRejected!==true||result.localGitRollbackVerified!==true||
+ result.originalJVMExecutionAuthenticated!==false||result.remoteWrites!==false||
+ result.mergeAllowed!==false)throw Error('PINNED_FIXER_FUNCTIONAL_JUDGE_VETO');
 fs.writeFileSync(p.join(root,'receipt.json'),JSON.stringify({
  schema:'ultra-sentinel-jarvis-bounded-read-jvm/v1',sourceRepository:'cardenaspiero255-lang/JARVIS',
  sourceCommit:'747c14b5d97750a7b2736968e2d516f02448558d',sourceBlob:file.expectedBlobSha,
@@ -145,6 +158,11 @@ fs.writeFileSync(p.join(root,'receipt.json'),JSON.stringify({
  oracleSha256:sha(read('candidate/input/oracle.kt')),artifacts,
  originalRed:true,candidateGreen:true,originalJUnitPassed:true,
  unsafeCandidateRejected:true,localExactRollback:true,
+ pinnedFixerCandidateBlob:result.candidateBlobSha,
+ sameRunFixerCandidateBoundToJVMOutcomes:true,
+ sourceAndCandidateBlobsMatchedActualArtifacts:true,
+ pinnedFixerLocalGitJudgeRollbackVerified:true,
+ executionAuthenticatedByBindingModule:false,
  sourceAuthenticationByThisReceipt:false,androidDeviceObserved:false,
  remoteWrites:false,mergeAllowed:false,productionReleaseCertified:false
 },null,2)+'\n',{flag:'wx',mode:0o600});
