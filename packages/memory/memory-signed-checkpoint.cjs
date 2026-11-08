@@ -104,7 +104,8 @@ function verifySignedRevocationCheckpoint({journal,checkpoint,entries,trustedPub
   stableCheckpoint.headHash!==canonical.headHash||
   stableCheckpoint.eventCount!==canonical.eventCount||
   stableCheckpoint.signingMessage!==canonical.signingMessage||
-  !SIGNATURE.test(stableCheckpoint.signature||''))
+  !SIGNATURE.test(stableCheckpoint.signature||'')||
+  Buffer.from(stableCheckpoint.signature,'base64').toString('base64')!==stableCheckpoint.signature)
   denied('CHECKPOINT_SIGNATURE_INVALID');
  let key;
  try{
