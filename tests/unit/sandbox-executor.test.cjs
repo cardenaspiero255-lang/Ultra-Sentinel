@@ -82,7 +82,7 @@ test('rejects a signed plan that understates the observed patch byte span before
   /PATCH_BUDGET_EXCEEDED/);
   assert.equal(consumed,0,'a mismatch must not spend the owner nonce');
   assert.equal(git(f.directory,'rev-parse','HEAD'),f.head);
-  assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\\n');
+  assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
   assert.equal(git(f.directory,'status','--porcelain'),'');
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
