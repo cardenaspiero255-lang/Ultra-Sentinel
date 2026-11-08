@@ -51,6 +51,9 @@ class C2SymbolResolutionOracleTest(val env: KotlinCoreEnvironment) {
         assertThat(symbol.identity).contains("target.work").contains("Int")
         assertThat(symbol.callSite?.line).isEqualTo(3)
         assertThat(symbol.declarationSite?.path).isNotEqualTo(symbol.callSite?.path)
+        // Git blob IDs computed independently with git hash-object --stdin.
+        assertThat(symbol.callSite?.gitBlobSha).isEqualTo("9a200806fcd06fa57ccf49b22a6cc62e4c30d9ea")
+        assertThat(symbol.declarationSite?.gitBlobSha).isEqualTo("136ca834d258d60414f8cab50c2f01a160ac4dcd")
         assertThat(symbol.origin.name).isEqualTo("SOURCE_UNAUTHENTICATED")
         assertThat(symbol.dispatch.name).isEqualTo("STATIC")
     }
