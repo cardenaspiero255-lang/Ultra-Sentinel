@@ -67,14 +67,19 @@ async function inspectTrustedMemorySearch(query,ledger,max=3){
   trustedPlaybooks:Object.freeze(suggestions),
   learnedFromUntrustedBot:false,externalEvidenceVerified:false});
 }
-function inspectPersistedSignedMemoryQuarantine(ledger,{checkpointFile,trustedPublicKey}={}){
+function inspectPersistedSignedMemoryQuarantine(ledger,{checkpointFile,trustedPublicKey,
+ requireWitness=false,witness}={}){
+ if(typeof requireWitness!=='boolean')fail('INVALID_WITNESS_REQUIREMENT');
  // Only trusted host configuration may supply this key. This function cannot
  // authenticate the origin of a caller-supplied public key.
  const parsed=parseLedger(ledger);
  const entries=parsed.map(e=>({id:e.id,digest:entryDigest(e)}));
- const stored=new PersistentSignedRevocationStore(checkpointFile).load({
-  entries,trustedPublicKey
- });
+ const store=new PersistentSignedRevocationStore(checkpointFile);
+ // The host must retain and authenticate the witness independently. A valid
+ // signature cannot detect replacement by an older, validly signed witness.
+ const stored=requireWitness===true?
+  store.loadWithWitness({entries,trustedPublicKey,witness}):
+  store.load({entries,trustedPublicKey});
  const proposal=quarantineMemoryCandidates(ledger,{
   localRevocationJournal:stored.journal
  });
@@ -85,6 +90,12 @@ function inspectPersistedSignedMemoryQuarantine(ledger,{checkpointFile,trustedPu
   excludedBySignedCheckpoint:proposal.excludedByLocalJournal,
   entries:proposal.entries,headHash:stored.headHash,
   signatureValidForConfiguredKey:stored.signatureValidForConfiguredKey,
+  ...(requireWitness===true?{
+   witnessSignatureValidForConfiguredKey:stored.witnessSignatureValidForConfiguredKey,
+   witnessEventCount:stored.witnessEventCount,
+   independentWitnessStorageVerified:false,
+   witnessLimitation:stored.limitation
+  }:{}),
   trustedKeyOriginAuthenticatedByThisModule:false,
   trustedPromotionCount:0,remoteWrites:false,mergeAllowed:false,
   ownerAuthorizationGranted:false,productionReleaseAllowed:false
