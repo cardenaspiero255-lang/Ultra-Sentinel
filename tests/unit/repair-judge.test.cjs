@@ -83,3 +83,21 @@ test('Judge vetoes a merge commit even when its first parent is the baseline',()
   assert.equal(judgeLocalRepair(f).approved,false);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
+test('Judge vetoes an unapproved file hidden by a replacement baseline commit',()=>{
+ const f=fixture();
+ try{
+  git(f.directory,'reset','--hard',f.baselineHeadSha);
+  const extra='app/src/main/Unexpected.kt';
+  fs.writeFileSync(path.join(f.directory,extra),'hidden change\n');
+  git(f.directory,'add','.');git(f.directory,'commit','-qm','replacement baseline');
+  const replacement=git(f.directory,'rev-parse','HEAD');
+  git(f.directory,'reset','--soft',f.baselineHeadSha);
+  fs.writeFileSync(path.join(f.directory,f.filename),'repaired\n');
+  git(f.directory,'add','.');git(f.directory,'commit','-qm','repair with hidden file');
+  f.repairHeadSha=git(f.directory,'rev-parse','HEAD');
+  git(f.directory,'replace',f.baselineHeadSha,replacement);
+  assert.deepEqual(git(f.directory,'--no-replace-objects','diff','--name-only',
+   f.baselineHeadSha,f.repairHeadSha).split('\n').sort(),[f.filename,extra].sort());
+  assert.equal(judgeLocalRepair(f).approved,false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});

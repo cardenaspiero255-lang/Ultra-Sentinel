@@ -14,7 +14,7 @@ function git(directory,...args){
  const p=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false',
   '-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{
   cwd:directory,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
-  env:{PATH:process.env.PATH,HOME:directory,GIT_CONFIG_NOSYSTEM:'1',
+  env:{PATH:process.env.PATH,HOME:directory,GIT_CONFIG_NOSYSTEM:'1',GIT_NO_REPLACE_OBJECTS:'1',
    GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'}
  });
  if(p.error||p.status!==0)throw Error('JUDGE_GIT_ERROR');
