@@ -37,8 +37,14 @@ function json(root,filename){
  return obj;
 }
 function exactMarker(log,marker,positive){
- const count=log.split(/\r?\n/).filter(x=>x===marker).length;
- if((count===1)!==positive)deny();
+ // Success is an exact standalone println. Negative controls are Kotlin
+ // IllegalStateException stack traces, not standalone marker lines.
+ const count=log.split(marker).length-1;
+ if(positive){
+  if(count!==1||log.trim()!==marker)deny();
+ }else if(count!==1||
+  !log.includes('java.lang.IllegalStateException: '+marker)||
+  log.includes('ORACLE_PASS'))deny();
 }
 function artifact(root,kind,mode){
  const prefix=kind==='termux'?'':kind+'_';
@@ -126,8 +132,7 @@ function adjudicate(root){
     candidate:'VOICE_CLOCK_ORIGINAL_ORACLE_PASS',
     unsafe:'NORMAL_PENDING_REJECTED'
    };
-   exactMarker(a.oracle,expected[mode],true);
-   exactMarker(a.oracle,expected.candidate,positive);
+   exactMarker(a.oracle,expected[mode],positive);
    rows[kind][mode]=Object.freeze({sourceSha256:a.sourceSha256,
     oracleLogSha256:a.oracleLogSha256,jarSha256:a.jarSha256,
     expectedOutcome:positive?'GREEN':'RED'});
