@@ -12,7 +12,8 @@ const FILE=/^(?:apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarv
 function outcome(status,checkedFiles=0,exactTreeRollbackVerified=false,count=2){
  return Object.freeze({
   schema:count===1?'ultra-sentinel-one-source-kotlin-sandbox/v1':
-   'ultra-sentinel-two-source-kotlin-sandbox/v1',
+   count===2?'ultra-sentinel-two-source-kotlin-sandbox/v1':
+   'ultra-sentinel-kotlin-batch-sandbox/v1',
   status,checkedFiles,exactTreeRollbackVerified,
   originalOracleVerifiedByThisFunction:false,
   remoteRepositoryIdentityAuthenticated:false,
@@ -58,12 +59,13 @@ function commit(root,label){
 }
 function drillSources(files,count){
  if(!Array.isArray(files)||files.length!==count||!files.every(good)||
-  (count===2&&files[0].path===files[1].path))
+  new Set(files.map(f=>f.path)).size!==count)
   return outcome('BLOCKED_INPUT_CONTRACT',0,false,count);
  const ordered=[...files].sort((a,b)=>a.path.localeCompare(b.path));
  let root=null;
  try{
-  const branch=count===1?'sandbox/one-source-kotlin':'sandbox/two-source-kotlin';
+  const branch=count===1?'sandbox/one-source-kotlin':
+   count===2?'sandbox/two-source-kotlin':'sandbox/multi-source-kotlin';
   root=fs.mkdtempSync(path.join(os.tmpdir(),'us-kotlin-sandbox-'));
   git(root,'init','-q','-b',branch);
   if(git(root,'remote')!=='')throw Error('REMOTE_NOT_EMPTY');
@@ -73,7 +75,7 @@ function drillSources(files,count){
    fs.writeFileSync(dest,f.before,{flag:'wx',mode:0o600});
   }
   git(root,'add','--',...ordered.map(f=>f.path));
-  const baseline=commit(root,'original two-source baseline');
+  const baseline=commit(root,'original Kotlin baseline');
   const baselineTree=git(root,'rev-parse','HEAD^{tree}');
   for(const f of ordered){
    if(git(root,'rev-parse',baseline+':'+f.path)!==f.beforeBlobSha)
@@ -97,10 +99,17 @@ function drillSources(files,count){
   for(const f of ordered)if(git(root,'rev-parse','HEAD:'+f.path)!==f.beforeBlobSha)
    throw Error('SOURCE_NOT_RESTORED');
   return outcome(count===1?'ONE_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED':
-   'TWO_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED',count,true,count);
+   count===2?'TWO_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED':
+   'KOTLIN_BATCH_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED',count,true,count);
  }catch{return outcome('BLOCKED_LOCAL_JUDGE_OR_ROLLBACK',0,false,count);}
  finally{if(root!==null)fs.rmSync(root,{recursive:true,force:true});}
 }
 function drillTwoSourceKotlinSandbox({files}={}){return drillSources(files,2);}
 function drillOneSourceKotlinSandbox({file}={}){return drillSources([file],1);}
-module.exports={drillTwoSourceKotlinSandbox,drillOneSourceKotlinSandbox};
+function drillKotlinSourceBatchSandbox({files}={}){
+ if(!Array.isArray(files)||files.length<1||files.length>4)
+  return outcome('BLOCKED_INPUT_CONTRACT',0,false,3);
+ return drillSources(files,files.length);
+}
+module.exports={drillTwoSourceKotlinSandbox,drillOneSourceKotlinSandbox,
+ drillKotlinSourceBatchSandbox};
