@@ -19,7 +19,7 @@ function fixture(){
  const changes=[{path:file,content:'after\n'}],plan={status:'REVIEW_READY_NO_EXECUTOR',
  commitAllowed:false,mergeAllowed:false,branch:'sandbox/repair',
  expectedHeadSha:head,authorizationNonce:nonce,patchBytes:100,
- changes:[{path:file,beforeBlobSha:blob('before\n'),afterBlobSha:blob('after\n'),patchBytes:10}]};
+ changes:[{path:file,beforeBlobSha:blob('before\n'),afterBlobSha:blob('after\n'),patchBytes:12}]};
  const authorization={ownerLogin:'cardenaspiero255-lang',repo:'cardenaspiero255-lang/Ultra-Sentinel',
  branch:'sandbox/repair',headSha:head,nonce,expiresAt:Date.now()+60000,
  planDigest:digestPlan(plan,changes)};
