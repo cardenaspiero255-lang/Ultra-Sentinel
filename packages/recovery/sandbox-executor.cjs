@@ -7,6 +7,19 @@ const {spawnSync}=require('node:child_process');
 const SHA=/^[a-f0-9]{40}$/;
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
 const SAFE=/^(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+$/;
+// Budget contract: measure the minimal contiguous byte replacement between
+// Git's original blob and the proposed UTF-8 blob (removed + inserted bytes).
+// Context bytes outside the changed span do not count as patch bytes.
+function observedPatchBytes(before,after){
+ let prefix=0;
+ while(prefix<before.length&&prefix<after.length&&before[prefix]===after[prefix])
+  prefix++;
+ let oldEnd=before.length,newEnd=after.length;
+ while(oldEnd>prefix&&newEnd>prefix&&before[oldEnd-1]===after[newEnd-1]){
+  oldEnd--;newEnd--;
+ }
+ return oldEnd-prefix+newEnd-prefix;
+}
 function git(cwd,...args){
  const p=spawnSync('git',['-c','core.hooksPath=/dev/null','-c','core.fsmonitor=false','-c','commit.gpgsign=false','-c','core.autocrlf=false',...args],{cwd,encoding:'utf8',timeout:10000,maxBuffer:1024*1024,
   env:{PATH:process.env.PATH,HOME:cwd,GIT_CONFIG_NOSYSTEM:'1',GIT_TERMINAL_PROMPT:'0',
@@ -31,7 +44,9 @@ function executeSandboxRepair({directory,plan,changes,nonceStore,nonce,expectedH
  if(git(directory,'status','--porcelain')!=='')throw Error('DIRTY_WORKTREE');
  if(git(directory,'rev-parse','HEAD')!==expectedHeadSha)throw Error('STALE_HEAD');
  const original=git(directory,'rev-parse','HEAD^{tree}');
- let bytes=0;const seen=new Set();
+ if(!Number.isSafeInteger(plan.patchBytes)||plan.patchBytes<1)
+  throw Error('PATCH_BUDGET_EXCEEDED');
+ let contentBytes=0,declaredBytes=0,actualBytes=0;const seen=new Set();
  for(let i=0;i<changes.length;i++){
   const c=changes[i],meta=plan.changes[i];
   if(!c||typeof c.path!=='string'||!SAFE.test(c.path)||c.path.includes('..')||
@@ -49,8 +64,15 @@ function executeSandboxRepair({directory,plan,changes,nonceStore,nonce,expectedH
   const proposed=Buffer.from(c.content);
   if(crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+proposed.length+'\0'),proposed])).digest('hex')!==meta.afterBlobSha)
    throw Error('PATCH_HASH_MISMATCH');
-  bytes+=proposed.length;
-  if(bytes>65536||bytes>plan.patchBytes+65536)throw Error('PATCH_BUDGET_EXCEEDED');
+  // Reject understated per-file budgets and budget sums before nonce use.
+  // An intact after-blob hash proves identity, not a legitimate size claim.
+  const observed=observedPatchBytes(current,proposed);
+  actualBytes+=observed;declaredBytes+=meta.patchBytes;
+  contentBytes+=proposed.length;
+  if(observed===0||observed>meta.patchBytes||
+   !Number.isSafeInteger(actualBytes)||!Number.isSafeInteger(declaredBytes)||
+   declaredBytes>plan.patchBytes||actualBytes>plan.patchBytes||
+   contentBytes>65536)throw Error('PATCH_BUDGET_EXCEEDED');
  }
  if(nonceStore.consume(nonce)!==true)throw Error('NONCE_REPLAY');
  try{
