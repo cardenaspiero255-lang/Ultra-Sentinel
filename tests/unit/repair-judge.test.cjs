@@ -54,3 +54,32 @@ test('Judge vetoes unapproved second file and duplicate file identities',()=>{
   assert.equal(judgeLocalRepair({...f,repairHeadSha:git(f.directory,'rev-parse','HEAD')}).approved,false);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
+test('Judge vetoes a repair that replaces an approved file with a symlink',()=>{
+ const f=fixture();
+ try{
+  fs.unlinkSync(path.join(f.directory,f.filename));
+  fs.symlinkSync('target',path.join(f.directory,f.filename));
+  git(f.directory,'add',f.filename);git(f.directory,'commit','--amend','-qm','symlink repair');
+  f.repairHeadSha=git(f.directory,'rev-parse','HEAD');
+  f.plan.changes[0].afterBlobSha=git(f.directory,'rev-parse',f.repairHeadSha+':'+f.filename);
+  assert.equal(judgeLocalRepair(f).approved,false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
+test('Judge vetoes a repair that changes a regular file mode',()=>{
+ const f=fixture();
+ try{
+  git(f.directory,'update-index','--chmod=+x',f.filename);
+  git(f.directory,'commit','--amend','-qm','executable repair');
+  f.repairHeadSha=git(f.directory,'rev-parse','HEAD');
+  assert.equal(judgeLocalRepair(f).approved,false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
+test('Judge vetoes a merge commit even when its first parent is the baseline',()=>{
+ const f=fixture();
+ try{
+  const tree=git(f.directory,'rev-parse',f.repairHeadSha+'^{tree}');
+  const merge=git(f.directory,'commit-tree',tree,'-p',f.baselineHeadSha,'-p',f.repairHeadSha,'-m','merge');
+  git(f.directory,'reset','--hard',merge);f.repairHeadSha=merge;
+  assert.equal(judgeLocalRepair(f).approved,false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
