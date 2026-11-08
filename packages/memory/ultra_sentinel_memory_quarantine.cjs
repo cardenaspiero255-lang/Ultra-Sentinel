@@ -7,6 +7,7 @@
 const {parseLedger,entryDigest,verifiedEntries,searchVerified}=
  require('./ultra_sentinel_memory_ledger.cjs');
 const {inspectLocalRevocations}=require('./memory-local-revocation-journal.cjs');
+const {PersistentSignedRevocationStore}=require('./memory-signed-checkpoint.cjs');
 const MAX_REVOKES=200,ASCII_ID=/^[A-Za-z0-9_-]{6,80}$/;
 function fail(reason){throw Error(reason);}
 function validateRevocations(raw){
@@ -66,4 +67,28 @@ async function inspectTrustedMemorySearch(query,ledger,max=3){
   trustedPlaybooks:Object.freeze(suggestions),
   learnedFromUntrustedBot:false,externalEvidenceVerified:false});
 }
-module.exports={quarantineMemoryCandidates,inspectTrustedMemorySearch};
+function inspectPersistedSignedMemoryQuarantine(ledger,{checkpointFile,trustedPublicKey}={}){
+ // Only trusted host configuration may supply this key. This function cannot
+ // authenticate the origin of a caller-supplied public key.
+ const parsed=parseLedger(ledger);
+ const entries=parsed.map(e=>({id:e.id,digest:entryDigest(e)}));
+ const stored=new PersistentSignedRevocationStore(checkpointFile).load({
+  entries,trustedPublicKey
+ });
+ const proposal=quarantineMemoryCandidates(ledger,{
+  localRevocationJournal:stored.journal
+ });
+ return Object.freeze({
+  schema:'ultra-sentinel-persisted-signed-quarantine/v1',
+  status:'QUARANTINE_SUPPRESSED_BY_CONFIGURED_SIGNER_NO_OWNER_AUTH',
+  total:proposal.total,quarantined:proposal.quarantined,
+  excludedBySignedCheckpoint:proposal.excludedByLocalJournal,
+  entries:proposal.entries,headHash:stored.headHash,
+  signatureValidForConfiguredKey:stored.signatureValidForConfiguredKey,
+  trustedKeyOriginAuthenticatedByThisModule:false,
+  trustedPromotionCount:0,remoteWrites:false,mergeAllowed:false,
+  ownerAuthorizationGranted:false,productionReleaseAllowed:false
+ });
+}
+module.exports={quarantineMemoryCandidates,inspectTrustedMemorySearch,
+ inspectPersistedSignedMemoryQuarantine};
