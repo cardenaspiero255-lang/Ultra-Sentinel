@@ -8,6 +8,8 @@ on:
       - packages/investigation/bounded-read-progress-repair.cjs
       - packages/recovery/bounded-read-progress-functional-judge.cjs
       - packages/recovery/pinned-bounded-read-local-bridge.cjs
+      - packages/recovery/phase1-same-case-evidence-gate.cjs
+      - tests/unit/phase1-same-case-evidence-gate.test.cjs
       - tests/unit/pinned-bounded-read-local-bridge.test.cjs
       - tests/unit/pinned-bounded-read-functional-handoff.test.cjs
       - packages/recovery/two-source-kotlin-sandbox.cjs
@@ -24,6 +26,8 @@ on:
       - packages/investigation/bounded-read-progress-repair.cjs
       - packages/recovery/bounded-read-progress-functional-judge.cjs
       - packages/recovery/pinned-bounded-read-local-bridge.cjs
+      - packages/recovery/phase1-same-case-evidence-gate.cjs
+      - tests/unit/phase1-same-case-evidence-gate.test.cjs
       - tests/unit/pinned-bounded-read-local-bridge.test.cjs
       - tests/unit/pinned-bounded-read-functional-handoff.test.cjs
       - packages/recovery/two-source-kotlin-sandbox.cjs
@@ -62,7 +66,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Test detection, candidate, Judge and rollback contracts
-        run: node --test tests/unit/novel-kotlin-read-progress.test.cjs tests/unit/two-source-kotlin-sandbox.test.cjs tests/unit/pinned-bounded-read-local-bridge.test.cjs tests/unit/pinned-bounded-read-functional-handoff.test.cjs
+        run: node --test tests/unit/novel-kotlin-read-progress.test.cjs tests/unit/two-source-kotlin-sandbox.test.cjs tests/unit/pinned-bounded-read-local-bridge.test.cjs tests/unit/pinned-bounded-read-functional-handoff.test.cjs tests/unit/phase1-same-case-evidence-gate.test.cjs
       - name: Install AppArmor, Bubblewrap and JUnit
         shell: bash
         run: |
