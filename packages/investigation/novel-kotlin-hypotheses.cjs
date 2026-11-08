@@ -22,6 +22,11 @@ const META=Object.freeze({
   severity:'MEDIUM',confidence:'low',
   reason:'Una comprobación de reloj invertido rechaza la consulta actual pero aparentemente no revoca el estado pendiente, que podría recuperarse al adelantar el reloj.',
   verification:'Probar en JVM el estado pendiente antes, durante y después de un retroceso temporal con entrada original; distinguir reloj monótono real de inyección de prueba.'
+ }),
+ BOUNDED_READ_ZERO_PROGRESS:Object.freeze({
+  severity:'MEDIUM',confidence:'low',
+  reason:'Una lectura acotada no vacía parece aceptar cero bytes y podría impedir el progreso de un consumidor que repite lecturas.',
+  verification:'Compilar la fuente original con un proveedor de flujo anómalo, controles benignos y una prueba independiente de progreso.'
  })
 });
 function blobSha(source){
@@ -100,6 +105,27 @@ function discover(path,source,expectedBlobSha){
    if(/\bfun\s+(?:isPending|pending|isActiveAt|isFresh)\s*\(/.test(head)&&
      /\b(?:fun\s+consume\s*\(|cancel\s*\(\s*\))/.test(tail))
     add('CLOCK_ROLLBACK_WITHOUT_INVALIDATION',i+1,line);
+  }
+  // This narrow pattern only raises an advisory. In particular, skip(0) and
+  // read(..., len=0) are valid and must not be treated as non-progress bugs.
+  const bulk=line.match(/^\s*val\s+([A-Za-z_]\w*)\s*=\s*super\.read\(\s*([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*,\s*([A-Za-z_]\w*)\s*\)\s*$/);
+  if(bulk&&/\bFilterInputStream\s*\(/.test(code.join('\n'))){
+   const [,actual,buffer,offset,limit]=bulk;
+   const prior=code.slice(Math.max(0,i-10),i).join('\n');
+   const header=new RegExp('\\boverride\\s+fun\\s+read\\s*\\(\\s*'+buffer+
+    '\\s*:\\s*ByteArray\\s*,\\s*'+offset+
+    '\\s*:\\s*Int\\s*,\\s*([A-Za-z_]\\w*)\\s*:\\s*Int\\s*\\)');
+   const h=header.exec(prior);
+   if(h&&new RegExp('\\bif\\s*\\(\\s*'+h[1]+'\\s*==\\s*0\\s*\\)\\s*return\\s+0\\b').test(prior)&&
+      /\bensureBudget\s*\(\s*\)/.test(prior)&&
+      new RegExp('\\bval\\s+'+limit+'\\s*=\\s*minOf\\s*\\(\\s*'+h[1]+
+       '\\.toLong\\(\\)\\s*,\\s*[A-Za-z_]\\w*\\s*-\\s*[A-Za-z_]\\w*\\s*\\)\\s*\\.toInt\\(\\)').test(prior)){
+    const guard=new RegExp('^\\s*if\\s*\\(\\s*'+actual+'\\s*>\\s*'+limit+
+     '\\s*\\|\\|\\s*'+actual+'\\s*<\\s*-1\\s*\\)\\s*throw\\s+IOException\\s*\\(');
+    for(let k=i+1;k<Math.min(code.length,i+4);k++){
+     if(guard.test(code[k]))add('BOUNDED_READ_ZERO_PROGRESS',k+1,code[k]);
+    }
+   }
   }
  }
  return found;

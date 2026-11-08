@@ -1,0 +1,101 @@
+name: Ultra Sentinel - original JARVIS bounded-read progress
+on:
+  pull_request:
+    paths:
+      - .github/workflows/jarvis-bounded-read-progress.yml
+      - packages/investigation/novel-kotlin-hypotheses.cjs
+      - packages/investigation/novel-kotlin-candidate-intake.cjs
+      - packages/investigation/bounded-read-progress-repair.cjs
+      - packages/recovery/bounded-read-progress-functional-judge.cjs
+      - packages/recovery/two-source-kotlin-sandbox.cjs
+      - tests/fixtures/jarvis-bounded-image/**
+      - tests/oracles/jarvis-bounded-read-progress.kt
+      - tests/unit/novel-kotlin-read-progress.test.cjs
+      - scripts/jarvis-bounded-read-progress-jvm.sh
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/jarvis-bounded-read-progress.yml
+      - packages/investigation/novel-kotlin-hypotheses.cjs
+      - packages/investigation/novel-kotlin-candidate-intake.cjs
+      - packages/investigation/bounded-read-progress-repair.cjs
+      - packages/recovery/bounded-read-progress-functional-judge.cjs
+      - packages/recovery/two-source-kotlin-sandbox.cjs
+      - tests/fixtures/jarvis-bounded-image/**
+      - tests/oracles/jarvis-bounded-read-progress.kt
+      - tests/unit/novel-kotlin-read-progress.test.cjs
+      - scripts/jarvis-bounded-read-progress-jvm.sh
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-bounded-read-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  original-kotlin-read-progress:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.login == 'cardenaspiero255-lang') ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor == 'cardenaspiero255-lang'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout without persisting credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Test detection, candidate, Judge and rollback contracts
+        run: node --test tests/unit/novel-kotlin-read-progress.test.cjs tests/unit/two-source-kotlin-sandbox.test.cjs
+      - name: Install AppArmor, Bubblewrap and JUnit
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l \
+            apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles junit4
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch pinned Kotlin compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          compiler="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' \
+            /repos/JetBrains/kotlin/releases/assets/198150667 > "$compiler"
+          test "$(sha256sum "$compiler" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/bounded-read-kotlin"
+          unzip -q "$compiler" -d "$RUNNER_TEMP/bounded-read-kotlin"
+          test -x "$RUNNER_TEMP/bounded-read-kotlin/kotlinc/bin/kotlinc"
+          echo "JARVIS_KOTLIN_HOME=$RUNNER_TEMP/bounded-read-kotlin/kotlinc" >> "$GITHUB_ENV"
+      - name: Run original Kotlin, original JUnit tests, independent Judge and rollback
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash -n scripts/jarvis-bounded-read-progress-jvm.sh
+          bash scripts/jarvis-bounded-read-progress-jvm.sh "$RUNNER_TEMP/bounded-read-evidence"
+      - name: Archive bounded proof without credentials
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: jarvis-bounded-read-progress-proof
+          path: ${{ runner.temp }}/bounded-read-evidence/receipt.json
+          retention-days: 14
+          if-no-files-found: error
