@@ -13,6 +13,10 @@ on:
       - tests/unit/pinned-novel-oracle-link.test.cjs
       - tests/fixtures/pinned-jarvis-termux-original.kt
       - packages/investigation/novel-kotlin-candidate-intake.cjs
+      - packages/recovery/novel-kotlin-batch-local-judge.cjs
+      - tests/unit/kotlin-original-multiline-batch.test.cjs
+      - scripts/verify-jarvis-novel-batch-functional.cjs
+      - tests/unit/jarvis-generic-batch-jvm-bridge.test.cjs
       - tests/unit/novel-kotlin-candidate-intake.test.cjs
       - tests/oracles/jarvis-voice-clock-original.kt
       - scripts/jarvis-voice-clock-original-red-green.sh
@@ -171,6 +175,29 @@ jobs:
             .automaticRootCauseDiscoveryProven==false and
             .remoteWrites==false and .mergeAllowed==false
           ' "$root/voice-clock-oracle-receipt.json"
+      - name: Bind generic batch Judge to two independently executed original JVM oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/jarvis-termux-original-pilot"
+          node scripts/verify-jarvis-novel-batch-functional.cjs "$root"
+          jq -e '
+            .schema=="ultra-sentinel-generic-kotlin-batch-independent-original-jvm/v1" and
+            .status=="LOCAL_TWO_SOURCE_FUNCTIONAL_JUDGE_VERIFIED_WITH_VETO" and
+            .sourceRepository=="cardenaspiero255-lang/JARVIS" and
+            .originalKotlinSources==2 and .originalJVMOracles==2 and
+            .independentlyExecutedOriginalRed==true and
+            .independentlyExecutedCandidateGreen==true and
+            .benignControlsPreserved==true and
+            .unsafeCandidateStructurallyAccepted==true and
+            .unsafeCandidateFunctionallyVetoed==true and
+            .exactLocalBatchRollbackVerified==true and
+            .trustedGithubRunnerAttestedByThisFunction==false and
+            .fourIndependentOriginalOraclesProven==false and
+            .androidDeviceTested==false and
+            .remoteWrites==false and .mergeAllowed==false and
+            .productionReleaseAllowed==false
+          ' "$root/generic-batch-functional-receipt.json"
       - name: Verify four real Kotlin combinations and separate causal evidence
         shell: bash
         env:
@@ -253,6 +280,7 @@ jobs:
             ${{ runner.temp }}/jarvis-termux-original-pilot/termux-sanitized-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/novel-oracle-linked-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/voice-clock-oracle-receipt.json
+            ${{ runner.temp }}/jarvis-termux-original-pilot/generic-batch-functional-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/voice-intake-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/dual-policy-factorial-receipt.json
             ${{ runner.temp }}/jarvis-termux-original-pilot/crossfile-advisory-receipt.json
