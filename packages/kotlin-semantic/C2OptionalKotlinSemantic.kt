@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -66,7 +67,7 @@ object C2OptionalKotlinSemantic {
         val fqName = DescriptorUtils.getFqName(original)
         // Local/anonymous descriptors have no stable fully qualified identity.
         val declaration = DescriptorToSourceUtils.descriptorToDeclaration(original)
-        val declarationSite = declaration?.let(::location)
+        val declarationSite = (declaration as? KtElement)?.let(::location)
         val dispatch = when {
             original is ConstructorDescriptor || original.dispatchReceiverParameter == null -> C2Dispatch.STATIC
             original.modality == Modality.FINAL -> C2Dispatch.STATIC
@@ -84,7 +85,7 @@ object C2OptionalKotlinSemantic {
         )
     }
 
-    private fun location(element: com.intellij.psi.PsiElement): C2SourceLocation? {
+    private fun location(element: KtElement): C2SourceLocation? {
         val file = element.containingFile as? KtFile ?: return null
         val path = file.virtualFile?.path ?: return null
         val text = file.text
