@@ -23,7 +23,7 @@ function run(f,nonceStore={consume:()=>true},changes=[{path:f.file,content:f.pro
  const nonce='nonce-1234567890123456';
  const plan={status:'REVIEW_READY_NO_EXECUTOR',commitAllowed:false,mergeAllowed:false,
  expectedHeadSha:f.head,authorizationNonce:nonce,patchBytes:100,
- changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:10}]};
+ changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:12}]};
  return executeSandboxRepair({directory:f.directory,plan,changes,nonceStore,nonce,expectedHeadSha:f.head});
 }
 test('isolated sandbox commits without a remote and rejects nonce replay',()=>{
@@ -66,5 +66,39 @@ test('rejects symlink patch targets even inside a disposable checkout',()=>{
   fs.symlinkSync(external,path.join(f.directory,f.file));
   assert.throws(()=>run(f),/DIRTY_WORKTREE|SYMLINK_OR_SPECIAL_FILE/);
   assert.equal(fs.readFileSync(external,'utf8'),'before\n');
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
+
+test('rejects a signed plan that understates the observed patch byte span before consuming nonce',()=>{
+ const f=fixture();let consumed=0;
+ try{
+  const nonce='nonce-1234567890123456';
+  const plan={status:'REVIEW_READY_NO_EXECUTOR',commitAllowed:false,mergeAllowed:false,
+   expectedHeadSha:f.head,authorizationNonce:nonce,patchBytes:1,
+   changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:1}]};
+  assert.throws(()=>executeSandboxRepair({directory:f.directory,plan,
+   changes:[{path:f.file,content:f.proposed}],nonce,
+   nonceStore:{consume:()=>{consumed++;return true;}},expectedHeadSha:f.head}),
+  /PATCH_BUDGET_EXCEEDED/);
+  assert.equal(consumed,0,'a mismatch must not spend the owner nonce');
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.head);
+  assert.equal(fs.readFileSync(path.join(f.directory,f.file),'utf8'),'before\n');
+  assert.equal(git(f.directory,'status','--porcelain'),'');
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
+
+test('rejects an aggregate patch budget lower than its declared per-file budget',()=>{
+ const f=fixture();let consumed=0;
+ try{
+  const nonce='nonce-1234567890123456';
+  const plan={status:'REVIEW_READY_NO_EXECUTOR',commitAllowed:false,mergeAllowed:false,
+   expectedHeadSha:f.head,authorizationNonce:nonce,patchBytes:1,
+   changes:[{path:f.file,beforeBlobSha:f.before,afterBlobSha:f.after,patchBytes:10}]};
+  assert.throws(()=>executeSandboxRepair({directory:f.directory,plan,
+   changes:[{path:f.file,content:f.proposed}],nonce,
+   nonceStore:{consume:()=>{consumed++;return true;}},expectedHeadSha:f.head}),
+  /PATCH_BUDGET_EXCEEDED/);
+  assert.equal(consumed,0);
+  assert.equal(git(f.directory,'rev-parse','HEAD'),f.head);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
