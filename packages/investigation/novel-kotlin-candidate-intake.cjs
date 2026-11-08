@@ -6,7 +6,6 @@
  * claims that a static finding disappeared without a functional regression.
  */
 const {createHash}=require('node:crypto');
-const {types}=require('node:util');
 const {scanNovelKotlinHypotheses,blobSha}=
  require('./novel-kotlin-hypotheses.cjs');
 const SHA=/^[a-f0-9]{40}$/;
@@ -14,30 +13,7 @@ const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const MAX_FILES=12,MAX_BYTES=60000;
 const {isSafeNovelKotlinPath}=require('./novel-kotlin-path-policy.cjs');
 const hex256=s=>createHash('sha256').update(s,'utf8').digest('hex');
-function snapshotRecord(x,keys,exact=true){
- if(!x||typeof x!=='object'||types.isProxy(x)||Array.isArray(x)||
-  Object.getPrototypeOf(x)!==Object.prototype||
-  (exact&&Reflect.ownKeys(x).length!==keys.length))throw Error('UNSAFE_CANDIDATE_INPUT');
- const copy={};
- for(const k of keys){
-  const d=Object.getOwnPropertyDescriptor(x,k);
-  if(!d||!Object.hasOwn(d,'value'))throw Error('UNSAFE_CANDIDATE_INPUT');
-  copy[k]=d.value;
- }
- return copy;
-}
-function snapshotArray(value,keys){
- if(!Array.isArray(value)||types.isProxy(value)||Object.getPrototypeOf(value)!==Array.prototype||
-  value.length<1||value.length>MAX_FILES||Reflect.ownKeys(value).length!==value.length+1)
-  throw Error('UNSAFE_CANDIDATE_INPUT');
- const copy=[];
- for(let i=0;i<value.length;i++){
-  const d=Object.getOwnPropertyDescriptor(value,String(i));
-  if(!d||!Object.hasOwn(d,'value'))throw Error('UNSAFE_CANDIDATE_INPUT');
-  copy.push(snapshotRecord(d.value,keys));
- }
- return copy;
-}
+const {snapshotRecord,snapshotArray}=require('./plain-kotlin-payload.cjs');
 function snapshotNovelKotlinInput(options){
  const input=snapshotRecord(options,['expectedCommitSha','files','proposals'],false);
  return {expectedCommitSha:input.expectedCommitSha,

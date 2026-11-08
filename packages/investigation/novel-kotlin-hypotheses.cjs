@@ -10,6 +10,7 @@ const {createHash}=require('node:crypto');
 const {fingerprint}=require('../family-hunter/ultra_sentinel_family_fingerprints.cjs');
 const {makeSuggestion}=require('../core/ultra_sentinel_remediation.cjs');
 const SHA=/^[0-9a-f]{40}$/;
+const {snapshotRecord,snapshotArray}=require('./plain-kotlin-payload.cjs');
 const {isSafeNovelKotlinPath}=require('./novel-kotlin-path-policy.cjs');
 const MAX_FILES=12,MAX_BYTES=60000,MAX_LINES=1500;
 const META=Object.freeze({
@@ -49,7 +50,8 @@ function validFile(file){
    Object.getPrototypeOf(file)!==Object.prototype||
    Object.keys(file).sort().join(',')!=='expectedBlobSha,path,source'||
    typeof file.path!=='string'||file.path.length>300||
-   !isSafeNovelKotlinPath(file.path)||!SHA.test(file.expectedBlobSha||'')||
+   !isSafeNovelKotlinPath(file.path)||typeof file.expectedBlobSha!=='string'||
+   !SHA.test(file.expectedBlobSha)||
    typeof file.source!=='string'||file.source.includes('\0')||
    file.source.includes('\r')||!file.source.endsWith('\n')||
    Buffer.byteLength(file.source,'utf8')>MAX_BYTES||
@@ -129,10 +131,15 @@ function discover(path,source,expectedBlobSha){
  }
  return found;
 }
-function scanNovelKotlinHypotheses({expectedCommitSha,files}={}){
- if(!SHA.test(expectedCommitSha||'')||!Array.isArray(files)||
-  files.length===0||files.length>MAX_FILES||!files.every(validFile))
-  return blocked('BLOCKED_INPUT_CONTRACT');
+function scanNovelKotlinHypotheses(options={}){
+ let expectedCommitSha,files;
+ try{
+  const input=snapshotRecord(options,['expectedCommitSha','files'],false);
+  expectedCommitSha=input.expectedCommitSha;
+  files=snapshotArray(input.files,['path','source','expectedBlobSha'],MAX_FILES);
+ }catch{return blocked('BLOCKED_INPUT_CONTRACT');}
+ if(typeof expectedCommitSha!=='string'||!SHA.test(expectedCommitSha)||
+  !files.every(validFile))return blocked('BLOCKED_INPUT_CONTRACT');
  const seen=new Set();
  for(const file of files){
   if(seen.has(file.path))return blocked('BLOCKED_DUPLICATE_PATH');
