@@ -118,7 +118,7 @@ test('rejects getters and Proxy input without running attacker code',()=>{
  const bad=()=>{called++;throw Error('getter executed');};
  try{
   for(const kind of ['root','file','proposal']){
-   const options={...f.options,files:[...f.options.files],proposals:[...f.options.proposals]};
+   const options={...f.options,files:f.options.files.map(x=>({...x})),proposals:f.options.proposals.map(x=>({...x}))};
    if(kind==='root')Object.defineProperty(options,'directory',{get:bad,enumerable:true});
    if(kind==='file')Object.defineProperty(options.files[0],'path',{get:bad,enumerable:true});
    if(kind==='proposal')Object.defineProperty(options.proposals[0],'candidateSource',{get:bad,enumerable:true});
