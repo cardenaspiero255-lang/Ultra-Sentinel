@@ -118,3 +118,49 @@ test('additional hostile nested policies, archive substitutions and hardlinks fa
   assert.match(executeOriginalJvmTriplet(plain).status,/^BLOCKED_/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('failure marker objects never execute user-defined coercion',()=>{
+ const dir=fixture();try{
+  let effects=0;
+  const malicious={toString(){effects++;return 'ORIGINAL_FAIL';}};
+  for(const field of ['originalFailure','unsafeFailure']){
+   const altered={...markers(),[field]:malicious};
+   assert.match(executeOriginalJvmTriplet({...valid(dir),markers:altered}).status,/^BLOCKED_/);
+  }
+  assert.equal(effects,0);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('original JVM cannot replace the candidate artifact after it was hashed',()=>{
+ const dir=fixture();try{
+  const src=path.join(dir,'Oracle.java'),classes=path.join(dir,'classes');
+  const candidate=path.join(dir,'candidate.jar'),decoy=path.join(dir,'decoy.jar');
+  fs.copyFileSync(candidate,decoy);
+  const make=(body,destination)=>{
+   fs.writeFileSync(src,'package example;public class Oracle {public static void main(String[] args){'+body+'}}');
+   execFileSync('javac',['-d',classes,src],{timeout:15000});
+   execFileSync('jar',['cf',destination,'-C',classes,'.'],{timeout:15000});
+  };
+  make('System.out.println("BENIGN_CONSENT_PASS");System.out.println("WRONG_ORACLE_PASS");',candidate);
+  const safe=p=>p.replaceAll('\\','\\\\').replaceAll('"','\\"');
+  make('try {java.nio.file.Files.copy(java.nio.file.Path.of("'+safe(decoy)+'"),'+
+    'java.nio.file.Path.of("'+safe(candidate)+'"),java.nio.file.StandardCopyOption.REPLACE_EXISTING);}' +
+    'catch(Exception e){throw new RuntimeException(e);}' +
+    'System.err.println("ORIGINAL_FAIL");System.exit(1);',path.join(dir,'original.jar'));
+  const initial=fs.readFileSync(candidate);
+  const result=executeOriginalJvmTriplet(valid(dir));
+  assert.match(result.status,/^BLOCKED_/);
+  assert.notDeepEqual(initial,fs.readFileSync(candidate));
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('incorrect JVM exit status and escaped baseline artifacts are denied',()=>{
+ const dir=fixture();try{
+  const src=path.join(dir,'Oracle.java'),classes=path.join(dir,'classes');
+  fs.writeFileSync(src,'package example;public class Oracle {public static void main(String[] args){System.err.println("WRONG_FAIL");System.exit(0);}}');
+  execFileSync('javac',['-d',classes,src],{timeout:15000});
+  execFileSync('jar',['cf',path.join(dir,'wrong.jar'),'-C',classes,'.'],{timeout:15000});
+  assert.match(executeOriginalJvmTriplet(valid(dir)).status,/^BLOCKED_/);
+  fs.rmSync(path.join(dir,'candidate.jar'));
+  fs.mkdirSync(path.join(dir,'candidate.jar'));
+  assert.match(executeOriginalJvmTriplet(valid(dir)).status,/^BLOCKED_/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
