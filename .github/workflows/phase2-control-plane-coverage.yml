@@ -39,11 +39,16 @@ jobs:
         run: npm run check
       - name: Require 90 percent coverage across bounded causal, Judge and memory modules
         run: |
+          set -euo pipefail
           node --test --experimental-test-coverage \
             --test-coverage-include=packages/quality-gates/phase2-causal-factorial.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-causal-factorial.test.cjs
+          node --test --experimental-test-coverage \
             --test-coverage-include=packages/recovery/phase2-generic-jvm-judge.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-generic-jvm-judge.test.cjs
+          node --test --experimental-test-coverage \
             --test-coverage-include=packages/memory/phase2-signed-revocation-filter.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
-            tests/unit/phase2-causal-factorial.test.cjs \
-            tests/unit/phase2-generic-jvm-judge.test.cjs \
             tests/unit/phase2-signed-revocation-filter.test.cjs
