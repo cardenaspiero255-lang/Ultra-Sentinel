@@ -1,0 +1,62 @@
+{
+  "schema": "ultra-sentinel-phase2-blind-local-jvm/v1",
+  "runDateUtc": "2026-11-09",
+  "upstream": {
+    "repository": "cardenaspiero255-lang/JARVIS",
+    "commitSha": "747c14b5d97750a7b2736968e2d516f02448558d",
+    "path": "apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/SafeAutomationEngine.kt",
+    "originalBlobSha": "ac73f8fcd1f5c9f578247ba4c653204cd3369cb9"
+  },
+  "discovery": {
+    "rule": "SIGNED_ELAPSED_WINDOW_UNDERFLOW",
+    "line": 125,
+    "localInputFileCount": 1,
+    "fullBlind66SourceInventoryExecuted": false
+  },
+  "execution": {
+    "kotlinCompiler": "1.9.0",
+    "jdkMajor": 21,
+    "bubblewrapAppArmor": false,
+    "kotlinPinnedCompiler2_0_21Validated": false,
+    "original": {
+      "exitCode": 1,
+      "stdout": "benign_preview_accepted=PASS\nordinary_expiry=PASS\n",
+      "stderr": "STALE_PREVIEW_AUTHORIZED\n",
+      "jarSha256": "6bdd8936a46fa84342026507b8373d9dcbce8ff73e2717f32ecbb6d6f274b010"
+    },
+    "candidate": {
+      "exitCode": 0,
+      "stdout": "benign_preview_accepted=PASS\nordinary_expiry=PASS\nsigned_overflow_expiry=PASS\nstop_revokes_consent=PASS\nINDEPENDENT_CONSENT_ORACLE_PASS\n",
+      "stderr": "",
+      "jarSha256": "8cbbda368624466f4ce12f72756cca3de840313e082c2fd15321190432913801"
+    },
+    "wrong": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "BENIGN_PREVIEW_REGRESSION\n",
+      "jarSha256": "edf489a1eeda3e697dd96f6764cee655144a9b5e9637887c737d78907a9363ae"
+    }
+  },
+  "combinedCIJudgeRollbackVerified": false,
+  "productionChanges": false,
+  "limitation": "Clock is test-injected with extreme Long values. Normal Android monotonic clock reachability and device security impact are not demonstrated.",
+  "independentRemoteInventoryReview": {
+    "sourceCommitSha": "747c14b5d97750a7b2736968e2d516f02448558d",
+    "kotlinSourceFilesFetched": 66,
+    "sourceReadErrors": 0,
+    "lexicalPatternMatches": 2,
+    "method": "Read-only GitHub source verification with the source-pattern search; not the executable Hunter module running against all 66 files",
+    "matches": [
+      {
+        "path": "apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/OfflineVoiceQuestionGate.kt",
+        "line": 36,
+        "classification": "lexical advisory only; clock input rejects negative values, no defect established"
+      },
+      {
+        "path": "apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/SafeAutomationEngine.kt",
+        "line": 125,
+        "classification": "JVM reproducible only under extreme injected clock values"
+      }
+    ]
+  }
+}
