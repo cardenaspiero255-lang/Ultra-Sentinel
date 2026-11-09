@@ -10,10 +10,13 @@ on:
       - scripts/c2-pr185-numeric-factorial.sh
       - scripts/c2-cross-file-kotlin-bridge.cjs
       - scripts/c2-cross-file-kotlin-negative-control.sh
+      - scripts/c2-phase2-gamehub-call-claims.sh
+      - scripts/c2-phase2-gamehub-call-claims.cjs
       - tests/oracles/c2-run17-battery-abi.kt
       - tests/oracles/c2-pr185-numeric-factorial-oracle.kt
       - tests/fixtures/c2-kotlin-semantic/**
       - tests/unit/committed-kotlin-semantic-claims.test.cjs
+      - tests/unit/committed-kotlin-semantic-claim-graph.test.cjs
       - tests/unit/cross-file-kotlin-functional-judge.test.cjs
       - tests/unit/kotlin-cross-file-workflow-scope.test.cjs
       - .github/workflows/real-kotlin-cross-file-functional-judge.yml
@@ -91,6 +94,34 @@ jobs:
           command -v gh
           command -v jq
           command -v bwrap
+      - name: Checkout pinned original GameHub for call-claim observation
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: e4ca122422f1cb591d407db3fb21fb00fd78b022
+          path: phase2-gamehub-source
+          persist-credentials: false
+      - name: Observe original Kotlin calls in isolated compiler
+        shell: bash
+        env:
+          C2_OWNER_SANDBOX: "1"
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$(mktemp -d /tmp/phase2-gamehub-XXXXXXXX)"
+          mkdir "$root/original"
+          cp -a "$GITHUB_WORKSPACE/phase2-gamehub-source/." "$root/original/"
+          git -C "$root/original" remote remove origin
+          bash scripts/c2-phase2-gamehub-call-claims.sh \
+            "$RUNNER_TEMP/oracle-kotlin/kotlinc" "$root/original" \
+            "$RUNNER_TEMP/phase2-gamehub-call-claims-receipt.json"
+      - name: Archive sanitized GameHub call-claim observation
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-gamehub-semantic-call-claims
+          path: ${{ runner.temp }}/phase2-gamehub-call-claims-receipt.json
+          retention-days: 14
+          if-no-files-found: error
       - name: Fetch SHA-pinned GameHub originals and execute all four real JVM variants offline
         shell: bash
         env:

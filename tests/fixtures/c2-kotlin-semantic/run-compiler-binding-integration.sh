@@ -23,3 +23,10 @@ java -cp "$tmp_dir/emitter.jar:$kotlin_root/lib/*" C2EmitSemanticClaimKt \
   "$kotlin_root/lib/kotlin-stdlib.jar" "$checkout/app/src/main/kotlin/a/Caller.kt" \
   "$checkout/app/src/main/kotlin/b/Target.kt" > "$tmp_dir/claim.json"
 node "$repo_root/tests/fixtures/c2-kotlin-semantic/check-compiler-binding.cjs" "$checkout" "$tmp_dir/claim.json"
+java -cp "$tmp_dir/emitter.jar:$kotlin_root/lib/*" C2EmitSemanticClaimKt \
+  "$kotlin_root/lib/kotlin-stdlib.jar" --name=work \
+  "$checkout/app/src/main/kotlin/a/Caller.kt" \
+  "$checkout/app/src/main/kotlin/b/Target.kt" > "$tmp_dir/claims.json"
+node -e 'const fs=require("node:fs"),assert=require("node:assert/strict");
+ const claims=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+ assert.equal(claims.length,1);assert.equal(claims[0].calledName,"work");' "$tmp_dir/claims.json"
