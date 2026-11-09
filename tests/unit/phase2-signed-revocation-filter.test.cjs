@@ -21,6 +21,17 @@ test('signed current checkpoint extending a pinned witness suppresses revoked hi
  assert.equal(s.promotionAuthorized,false);
  assert.equal(s.canAutoRepair,false);
 });
+test('a revoked recommendation cannot return under a new ID with the same content digest',()=>{
+ const s=fixture();
+ const alias={id:'repair-alias-003',digest:s.entries[0].digest};
+ const out=filterSignedRevokedSuggestions({...s,entries:[...s.entries,alias],
+  suggestions:[alias,s.entries[1]]});
+ assert.equal(out.status,'SIGNED_REVOCATIONS_SUPPRESS_QUARANTINED_HINTS');
+ assert.deepEqual(out.suppressedIds,['repair-alias-003']);
+ assert.deepEqual(out.nonRevokedQuarantinedIds,['repair-second-002']);
+ assert.equal(out.promotionAuthorized,false);
+ assert.equal(out.canAutoRepair,false);
+});
 test('forged signer, digest mismatch and witness rollback reject all suggestions',()=>{
  const s=fixture(),other=crypto.generateKeyPairSync('ed25519');
  for(const bad of [

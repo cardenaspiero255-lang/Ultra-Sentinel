@@ -8,8 +8,15 @@ const {parseLedger,entryDigest,verifiedEntries,searchVerified}=
  require('./ultra_sentinel_memory_ledger.cjs');
 const {inspectLocalRevocations}=require('./memory-local-revocation-journal.cjs');
 const {PersistentSignedRevocationStore}=require('./memory-signed-checkpoint.cjs');
+const {createHash}=require('node:crypto');
 const MAX_REVOKES=200,ASCII_ID=/^[A-Za-z0-9_-]{6,80}$/;
 function fail(reason){throw Error(reason);}
+// Identity for an exact recommendation without its caller-chosen row ID.
+// The ID-bound entryDigest still authenticates the revoked row in the journal.
+function recommendationDigest(e){
+ return createHash('sha256').update(JSON.stringify([e.type,e.rule,e.domain,
+  e.fixSha,e.testSha,e.evidenceUrl,e.summary,e.advice,e.tests]),'utf8').digest('hex');
+}
 function validateRevocations(raw){
  if(!Array.isArray(raw)||raw.length>MAX_REVOKES)fail('INVALID_UNTRUSTED_REVOCATIONS');
  const set=new Set();
@@ -80,15 +87,26 @@ function inspectPersistedSignedMemoryQuarantine(ledger,{checkpointFile,trustedPu
  const stored=requireWitness===true?
   store.loadWithWitness({entries,trustedPublicKey,witness}):
   store.load({entries,trustedPublicKey});
- const proposal=quarantineMemoryCandidates(ledger,{
+ // Reuse the already validated snapshot. Re-reading caller getters after
+ // signature verification could otherwise replace the checked ledger.
+ const stableLedger={schema:'ultra-sentinel-family-hunter-memory/v1',revision:0,entries:parsed};
+ const proposal=quarantineMemoryCandidates(stableLedger,{
   localRevocationJournal:stored.journal
  });
+ const revokedIds=new Set(stored.revokedIds);
+ const revokedContent=new Set(parsed.filter(e=>revokedIds.has(e.id)).map(recommendationDigest));
+ const contentById=new Map(parsed.map(e=>[e.id,recommendationDigest(e)]));
+ const pending=Object.freeze(proposal.entries.map(e=>
+  e.status==='QUARANTINED'&&revokedContent.has(contentById.get(e.id))?
+   Object.freeze({...e,status:'EXCLUDED_BY_SIGNED_CONTENT_ALIAS'}):e));
+ const excluded=pending.filter(e=>e.status==='EXCLUDED_BY_LOCAL_REVOCATION_JOURNAL'||
+  e.status==='EXCLUDED_BY_SIGNED_CONTENT_ALIAS').length;
  return Object.freeze({
   schema:'ultra-sentinel-persisted-signed-quarantine/v1',
   status:'QUARANTINE_SUPPRESSED_BY_CONFIGURED_SIGNER_NO_OWNER_AUTH',
-  total:proposal.total,quarantined:proposal.quarantined,
-  excludedBySignedCheckpoint:proposal.excludedByLocalJournal,
-  entries:proposal.entries,headHash:stored.headHash,
+  total:proposal.total,quarantined:pending.filter(e=>e.status==='QUARANTINED').length,
+  excludedBySignedCheckpoint:excluded,
+  entries:pending,headHash:stored.headHash,
   signatureValidForConfiguredKey:stored.signatureValidForConfiguredKey,
   ...(requireWitness===true?{
    witnessSignatureValidForConfiguredKey:stored.witnessSignatureValidForConfiguredKey,

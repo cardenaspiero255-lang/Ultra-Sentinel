@@ -10,6 +10,9 @@ on:
       - tests/unit/phase2-generic-jvm-judge.test.cjs
       - packages/memory/phase2-signed-revocation-filter.cjs
       - tests/unit/phase2-signed-revocation-filter.test.cjs
+      - packages/memory/ultra_sentinel_memory_quarantine.cjs
+      - tests/unit/memory-signed-quarantine-integration.test.cjs
+      - tests/unit/memory-witness-quarantine-integration.test.cjs
       - tests/unit/phase2-cross-oracle-trigger.test.cjs
       - .github/workflows/phase2-control-plane-coverage.yml
       - packages/family-hunter/blind-elapsed-window.cjs

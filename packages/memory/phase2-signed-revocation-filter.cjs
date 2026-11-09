@@ -41,8 +41,12 @@ function filterSignedRevokedSuggestions(input){
   if(state.status!=='CURRENT_REVOCATIONS_EXTEND_PINNED_WITNESS'||
     state.witnessSignatureValidForConfiguredKey!==true)invalid();
   const revoked=new Set(state.revokedIds);
+  // IDs can change while the signed, revoked content digest stays identical.
+  // Keep every alias of that exact digest quarantined and suppressed too.
+  const revokedDigests=new Set(state.revokedIds.map(id=>entries.get(id)));
   const suppressed=[],nonRevoked=[];
-  for(const id of suggestions.keys())(revoked.has(id)?suppressed:nonRevoked).push(id);
+  for(const [id,digest] of suggestions)
+   (revoked.has(id)||revokedDigests.has(digest)?suppressed:nonRevoked).push(id);
   return Object.freeze({status:'SIGNED_REVOCATIONS_SUPPRESS_QUARANTINED_HINTS',
    suppressedIds:Object.freeze(suppressed),nonRevokedQuarantinedIds:Object.freeze(nonRevoked),
    evidenceHeadHash:state.headHash,witnessEventCount:state.witnessEventCount,
