@@ -4,8 +4,8 @@ const fs=require('node:fs'),path=require('node:path');
 const {blobSha}=require('../../packages/investigation/novel-kotlin-hypotheses.cjs');
 const {scanAndDraftAnchoredRegexCase}=
  require('../../packages/investigation/external-kotlin-anchored-regex-case.cjs');
-const {drillOneSourceKotlinSandbox}=
- require('../../packages/recovery/two-source-kotlin-sandbox.cjs');
+const {judgeExternalKotlinOriginalBytes}=
+ require('../../packages/recovery/external-kotlin-original-byte-judge.cjs');
 const repo='iamkurtgoz/ECommerceAndroidCompose';
 const commit='57f7a95021a125e0cdae4924c32891f6b70b0c5a';
 const filename='domain/src/main/java/com/iamkurtgoz/domain/util/Validator.kt';
@@ -37,11 +37,12 @@ test('Hunter finds three anchored substring validations and Fixer drafts one bou
 test('candidate and unsafe control are each Git-Judged and rolled back in disposable sandbox',()=>{
  const r=scanAndDraftAnchoredRegexCase(input());
  for(const after of [r.candidateSource,r.unsafeSource]){
-  const judged=drillOneSourceKotlinSandbox({file:{path:filename,
+  const judged=judgeExternalKotlinOriginalBytes({file:{path:filename,
    before:source,after,beforeBlobSha:originalBlobSha,afterBlobSha:blobSha(after)}});
-  assert.equal(judged.status,'ONE_SOURCE_SANDBOX_JUDGE_AND_ROLLBACK_VERIFIED');
+  assert.equal(judged.status,'EXTERNAL_ORIGINAL_BYTES_LOCAL_JUDGE_ROLLBACK_VERIFIED');
   assert.equal(judged.exactTreeRollbackVerified,true);
   assert.equal(judged.originalOracleVerifiedByThisFunction,false);
+  assert.equal(judged.originalBlobSha,originalBlobSha);
   assert.equal(judged.remoteWrites,false);
  }
 });
