@@ -53,3 +53,14 @@ test('input is bounded to 12 files and 4096 exhaustive combinations',()=>{
  assert.match(adjudicateFactorialCausalHypotheses({...s,files:thirteen}).status,/^BLOCKED_/);
  assert.match(adjudicateFactorialCausalHypotheses({...s,expectedHeadSha:'not-a-sha'}).status,/^BLOCKED_/);
 });
+
+test('nested blob hashes and relation endpoints must be primitive before serialization',()=>{
+ let effects=0;
+ const forgedSha={toString(){effects++;return 'a'.repeat(40);}};
+ const s=sample();
+ const maliciousFile={...s,files:s.files.map((row,i)=>i===0?{...row,blobSha:forgedSha}:row)};
+ assert.match(adjudicateFactorialCausalHypotheses(maliciousFile).status,/^BLOCKED_/);
+ const maliciousEdge={...s,relations:s.relations.map((row,i)=>i===0?{...row,from:{toJSON(){effects++;return paths[0];}}}:row)};
+ assert.match(adjudicateFactorialCausalHypotheses(maliciousEdge).status,/^BLOCKED_/);
+ assert.equal(effects,0);
+});
