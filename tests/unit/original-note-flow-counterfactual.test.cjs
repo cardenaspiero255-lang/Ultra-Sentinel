@@ -50,6 +50,7 @@ test('crossed outcomes, extra authority and hostile getters fail closed',()=>{
  ])assert.match(assessOriginalNoteFlowCounterfactual(data).status,/^BLOCKED_/);
  let invoked=0;const evil=()=>{invoked++;throw Error('UNTRUSTED_EFFECT');};
  const input=pair();
+ input.candidate={...input.candidate}; // the sample fixture itself is frozen
  Object.defineProperty(input.candidate,'stdout',{enumerable:true,get:evil});
  assert.match(assessOriginalNoteFlowCounterfactual(input).status,/^BLOCKED_/);
  const proxy=new Proxy(pair(),{get:evil,getPrototypeOf:evil,ownKeys:evil});
