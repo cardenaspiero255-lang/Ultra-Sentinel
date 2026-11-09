@@ -5,6 +5,8 @@ on:
       - packages/quality-gates/phase2-causal-factorial.cjs
       - tests/unit/phase2-causal-factorial.test.cjs
       - packages/recovery/phase2-generic-jvm-judge.cjs
+      - packages/recovery/phase2-executed-jvm-triplet.cjs
+      - tests/unit/phase2-executed-jvm-triplet.test.cjs
       - tests/unit/phase2-generic-jvm-judge.test.cjs
       - packages/memory/phase2-signed-revocation-filter.cjs
       - tests/unit/phase2-signed-revocation-filter.test.cjs

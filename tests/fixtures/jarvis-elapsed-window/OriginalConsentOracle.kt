@@ -21,6 +21,7 @@ fun main() {
         kotlin.system.exitProcess(1)
     }
     println("benign_preview_accepted=PASS")
+    println("BENIGN_PREVIEW_PASS")
 
     performed.clear()
     now = 5000L
@@ -54,4 +55,5 @@ fun main() {
     }
     println("stop_revokes_consent=PASS")
     println("INDEPENDENT_CONSENT_ORACLE_PASS")
+    println("CONSENT_BOUNDARY_ORACLE_PASS")
 }

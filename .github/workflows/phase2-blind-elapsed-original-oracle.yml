@@ -5,6 +5,8 @@ on:
       - packages/quality-gates/phase2-causal-factorial.cjs
       - tests/unit/phase2-causal-factorial.test.cjs
       - packages/recovery/phase2-generic-jvm-judge.cjs
+      - packages/recovery/phase2-executed-jvm-triplet.cjs
+      - tests/unit/phase2-executed-jvm-triplet.test.cjs
       - tests/unit/phase2-generic-jvm-judge.test.cjs
       - packages/memory/phase2-signed-revocation-filter.cjs
       - tests/unit/phase2-signed-revocation-filter.test.cjs
@@ -53,6 +55,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Require 90 percent executed JVM bridge coverage
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/recovery/phase2-executed-jvm-triplet.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-executed-jvm-triplet.test.cjs
       - name: Fetch and authenticate Kotlin 2.0.21
         shell: bash
         env:
@@ -112,6 +121,7 @@ jobs:
             exit 1
           fi
           grep -Fxq 'blind_source_scan=PASS' "$RUNNER_TEMP/blind-original-kotlin.log"
+          grep -Fxq 'executed_generic_jvm_judge=PASS' "$RUNNER_TEMP/blind-original-kotlin.log"
           grep -Fxq 'blind_source_count=66' "$RUNNER_TEMP/blind-original-kotlin.log"
           grep -Fxq 'blind_discovery_then_scoped_fixer=PASS (no verified repair yet)' "$RUNNER_TEMP/blind-original-kotlin.log"
           grep -Fq '"originalRed":true' "$RUNNER_TEMP/blind-original-kotlin.log"

@@ -137,6 +137,28 @@ try{
   independentJvmOracleAccepted:oracleAccepted,ownerAuthorizationGranted:false,
   remoteWrites:false,mergeAllowed:false}));
  if(!oracleAccepted)throw Error('INDEPENDENT_ORIGINAL_ORACLE_VETO');
+ const executed=require(path.join(sentinel,'packages/recovery/phase2-executed-jvm-triplet.cjs'))
+  .executeOriginalJvmTriplet({
+    directory:work,mainClass:'com.cardenaspiero255.jarvis.core.OriginalConsentOracleKt',
+    caseId:'SIGNED_ELAPSED_WINDOW_UNDERFLOW',
+    sourceHeadSha:baseline,originalBlobSha:before,candidateBlobSha:after,
+    markers:{originalFailure:'STALE_PREVIEW_AUTHORIZED',
+      green:['BENIGN_PREVIEW_PASS','CONSENT_BOUNDARY_ORACLE_PASS'],
+      unsafeFailure:'BENIGN_PREVIEW_REGRESSION'}
+  });
+ if(executed.status!=='LOCAL_JVM_TRIPLET_EXECUTED_AND_CLASSIFIED'||
+   executed.jvmProcessesExecutedLocally!==true||
+   executed.originalSourceAuthenticated!==false||
+   executed.compilerProvenanceAuthenticated!==false||
+   executed.gitJudgeExecuted!==false||
+   executed.remoteWrites!==false||executed.mergeAllowed!==false)
+   throw Error('EXECUTED_GENERIC_JVM_JUDGE_VETO');
+ console.log('executed_generic_jvm_judge=PASS');
+ console.log(JSON.stringify({status:executed.status,caseId:executed.caseId,
+   artifactsSha256:executed.artifactsSha256,
+   originalSourceAuthenticatedByBridge:false,
+   compilerProvenanceAuthenticatedByBridge:false,gitPolicyCheckedSeparately:true,
+   ownerAuthorizationGranted:false,remoteWrites:false,mergeAllowed:false}));
  const patchBytes=Buffer.byteLength(git('diff','--binary',baseline,head));
  const plan={branch:'sandbox/blind-elapsed-window',expectedHeadSha:baseline,
   changes:[{path:rel,beforeBlobSha:before,afterBlobSha:after,patchBytes}]};
