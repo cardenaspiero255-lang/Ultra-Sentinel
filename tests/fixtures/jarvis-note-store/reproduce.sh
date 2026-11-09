@@ -67,6 +67,9 @@ java -m jdk.compiler/com.sun.tools.javac.Main -d "$work/junit" "${junit[@]}"
 "$kotlin_root/bin/kotlinc" "${kotlin[@]}" -include-runtime -d "$work/original.jar"
 "$kotlin_root/bin/kotlinc" -cp "$work/stubs:$work/original.jar" \
  "$source_root/$base/PrivateConversationStore.kt" "$evidence_root/NoteStoreOracle.kt" -d "$work/oracle.jar"
+"$kotlin_root/bin/kotlinc" -cp "$work/stubs:$work/original.jar" \
+ "$source_root/$base/PrivateConversationStore.kt" "$evidence_root/CrossFileNoteFlowOracle.kt" \
+ -d "$work/flow.jar"
 node - "$source_root/$base/core/LocalDialogue.kt" "$work/LocalDialogue.kt" "$sentinel_root" <<'JS'
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
@@ -139,6 +142,25 @@ const runJar=jar=>{
   typeof p.stdout!=='string'||typeof p.stderr!=='string')throw Error('JVM_ORACLE_EXECUTION_FAILED');
  return {exitCode:p.status,stdout:p.stdout,stderr:p.stderr};
 };
+// Observe the same pinned original JARVIS source trio with an independent
+// synthetic-note data-flow probe. This distinguishes three-module behavior
+// from product-contract correctness; process transcripts alone have no trust.
+const flowProcess=(jar,mode)=>{
+ const cp=[path.join(work,'flow.jar'),path.join(work,'stubs'),
+  path.join(work,jar),path.join(work,'original.jar')].join(':');
+ const p=spawnSync('java',['-XX:-UsePerfData','-cp',cp,'CrossFileNoteFlowOracleKt',mode],{
+  cwd:directory,encoding:'utf8',timeout:15000,maxBuffer:65536,
+  env:{PATH:process.env.PATH,HOME:directory,JAVA_HOME:process.env.JAVA_HOME}
+ });
+ if(p.error||p.signal||!Number.isSafeInteger(p.status)||
+  typeof p.stdout!=='string'||typeof p.stderr!=='string')throw Error('NOTE_FLOW_JVM_EXECUTION_FAILED');
+ return {exitCode:p.status,stdout:p.stdout,stderr:p.stderr};
+};
+const flow=require(path.join(sentinel,'packages/recovery/original-note-flow-counterfactual.cjs'))
+ .assessOriginalNoteFlowCounterfactual({
+  original:flowProcess('original.jar','original'),
+  candidate:flowProcess('candidate.jar','candidate')
+ });
 const triplet=require(path.join(sentinel,'packages/recovery/original-jvm-case-triplet.cjs'))
  .assessOriginalJvmTriplet({caseId:'JARVIS_TRANSIENT_NOTE_HISTORY',
   original:runJar('original.jar'),candidate:runJar('candidate.jar'),
@@ -148,13 +170,16 @@ const judge=require(path.join(sentinel,'packages/recovery/repair-judge.cjs'))
 // Always attempt rollback for this disposable candidate, including a veto.
 const rollback=require(path.join(sentinel,'packages/recovery/sandbox-rollback.cjs'))
  .rollbackSandbox({directory,baselineHeadSha,repairHeadSha});
-if(triplet.status!=='LOCAL_JVM_FAMILY_TRIPLET_ACCEPTED'||
+if(flow.status!=='LOCAL_ORIGINAL_NOTE_FLOW_COUNTERFACTUAL_OBSERVED'||
+ !flow.originalNotePersisted||!flow.candidateNoteSuppressed||
+ flow.causalDefectProven!==false||flow.productContractConfirmed!==false||
+ triplet.status!=='LOCAL_JVM_FAMILY_TRIPLET_ACCEPTED'||
  !judge.approved||judge.status!=='APPROVED_LOCAL_POLICY_ONLY'||
  rollback.status!=='ROLLBACK_VERIFIED'||rollback.restoredTree!==expectedTree||
  git('status','--porcelain')!=='')throw Error('JOINT_FUNCTIONAL_POLICY_ROLLBACK_VETO');
 console.log(JSON.stringify({status:'RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED',
  baselineHeadSha,repairHeadSha,beforeBlobSha,afterBlobSha,expectedTree,
- triplet,judge,rollback,cleanAfterRollback:true,
+ triplet,flow,judge,rollback,cleanAfterRollback:true,
  functionalOracleIndependentlyIntegrated:true,sourceProvenanceBeyondPinnedRunner:false,
  productContractConfirmed:false,causalityVerified:false,
  ownerAuthorizationGranted:false,remoteWrites:false,mergeAllowed:false},null,2));
