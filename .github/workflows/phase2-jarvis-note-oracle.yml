@@ -5,6 +5,13 @@ on:
       - tests/fixtures/jarvis-note-store/**
       - tests/unit/original-note-flow-counterfactual.test.cjs
       - tests/fixtures/jarvis-bounded-functional/**
+      - tests/fixtures/jarvis-voice-metamorphic/**
+      - scripts/phase2-voice-metamorphic-prepare.cjs
+      - scripts/phase2-voice-metamorphic-verify.cjs
+      - packages/family-hunter/voice-boundary-metamorphic-hunter.cjs
+      - packages/investigation/voice-policy-normalization-draft.cjs
+      - tests/unit/voice-boundary-metamorphic-hunter.test.cjs
+      - tests/unit/voice-policy-normalization-draft.test.cjs
       - packages/recovery/original-jvm-case-triplet.cjs
       - tests/unit/original-jvm-case-triplet.test.cjs
       - packages/family-hunter/ephemeral-kotlin-history-hunter.cjs
@@ -123,6 +130,14 @@ jobs:
           grep -Fxq 'hunter_advisory_local_note_persistence=FOUND_UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'hunter_multiple_kotlin_families=UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'bounded_second_family_independent_jvm=RED_GREEN_VETO' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'hunter_source_derived_metamorphic_probes=GENERATED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'fixer_unregistered_variant_candidate=GENERATED_UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'voice_unregistered_original_RED=PASS' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'voice_unregistered_candidate_GREEN=PASS' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'voice_unregistered_wrong_candidate_VETO=PASS' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"status": "LOCAL_SOURCE_DERIVED_VOICE_VARIANT_JVM_JUDGE_ROLLBACK"' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"exactRollbackVerified": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"generalizedAutonomousFixerVerified": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"status": "BOUNDED_SECOND_FAMILY_PINNED_JVM_LOCAL_JUDGE_ROLLBACK"' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"exactTreeRollbackVerified": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"generalizationProven": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
