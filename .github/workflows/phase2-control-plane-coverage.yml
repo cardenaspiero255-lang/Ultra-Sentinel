@@ -54,3 +54,7 @@ jobs:
             --test-coverage-include=packages/memory/phase2-signed-revocation-filter.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-signed-revocation-filter.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/recovery/phase2-executed-jvm-triplet.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-executed-jvm-triplet.test.cjs
