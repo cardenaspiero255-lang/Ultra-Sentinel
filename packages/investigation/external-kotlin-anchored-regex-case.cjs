@@ -62,7 +62,7 @@ function scanAndDraftAnchoredRegexCase(options={}){
    revised[index]=updated;
   }
   const candidateSource=revised.join('\n');
-  if(candidateSource===x.source||!candidateSource.endsWith('\n'))
+  if(candidateSource===x.source||candidateSource.endsWith('\n')!==x.source.endsWith('\n'))
    return outcome('BLOCKED_UNCHANGED_CANDIDATE');
   const unsafeSource=candidateSource.replace('return regex.matches(value)','return false');
   if(unsafeSource===candidateSource||unsafeSource===x.source)
