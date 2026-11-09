@@ -20,9 +20,19 @@ patch remains as a research reference. A deliberately incorrect candidate
 erases the entire chat history and must fail a benign control. Five original JARVIS test methods are run
 through a small JUnit API shim, not through the official JUnit runner.
 
-The existing Git policy Judge and exact tree rollback are then exercised in a
-new disposable local clone. The functional oracle is not wired into that Judge;
-Hunter did not discover this case and Fixer did not create the candidate.
+The isolated runner now performs a **bounded advisory Hunter scan** across
+all eligible original Kotlin core files (not only a named suspect file). It
+recognizes a lexical note-result-to-history-snapshot path. This is a
+low-confidence source-to-sink hypothesis, not a compiler-resolved path,
+independent causal discovery, or confirmation of the privacy contract.
+
+The same local runner invokes the original, generated candidate and deliberately
+incorrect candidate JVM oracles itself; a fail-closed three-outcome decision is
+combined with the existing Git policy Judge and exact tree rollback before
+emitting a joint local verdict. Unlike earlier versions, the functional oracle
+is now integrated at the **runner level**, not as an authenticated general Judge
+API. The independent historical evidence, any production authorization and
+application deployment remain entirely outside this local result.
 The candidate and this test do not authorize any remote or production repair.
 The reproduction must run only on trusted original source in an appropriately
 isolated environment.
