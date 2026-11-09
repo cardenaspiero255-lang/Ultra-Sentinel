@@ -3,10 +3,12 @@
 # Runs only inside a previously authenticated networkless Bubblewrap/AppArmor CI
 # boundary, over a pinned read-only original JARVIS checkout. No production writes.
 set -euo pipefail
-[ "$#" -eq 3 ] || { echo 'Usage: reproduce.sh JARVIS KOTLINC_ROOT SENTINEL' >&2; exit 2; }
+[ "$#" -eq 4 ] || { echo 'Usage: reproduce.sh JARVIS KOTLINC_ROOT SENTINEL SEALED_DISCOVERY' >&2; exit 2; }
 original=$(realpath "$1")
 kotlin=$(realpath "$2")
 sentinel=$(realpath "$3")
+discovery=$(realpath "$4")
+[ -f "$discovery" ] && [ ! -L "$discovery" ]
 evidence="$sentinel/tests/fixtures/jarvis-elapsed-window"
 export GIT_NO_REPLACE_OBJECTS=1 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0
 head=747c14b5d97750a7b2736968e2d516f02448558d
@@ -22,35 +24,9 @@ umask 077
 work=$(mktemp -d /tmp/sentinel-blind-consent-XXXXXXXX)
 trap 'rm -rf "$work"' EXIT
 mkdir "$work/candidate" "$work/wrong"
-# Crucially: this first-pass Hunter sees the entire pinned core Kotlin inventory.
-# It receives neither the expected target filename nor rule nor patch/oracle.
-node - "$original" "$sentinel" "$head" "$work/discovery.json" <<'JS'
-'use strict';
-const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
-const [root,sentinel,head,destination]=process.argv.slice(2);
-const {scanBlindElapsedWindows}=require(path.join(sentinel,
- 'packages/family-hunter/blind-elapsed-window.cjs'));
-const folder='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core';
-const files=fs.readdirSync(path.join(root,folder)).filter(name=>name.endsWith('.kt')).sort().map(name=>{
- const rel=folder+'/'+name,source=fs.readFileSync(path.join(root,rel),'utf8');
- const env={PATH:process.env.PATH,HOME:'/tmp',GIT_NO_REPLACE_OBJECTS:'1',
-  GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_TERMINAL_PROMPT:'0'};
- const expectedBlobSha=execFileSync('git',['-C',root,'-c','core.hooksPath=/dev/null','rev-parse','HEAD:'+rel],
-  {encoding:'utf8',env,timeout:10000}).trim();
- return {path:rel,source,expectedBlobSha};
-});
-if(files.length!==66)throw Error('ORIGINAL_INVENTORY_CHANGED');
-const result=scanBlindElapsedWindows({expectedCommitSha:head,files});
-if(result.status!=='UNVERIFIED_ELAPSED_WINDOW_HYPOTHESES'||
- result.filesScanned!==66||result.findings.length<1||
- result.originalFunctionalOracleVerified!==false||result.remoteWrites!==false||
- result.mergeAllowed!==false||result.sourceRepositoryAuthenticated!==false)
- throw Error('BLIND_SOURCE_DISCOVERY_FAILED');
-fs.writeFileSync(destination,JSON.stringify(result),{encoding:'utf8',flag:'wx',mode:0o600});
-console.log('blind_source_scan=PASS');
-console.log('blind_source_count='+result.filesScanned);
-console.log('blind_unverified_findings='+result.findings.length);
-JS
+# Discovery completed and its report was sealed before this oracle namespace
+# was mounted. This phase does not run Hunter or choose its initial input.
+cp -- "$discovery" "$work/discovery.json"
 # The verifier knows the held-out contract and target only AFTER Hunter's
 # first-pass report has been sealed. No mutation of the original JARVIS tree.
 node - "$original" "$sentinel" "$head" "$rel" "$blob" "$work/discovery.json" "$work/candidate/SafeAutomationEngine.kt" <<'JS'
@@ -60,6 +36,11 @@ const [root,sentinel,head,rel,blob,reportPath,candidatePath]=process.argv.slice(
 const {sha}=require(path.join(sentinel,'packages/family-hunter/blind-elapsed-window.cjs'));
 const {draftElapsedWindowCandidate}=require(path.join(sentinel,'packages/recovery/elapsed-window-candidate.cjs'));
 const report=JSON.parse(fs.readFileSync(reportPath,'utf8'));
+if(report.status!=='UNVERIFIED_ELAPSED_WINDOW_HYPOTHESES'||
+ report.filesScanned!==66||!Array.isArray(report.findings)||report.findings.length<1||
+ report.originalFunctionalOracleVerified!==false||report.remoteWrites!==false||
+ report.mergeAllowed!==false||report.sourceRepositoryAuthenticated!==false)
+ throw Error('BLIND_SOURCE_DISCOVERY_FAILED');
 const finding=report.findings.filter(f=>f.path===rel&&f.rule==='SIGNED_ELAPSED_WINDOW_UNDERFLOW');
 if(finding.length!==1)throw Error('HELD_OUT_HYPOTHESIS_NOT_DISCOVERED');
 const source=fs.readFileSync(path.join(root,rel),'utf8');
