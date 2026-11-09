@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - tests/fixtures/jarvis-note-store/**
+      - tests/fixtures/jarvis-bounded-functional/**
+      - packages/recovery/original-jvm-case-triplet.cjs
+      - tests/unit/original-jvm-case-triplet.test.cjs
       - packages/family-hunter/ephemeral-kotlin-history-hunter.cjs
       - packages/family-hunter/combined-kotlin-family-advisories.cjs
       - tests/unit/combined-kotlin-family-advisories.test.cjs
@@ -37,6 +40,13 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      - name: Require coverage of shared two-family JVM oracle policy
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/recovery/original-jvm-case-triplet.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/original-jvm-case-triplet.test.cjs
       - name: Set up JDK 21
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
@@ -104,6 +114,10 @@ jobs:
           grep -Fxq 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'hunter_advisory_local_note_persistence=FOUND_UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'hunter_multiple_kotlin_families=UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'bounded_second_family_independent_jvm=RED_GREEN_VETO' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"status": "BOUNDED_SECOND_FAMILY_PINNED_JVM_LOCAL_JUDGE_ROLLBACK"' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"exactTreeRollbackVerified": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"generalizationProven": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"status": "RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"functionalOracleIndependentlyIntegrated": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"productContractConfirmed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"

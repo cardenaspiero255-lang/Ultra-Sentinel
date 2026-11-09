@@ -139,15 +139,16 @@ const runJar=jar=>{
   typeof p.stdout!=='string'||typeof p.stderr!=='string')throw Error('JVM_ORACLE_EXECUTION_FAILED');
  return {exitCode:p.status,stdout:p.stdout,stderr:p.stderr};
 };
-const triplet=require(path.join(sentinel,'packages/recovery/original-jvm-note-triplet.cjs'))
- .assessNoteJvmTriplet({original:runJar('original.jar'),candidate:runJar('candidate.jar'),
+const triplet=require(path.join(sentinel,'packages/recovery/original-jvm-case-triplet.cjs'))
+ .assessOriginalJvmTriplet({caseId:'JARVIS_TRANSIENT_NOTE_HISTORY',
+  original:runJar('original.jar'),candidate:runJar('candidate.jar'),
   unsafe:runJar('wrong.jar')});
 const judge=require(path.join(sentinel,'packages/recovery/repair-judge.cjs'))
  .judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan});
 // Always attempt rollback for this disposable candidate, including a veto.
 const rollback=require(path.join(sentinel,'packages/recovery/sandbox-rollback.cjs'))
  .rollbackSandbox({directory,baselineHeadSha,repairHeadSha});
-if(triplet.status!=='RUNNER_LOCAL_NOTE_ORACLE_TRIPLET_ACCEPTED'||
+if(triplet.status!=='LOCAL_JVM_FAMILY_TRIPLET_ACCEPTED'||
  !judge.approved||judge.status!=='APPROVED_LOCAL_POLICY_ONLY'||
  rollback.status!=='ROLLBACK_VERIFIED'||rollback.restoredTree!==expectedTree||
  git('status','--porcelain')!=='')throw Error('JOINT_FUNCTIONAL_POLICY_ROLLBACK_VETO');
@@ -160,5 +161,9 @@ console.log(JSON.stringify({status:'RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED'
 JS
 [ "$(kgit rev-parse HEAD)" = "$expected" ]
 [ -z "$(kgit status --porcelain)" ]
+# A separate original-source family uses the SAME shared process policy and
+# the same isolated toolchain, but an independent JVM oracle and local Git tree.
+bash "$sentinel_root/tests/fixtures/jarvis-bounded-functional/reproduce.sh" \
+ "$source_root" "$kotlin_root" "$sentinel_root"
 echo 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.'
 echo 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.'
