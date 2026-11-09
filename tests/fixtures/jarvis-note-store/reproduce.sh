@@ -36,8 +36,8 @@ node - "$source_root" "$sentinel_root" "$base" <<'JS'
 // source directory and let the detector identify the candidate file itself.
 const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
 const root=process.argv[2],sentinel=process.argv[3],base=process.argv[4];
-const {scanEphemeralKotlinHistory}=require(
- path.join(sentinel,'packages/family-hunter/ephemeral-kotlin-history-hunter.cjs'));
+const {scanKotlinFamilyAdvisories}=require(
+ path.join(sentinel,'packages/family-hunter/combined-kotlin-family-advisories.cjs'));
 const dir=path.join(root,base,'core'),sources=fs.readdirSync(dir,{withFileTypes:true})
  .filter(x=>x.isFile()&&x.name.endsWith('.kt')).map(x=>{
   const rel=base+'/core/'+x.name,source=fs.readFileSync(path.join(dir,x.name),'utf8');
@@ -47,15 +47,19 @@ const dir=path.join(root,base,'core'),sources=fs.readdirSync(dir,{withFileTypes:
   }).trim();
   return {path:rel,source,expectedBlobSha};
  }).filter(x=>x.source.length>=10&&x.source.endsWith('\n')&&!x.source.includes('\r'));
-const r=scanEphemeralKotlinHistory({expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',
+const r=scanKotlinFamilyAdvisories({expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',
  files:sources});
 const expected=base+'/core/LocalDialogue.kt';
-if(r.status!=='UNVERIFIED_EPHEMERAL_PERSISTENCE_HYPOTHESES'||
+if(r.status!=='MULTIPLE_UNVERIFIED_FAMILIES_REQUIRING_ORACLES'||
  !r.findings.some(f=>f.path===expected&&f.rule==='EPHEMERAL_KNOWLEDGE_REACHES_HISTORY_SNAPSHOT')||
+ !r.findings.some(f=>f.rule==='BOUNDED_READ_ZERO_PROGRESS'&&f.path.endsWith('/BoundedImageInputStream.kt'))||
  r.sourceRepositoryAuthenticated!==false||r.productContractConfirmed!==false||
- r.causalityVerified!==false||r.remoteWrites!==false||r.mergeAllowed!==false)
+ r.generalizationVerified!==false||r.causalityVerified!==false||
+ r.remoteWrites!==false||r.mergeAllowed!==false)
  throw Error('ADVISORY_HUNTER_DISCOVERY_MISSING');
 console.log('hunter_advisory_local_note_persistence=FOUND_UNVERIFIED');
+console.log('hunter_multiple_kotlin_families=UNVERIFIED');
+console.log('hunter_distinct_kotlin_rules='+r.rules.length);
 console.log('hunter_eligible_original_sources='+r.filesScanned);
 JS
 java -m jdk.compiler/com.sun.tools.javac.Main -d "$work/stubs" "${stubs[@]}"
