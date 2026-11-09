@@ -1,0 +1,32 @@
+--- a/LocalDialogue.kt
++++ b/LocalDialogue.kt
+@@ -12 +12,3 @@
+-    private val turns = mutableListOf<String>()
++    private data class Turn(val text: String, val persistent: Boolean)
++    private val turns = mutableListOf<Turn>()
++    private var lastAnswerEphemeral = false
+@@ -82,2 +84,4 @@
+-        turns.add("Tú: $sanitized".take(400))
+-        turns.add("JARVIS: $answer".take(400))
++        val transientAnswer = (importedNote != null && answer == importedNote) ||
++            ((normalized == "repitelo" || normalized == "repite") && lastAnswerEphemeral)
++        turns.add(Turn("Tú: $sanitized".take(400), true))
++        turns.add(Turn("JARVIS: $answer".take(400), !transientAnswer))
+@@ -85,0 +90 @@
++        lastAnswerEphemeral = transientAnswer
+@@ -108 +113 @@
+-    fun history(): List<String> = turns.toList()
++    fun history(): List<String> = turns.map { it.text }
+@@ -116 +121 @@
+-        val lines = turns.takeLast(24).toMutableList()
++        val lines = turns.filter { it.persistent }.map { it.text }.takeLast(24).toMutableList()
+@@ -141 +146 @@
+-                turns.add(bounded)
++                turns.add(Turn(bounded, true))
+@@ -150,2 +155,2 @@
+-        lastAnswer = turns.lastOrNull { it.startsWith("JARVIS: ") }
+-            ?.removePrefix("JARVIS: ")
++        lastAnswer = turns.lastOrNull { it.text.startsWith("JARVIS: ") }
++            ?.text?.removePrefix("JARVIS: ")
+@@ -156,0 +162 @@
++        lastAnswerEphemeral = false

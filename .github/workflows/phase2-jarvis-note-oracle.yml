@@ -1,0 +1,106 @@
+name: Ultra Sentinel — original JARVIS note-persistence JVM experiment
+on:
+  pull_request:
+    paths:
+      - tests/fixtures/jarvis-note-store/**
+      - packages/recovery/repair-judge.cjs
+      - packages/recovery/sandbox-rollback.cjs
+      - packages/recovery/git-sandbox-policy.cjs
+      - packages/investigation/novel-kotlin-path-policy.cjs
+      - .github/workflows/phase2-jarvis-note-oracle.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-jarvis-note-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout verifier without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch and authenticate Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-note"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-note"
+      - name: Checkout pinned original JARVIS without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/JARVIS
+          ref: 747c14b5d97750a7b2736968e2d516f02448558d
+          path: original-jarvis
+          persist-credentials: false
+      - name: Require real Bubblewrap and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Run original-source RED, local candidate, functional veto and exact Git rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-note/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/jarvis-note-store/reproduce.sh \
+            /sentinel/original-jarvis /kotlin /sentinel > "$RUNNER_TEMP/jarvis-note-experiment.log" 2>&1; then
+            tail -80 "$RUNNER_TEMP/jarvis-note-experiment.log" >&2
+            exit 1
+          fi
+          grep -Fx 'original_test_methods_passed=5' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"status": "ROLLBACK_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'Not an Android-device test; Hunter did not independently discover this case; JVM uses Android test doubles.' "$RUNNER_TEMP/jarvis-note-experiment.log"
+      - name: Publish sanitized research log
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-jarvis-note-jvm-experiment
+          path: ${{ runner.temp }}/jarvis-note-experiment.log
+          retention-days: 14
+          if-no-files-found: error
