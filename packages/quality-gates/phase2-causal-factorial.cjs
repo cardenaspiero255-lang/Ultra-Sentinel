@@ -33,12 +33,13 @@ function adjudicateFactorialCausalHypotheses(options){
   if(typeof raw.expectedHeadSha!=='string'||!SHA.test(raw.expectedHeadSha))reject();
   const files=array(raw.files,12,2).map(x=>record(x,['path','blobSha']));
   const names=new Map();
-  for(const f of files){if(!pathOk(f.path)||!SHA.test(f.blobSha)||names.has(f.path))reject();names.set(f.path,f.blobSha);}
+  for(const f of files){if(!pathOk(f.path)||typeof f.blobSha!=='string'||!SHA.test(f.blobSha)||names.has(f.path))reject();names.set(f.path,f.blobSha);}
   const relations=array(raw.relations,256).map(x=>record(x,['from','to','fromBlobSha','toBlobSha']));
   const pairs=new Set();
-  for(const e of relations){const k=JSON.stringify([e.from,e.to]);
-   if(!names.has(e.from)||!names.has(e.to)||e.from===e.to||
-    e.fromBlobSha!==names.get(e.from)||e.toBlobSha!==names.get(e.to)||pairs.has(k))reject();
+  for(const e of relations){
+   if(typeof e.from!=='string'||typeof e.to!=='string'||!names.has(e.from)||!names.has(e.to)||e.from===e.to||
+    e.fromBlobSha!==names.get(e.from)||e.toBlobSha!==names.get(e.to))reject();
+   const k=JSON.stringify([e.from,e.to]);if(pairs.has(k))reject();
    pairs.add(k);
   }
   const count=2**files.length;
