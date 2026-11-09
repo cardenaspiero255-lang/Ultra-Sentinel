@@ -1,0 +1,121 @@
+name: Ultra Sentinel — original GameHub three-source JVM counterfactuals
+on:
+  pull_request:
+    paths:
+      - packages/quality-gates/phase2-telemetry-counterfactuals.cjs
+      - packages/quality-gates/phase2-causal-factorial.cjs
+      - packages/recovery/phase2-executed-jvm-triplet.cjs
+      - packages/recovery/phase2-generic-jvm-judge.cjs
+      - packages/recovery/repair-judge.cjs
+      - packages/recovery/sandbox-rollback.cjs
+      - packages/kotlin-semantic/C2OptionalKotlinSemantic.kt
+      - tests/fixtures/c2-kotlin-semantic/C2EmitSemanticClaim.kt
+      - tests/unit/phase2-telemetry-counterfactuals.test.cjs
+      - tests/unit/phase2-three-source-experiment.test.cjs
+      - tests/fixtures/gamehub-three-source/**
+      - .github/workflows/phase2-three-source-gamehub.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  three-source-original-factorial:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout Sentinel without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require 90 percent lines and branches for interventions
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/phase2-telemetry-counterfactuals.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-telemetry-counterfactuals.test.cjs
+      - name: Verify complete structure and unit suite
+        run: npm run check
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch and authenticate Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-telemetry"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-telemetry"
+      - name: Checkout pinned original GameHub without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: e4ca122422f1cb591d407db3fb21fb00fd78b022
+          path: original-gamehub
+          persist-credentials: false
+      - name: Require Bubblewrap and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Execute pinned three-source JVMs, controls, Judge and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-telemetry/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/gamehub-three-source/reproduce.sh \
+            /sentinel/original-gamehub /kotlin /sentinel > "$RUNNER_TEMP/three-source-factorial.log" 2>&1; then
+            tail -100 "$RUNNER_TEMP/three-source-factorial.log" >&2
+            exit 1
+          fi
+          grep -Fxq 'SEMANTIC_CLAIM_MATCHES_BLOBS_REQUIRES_TRUSTED_RUNNER' "$RUNNER_TEMP/three-source-factorial.log"
+          grep -Fq '"threeFileMinimalInteractionProven":false' "$RUNNER_TEMP/three-source-factorial.log"
+          grep -Fxq 'THREE_SOURCE_EXECUTED_COUNTERFACTUALS_PASS' "$RUNNER_TEMP/three-source-factorial.log"
+      - name: Publish bounded experiment receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-gamehub-three-source-counterfactuals
+          path: ${{ runner.temp }}/three-source-factorial.log
+          retention-days: 14
+          if-no-files-found: warn
