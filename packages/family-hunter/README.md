@@ -26,4 +26,11 @@ esta vía. Un recorrido a nivel de archivos tampoco demuestra que las llamadas
 formen una misma ruta de ejecución; ninguna relación concede autorización de
 reparación.
 
+El verificador histórico de GitHub comprueba mediante HTTPS el workflow y job
+fijados, el digest del artefacto, la identidad del repositorio y los blobs del
+commit original, además de un checkout local limpio. Solo verifica las dos
+llamadas estáticas observadas en el caso GameHub de ese workflow: no acredita
+ejecuciones nuevas, frescura, causalidad ni autorización. Requiere un host
+verificador confiable y la API de GitHub disponible; si faltan, bloquea.
+
 Origen documentado: GameHub PR #177 y #194; ideas adicionales #198 y #200. **No arrastrar el PR #197 ni sus módulos de memoria en esta etapa.** Probar familias RED/GREEN y variantes antes de codificar reparaciones.

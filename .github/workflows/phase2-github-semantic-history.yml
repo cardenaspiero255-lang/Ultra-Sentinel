@@ -1,0 +1,85 @@
+name: Ultra Sentinel — pinned historical Kotlin semantic verification
+on:
+  pull_request:
+    paths:
+      - packages/investigation/github-semantic-history-verifier.cjs
+      - packages/investigation/plain-kotlin-payload.cjs
+      - packages/investigation/novel-kotlin-path-policy.cjs
+      - packages/family-hunter/committed-kotlin-import-graph.cjs
+      - packages/family-hunter/source-import-graph.cjs
+      - packages/family-hunter/dependency-expansion-planner.cjs
+      - packages/recovery/git-sandbox-policy.cjs
+      - scripts/verify-github-semantic-history.cjs
+      - tests/fixtures/phase2-github-semantic-main.zip
+      - tests/unit/github-semantic-history-verifier.test.cjs
+      - tests/unit/github-semantic-history-workflow.test.cjs
+      - tests/integration/github-semantic-history-live.test.cjs
+      - .github/workflows/phase2-github-semantic-history.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify-historical-compiler-evidence:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout verifier without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Checkout pinned original GameHub without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: e4ca122422f1cb591d407db3fb21fb00fd78b022
+          path: original-gamehub
+          persist-credentials: false
+      - name: Prepare isolated source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$(mktemp -d /tmp/semantic-history-XXXXXXXX)"
+          mkdir "$root/source"
+          cp -a "$GITHUB_WORKSPACE/original-gamehub/." "$root/source/"
+          git -C "$root/source" remote remove origin
+          printf 'ULTRA_SENTINEL_SEMANTIC_SOURCE_DIR=%s\n' "$root/source" >> "$GITHUB_ENV"
+      - name: Verify independent evidence against GitHub API and original Git blobs
+        shell: bash
+        env:
+          ULTRA_SENTINEL_GITHUB_READ_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node --test tests/unit/github-semantic-history-verifier.test.cjs \
+            tests/integration/github-semantic-history-live.test.cjs
+          node scripts/verify-github-semantic-history.cjs \
+            "$ULTRA_SENTINEL_SEMANTIC_SOURCE_DIR" \
+            "$GITHUB_WORKSPACE/tests/fixtures/phase2-github-semantic-main.zip" \
+            > "$RUNNER_TEMP/semantic-history-proof.json"
+          jq -e '
+            .status=="PINNED_GITHUB_HISTORICAL_SEMANTIC_OBSERVATION_VERIFIED" and
+            .runId==42565038417 and .runAttempt==1 and
+            .compilerExecutionVerified==true and .symbolResolutionVerified==true and
+            (.verifiedCalls|length)==2 and .freshnessVerified==false and
+            .replayProtectionForNewRuns==false and .causalityVerified==false and
+            .ownerAuthorizationGranted==false and .commitAllowed==false and .mergeAllowed==false
+          ' "$RUNNER_TEMP/semantic-history-proof.json" >/dev/null
+      - name: Publish sanitized historical proof
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-github-historical-semantic-proof
+          path: ${{ runner.temp }}/semantic-history-proof.json
+          retention-days: 14
+          if-no-files-found: error
