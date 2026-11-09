@@ -190,5 +190,7 @@ JS
 # the same isolated toolchain, but an independent JVM oracle and local Git tree.
 bash "$sentinel_root/tests/fixtures/jarvis-bounded-functional/reproduce.sh" \
  "$source_root" "$kotlin_root" "$sentinel_root"
+bash "$sentinel_root/tests/fixtures/jarvis-voice-metamorphic/reproduce.sh" \
+ "$source_root" "$kotlin_root" "$sentinel_root"
 echo 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.'
 echo 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.'
