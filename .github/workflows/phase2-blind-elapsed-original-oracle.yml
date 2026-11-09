@@ -13,8 +13,11 @@ on:
       - tests/unit/phase2-cross-oracle-trigger.test.cjs
       - .github/workflows/phase2-control-plane-coverage.yml
       - packages/family-hunter/blind-elapsed-window.cjs
+      - packages/family-hunter/blind-hunter-worker.cjs
       - packages/recovery/elapsed-window-candidate.cjs
       - tests/unit/blind-elapsed-window.test.cjs
+      - tests/unit/blind-git-inventory.test.cjs
+      - tests/unit/phase2-blind-isolation-boundary.test.cjs
       - tests/fixtures/jarvis-elapsed-window/**
       - .github/workflows/phase2-blind-elapsed-original-oracle.yml
   workflow_dispatch:
@@ -48,6 +51,17 @@ jobs:
             --test-coverage-include=packages/recovery/elapsed-window-candidate.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/blind-elapsed-window.test.cjs
+      - name: Require 90 percent coverage for blind inventory and Hunter worker
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=tests/fixtures/jarvis-elapsed-window/prepare-blind-inventory.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/blind-git-inventory.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/blind-hunter-worker.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/blind-git-inventory.test.cjs
       - name: Verify architecture and complete unit suite
         run: npm run check
       - name: Set up JDK 21
@@ -92,7 +106,31 @@ jobs:
           sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
-      - name: Blind Hunter first, pinned original RED, Fixer GREEN, unsafe VETO, Judge, rollback
+      - name: Require real blind namespace adversarial probe
+        run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
+      - name: Prepare source-only inventory from pinned JARVIS Git objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node tests/fixtures/jarvis-elapsed-window/prepare-blind-inventory.cjs \
+            "$GITHUB_WORKSPACE/original-jarvis" 747c14b5d97750a7b2736968e2d516f02448558d \
+            apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core \
+            "$RUNNER_TEMP/blind-inventory.json"
+          mkdir -m 700 "$RUNNER_TEMP/blind-hunter-output"
+      - name: Run Hunter before exposing the original oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          bash tests/fixtures/jarvis-elapsed-window/run-blind-hunter.sh \
+            "$RUNNER_TEMP/blind-inventory.json" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/blind-elapsed-window.cjs" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/blind-hunter-worker.cjs" \
+            "$RUNNER_TEMP/blind-hunter-output" > "$RUNNER_TEMP/blind-original-kotlin.log" 2>&1
+          chmod 400 "$RUNNER_TEMP/blind-hunter-output/discovery.json"
+          sha256sum "$RUNNER_TEMP/blind-hunter-output/discovery.json" > "$RUNNER_TEMP/blind-discovery.sha256"
+      - name: Pinned original RED, Fixer GREEN, unsafe VETO, Judge and rollback
         shell: bash
         run: |
           set -euo pipefail
@@ -113,13 +151,15 @@ jobs:
             --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
             "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
             --ro-bind "$RUNNER_TEMP/kotlin-blind/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --dir /blind --ro-bind "$RUNNER_TEMP/blind-hunter-output/discovery.json" /blind/discovery.json \
             --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
             /bin/bash /sentinel/tests/fixtures/jarvis-elapsed-window/reproduce.sh \
-            /sentinel/original-jarvis /kotlin /sentinel \
-            > "$RUNNER_TEMP/blind-original-kotlin.log" 2>&1; then
+            /sentinel/original-jarvis /kotlin /sentinel /blind/discovery.json \
+            >> "$RUNNER_TEMP/blind-original-kotlin.log" 2>&1; then
             tail -80 "$RUNNER_TEMP/blind-original-kotlin.log" >&2
             exit 1
           fi
+          sha256sum --check "$RUNNER_TEMP/blind-discovery.sha256"
           grep -Fxq 'blind_source_scan=PASS' "$RUNNER_TEMP/blind-original-kotlin.log"
           grep -Fxq 'executed_generic_jvm_judge=PASS' "$RUNNER_TEMP/blind-original-kotlin.log"
           grep -Fxq 'blind_source_count=66' "$RUNNER_TEMP/blind-original-kotlin.log"
