@@ -105,7 +105,7 @@ jobs:
           grep -Fq '"functionalOracleIndependentlyIntegrated": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"productContractConfirmed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"mergeAllowed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
-          grep -Fxq 'Not an Android-device test; Hunter did not independently discover this case; JVM uses Android test doubles.' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.' "$RUNNER_TEMP/jarvis-note-experiment.log"
       - name: Publish sanitized research log
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
