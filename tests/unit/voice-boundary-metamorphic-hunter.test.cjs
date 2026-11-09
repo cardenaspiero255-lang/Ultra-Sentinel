@@ -68,3 +68,38 @@ test('rejects getters/proxies as input without running effects',()=>{
  assert.match(huntVoiceBoundaryVariants(new Proxy(opts,{get:evil,getPrototypeOf:evil,ownKeys:evil})).status,/^BLOCKED_/);
  assert.equal(effects,0);
 });
+
+test('ambiguous cross-file claims and unrecognized Kotlin guard grammars are inconclusive',()=>{
+ const [p,g]=original('reinicia|restablece');
+ const variants=[
+  [file('Policy.kt',p)],
+  [file('Voice.kt',g)],
+  [file('Policy.kt',p),file('Voice.kt',g),file('SecondGate.kt',g)],
+  [file('Policy.kt',p),file('Voice.kt',g),file('SecondPolicy.kt',p)],
+  [file('Policy.kt',p.replace('val direct = Regex','val passive = Regex')),file('Voice.kt',g)],
+  [file('Policy.kt',p.replace('reinicia|restablece','reinicia|reinicia')),file('Voice.kt',g)],
+  [file('Policy.kt',p.replace('reinicia|restablece','reinicia')),file('Voice.kt',g)]
+ ];
+ for(const files of variants){
+  const r=scan(files);
+  assert.equal(r.status,'NO_CROSS_FILE_VOICE_GUARD_MATCH');
+  assert.equal(r.cases.length,0);
+  assert.equal(r.remoteWrites,false);
+ }
+});
+test('invalid source inventory formats fail closed before interpreting any Kotlin declarations',()=>{
+ const [p,g]=original('reinicia|restablece');
+ const inputs=[
+  {expectedCommitSha:'f',files:[file('Policy.kt',p),file('Voice.kt',g)]},
+  {expectedCommitSha:'a'.repeat(40),files:[file('Policy.kt',p.replace(/\n/g,'\r\n')),file('Voice.kt',g)]},
+  {expectedCommitSha:'a'.repeat(40),files:[{...file('Policy.kt',p),expectedBlobSha:12},file('Voice.kt',g)]},
+  {expectedCommitSha:'a'.repeat(40),files:[{...file('Policy.kt',p),source:p+'\0'},file('Voice.kt',g)]},
+  {expectedCommitSha:'a'.repeat(40),files:[]},
+  {expectedCommitSha:'a'.repeat(40),files:[file('Policy.kt',p),file('Voice.kt',g),null]}
+ ];
+ for(const input of inputs){
+  const r=huntVoiceBoundaryVariants(input);
+  assert.match(r.status,/^BLOCKED_/);
+  assert.equal(r.cases.length,0);
+ }
+});
