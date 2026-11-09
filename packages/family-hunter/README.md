@@ -7,4 +7,13 @@ Depende de contratos y de análisis Core; **no** incluye un motor paralelo. Los 
 - `REVIEW_WITH_SOLUTIONS`: predeterminado, lectura y propuestas;
 - `REPAIR_COMMITS_AUTHORIZED`: requiere verificaciones externas y un escritor separado; NO está activado por esta estructura.
 
+El planificador de dependencias recorre relaciones suministradas por el llamador
+con un presupuesto explícito de archivos y profundidad, sin limitar la profundidad
+a cuatro saltos. Admite hasta 300 archivos visitados y 10.000 relaciones de entrada;
+indica si la exploración quedó incompleta por profundidad o presupuesto. El grafo
+de imports puede vincular los blobs a un commit local aislado, pero los imports son
+dependencias estructurales: no prueban llamadas resueltas, causalidad ni identidad
+del repositorio remoto. El análisis semántico y los oráculos funcionales requieren
+su propia evidencia independiente.
+
 Origen documentado: GameHub PR #177 y #194; ideas adicionales #198 y #200. **No arrastrar el PR #197 ni sus módulos de memoria en esta etapa.** Probar familias RED/GREEN y variantes antes de codificar reparaciones.
