@@ -164,3 +164,19 @@ test('incorrect JVM exit status and escaped baseline artifacts are denied',()=>{
   assert.match(executeOriginalJvmTriplet(valid(dir)).status,/^BLOCKED_/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('mutating the JVM executable snapshot is detected after execution',()=>{
+ const dir=fixture();try{
+  const src=path.join(dir,'Oracle.java'),classes=path.join(dir,'classes');
+  const body='try {'+
+   'java.nio.file.Path p=java.nio.file.Path.of(System.getProperty("java.class.path"));'+
+   'java.nio.file.Files.setPosixFilePermissions(p,java.util.Set.of(java.nio.file.attribute.PosixFilePermission.OWNER_READ,java.nio.file.attribute.PosixFilePermission.OWNER_WRITE));'+
+   'java.nio.file.Files.write(p,new byte[]{80,75,1,2,3,4,5,6});'+
+   '} catch(Exception e){throw new RuntimeException(e);}' +
+   'System.err.println("ORIGINAL_FAIL");System.exit(1);';
+  fs.writeFileSync(src,'package example;public class Oracle {public static void main(String[] args){'+body+'}}');
+  execFileSync('javac',['-d',classes,src],{timeout:15000});
+  execFileSync('jar',['cf',path.join(dir,'original.jar'),'-C',classes,'.'],{timeout:15000});
+  assert.match(executeOriginalJvmTriplet(valid(dir)).status,/^BLOCKED_/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
