@@ -22,6 +22,8 @@ relaciones entre archivos, incluso sin imports explícitos. Verifica todos los
 archivos suministrados antes de aplicar el presupuesto de recorrido. Los nombres,
 las ubicaciones y el origen de las afirmaciones todavía requieren atestación
 independiente del compilador; las llamadas virtuales o externas se rechazan en
-esta vía y ninguna relación concede autorización de reparación.
+esta vía. Un recorrido a nivel de archivos tampoco demuestra que las llamadas
+formen una misma ruta de ejecución; ninguna relación concede autorización de
+reparación.
 
 Origen documentado: GameHub PR #177 y #194; ideas adicionales #198 y #200. **No arrastrar el PR #197 ni sus módulos de memoria en esta etapa.** Probar familias RED/GREEN y variantes antes de codificar reparaciones.

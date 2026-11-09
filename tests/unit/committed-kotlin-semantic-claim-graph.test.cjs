@@ -39,6 +39,7 @@ test('plans eight same-package files from locally bound call claims without atte
   assert.equal(r.externalRepositoryAuthenticated,false);
   assert.equal(r.commitAllowed,false);
   assert.equal(r.mergeAllowed,false);
+  assert.match(r.limitation,/file-level reachability does not establish control flow/i);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
 test('reports file and depth limits instead of silently shortening a claim chain',()=>{

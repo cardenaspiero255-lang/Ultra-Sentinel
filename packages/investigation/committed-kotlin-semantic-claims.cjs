@@ -107,7 +107,7 @@ function planCommittedKotlinCallClaims(options){
    plan,sourceCommitMembershipVerified:true,externalRepositoryAuthenticated:false,
    compilerExecutionVerified:false,symbolResolutionVerified:false,causalityVerified:false,
    originalFunctionalOracleVerified:false,ownerAuthorizationGranted:false,commitAllowed:false,mergeAllowed:false,
-   limitation:'All supplied files (at most 64) are verified before traversal; maxFiles bounds visited files, not source reads. Call and declaration blobs belong to a clean local commit; caller-provided identities and locations remain unverified. This is not an authenticated compiler run, a functional oracle, causal proof, or authority to write.'});
+   limitation:'All supplied files (at most 64) are verified before traversal; maxFiles bounds visited files, not source reads. Call and declaration blobs belong to a clean local commit; caller-provided identities and locations remain unverified. File-level reachability does not establish control flow. This is not an authenticated compiler run, a functional oracle, causal proof, or authority to write.'});
  }catch{throw Error('COMMITTED_KOTLIN_CALL_GRAPH_REJECTED');}
 }
 module.exports=Object.freeze({bindCommittedKotlinSemanticClaims,planCommittedKotlinCallClaims});
