@@ -81,6 +81,8 @@ jobs:
           sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Require the adversarial Bubblewrap namespace probe
+        run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
       - name: Execute pinned three-source JVMs, controls, Judge and rollback
         shell: bash
         run: |
