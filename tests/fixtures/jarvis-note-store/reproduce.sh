@@ -157,4 +157,4 @@ JS
 [ "$(kgit rev-parse HEAD)" = "$expected" ]
 [ -z "$(kgit status --porcelain)" ]
 echo 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.'
-echo 'Not an Android-device test; Hunter did not independently discover this case; JVM uses Android test doubles.'
+echo 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.'
