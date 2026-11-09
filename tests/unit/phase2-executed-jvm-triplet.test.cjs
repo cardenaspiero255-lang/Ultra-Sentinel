@@ -92,3 +92,29 @@ test('strict identity, malformed schema and marker policy all fail closed',()=>{
   ]) assert.match(executeOriginalJvmTriplet(bad).status,/^BLOCKED_/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('additional hostile nested policies, archive substitutions and hardlinks fail closed',()=>{
+ const dir=fixture();try{
+  const plain=valid(dir);
+  for(const green of [
+   [],new Array(2),['BENIGN_CONSENT_PASS','CONSENT_BOUNDARY_ORACLE_PASS','CONSENT_BOUNDARY_ORACLE_PASS'],
+   new Proxy(['BENIGN_CONSENT_PASS','CONSENT_BOUNDARY_ORACLE_PASS'],{}),
+   ['BENIGN_CONSENT_PASS','ORIGINAL_FAIL'],
+   ['BENIGN_CONSENT_PASS','WRONG_FAIL']
+  ]) assert.match(executeOriginalJvmTriplet({...plain,markers:{...markers(),green}}).status,/^BLOCKED_/);
+  for(const bad of [
+   {...plain,mainClass:'Oracle'},
+   {...plain,caseId:'BAD CASE'},
+   {...plain,originalBlobSha:'z'.repeat(40)},
+   {...plain,markers:{...markers(),green:['BENIGN_CONSENT_PASS','NO_ORACLE_MARKER']}},
+   {...plain,markers:{...markers(),originalFailure:'WRONG_FAIL',unsafeFailure:'WRONG_FAIL'}}
+  ])assert.match(executeOriginalJvmTriplet(bad).status,/^BLOCKED_/);
+  const wrong=path.join(dir,'wrong.jar'),backup=path.join(dir,'wrong-copy.jar');
+  fs.renameSync(wrong,backup);
+  fs.linkSync(backup,wrong);
+  assert.match(executeOriginalJvmTriplet(plain).status,/^BLOCKED_/);
+  fs.unlinkSync(wrong);
+  fs.copyFileSync(path.join(dir,'original.jar'),wrong);
+  assert.match(executeOriginalJvmTriplet(plain).status,/^BLOCKED_/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
