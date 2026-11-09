@@ -35,8 +35,30 @@ java -m jdk.compiler/com.sun.tools.javac.Main -d "$work/junit" "${junit[@]}"
 "$kotlin_root/bin/kotlinc" "${kotlin[@]}" -include-runtime -d "$work/original.jar"
 "$kotlin_root/bin/kotlinc" -cp "$work/stubs:$work/original.jar" \
  "$source_root/$base/PrivateConversationStore.kt" "$evidence_root/NoteStoreOracle.kt" -d "$work/oracle.jar"
-cp "$source_root/$base/core/LocalDialogue.kt" "$work/LocalDialogue.kt"
-(cd "$work" && patch --batch -p1 < "$evidence_root/experimental-candidate.patch")
+node - "$source_root/$base/core/LocalDialogue.kt" "$work/LocalDialogue.kt" "$sentinel_root" <<'JS'
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const originalPath=process.argv[2],candidatePath=process.argv[3],sentinel=process.argv[4];
+const {draftPinnedJarvisNoteCandidate}=require(
+ path.join(sentinel,'packages/investigation/jarvis-note-transient-draft.cjs'));
+const source=fs.readFileSync(originalPath,'utf8');
+const draft=draftPinnedJarvisNoteCandidate({
+ expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',
+ file:{
+  path:'apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/LocalDialogue.kt',
+  source,expectedBlobSha:'6e1117c05fe585fc843dddd8143042e7f49238f4'
+ }
+});
+if(draft.status!=='CANDIDATE_REQUIRES_PRODUCT_CONTRACT_AND_INDEPENDENT_JVM_ORACLE'||
+ draft.generatedByGeneralFixer!==false||draft.originalFunctionalOracleVerified!==false||
+ draft.remoteWrites!==false||draft.mergeAllowed!==false)
+ throw Error('PINNED_NOTE_DRAFT_REJECTED');
+const bytes=Buffer.from(draft.candidateSource,'utf8');
+const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+if(sha!==draft.candidateBlobSha)throw Error('CANDIDATE_BLOB_MISMATCH');
+fs.writeFileSync(candidatePath,bytes,{flag:'wx',mode:0o600});
+console.log('pinned_note_candidate_generated=PASS (not generalized; JVM proof required)');
+JS
 "$kotlin_root/bin/kotlinc" -cp "$work/original.jar" "$work/LocalDialogue.kt" -d "$work/candidate.jar"
 python3 - "$work/LocalDialogue.kt" "$work/wrong.kt" <<'PY'
 from pathlib import Path
