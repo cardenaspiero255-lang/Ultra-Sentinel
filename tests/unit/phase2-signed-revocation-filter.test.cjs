@@ -38,3 +38,33 @@ test('getter and proxy inputs remain inert before any ID or digest is read',()=>
  assert.match(filterSignedRevokedSuggestions(new Proxy(s,{ownKeys(){effects++;throw Error('proxy');}})).status,/^BLOCKED_/);
  assert.equal(effects,0);
 });
+
+test('invalid suggestion schemas, duplicate IDs, and unknown entries fail closed',()=>{
+ const s=fixture(),bogus={id:'unknown-repair-003',digest:'e'.repeat(64)};
+ const invalids=[
+  {...s,suggestions:null},
+  {...s,suggestions:[bogus]},
+  {...s,suggestions:[s.entries[0],s.entries[0]]},
+  {...s,suggestions:[{id:'x',digest:'e'.repeat(64)}]},
+  {...s,suggestions:[{id:'known-thing',digest:'NOT_A_DIGEST'}]},
+  {...s,suggestions:[{...s.entries[0],authority:true}]},
+  {...s,suggestions:[null]},
+  {...s,suggestions:new Proxy([s.entries[0]],{})},
+  {...s,suggestions:Array.from({length:201},()=>s.entries[0])},
+  {...s,entries:[s.entries[0],s.entries[0]]},
+  {...s,entries:[]},
+  {...s,trustedPublicKey:null}
+ ];
+ for(const bad of invalids)
+  assert.equal(filterSignedRevokedSuggestions(bad).status,
+   'BLOCKED_UNAUTHENTICATED_REVOCATION_OR_SUGGESTION');
+});
+test('empty candidate list remains read-only and never promotes verified fixes',()=>{
+ const s=filterSignedRevokedSuggestions({...fixture(),suggestions:[]});
+ assert.equal(s.status,'SIGNED_REVOCATIONS_SUPPRESS_QUARANTINED_HINTS');
+ assert.deepEqual(s.suppressedIds,[]);
+ assert.deepEqual(s.nonRevokedQuarantinedIds,[]);
+ assert.equal(s.ownerIdentityAuthenticated,false);
+ assert.equal(s.promotionAuthorized,false);
+ assert.equal(s.remoteWrites,false);
+});
