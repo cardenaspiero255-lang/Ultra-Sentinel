@@ -82,14 +82,17 @@ jobs:
             elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
             else exit 2; fi
           done
-          env -i PATH=/usr/bin:/bin HOME=/tmp \
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
             /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
             --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
             "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
             --ro-bind "$RUNNER_TEMP/kotlin-note/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
             --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
             /bin/bash /sentinel/tests/fixtures/jarvis-note-store/reproduce.sh \
-            /sentinel/original-jarvis /kotlin /sentinel > "$RUNNER_TEMP/jarvis-note-experiment.log" 2>&1
+            /sentinel/original-jarvis /kotlin /sentinel > "$RUNNER_TEMP/jarvis-note-experiment.log" 2>&1; then
+            tail -80 "$RUNNER_TEMP/jarvis-note-experiment.log" >&2
+            exit 1
+          fi
           grep -Fx 'original_test_methods_passed=5' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"status": "ROLLBACK_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.' "$RUNNER_TEMP/jarvis-note-experiment.log"
