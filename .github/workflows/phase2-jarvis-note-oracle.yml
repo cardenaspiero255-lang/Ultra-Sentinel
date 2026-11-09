@@ -4,6 +4,8 @@ on:
     paths:
       - tests/fixtures/jarvis-note-store/**
       - tests/unit/original-note-flow-counterfactual.test.cjs
+      - packages/recovery/original-note-flow-counterfactual.cjs
+      - tests/unit/phase2-note-oracle-trigger.test.cjs
       - tests/fixtures/jarvis-bounded-functional/**
       - packages/recovery/original-jvm-case-triplet.cjs
       - tests/unit/original-jvm-case-triplet.test.cjs
