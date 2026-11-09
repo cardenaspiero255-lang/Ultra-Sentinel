@@ -16,4 +16,12 @@ dependencias estructurales: no prueban llamadas resueltas, causalidad ni identid
 del repositorio remoto. El análisis semántico y los oráculos funcionales requieren
 su propia evidencia independiente.
 
+El planificador de afirmaciones de llamadas puede enlazar hasta 256 afirmaciones
+con los blobs de hasta 64 archivos de un commit local aislado y recorrer sus
+relaciones entre archivos, incluso sin imports explícitos. Verifica todos los
+archivos suministrados antes de aplicar el presupuesto de recorrido. Los nombres,
+las ubicaciones y el origen de las afirmaciones todavía requieren atestación
+independiente del compilador; las llamadas virtuales o externas se rechazan en
+esta vía y ninguna relación concede autorización de reparación.
+
 Origen documentado: GameHub PR #177 y #194; ideas adicionales #198 y #200. **No arrastrar el PR #197 ni sus módulos de memoria en esta etapa.** Probar familias RED/GREEN y variantes antes de codificar reparaciones.

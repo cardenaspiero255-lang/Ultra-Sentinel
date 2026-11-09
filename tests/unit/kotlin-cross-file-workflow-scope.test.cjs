@@ -26,6 +26,8 @@ test('original Kotlin Judge runs when its inputs and transitive local dependenci
   'scripts/c2-pr185-numeric-factorial.sh',
   'scripts/c2-cross-file-kotlin-negative-control.sh',
   'scripts/c2-cross-file-kotlin-bridge.cjs',
+  'scripts/c2-phase2-gamehub-call-claims.sh',
+  'scripts/c2-phase2-gamehub-call-claims.cjs',
   'tests/oracles/c2-run17-battery-abi.kt',
   'tests/oracles/c2-pr185-numeric-factorial-oracle.kt',
   'packages/recovery/cross-file-kotlin-functional-judge.cjs',
@@ -38,10 +40,17 @@ test('original Kotlin Judge runs when its inputs and transitive local dependenci
   'packages/family-hunter/committed-kotlin-import-graph.cjs',
   'tests/fixtures/c2-kotlin-semantic/C2SymbolResolutionOracleTest.kt',
   'tests/unit/committed-kotlin-semantic-claims.test.cjs',
+  'tests/unit/committed-kotlin-semantic-claim-graph.test.cjs',
   'tests/unit/kotlin-cross-file-workflow-scope.test.cjs',
   '.github/workflows/real-kotlin-cross-file-functional-judge.yml'
  ];
  for(const input of paths)assert.ok(patterns.some(p=>matches(p,input)),`workflow does not cover ${input}`);
+});
+test('pinned GameHub call-claim observation runs and archives only its sanitized receipt',()=>{
+ assert.ok(workflow.includes('ref: e4ca122422f1cb591d407db3fb21fb00fd78b022'));
+ assert.ok(workflow.includes('bash scripts/c2-phase2-gamehub-call-claims.sh'));
+ assert.ok(workflow.includes('name: phase2-gamehub-semantic-call-claims'));
+ assert.ok(workflow.includes('phase2-gamehub-call-claims-receipt.json'));
 });
 test('the verified compiler executes the semantic binding fixture before the protected original oracle',()=>{
  const fixture=workflow.indexOf('bash tests/fixtures/c2-kotlin-semantic/run-compiler-integration.sh');
