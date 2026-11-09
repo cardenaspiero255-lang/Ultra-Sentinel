@@ -3,6 +3,12 @@ on:
   pull_request:
     paths:
       - tests/fixtures/jarvis-note-store/**
+      - packages/family-hunter/ephemeral-kotlin-history-hunter.cjs
+      - packages/family-hunter/combined-kotlin-family-advisories.cjs
+      - tests/unit/combined-kotlin-family-advisories.test.cjs
+      - packages/recovery/original-jvm-note-triplet.cjs
+      - tests/unit/ephemeral-kotlin-history-hunter.test.cjs
+      - tests/unit/original-jvm-note-triplet.test.cjs
       - packages/recovery/repair-judge.cjs
       - packages/recovery/sandbox-rollback.cjs
       - packages/recovery/git-sandbox-policy.cjs
@@ -96,7 +102,13 @@ jobs:
           grep -Fx 'original_test_methods_passed=5' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"status": "ROLLBACK_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.' "$RUNNER_TEMP/jarvis-note-experiment.log"
-          grep -Fxq 'Not an Android-device test; Hunter did not independently discover this case; JVM uses Android test doubles.' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'hunter_advisory_local_note_persistence=FOUND_UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'hunter_multiple_kotlin_families=UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"status": "RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"functionalOracleIndependentlyIntegrated": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"productContractConfirmed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"mergeAllowed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.' "$RUNNER_TEMP/jarvis-note-experiment.log"
       - name: Publish sanitized research log
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:

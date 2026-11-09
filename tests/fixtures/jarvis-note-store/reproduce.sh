@@ -30,6 +30,38 @@ mapfile -t stubs < <(find "$evidence_root/android-stubs" -type f -name '*.java' 
 mapfile -t junit < <(find "$evidence_root/junit-shim" -type f -name '*.java' | sort)
 mapfile -t kotlin < <(find "$source_root/$base/core" -maxdepth 1 -type f -name '*.kt' | sort)
 [ "${#kotlin[@]}" -eq 66 ]
+node - "$source_root" "$sentinel_root" "$base" <<'JS'
+'use strict';
+// No suspect filename is supplied to Hunter: scan the eligible original core
+// source directory and let the detector identify the candidate file itself.
+const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
+const root=process.argv[2],sentinel=process.argv[3],base=process.argv[4];
+const {scanKotlinFamilyAdvisories}=require(
+ path.join(sentinel,'packages/family-hunter/combined-kotlin-family-advisories.cjs'));
+const dir=path.join(root,base,'core'),sources=fs.readdirSync(dir,{withFileTypes:true})
+ .filter(x=>x.isFile()&&x.name.endsWith('.kt')).map(x=>{
+  const rel=base+'/core/'+x.name,source=fs.readFileSync(path.join(dir,x.name),'utf8');
+  const expectedBlobSha=execFileSync('git',['-C',root,'rev-parse','HEAD:'+rel],{
+   encoding:'utf8',env:{PATH:process.env.PATH,HOME:root,GIT_NO_REPLACE_OBJECTS:'1',
+    GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'}
+  }).trim();
+  return {path:rel,source,expectedBlobSha};
+ }).filter(x=>x.source.length>=10&&x.source.endsWith('\n')&&!x.source.includes('\r'));
+const r=scanKotlinFamilyAdvisories({expectedCommitSha:'747c14b5d97750a7b2736968e2d516f02448558d',
+ files:sources});
+const expected=base+'/core/LocalDialogue.kt';
+if(r.status!=='MULTIPLE_UNVERIFIED_FAMILIES_REQUIRING_ORACLES'||
+ !r.findings.some(f=>f.path===expected&&f.rule==='EPHEMERAL_KNOWLEDGE_REACHES_HISTORY_SNAPSHOT')||
+ !r.findings.some(f=>f.rule==='BOUNDED_READ_ZERO_PROGRESS'&&f.path.endsWith('/BoundedImageInputStream.kt'))||
+ r.sourceRepositoryAuthenticated!==false||r.productContractConfirmed!==false||
+ r.generalizationVerified!==false||r.causalityVerified!==false||
+ r.remoteWrites!==false||r.mergeAllowed!==false)
+ throw Error('ADVISORY_HUNTER_DISCOVERY_MISSING');
+console.log('hunter_advisory_local_note_persistence=FOUND_UNVERIFIED');
+console.log('hunter_multiple_kotlin_families=UNVERIFIED');
+console.log('hunter_distinct_kotlin_rules='+r.rules.length);
+console.log('hunter_eligible_original_sources='+r.filesScanned);
+JS
 java -m jdk.compiler/com.sun.tools.javac.Main -d "$work/stubs" "${stubs[@]}"
 java -m jdk.compiler/com.sun.tools.javac.Main -d "$work/junit" "${junit[@]}"
 "$kotlin_root/bin/kotlinc" "${kotlin[@]}" -include-runtime -d "$work/original.jar"
@@ -69,13 +101,7 @@ assert src.count(old)==1
 Path(sys.argv[2]).write_text(src.replace(old, '        val lines = mutableListOf<String>()'))
 PY
 "$kotlin_root/bin/kotlinc" -cp "$work/original.jar" "$work/wrong.kt" -d "$work/wrong.jar"
-run_oracle(){ java -XX:-UsePerfData -cp "$work/oracle.jar:$work/stubs:$1:$work/original.jar" NoteStoreOracleKt; }
-if run_oracle "$work/original.jar" >"$work/red.log" 2>&1; then echo 'Original unexpectedly passed' >&2; exit 1; fi
-grep -Fq TEMPORARY_NOTE_EXCERPT_PERSISTED "$work/red.log"
-run_oracle "$work/candidate.jar" >"$work/green.log" 2>&1
-grep -Fxq NOTE_STORE_ORACLE_PASS "$work/green.log"
-if run_oracle "$work/wrong.jar" >"$work/veto.log" 2>&1; then echo 'Incorrect variant unexpectedly passed' >&2; exit 1; fi
-grep -Fq BENIGN_HISTORY_REGRESSION "$work/veto.log"
+# The local Judge runner itself launches all three independent JVM oracles.
 "$kotlin_root/bin/kotlinc" -cp "$work/junit:$work/candidate.jar:$work/original.jar" \
  "$source_root/apps/android/app/src/test/java/com/cardenaspiero255/jarvis/core/PrivateKnowledgePackTest.kt" \
  "$evidence_root/OriginalTestRunner.kt" -d "$work/tests.jar"
@@ -87,11 +113,11 @@ cp "$work/LocalDialogue.kt" "$work/disposable/$base/core/LocalDialogue.kt"
 git -C "$work/disposable" -c core.hooksPath=/dev/null add "$base/core/LocalDialogue.kt"
 git -C "$work/disposable" -c core.hooksPath=/dev/null -c user.name='Sentinel sandbox' \
  -c user.email='sandbox@example.invalid' -c commit.gpgsign=false commit -qm 'sandbox: candidate'
-node - "$work/disposable" "$sentinel_root" <<'JS'
+node - "$work/disposable" "$sentinel_root" "$work" <<'JS'
 'use strict';
-const {execFileSync}=require('node:child_process');
+const {execFileSync,spawnSync}=require('node:child_process');
 const path=require('node:path');
-const directory=process.argv[2],sentinel=process.argv[3];
+const directory=process.argv[2],sentinel=process.argv[3],work=process.argv[4];
 const file='apps/android/app/src/main/java/com/cardenaspiero255/jarvis/core/LocalDialogue.kt';
 const git=(...args)=>execFileSync('git',args,{cwd:directory,encoding:'utf8',env:{PATH:process.env.PATH,HOME:directory,GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'}}).trim();
 const repairHeadSha=git('rev-parse','HEAD'),baselineHeadSha=git('rev-parse','HEAD^');
@@ -99,13 +125,40 @@ const beforeBlobSha=git('rev-parse',baselineHeadSha+':'+file),afterBlobSha=git('
 const expectedTree=git('rev-parse',baselineHeadSha+'^{tree}');
 const patchBytes=Buffer.byteLength(git('diff','--binary',baselineHeadSha,repairHeadSha));
 const plan={branch:'sandbox/note-persistence',expectedHeadSha:baselineHeadSha,changes:[{path:file,beforeBlobSha,afterBlobSha,patchBytes}]};
-const judge=require(path.join(sentinel,'packages/recovery/repair-judge.cjs')).judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan});
-if(!judge.approved||judge.status!=='APPROVED_LOCAL_POLICY_ONLY')throw Error('LOCAL_JUDGE_FAILED');
-const rollback=require(path.join(sentinel,'packages/recovery/sandbox-rollback.cjs')).rollbackSandbox({directory,baselineHeadSha,repairHeadSha});
-if(rollback.status!=='ROLLBACK_VERIFIED'||rollback.restoredTree!==expectedTree||git('status','--porcelain')!=='')throw Error('LOCAL_ROLLBACK_FAILED');
-console.log(JSON.stringify({baselineHeadSha,repairHeadSha,beforeBlobSha,afterBlobSha,expectedTree,judge,rollback,cleanAfterRollback:true,functionalOracleIndependentlyIntegrated:false,remoteWrites:false},null,2));
+// The oracle executes inside the already-isolated CI runner, not via
+// caller-supplied transcript data. The resulting decision gates this SAME
+// disposable candidate commit before a single combined local verdict.
+const runJar=jar=>{
+ const cp=[path.join(work,'oracle.jar'),path.join(work,'stubs'),
+  path.join(work,jar),path.join(work,'original.jar')].join(':');
+ const p=spawnSync('java',['-XX:-UsePerfData','-cp',cp,'NoteStoreOracleKt'],{
+  cwd:directory,encoding:'utf8',timeout:15000,maxBuffer:65536,
+  env:{PATH:process.env.PATH,HOME:directory,JAVA_HOME:process.env.JAVA_HOME}
+ });
+ if(p.error||p.signal||!Number.isSafeInteger(p.status)||
+  typeof p.stdout!=='string'||typeof p.stderr!=='string')throw Error('JVM_ORACLE_EXECUTION_FAILED');
+ return {exitCode:p.status,stdout:p.stdout,stderr:p.stderr};
+};
+const triplet=require(path.join(sentinel,'packages/recovery/original-jvm-note-triplet.cjs'))
+ .assessNoteJvmTriplet({original:runJar('original.jar'),candidate:runJar('candidate.jar'),
+  unsafe:runJar('wrong.jar')});
+const judge=require(path.join(sentinel,'packages/recovery/repair-judge.cjs'))
+ .judgeLocalRepair({directory,baselineHeadSha,repairHeadSha,plan});
+// Always attempt rollback for this disposable candidate, including a veto.
+const rollback=require(path.join(sentinel,'packages/recovery/sandbox-rollback.cjs'))
+ .rollbackSandbox({directory,baselineHeadSha,repairHeadSha});
+if(triplet.status!=='RUNNER_LOCAL_NOTE_ORACLE_TRIPLET_ACCEPTED'||
+ !judge.approved||judge.status!=='APPROVED_LOCAL_POLICY_ONLY'||
+ rollback.status!=='ROLLBACK_VERIFIED'||rollback.restoredTree!==expectedTree||
+ git('status','--porcelain')!=='')throw Error('JOINT_FUNCTIONAL_POLICY_ROLLBACK_VETO');
+console.log(JSON.stringify({status:'RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED',
+ baselineHeadSha,repairHeadSha,beforeBlobSha,afterBlobSha,expectedTree,
+ triplet,judge,rollback,cleanAfterRollback:true,
+ functionalOracleIndependentlyIntegrated:true,sourceProvenanceBeyondPinnedRunner:false,
+ productContractConfirmed:false,causalityVerified:false,
+ ownerAuthorizationGranted:false,remoteWrites:false,mergeAllowed:false},null,2));
 JS
 [ "$(kgit rev-parse HEAD)" = "$expected" ]
 [ -z "$(kgit status --porcelain)" ]
 echo 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.'
-echo 'Not an Android-device test; Hunter did not independently discover this case; JVM uses Android test doubles.'
+echo 'Not an Android-device test; advisory lexical Hunter found a source path, but semantic causality and product contract remain unverified; JVM uses Android test doubles.'
