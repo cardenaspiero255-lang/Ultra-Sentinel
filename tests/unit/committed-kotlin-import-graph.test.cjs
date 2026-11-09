@@ -50,6 +50,18 @@ test('full depth 4 discloses unvisited relationships rather than inventing causa
   assert.equal(x.plan.files.length,5);
  }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
 });
+test('traverses all eight committed fixture blobs when the caller supplies a depth of seven',()=>{
+ const f=fixture(8);try{
+  const x=run(f,{maxDepth:7});
+  assert.equal(x.status,'COMPLETE_WITHIN_SUPPORTED_IMPORTS');
+  assert.deepEqual(x.plan.files.map(y=>y.path),f.paths);
+  assert.equal(x.plan.files.at(-1).depth,7);
+  assert.equal(x.repositoryMembershipVerified,true);
+  assert.equal(x.semanticAnalysisPerformed,false);
+  assert.equal(x.causalityVerified,false);
+  assert.equal(x.externalRepositoryAuthenticated,false);
+ }finally{fs.rmSync(f.directory,{recursive:true,force:true});}
+});
 test('fails closed on stale HEAD, dirty checkout, unknown source and configured remote',()=>{
  const f=fixture();try{
   assert.throws(()=>run(f,{expectedCommitSha:'a'.repeat(40)}),/PINNED_KOTLIN_SOURCE_REJECTED/);

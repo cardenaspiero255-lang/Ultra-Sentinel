@@ -25,11 +25,44 @@ test('cycles and input ordering are deterministic',()=>{
  assert.equal(planDependencyExpansion(a).files.length,3);
 });
 test('rejects unsafe, ambiguous or unbounded input',()=>{
- for(const patch of [{headSha:'main'},{seeds:['../x']},{maxFiles:0},{maxDepth:9},
+ for(const patch of [{headSha:'main'},{seeds:['../x']},{maxFiles:0},{maxDepth:-1},
   {edges:[edge('src/A.kt','/absolute')]},{edges:[{...edge('src/A.kt','src/B.kt'),evidenceSha256:'x'}]},
   {edges:[edge('src/A.kt','src/B.kt'),edge('src/A.kt','src/B.kt')]},
   {seeds:['src/A.kt','src/A.kt']}, {maxFiles:1,seeds:['a','b']}])
   assert.throws(()=>planDependencyExpansion({...input(),...patch}),/INVALID_DEPENDENCY_EXPANSION/);
+});
+test('traverses a 12-file chain without treating structural relations as causal proof',()=>{
+ const paths=Array.from({length:12},(_,i)=>`src/Chain${i}.kt`);
+ const edges=paths.slice(1).map((p,i)=>edge(paths[i],p));
+ const args={headSha:sha,seeds:[paths[0]],edges,maxFiles:12,maxDepth:11};
+ const complete=planDependencyExpansion(args);
+ assert.equal(complete.status,'COMPLETE_WITHIN_SUPPLIED_GRAPH');
+ assert.deepEqual(complete.files.map(f=>f.path),paths);
+ assert.equal(complete.files[11].depth,11);
+ assert.equal(complete.sourceAuthenticated,false);
+ assert.equal(complete.semanticAnalysisPerformed,false);
+ assert.equal(complete.causalityVerified,false);
+ const depthLimited=planDependencyExpansion({...args,maxDepth:7});
+ assert.equal(depthLimited.status,'INCOMPLETE_DEPTH');
+ assert.equal(depthLimited.files.length,8);
+ const nodeLimited=planDependencyExpansion({...args,maxFiles:8});
+ assert.equal(nodeLimited.status,'INCOMPLETE_BUDGET');
+ assert.equal(nodeLimited.files.length,8);
+});
+test('rejects JavaScript accessors and proxies without invoking their effects',()=>{
+ let effects=0;
+ const options=input();
+ Object.defineProperty(options,'headSha',{get(){effects++;return sha;}});
+ assert.throws(()=>planDependencyExpansion(options),/INVALID_DEPENDENCY_EXPANSION/);
+ const hostileEdge=edge('src/A.kt','src/B.kt');
+ Object.defineProperty(hostileEdge,'to',{get(){effects++;return 'src/B.kt';}});
+ assert.throws(()=>planDependencyExpansion({...input(),edges:[hostileEdge]}),/INVALID_DEPENDENCY_EXPANSION/);
+ const hostileSeeds=['src/A.kt'];
+ Object.defineProperty(hostileSeeds,'0',{get(){effects++;return 'src/A.kt';}});
+ assert.throws(()=>planDependencyExpansion({...input(),seeds:hostileSeeds}),/INVALID_DEPENDENCY_EXPANSION/);
+ const proxy=new Proxy(input(),{get(){effects++;throw Error('proxy trap invoked');}});
+ assert.throws(()=>planDependencyExpansion(proxy),/INVALID_DEPENDENCY_EXPANSION/);
+ assert.equal(effects,0);
 });
 test('bounded structural planning handles 4 through 256 related files without claiming execution',()=>{
  for(const size of [4,8,16,32,64,128,256]){
