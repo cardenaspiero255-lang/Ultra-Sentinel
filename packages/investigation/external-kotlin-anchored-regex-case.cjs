@@ -23,6 +23,7 @@ function outcome(status,findings=[],originalBlobSha=null,candidateSource=null,un
   unsafeBlobSha:unsafeSource===null?null:blobSha(unsafeSource),
   findings:Object.freeze(findings.map(f=>Object.freeze(f))),
   originalRemoteRepositoryAuthenticated:false,
+  remoteRepositoryAuthenticated:false,
   originalJVMOracleVerified:false,independentCausalityVerified:false,
   novelDefectProven:false,phaseOneClosed:false,remoteWrites:false,
   mergeAllowed:false,productionReleaseAllowed:false
