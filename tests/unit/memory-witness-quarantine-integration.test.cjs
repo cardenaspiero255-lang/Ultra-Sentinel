@@ -12,7 +12,8 @@ const row=id=>({id,type:'verified_fix',rule:'SPEECH_REENTRANT_RETRY',domain:'voi
  advice:'Use a cancellation bound and exercise all original lifecycle tests',
  tests:['original RED regression','candidate GREEN and benign cases']});
 const ledger={schema:'ultra-sentinel-family-hunter-memory/v1',revision:1,
- entries:[row('voice-fix-001'),row('voice-fix-002')]};
+ entries:[row('voice-fix-001'),
+  {...row('voice-fix-002'),advice:'A separate valid recommendation with a different safe action'}]};
 const entries=parseLedger(ledger).map(e=>({id:e.id,digest:entryDigest(e)}));
 function sign(journal,key){
  const checkpoint=createSignedRevocationCheckpoint({journal});
