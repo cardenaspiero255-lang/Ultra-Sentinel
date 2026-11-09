@@ -11,10 +11,13 @@ and keystore test double and the JVM's AES/GCM implementation. It does not run
 `MainActivity`, an Android emulator or a real Android keystore. The oracle uses
 only a fake canary; it does not read real user notes.
 
-The original must fail the note-persistence check. A hand-written local
-candidate keeps the result visible while excluding it from the persistence
-snapshot; a deliberately incorrect candidate erases the entire chat history
-and must fail a benign control. Five original JARVIS test methods are run
+The original must fail the note-persistence check. A narrow pinned-source
+candidate generator now transforms the exact original Kotlin blob and keeps the
+result visible while excluding it from the persistence snapshot. It replaces
+the hand-applied patch during the JVM experiment, but **does not** demonstrate
+an autonomously discovered defect or a generalized Fixer. The prior manual
+patch remains as a research reference. A deliberately incorrect candidate
+erases the entire chat history and must fail a benign control. Five original JARVIS test methods are run
 through a small JUnit API shim, not through the official JUnit runner.
 
 The existing Git policy Judge and exact tree rollback are then exercised in a
