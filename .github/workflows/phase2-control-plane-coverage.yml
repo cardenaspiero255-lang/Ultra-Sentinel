@@ -1,0 +1,49 @@
+name: Ultra Sentinel — phase 2 control-plane regression coverage
+on:
+  pull_request:
+    paths:
+      - packages/quality-gates/phase2-causal-factorial.cjs
+      - tests/unit/phase2-causal-factorial.test.cjs
+      - packages/recovery/phase2-generic-jvm-judge.cjs
+      - tests/unit/phase2-generic-jvm-judge.test.cjs
+      - packages/memory/phase2-signed-revocation-filter.cjs
+      - tests/unit/phase2-signed-revocation-filter.test.cjs
+      - tests/unit/phase2-cross-oracle-trigger.test.cjs
+      - .github/workflows/phase2-control-plane-coverage.yml
+      - .github/workflows/phase2-jarvis-note-oracle.yml
+      - .github/workflows/phase2-blind-elapsed-original-oracle.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  control-plane-coverage:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR head without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install pinned Node major
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Complete structure and regression suite
+        run: npm run check
+      - name: Require 90 percent coverage across bounded causal, Judge and memory modules
+        run: |
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/phase2-causal-factorial.cjs \
+            --test-coverage-include=packages/recovery/phase2-generic-jvm-judge.cjs \
+            --test-coverage-include=packages/memory/phase2-signed-revocation-filter.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-causal-factorial.test.cjs \
+            tests/unit/phase2-generic-jvm-judge.test.cjs \
+            tests/unit/phase2-signed-revocation-filter.test.cjs
