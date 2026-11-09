@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - tests/fixtures/jarvis-note-store/**
+      - tests/fixtures/jarvis-bounded-functional/**
+      - packages/recovery/original-jvm-case-triplet.cjs
+      - tests/unit/original-jvm-case-triplet.test.cjs
       - packages/family-hunter/ephemeral-kotlin-history-hunter.cjs
       - packages/family-hunter/combined-kotlin-family-advisories.cjs
       - tests/unit/combined-kotlin-family-advisories.test.cjs
@@ -104,6 +107,10 @@ jobs:
           grep -Fxq 'Original RED, local candidate GREEN, wrong candidate vetoed; disposable Git rollback verified.' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'hunter_advisory_local_note_persistence=FOUND_UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fxq 'hunter_multiple_kotlin_families=UNVERIFIED' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fxq 'bounded_second_family_independent_jvm=RED_GREEN_VETO' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"status": "BOUNDED_SECOND_FAMILY_PINNED_JVM_LOCAL_JUDGE_ROLLBACK"' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"exactTreeRollbackVerified": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
+          grep -Fq '"generalizationProven": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"status": "RUNNER_LOCAL_FUNCTIONAL_AND_POLICY_VERIFIED"' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"functionalOracleIndependentlyIntegrated": true' "$RUNNER_TEMP/jarvis-note-experiment.log"
           grep -Fq '"productContractConfirmed": false' "$RUNNER_TEMP/jarvis-note-experiment.log"
