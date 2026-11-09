@@ -22,9 +22,12 @@ through a small JUnit API shim, not through the official JUnit runner.
 
 The isolated runner now performs a **bounded advisory Hunter scan** across
 all eligible original Kotlin core files (not only a named suspect file). It
-recognizes a lexical note-result-to-history-snapshot path. This is a
-low-confidence source-to-sink hypothesis, not a compiler-resolved path,
-independent causal discovery, or confirmation of the privacy contract.
+recognizes a lexical note-result-to-history-snapshot path. A separate existing
+detector can identify the historical bounded-read-progress family in the same
+source inventory. This shows **two source-level advisory families** in the
+original JARVIS commit, not autonomous causal repair or independent functional
+generalization. The note finding remains low confidence and the product privacy
+contract is not established.
 
 The same local runner invokes the original, generated candidate and deliberately
 incorrect candidate JVM oracles itself; a fail-closed three-outcome decision is
