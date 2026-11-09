@@ -39,3 +39,19 @@ application deployment remain entirely outside this local result.
 The candidate and this test do not authorize any remote or production repair.
 The reproduction must run only on trusted original source in an appropriately
 isolated environment.
+
+## Three-module counterfactual observation (experimental)
+
+`CrossFileNoteFlowOracle.kt` executes the original `PrivateKnowledgePack`,
+`LocalDialogue`, and `PrivateConversationStore` Kotlin classes under the
+existing pinned original-JARVIS JVM sandbox. The test observes a synthetic
+note canary at source search, visible dialogue and the encrypted history
+readback, then compares the original with the generated local candidate.
+It also removes note ingestion as an input intervention, preserves ordinary
+chat/repeat, and checks the opt-in storage gate. All three original Git blobs
+are pinned and checked by the trusted runner, not by the transcript classifier.
+
+This is **contrastive behavior evidence**, not an independent determination of
+the product privacy contract, full compiler-resolved causal proof, novel-family
+discovery, Android device validation, an authorization, or completion of Phase 2.
+The transcript classifier explicitly cannot authenticate its own execution.
