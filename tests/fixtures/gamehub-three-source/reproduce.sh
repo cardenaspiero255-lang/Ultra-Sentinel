@@ -3,7 +3,7 @@
 # Three original Kotlin sources participate; the experiment deliberately
 # distinguishes that fact from a three-file minimal causal interaction.
 set -euo pipefail
-[ "$#" -eq 3 ] || { echo 'Usage: reproduce.sh GAMEHUB KOTLINC_ROOT SENTINEL' >&2; exit 2; }
+[ "$#" -eq 4 ] || { echo 'Usage: reproduce.sh GAMEHUB KOTLINC_ROOT SENTINEL SEALED_NUMERIC_REPORT' >&2; exit 2; }
 original=$(realpath "$1")
 kotlin=$(realpath "$2")
 sentinel=$(realpath "$3")
@@ -26,6 +26,8 @@ verify_original(){
  done
 }
 verify_original
+# The blind finding was sealed before this runner can see the Kotlin oracle.
+node "$sentinel/tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs" "$original" "$4" "$head"
 [[ "$("$kotlin/bin/kotlinc" -version 2>&1)" == *'kotlinc-jvm 2.0.21 '* ]]
 umask 077
 work=$(mktemp -d /tmp/sentinel-telemetry-factorial-XXXXXXXX)
