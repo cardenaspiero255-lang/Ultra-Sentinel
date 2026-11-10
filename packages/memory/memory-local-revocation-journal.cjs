@@ -7,6 +7,8 @@
  * these observations to decide any privileged action.
  */
 const {createHash}=require('node:crypto');
+const {types}=require('node:util');
+const {snapshotRecord}=require('../investigation/plain-kotlin-payload.cjs');
 const SCHEMA='ultra-sentinel-local-revocations/v1';
 const SHA=/^[a-f0-9]{40}$/,DIGEST=/^[a-f0-9]{64}$/;
 const ID=/^[A-Za-z0-9_-]{6,80}$/;
@@ -14,17 +16,32 @@ const REASONS=new Set(['REGRESSION_REPRODUCED','SOURCE_MISMATCH',
  'ORACLE_INVALIDATED','OWNER_VETO']);
 const MAX_EVENTS=200,GENESIS='0'.repeat(64);
 function fail(reason='INVALID_REVOCATION_JOURNAL'){throw Error(reason);}
-function plain(value,keys){
- return value!==null&&typeof value==='object'&&!Array.isArray(value)&&
-  Object.getPrototypeOf(value)===Object.prototype&&
-  Object.keys(value).sort().join(',')===keys.slice().sort().join(',');
+function record(value,keys){
+ try{return snapshotRecord(value,keys);}catch{fail();}
+}
+function list(value){
+ if(types.isProxy(value)||!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||
+  value.length>MAX_EVENTS||Reflect.ownKeys(value).length!==value.length+1)fail();
+ const items=[];
+ for(let i=0;i<value.length;i++){
+  const d=Object.getOwnPropertyDescriptor(value,String(i));
+  if(!d||!Object.hasOwn(d,'value'))fail();
+  items.push(d.value);
+ }
+ return items;
+}
+function snapshotJournal(value){
+ const journal=record(value,['schema','anchorSha','headHash','events']);
+ journal.events=list(journal.events).map(ev=>Object.freeze(record(ev,
+  ['seq','id','digest','reason','headSha','prevHash','hash'])));
+ return journal;
 }
 function evidence(entries){
- if(!Array.isArray(entries)||entries.length>200)fail();
  const m=new Map();
- for(const item of entries){
-  if(!plain(item,['id','digest'])||!ID.test(item.id)||
-   !DIGEST.test(item.digest)||m.has(item.id))fail();
+ for(const value of list(entries)){
+  const item=record(value,['id','digest']);
+  if(typeof item.id!=='string'||!ID.test(item.id)||
+   typeof item.digest!=='string'||!DIGEST.test(item.digest)||m.has(item.id))fail();
   m.set(item.id,item.digest);
  }
  return m;
@@ -36,25 +53,23 @@ function hashRecord(journal,event){
  'utf8').digest('hex');
 }
 function createLocalRevocationJournal(anchorSha){
- if(!SHA.test(anchorSha||''))fail();
+ if(typeof anchorSha!=='string'||!SHA.test(anchorSha))fail();
  return Object.freeze({schema:SCHEMA,anchorSha,headHash:GENESIS,
   events:Object.freeze([])});
 }
-function inspectLocalRevocations({journal,entries}={}){
- try{
-  const known=evidence(entries);
-  if(!plain(journal,['schema','anchorSha','headHash','events'])||
-   journal.schema!==SCHEMA||!SHA.test(journal.anchorSha)||
-   !DIGEST.test(journal.headHash)||!Array.isArray(journal.events)||
-   journal.events.length>MAX_EVENTS)fail();
+function inspectSnapshot(journal,known){
+  if(journal.schema!==SCHEMA||typeof journal.anchorSha!=='string'||!SHA.test(journal.anchorSha)||
+   typeof journal.headHash!=='string'||!DIGEST.test(journal.headHash))fail();
   let prev=GENESIS;
   const revoked=[],seen=new Set();
   for(let i=0;i<journal.events.length;i++){
    const ev=journal.events[i];
-   if(!plain(ev,['seq','id','digest','reason','headSha','prevHash','hash'])||
-    ev.seq!==i+1||!ID.test(ev.id)||!DIGEST.test(ev.digest)||
-    !REASONS.has(ev.reason)||!SHA.test(ev.headSha)||
-    !DIGEST.test(ev.prevHash)||!DIGEST.test(ev.hash)||
+   if(ev.seq!==i+1||typeof ev.id!=='string'||!ID.test(ev.id)||
+    typeof ev.digest!=='string'||!DIGEST.test(ev.digest)||
+    typeof ev.reason!=='string'||!REASONS.has(ev.reason)||
+    typeof ev.headSha!=='string'||!SHA.test(ev.headSha)||
+    typeof ev.prevHash!=='string'||!DIGEST.test(ev.prevHash)||
+    typeof ev.hash!=='string'||!DIGEST.test(ev.hash)||
     ev.prevHash!==prev||seen.has(ev.id))fail();
    if(!known.has(ev.id)||known.get(ev.id)!==ev.digest)
     fail('STALE_REVOCATION_EVIDENCE');
@@ -69,15 +84,23 @@ function inspectLocalRevocations({journal,entries}={}){
    productionReleaseAllowed:false,canAutoRepair:false,
    remoteWrites:false,mergeAllowed:false,
    limitation:'Hash integrity of a caller-controlled journal is not durable or authenticated provenance. Revocation may suppress untrusted candidate hints only.'});
+}
+function inspectLocalRevocations(input){
+ try{
+  const args=record(input,['journal','entries']);
+  return inspectSnapshot(snapshotJournal(args.journal),evidence(args.entries));
  }catch(e){
   if(e?.message==='STALE_REVOCATION_EVIDENCE')throw e;
   fail();
  }
 }
-function appendLocalRevocation({journal,entries,id,reason,headSha}={}){
- const state=inspectLocalRevocations({journal,entries});
- const known=evidence(entries);
- if(!ID.test(id||'')||!REASONS.has(reason)||!SHA.test(headSha||'')||
+function appendLocalRevocation(input){
+ const {journal:rawJournal,entries,id,reason,headSha}=
+  record(input,['journal','entries','id','reason','headSha']);
+ const journal=snapshotJournal(rawJournal),known=evidence(entries);
+ const state=inspectSnapshot(journal,known);
+ if(typeof id!=='string'||!ID.test(id)||typeof reason!=='string'||!REASONS.has(reason)||
+  typeof headSha!=='string'||!SHA.test(headSha)||
   !known.has(id))fail();
  if(state.revokedIds.includes(id))fail('ALREADY_REVOKED');
  if(journal.events.length>=MAX_EVENTS)fail();

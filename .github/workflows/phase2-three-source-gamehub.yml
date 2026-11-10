@@ -2,6 +2,8 @@ name: Ultra Sentinel — original GameHub three-source JVM counterfactuals
 on:
   pull_request:
     paths:
+      - packages/investigation/plain-kotlin-payload.cjs
+      - packages/investigation/novel-kotlin-path-policy.cjs
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
       - tests/unit/phase2-blind-numeric-isolation.test.cjs
       - packages/family-hunter/blind-numeric-worker.cjs
