@@ -3,6 +3,11 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const repo=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(repo,p),'utf8');
 const targets=[
  'packages/family-hunter/phase2-numeric-risk-hunter.cjs',
+ 'packages/family-hunter/phase2-numeric-semantic-evidence.cjs',
+ 'packages/kotlin-semantic/C2NumericSemanticClaims.kt',
+ 'tests/unit/phase2-numeric-semantic-evidence.test.cjs',
+ 'tests/fixtures/gamehub-three-source/verify-numeric-semantic.cjs',
+ 'tests/fixtures/gamehub-three-source/reproduce.sh',
  'tests/unit/phase2-numeric-risk-hunter.test.cjs',
  'tests/unit/phase2-numeric-original-bridge.test.cjs',
  'tests/fixtures/gamehub-three-source/scan-numeric.cjs',
