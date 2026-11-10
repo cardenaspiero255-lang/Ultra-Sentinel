@@ -41,12 +41,20 @@ function codeLines(source){
 function scanFile(file){
  const findings=[];
  const lines=codeLines(file.source);
+ // Import aliases are hypotheses only; the compiler bridge must still
+ // establish which declaration was actually resolved for each call.
+ const clamps=new Set(['coerceIn']);
+ for(const row of lines){
+  const match=/^\s*import\s+kotlin\s*\.\s*ranges\s*\.\s*coerceIn\s+as\s+([A-Za-z_]\w*)\s*$/.exec(row);
+  if(match){clamps.add(match[1]);if(clamps.size>33)throw Error('TOO_MANY_CLAMP_ALIASES');}
+ }
  for(let index=0;index<lines.length;index++){
   const line=lines[index];
   for(const chunk of line.split(';')){
    // Widened arithmetic converted to Int before a bounds clamp may wrap.
-   const narrowing=/\.toInt\s*\(\s*\)\s*\.coerceIn\s*\(\s*-?\d+\s*,\s*-?\d+\s*\)/g;
+   const narrowing=/\.toInt\s*\(\s*\)\s*\.\s*([A-Za-z_]\w*)\s*\(\s*-?\d+\s*,\s*-?\d+\s*\)/g;
    for(const m of chunk.matchAll(narrowing)){
+    if(!clamps.has(m[1]))continue;
     const prefix=chunk.slice(Math.max(0,m.index-240),m.index);
     if(!/(?:\.toLong\s*\(\s*\)|\b\d+L\b)/.test(prefix)||!/[*/+-]/.test(prefix))continue;
     findings.push(Object.freeze({rule:'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP',

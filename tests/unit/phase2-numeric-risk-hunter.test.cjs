@@ -28,6 +28,32 @@ test('detects syntactically different bounded numeric conversions without hardco
  assert.equal(output.findings[0].path,'module/src/main/kotlin/org/test/Counter.kt');
 });
 
+test('finds Kotlin standard clamp imports under aliases as unverified hypotheses',()=>{
+ for(const alias of ['clamp','limitValue','bound_2']){
+  const src='package sample\nimport kotlin.ranges.coerceIn as '+alias+'\n'+
+   'fun sample(x: Long) = (x + 100L).toInt().'+alias+'(0, 100)\n';
+  const out=scanKotlinNumericRisks(request(src));
+  assert.equal(out.status,'NUMERIC_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE');
+  assert.deepEqual(out.findings.map(f=>[f.line,f.rule]),[[3,'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP']]);
+  assert.equal(out.originalFunctionalOracleVerified,false);
+ }
+});
+test('does not infer an alias from comments, strings, unrelated imports or arbitrary calls',()=>{
+ const expression='fun sample(x: Long) = (x + 100L).toInt().clamp(0, 100)\n';
+ for(const prefix of ['','// import kotlin.ranges.coerceIn as clamp\n',
+  'import other.coerceIn as clamp\n','val text = "import kotlin.ranges.coerceIn as clamp"\n']){
+  const out=scanKotlinNumericRisks(request('package sample\n'+prefix+expression));
+  assert.equal(out.findings.length,0,prefix);
+  assert.equal(out.generalizationVerified,false);
+ }
+});
+test('blocks excessive imported aliases instead of silently truncating the inventory',()=>{
+ const imports=Array.from({length:33},(_,i)=>`import kotlin.ranges.coerceIn as clamp${i}\n`).join('');
+ const out=scanKotlinNumericRisks(request('package sample\n'+imports+line+'\n'));
+ assert.match(out.status,/^BLOCKED_/);
+ assert.equal(out.findings.length,0);
+});
+
 test('detects multiplication before widening as a separate, unverified numeric hypothesis',()=>{
  const src='package sample\nval result = (samples * 500).toLong()\n';
  const output=scanKotlinNumericRisks(request(src));
