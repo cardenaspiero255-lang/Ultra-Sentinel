@@ -53,3 +53,39 @@ test('reject duplicated, alien, stale, forged or malformed evidence',()=>{
  ];
  for(const mutate of variants){const x=base();mutate(x);assert.throws(()=>assessPrivateEditionReadiness(x));}
 });
+test('untrusted readiness data never executes getters, iterators or proxy traps',()=>{
+ let effects=0;
+ const header=base();
+ Object.defineProperty(header,'proofs',{enumerable:true,get(){effects++;return [];}});
+ const p=receipt(REQUIRED_CONTROLS[0]);
+ Object.defineProperty(p,'result',{enumerable:true,get(){effects++;return 'SUCCESS';}});
+ const activeArray=[receipt(REQUIRED_CONTROLS[0])];
+ Object.defineProperty(activeArray,Symbol.iterator,{value:function*(){effects++;yield receipt(REQUIRED_CONTROLS[0]);}});
+ const proxy=new Proxy(base(),{ownKeys(){effects++;throw Error('trap');},
+  getPrototypeOf(){effects++;throw Error('trap');},get(){effects++;throw Error('trap');}});
+ for(const x of [header,{...base(),proofs:[p]},{...base(),proofs:activeArray},proxy]){
+  assert.throws(()=>assessPrivateEditionReadiness(x),/PRIVATE_READINESS_INVALID_/);
+  assert.equal(effects,0,'untrusted proof data must remain inert');
+ }
+});
+test('readiness SHA and artifact digests must be primitive strings',()=>{
+ let effects=0;
+ const sha={toString(){effects++;return SHA;}};
+ const digest={toString(){effects++;return DIGEST;}};
+ for(const x of [{...base(),headSha:sha},
+  {...base(),proofs:[{...receipt(REQUIRED_CONTROLS[0]),artifactSha256:digest}]}])
+  assert.throws(()=>assessPrivateEditionReadiness(x),/PRIVATE_READINESS_INVALID_/);
+ assert.equal(effects,0);
+});
+test('malformed proof arrays and proxied proof records fail without evaluating input',()=>{
+ let effects=0;
+ const indexed=[];
+ Object.defineProperty(indexed,'0',{enumerable:true,get(){effects++;return receipt(REQUIRED_CONTROLS[0]);}});
+ const sparse=new Array(1);
+ const proof=new Proxy(receipt(REQUIRED_CONTROLS[0]),{ownKeys(){effects++;throw Error('trap');}});
+ const proofArray=new Proxy([receipt(REQUIRED_CONTROLS[0])],{get(){effects++;throw Error('trap');}});
+ for(const proofs of [indexed,sparse,[proof],proofArray]){
+  assert.throws(()=>assessPrivateEditionReadiness({...base(),proofs}),/PRIVATE_READINESS_INVALID_/);
+  assert.equal(effects,0);
+ }
+});
