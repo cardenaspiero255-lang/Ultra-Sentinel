@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.ValueFlow
-import kotlinx.coroutines.flow.first
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.Continuation
