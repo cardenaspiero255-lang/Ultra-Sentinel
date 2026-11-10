@@ -3,6 +3,11 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const repo=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(repo,p),'utf8');
 const targets=[
  'packages/family-hunter/phase2-numeric-risk-hunter.cjs',
+ 'packages/family-hunter/blind-numeric-worker.cjs',
+ 'tests/unit/phase2-blind-numeric-worker.test.cjs',
+ 'tests/unit/phase2-blind-numeric-git-inventory.test.cjs',
+ 'tests/unit/phase2-blind-numeric-receipt.test.cjs',
+ 'tests/unit/phase2-blind-numeric-isolation.test.cjs',
  'packages/family-hunter/phase2-numeric-semantic-evidence.cjs',
  'packages/kotlin-semantic/C2NumericSemanticClaims.kt',
  'tests/unit/phase2-numeric-semantic-evidence.test.cjs',
@@ -44,6 +49,11 @@ test('coverage workflow enforces 90% branches and lines without privileged PR co
  for(const module of targets.filter(p=>p.startsWith('packages/') && p.endsWith('.cjs')))
   assert.ok(s.includes('--test-coverage-include='+module),module);
  assert.ok(read('tests/fixtures/gamehub-three-source/reproduce.sh').includes('C2NumericSemanticClaims.kt'));
+ for(const p of ['tests/fixtures/gamehub-blind-numeric/prepare-inventory.cjs',
+                 'tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs'])
+   assert.ok(s.includes('--test-coverage-include='+p),p);
+ assert.ok(read('.github/workflows/phase2-three-source-gamehub.yml').includes('SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-numeric-isolation.test.cjs'));
+
  assert.ok(s.includes('permissions:\n  contents: read'));
  assert.ok(!s.includes('pull_request_target'));
 });

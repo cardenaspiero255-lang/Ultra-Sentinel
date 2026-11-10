@@ -3,6 +3,12 @@ on:
   pull_request:
     paths:
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - packages/family-hunter/blind-numeric-worker.cjs
+      - tests/unit/phase2-blind-numeric-worker.test.cjs
+      - tests/unit/phase2-blind-numeric-git-inventory.test.cjs
+      - tests/unit/phase2-blind-numeric-receipt.test.cjs
+      - tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - tests/fixtures/gamehub-blind-numeric/**
       - packages/family-hunter/phase2-numeric-semantic-evidence.cjs
       - packages/kotlin-semantic/C2NumericSemanticClaims.kt
       - tests/unit/phase2-numeric-semantic-evidence.test.cjs
