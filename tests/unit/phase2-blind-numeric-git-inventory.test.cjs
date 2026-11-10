@@ -23,7 +23,7 @@ test('derives original sources from clean Git objects without defect hints',t=>{
 test('a noncanonical but authenticated Kotlin file is omitted explicitly, not silently normalized',t=>{
  const x=repo(t),out=output(t,'noncanonical');
  const other=x.p.replace('A.kt','CRLF.kt');
- fs.writeFileSync(other,'package example\\r\\nval bad=42\\r\\n');
+ fs.writeFileSync(other,'package example\r\nval bad=42\r\n');
  x.git('add','.');x.git('commit','-qm','noncanonical fixture');
  const r=prepare([x.d,x.git('rev-parse','HEAD'),scope,out]);
  assert.deepEqual(r,{files:1,skippedOversized:1,skippedNoncanonical:1,allKotlin:3});
