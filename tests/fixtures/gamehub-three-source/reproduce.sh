@@ -35,12 +35,23 @@ node "$fixture/prepare.cjs" "$original" "$sentinel" "$work" "$head"
 node "$fixture/scan-numeric.cjs" "$original" "$sentinel" "$work" "$head"
 "$kotlin/bin/kotlinc" -nowarn -language-version 1.9 -cp "$kotlin/lib/kotlin-compiler.jar" \
  "$sentinel/packages/kotlin-semantic/C2OptionalKotlinSemantic.kt" \
- "$sentinel/tests/fixtures/c2-kotlin-semantic/C2EmitSemanticClaim.kt" -d "$work/emitter.jar"
+ "$sentinel/tests/fixtures/c2-kotlin-semantic/C2EmitSemanticClaim.kt" \
+ "$sentinel/packages/kotlin-semantic/C2NumericSemanticClaims.kt" -d "$work/emitter.jar"
 java -cp "$work/emitter.jar:$kotlin/lib/*" C2EmitSemanticClaimKt \
  "$kotlin/lib/kotlin-stdlib.jar" --name=fromBroadcast \
  "$original/${paths[0]}" "$original/${paths[1]}" "$original/${paths[2]}" \
  "$fixture"/*.kt > "$work/semantic-claims.json"
 node "$fixture/verify-semantic-call.cjs" "$original" "$work/semantic-claims.json"
+# Compiler-backed type claims are advisory until the independent JVM oracle.
+java -cp "$work/emitter.jar:$kotlin/lib/*" C2NumericSemanticClaimsKt \
+ "$kotlin/lib/kotlin-stdlib.jar" "--target=$original/${paths[0]}" \
+ "$original/${paths[0]}" "$original/${paths[1]}" "$original/${paths[2]}" \
+ "$fixture"/*.kt > "$work/numeric-original.json"
+java -cp "$work/emitter.jar:$kotlin/lib/*" C2NumericSemanticClaimsKt \
+ "$kotlin/lib/kotlin-stdlib.jar" "--target=$work/candidate-0.kt" \
+ "$work/candidate-0.kt" "$original/${paths[1]}" "$original/${paths[2]}" \
+ "$fixture"/*.kt > "$work/numeric-candidate.json"
+node "$fixture/verify-numeric-semantic.cjs" "$original" "$sentinel" "$work" "$head"
 git -c core.hooksPath=/dev/null clone --no-hardlinks -q "$original" "$work/local-git"
 git -C "$work/local-git" remote remove origin
 git -C "$work/local-git" switch -q -c sandbox/telemetry-three-source
