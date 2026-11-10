@@ -72,6 +72,13 @@ test('private readiness receipt changes run coverage for the evaluator and its r
   'scripts/evaluate-private-edition-readiness.cjs'])
   assert.ok(workflow.includes('--test-coverage-include='+target),target);
 });
+test('Kotlin numeric call identity fixture is required in pinned GameHub CI',()=>{
+ const yaml=read('.github/workflows/phase2-three-source-gamehub.yml');
+ assert.equal(changes(yaml).filter(path=>path==='tests/fixtures/kotlin-numeric-identity/**').length,1);
+ assert.ok(yaml.includes('bash tests/fixtures/kotlin-numeric-identity/verify.sh'));
+ assert.ok(yaml.includes('47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b'));
+ assert.ok(yaml.includes('8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3'));
+});
 test('coverage workflow enforces 90% branches and lines without privileged PR code',()=>{
  const s=read('.github/workflows/phase2-control-plane-coverage.yml');
  assert.ok(s.includes('node --test --experimental-test-coverage'));
