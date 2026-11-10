@@ -27,7 +27,7 @@ verify_original(){
 }
 verify_original
 # The blind finding was sealed before this runner can see the Kotlin oracle.
-node "$sentinel/tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs" "$original" "$4" "$head"
+node "$sentinel/tests/fixtures/gamehub-blind-numeric/verify-sealed-cli.cjs" "$original" "$4" "$head"
 [[ "$("$kotlin/bin/kotlinc" -version 2>&1)" == *'kotlinc-jvm 2.0.21 '* ]]
 umask 077
 work=$(mktemp -d /tmp/sentinel-telemetry-factorial-XXXXXXXX)
