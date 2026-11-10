@@ -180,3 +180,20 @@ test('mutating the JVM executable snapshot is detected after execution',()=>{
   assert.match(executeOriginalJvmTriplet(valid(dir)).status,/^BLOCKED_/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('duplicate executable JAR bytes are refused before any JVM code can run',()=>{
+ const dir=fixture();try{
+  const source=path.join(dir,'Oracle.java'),classes=path.join(dir,'classes');
+  const markerFile=path.join(dir,'duplicate-code-executed.txt');
+  const java='package example;public class Oracle { public static void main(String[] args) throws Exception {'+
+   'java.nio.file.Files.writeString(java.nio.file.Path.of('+JSON.stringify(markerFile)+'),"executed");'+
+   'System.err.println("ORIGINAL_FAIL");System.exit(1); }}';
+  fs.writeFileSync(source,java);
+  execFileSync('javac',['-d',classes,source],{timeout:15000});
+  execFileSync('jar',['cf',path.join(dir,'original.jar'),'-C',classes,'.'],{timeout:15000});
+  fs.copyFileSync(path.join(dir,'original.jar'),path.join(dir,'candidate.jar'));
+  const out=executeOriginalJvmTriplet(valid(dir));
+  assert.equal(out.status,'BLOCKED_EXECUTED_JVM_TRIPLET');
+  assert.equal(fs.existsSync(markerFile),false,'duplicated bytecode must be rejected before execution');
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

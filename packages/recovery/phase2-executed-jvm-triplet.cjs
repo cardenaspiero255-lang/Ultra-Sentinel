@@ -67,6 +67,9 @@ function executeOriginalJvmTriplet(input){
    digest[phase]=createHash('sha256').update(pinnedBytes[phase]).digest('hex');
    jars[phase]=file;
   }
+  // A byte-identical "original", repair or veto candidate is not an
+  // independent intervention. Refuse it before executing any JVM bytecode.
+  if(new Set(Object.values(digest)).size!==Object.keys(JARS).length)deny();
   const outcomes={};
   const env={PATH:process.env.PATH||'/usr/bin:/bin',HOME:'/tmp',
    JAVA_HOME:process.env.JAVA_HOME||'',GIT_NO_REPLACE_OBJECTS:'1',
