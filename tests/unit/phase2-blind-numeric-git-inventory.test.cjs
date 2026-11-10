@@ -9,7 +9,8 @@ function repo(t){
  git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.com');
  const p=path.join(d,scope,'A.kt');fs.mkdirSync(path.dirname(p),{recursive:true});
  fs.writeFileSync(p,'package example\nval a = (b * 500).toLong()\n');
- fs.writeFileSync(path.join(d,scope,'Big.kt'),'package example\n'+('a'.repeat(61000))+'\n');
+ fs.writeFileSync(path.join(d,scope,'Big.kt'),'package example\n'+('a'.repeat(66000))+'\n');
+ fs.writeFileSync(path.join(d,scope,'README.txt'),'not Kotlin\n');
  git('add','.');git('commit','-qm','fixture');
  return {d,p,git,head:git('rev-parse','HEAD')};
 }
@@ -19,6 +20,30 @@ test('derives original sources from clean Git objects without defect hints',t=>{
  const r=prepare([x.d,x.head,scope,out]);
  assert.deepEqual(r,{files:1,skippedOversized:1,skippedNoncanonical:0,allKotlin:2});
  const v=JSON.parse(fs.readFileSync(out,'utf8'));assert.equal(v.files[0].path,scope+'/A.kt');assert.equal(v.skippedOversized,1);
+});
+test('inventory uses the restricted default Git path when PATH is empty',t=>{
+ const x=repo(t),out=output(t,'default-path'),previous=process.env.PATH;
+ try{
+  process.env.PATH='';
+  assert.equal(prepare([x.d,x.head,scope,out]).files,1);
+ }finally{if(previous===undefined)delete process.env.PATH;else process.env.PATH=previous;}
+});
+test('inventories bounded Kotlin files without a final newline and preserves exact Git blobs',t=>{
+ const x=repo(t),out=output(t,'lossless');
+ const source='package example\nval n = (items * 500).toLong()';
+ fs.writeFileSync(x.p,source);
+ const large=path.join(x.d,scope,'Medium.kt');
+ fs.writeFileSync(large,'package example\n'+('a'.repeat(61000)));
+ x.git('add','.');x.git('commit','-qm','bounded sources');
+ const r=prepare([x.d,x.git('rev-parse','HEAD'),scope,out]);
+ assert.deepEqual(r,{files:2,skippedOversized:1,skippedNoncanonical:0,allKotlin:3});
+ const records=JSON.parse(fs.readFileSync(out,'utf8')).files;
+ const first=records.find(f=>f.path===scope+'/A.kt');
+ assert.equal(first.source,source);
+ assert.equal(first.expectedBlobSha,x.git('rev-parse','HEAD:'+scope+'/A.kt'));
+ const second=records.find(f=>f.path===scope+'/Medium.kt');
+ assert.equal(Buffer.byteLength(second.source),61016);
+ assert.equal(second.expectedBlobSha,x.git('rev-parse','HEAD:'+scope+'/Medium.kt'));
 });
 test('a noncanonical but authenticated Kotlin file is omitted explicitly, not silently normalized',t=>{
  const x=repo(t),out=output(t,'noncanonical');
@@ -51,7 +76,7 @@ test('no Kotlin file and staged Kotlin symlink are not silently accepted',t=>{
 });
 test('original Git source invalidities reject instead of scanning arbitrary bytes',t=>{
  const x=repo(t),out=output(t,'sources');
- const cases=[['small','x'],['no_lf','package example\nval x = 1'],
+ const cases=[['small','x'],
   ['crlf','package example\r\nval x=1\r\n'],['nul','package example\nval x="\0"\n'],
   ['lines','package example\n'+('val x=1\n').repeat(4001)]];
  for(const [label,content] of cases){
@@ -64,7 +89,7 @@ test('original Git source invalidities reject instead of scanning arbitrary byte
 });
 test('all Kotlin files being oversized yields a blocked inventory',t=>{
  const x=repo(t),out=output(t,'oversized');
- fs.writeFileSync(x.p,'package example\n'+'x'.repeat(61000)+'\n');
+ fs.writeFileSync(x.p,'package example\n'+'x'.repeat(66000)+'\n');
  x.git('add','.');x.git('commit','-qm','too large');
  assert.throws(()=>prepare([x.d,x.git('rev-parse','HEAD'),scope,out]),/EMPTY_OR_OVERSIZED/);
 });
@@ -80,8 +105,13 @@ test('tree-entry classifier rejects unsafe paths, types and modes',()=>{
 test('original blob decoder rejects mismatches, malformed UTF-8, CR, NUL and unsafe line counts',()=>{
  const sha=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
  const valid=Buffer.from('package x\nval k=3\n');assert.equal(decodeSource(valid,sha(valid)),valid.toString());
- const invalid=[Buffer.from('a'),Buffer.alloc(60001,0x41),Buffer.from('package x\r\nval k=3\n'),
-  Buffer.from('package x\nval k="\0"\n'),Buffer.from('package x\nval k=3'),
+ const withoutNewline=Buffer.from('package x\nval k=3');
+ assert.equal(decodeSource(withoutNewline,sha(withoutNewline)),withoutNewline.toString());
+ const bom=Buffer.concat([Buffer.from([0xef,0xbb,0xbf]),valid]);
+ assert.deepEqual(Buffer.from(decodeSource(bom,sha(bom)),'utf8'),bom);
+ const bounded=Buffer.alloc(65536,0x41);assert.equal(decodeSource(bounded,sha(bounded)).length,65536);
+ const invalid=[Buffer.from('a'),Buffer.alloc(65537,0x41),Buffer.from('package x\r\nval k=3\n'),
+  Buffer.from('package x\nval k="\0"\n'),
   Buffer.from('package x\n'+('val k=3\n').repeat(4001)),
   Buffer.from([0x70,0x61,0x63,0x6b,0x61,0x67,0x65,0x20,0xff,0x0a])];
  for(const b of invalid)assert.throws(()=>decodeSource(b,sha(b)));

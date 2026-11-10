@@ -59,6 +59,13 @@ test('detects multiplication before widening as a separate, unverified numeric h
  const output=scanKotlinNumericRisks(request(src));
  assert.deepEqual(output.findings.map(f=>f.rule),['INT_MULTIPLICATION_BEFORE_WIDENING']);
 });
+test('accepts a bounded Kotlin blob with no final newline without changing its identity',()=>{
+ const src='package sample\nval result = (samples * 500).toLong()';
+ const output=scanKotlinNumericRisks(request(src));
+ assert.equal(output.findings.length,1);
+ assert.equal(output.findings[0].expectedBlobSha,gitBlob(src));
+ assert.equal(output.sourceByteIntegrityVerified,true);
+});
 
 test('does not classify safe widening before clamp, comment text, strings, or unrelated safe methods',()=>{
  for(const src of [
@@ -87,11 +94,11 @@ test('rejects modified blobs, duplicate paths, malformed hashes, unsafe paths an
   x=>{x.files.push(file(ok));},
   x=>{x.files[0].path='../Numeric.kt';},
   x=>{x.expectedCommitSha='invalid';},
-  x=>{x.files[0].source='x'.repeat(60001)+'\n';x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
+  x=>{x.files[0].source='x'.repeat(65536)+'\n';x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
   x=>{x.files[0].source='';x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
   x=>{x.files[0].source=ok+'\0';x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
+  x=>{x.files[0].source=ok+'\ud800';x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
   x=>{x.files[0].source=ok.replace(/\n/g,'\r\n');x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
-  x=>{x.files[0].source=ok.slice(0,-1);x.files[0].expectedBlobSha=gitBlob(x.files[0].source);},
   x=>{x.files=[];},
   x=>{x.files[0].path=17;}
  ];
