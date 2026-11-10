@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - tests/unit/phase2-blind-numeric-isolation.test.cjs
       - packages/family-hunter/blind-numeric-worker.cjs
       - tests/unit/phase2-blind-numeric-worker.test.cjs
       - tests/unit/phase2-blind-numeric-git-inventory.test.cjs
@@ -57,6 +58,21 @@ jobs:
             --test-coverage-include=packages/quality-gates/phase2-telemetry-counterfactuals.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-telemetry-counterfactuals.test.cjs
+      - name: Require numeric blind worker, inventory and receipt coverage
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/blind-numeric-worker.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-blind-numeric-worker.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=tests/fixtures/gamehub-blind-numeric/prepare-inventory.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-blind-numeric-git-inventory.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-blind-numeric-receipt.test.cjs
       - name: Verify complete structure and unit suite
         run: npm run check
       - name: Set up JDK 21
@@ -96,6 +112,8 @@ jobs:
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
       - name: Require the adversarial Bubblewrap namespace probe
         run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
+      - name: Require numeric blind namespace adversarial probe
+        run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-numeric-isolation.test.cjs
       - name: Build authenticated source-only GameHub Kotlin inventory
         shell: bash
         run: |
