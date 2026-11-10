@@ -50,16 +50,4 @@ function validate(input){
   return output('SEALED_NUMERIC_FINDING_REQUIRES_INDEPENDENT_ORACLE');
  }catch{return output('BLOCKED_NUMERIC_DISCOVERY_INPUT');}
 }
-if(require.main===module){
- const [root,reportPath,head]=process.argv.slice(2);
- if(process.argv.length!==5||head!==PIN)throw Error('BAD_PINNED_RECEIPT_ARGS');
- const src=path.join(root,REL);
- function readFile(p,max){const st=fs.lstatSync(p);if(!st.isFile()||st.isSymbolicLink()||st.size>max)throw Error('UNSAFE_RECEIPT_FILE');return fs.readFileSync(p);}
- const bytes=readFile(src,60000);
- const originalBlobSha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
- const report=JSON.parse(readFile(reportPath,150000).toString('utf8'));
- const result=validate({expectedHeadSha:head,originalBlobSha,report});
- if(result.status!=='SEALED_NUMERIC_FINDING_REQUIRES_INDEPENDENT_ORACLE')throw Error('BAD_SEALED_NUMERIC_REPORT:'+result.status);
- console.log('BLIND_NUMERIC_SOURCE_SELECTION_NOT_NEW_FAMILY');
-}
 module.exports=Object.freeze({validate});
