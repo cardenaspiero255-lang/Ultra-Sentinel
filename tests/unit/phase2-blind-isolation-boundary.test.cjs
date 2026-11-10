@@ -19,7 +19,7 @@ const hunter='tests/fixtures/jarvis-elapsed-window/run-blind-hunter.sh';
 test('the Hunter completes in its own phase before the oracle environment is launched',()=>{
  const yaml=read(workflow);
  const discovery=yaml.indexOf('run-blind-hunter.sh');
- const evaluation=yaml.indexOf('reproduce.sh');
+ const evaluation=yaml.indexOf('/jarvis-elapsed-window/reproduce.sh');
  assert.ok(discovery>=0,'workflow must invoke the isolated Hunter stage');
  assert.ok(evaluation>discovery,'the oracle phase must follow the Hunter phase');
 });

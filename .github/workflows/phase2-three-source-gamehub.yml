@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - packages/family-hunter/phase2-numeric-semantic-evidence.cjs
+      - packages/kotlin-semantic/C2NumericSemanticClaims.kt
+      - tests/unit/phase2-numeric-semantic-evidence.test.cjs
+      - tests/fixtures/gamehub-three-source/verify-numeric-semantic.cjs
+      - tests/fixtures/gamehub-three-source/reproduce.sh
       - tests/unit/phase2-numeric-risk-hunter.test.cjs
       - tests/unit/phase2-numeric-original-bridge.test.cjs
       - packages/quality-gates/phase2-telemetry-counterfactuals.cjs
@@ -177,6 +182,7 @@ jobs:
           grep -Fq '"threeFileMinimalInteractionProven":false' "$RUNNER_TEMP/three-source-factorial.log"
           grep -Fxq 'THREE_SOURCE_EXECUTED_COUNTERFACTUALS_PASS' "$RUNNER_TEMP/three-source-factorial.log"
           grep -Fxq 'PINNED_NUMERIC_SOURCE_ADVISORY_NOT_ORACLE' "$RUNNER_TEMP/three-source-factorial.log"
+          grep -Fxq 'PINNED_KOTLIN_NUMERIC_TYPES_BOUND_NOT_ORACLE' "$RUNNER_TEMP/three-source-factorial.log"
       - name: Publish bounded experiment receipt
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
