@@ -9,6 +9,7 @@ const {parseLedger,entryDigest,verifiedEntries,searchVerified}=
 const {inspectLocalRevocations}=require('./memory-local-revocation-journal.cjs');
 const {PersistentSignedRevocationStore}=require('./memory-signed-checkpoint.cjs');
 const {createHash}=require('node:crypto');
+const {types}=require('node:util');
 const MAX_REVOKES=200,ASCII_ID=/^[A-Za-z0-9_-]{6,80}$/;
 function fail(reason){throw Error(reason);}
 // Identity for an exact recommendation without its caller-chosen row ID.
@@ -18,16 +19,35 @@ function recommendationDigest(e){
   e.fixSha,e.testSha,e.evidenceUrl,e.summary,e.advice,e.tests]),'utf8').digest('hex');
 }
 function validateRevocations(raw){
- if(!Array.isArray(raw)||raw.length>MAX_REVOKES)fail('INVALID_UNTRUSTED_REVOCATIONS');
+ if(types.isProxy(raw)||!Array.isArray(raw)||Object.getPrototypeOf(raw)!==Array.prototype||
+    raw.length>MAX_REVOKES||Reflect.ownKeys(raw).length!==raw.length+1)
+  fail('INVALID_UNTRUSTED_REVOCATIONS');
  const set=new Set();
- for(const id of raw){
+ for(let i=0;i<raw.length;i++){
+  const descriptor=Object.getOwnPropertyDescriptor(raw,String(i));
+  if(!descriptor||!Object.hasOwn(descriptor,'value'))fail('INVALID_UNTRUSTED_REVOCATIONS');
+  const id=descriptor.value;
   if(typeof id!=='string'||!ASCII_ID.test(id)||set.has(id))
    fail('INVALID_UNTRUSTED_REVOCATIONS');
   set.add(id);
  }
  return set;
 }
-function quarantineMemoryCandidates(ledger,{untrustedRevokedIds=[],localRevocationJournal=null}={}){
+function snapshotOptions(options){
+ if(options===undefined)return {untrustedRevokedIds:[],localRevocationJournal:null};
+ if(!options||typeof options!=='object'||types.isProxy(options)||Array.isArray(options)||
+    Object.getPrototypeOf(options)!==Object.prototype)fail('INVALID_QUARANTINE_OPTIONS');
+ const result={untrustedRevokedIds:[],localRevocationJournal:null};
+ for(const key of Reflect.ownKeys(options)){
+  if(key!=='untrustedRevokedIds'&&key!=='localRevocationJournal')fail('INVALID_QUARANTINE_OPTIONS');
+  const descriptor=Object.getOwnPropertyDescriptor(options,key);
+  if(!descriptor||!Object.hasOwn(descriptor,'value'))fail('INVALID_QUARANTINE_OPTIONS');
+  if(descriptor.value!==undefined)result[key]=descriptor.value;
+ }
+ return result;
+}
+function quarantineMemoryCandidates(ledger,options){
+ const {untrustedRevokedIds,localRevocationJournal}=snapshotOptions(options);
  // The parser snapshots/validates all untrusted fields and rejects duplicates,
  // forged types, malformed URLs and unchecked bot evidence.
  const entries=parseLedger(ledger),revoked=validateRevocations(untrustedRevokedIds);
