@@ -50,7 +50,7 @@ function run() {
     const actual = createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
     if (actual !== blob) throw Error('SOURCE_BLOB_MISMATCH');
     const source = new TextDecoder('utf-8', {fatal:true}).decode(bytes);
-    if (source.includes('\0') || source.includes('\r') || !source.endsWith('\n') ||
+    if (source.includes('\0') || source.includes('\r') ||
         source.split('\n').length > 4000) throw Error('INVALID_SOURCE_TEXT:'+name);
     files.push({path:name, source, expectedBlobSha:blob});
   }
