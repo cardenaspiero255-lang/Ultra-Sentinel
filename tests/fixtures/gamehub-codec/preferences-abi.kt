@@ -20,9 +20,11 @@ fun emptyPreferences():Preferences = Preferences()
 fun preferencesDataStore(name:String, corruptionHandler:ReplaceFileCorruptionHandler<Preferences>):
         ReadOnlyProperty<Context,DataStore<Preferences>> =
     object:ReadOnlyProperty<Context,DataStore<Preferences>> {
-        private val data = Preferences()
-        override fun getValue(thisRef:Context, property:KProperty<*>):DataStore<Preferences> =
-            object:DataStore<Preferences> { override val data:Flow<Preferences> = ValueFlow { this@object.data } }
+        private val backing = Preferences()
+        private val store=object:DataStore<Preferences> {
+            override val data:Flow<Preferences> = ValueFlow { backing }
+        }
+        override fun getValue(thisRef:Context, property:KProperty<*>):DataStore<Preferences> = store
     }
 
 suspend fun DataStore<Preferences>.edit(transform:suspend (Preferences)->Unit):Preferences {
