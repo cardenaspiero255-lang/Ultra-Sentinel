@@ -2,6 +2,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const repo=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(repo,p),'utf8');
 const targets=[
+ 'packages/family-hunter/phase2-codec-integrity-hunter.cjs',
+ 'packages/recovery/phase2-codec-integrity-candidate.cjs',
+ 'tests/unit/phase2-codec-integrity-hunter.test.cjs',
+ 'tests/unit/phase2-codec-integrity-candidate.test.cjs',
+ 'tests/unit/phase2-codec-blind-integration.test.cjs',
  'packages/family-hunter/phase2-numeric-risk-hunter.cjs',
  'tests/unit/phase2-numeric-risk-hunter.test.cjs',
  'tests/unit/phase2-numeric-original-bridge.test.cjs',
