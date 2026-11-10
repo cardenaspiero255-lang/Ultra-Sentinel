@@ -2,6 +2,10 @@ name: Ultra Sentinel — phase 2 control-plane regression coverage
 on:
   pull_request:
     paths:
+      - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - tests/unit/phase2-numeric-risk-hunter.test.cjs
+      - tests/unit/phase2-numeric-original-bridge.test.cjs
+      - tests/fixtures/gamehub-three-source/scan-numeric.cjs
       - packages/quality-gates/phase2-causal-factorial.cjs
       - tests/unit/phase2-causal-factorial.test.cjs
       - packages/recovery/phase2-generic-jvm-judge.cjs
@@ -72,3 +76,7 @@ jobs:
             --test-coverage-include=packages/recovery/phase2-executed-jvm-triplet.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-executed-jvm-triplet.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/phase2-numeric-risk-hunter.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-numeric-risk-hunter.test.cjs

@@ -21,6 +21,8 @@ test('three-source workflow uses the pinned original, isolated runtime and no wr
  assert.match(text,/SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests\/unit\/phase2-blind-isolation-boundary\.test\.cjs/);
  assert.doesNotMatch(text,/pull_request_target/);
  assert.equal(spawnSync('bash',['-n',path.join(fixture,'reproduce.sh')]).status,0);
+ assert.match(fs.readFileSync(path.join(fixture,'reproduce.sh'),'utf8'),/scan-numeric\.cjs/);
+ assert.match(text,/PINNED_NUMERIC_SOURCE_ADVISORY_NOT_ORACLE/);
 });
 
 test('fabricated transcripts do not become authenticated JVM or causal claims',()=>{

@@ -32,6 +32,7 @@ work=$(mktemp -d /tmp/sentinel-telemetry-factorial-XXXXXXXX)
 trap 'rm -rf "$work"' EXIT
 sha256sum "$fixture"/*.kt > "$work/oracle-and-abi.sha256"
 node "$fixture/prepare.cjs" "$original" "$sentinel" "$work" "$head"
+node "$fixture/scan-numeric.cjs" "$original" "$sentinel" "$work" "$head"
 "$kotlin/bin/kotlinc" -nowarn -language-version 1.9 -cp "$kotlin/lib/kotlin-compiler.jar" \
  "$sentinel/packages/kotlin-semantic/C2OptionalKotlinSemantic.kt" \
  "$sentinel/tests/fixtures/c2-kotlin-semantic/C2EmitSemanticClaim.kt" -d "$work/emitter.jar"
