@@ -4,6 +4,8 @@ const repo=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(rep
 const targets=[
  'packages/family-hunter/phase2-numeric-risk-hunter.cjs',
  'tests/unit/phase2-numeric-risk-hunter.test.cjs',
+ 'tests/unit/phase2-numeric-original-bridge.test.cjs',
+ 'tests/fixtures/gamehub-three-source/scan-numeric.cjs',
  'packages/quality-gates/phase2-causal-factorial.cjs',
  'tests/unit/phase2-causal-factorial.test.cjs',
  'packages/recovery/phase2-generic-jvm-judge.cjs',
