@@ -2,6 +2,7 @@ name: Ultra Sentinel — original JARVIS note-persistence JVM experiment
 on:
   pull_request:
     paths:
+      - packages/investigation/plain-kotlin-payload.cjs
       - packages/family-hunter/phase2-codec-integrity-hunter.cjs
       - packages/family-hunter/phase2-blind-codec-worker.cjs
       - packages/recovery/phase2-codec-integrity-candidate.cjs
@@ -36,6 +37,8 @@ on:
       - tests/unit/phase2-generic-jvm-judge.test.cjs
       - packages/memory/phase2-signed-revocation-filter.cjs
       - tests/unit/phase2-signed-revocation-filter.test.cjs
+      - packages/memory/memory-local-revocation-journal.cjs
+      - tests/unit/memory-local-revocation-journal.test.cjs
       - packages/memory/ultra_sentinel_memory_quarantine.cjs
       - tests/unit/memory-signed-quarantine-integration.test.cjs
       - tests/unit/memory-witness-quarantine-integration.test.cjs
