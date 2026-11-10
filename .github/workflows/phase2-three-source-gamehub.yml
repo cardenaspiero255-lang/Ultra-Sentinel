@@ -148,6 +148,7 @@ jobs:
             "$GITHUB_WORKSPACE/original-gamehub" e4ca122422f1cb591d407db3fb21fb00fd78b022 \
             app/src/main/java/com/cardenaspiero255/gamehubultra \
             "$RUNNER_TEMP/numeric-inventory.json"
+          node -e 'const fs=require("node:fs");const inventory=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));if(inventory.expectedCommitSha!=="e4ca122422f1cb591d407db3fb21fb00fd78b022"||!Array.isArray(inventory.files)||inventory.files.length!==238||inventory.skippedOversized!==0||inventory.skippedNoncanonical!==0)throw Error("INCOMPLETE_PINNED_GAMEHUB_NUMERIC_INVENTORY");console.log("PINNED_GAMEHUB_NUMERIC_INVENTORY_COMPLETE_238")' "$RUNNER_TEMP/numeric-inventory.json"
           mkdir -m 700 "$RUNNER_TEMP/numeric-hunter-output"
       - name: Run numeric Hunter before exposing the JVM oracle
         shell: bash

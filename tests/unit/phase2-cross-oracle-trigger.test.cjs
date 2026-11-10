@@ -79,6 +79,15 @@ test('Kotlin numeric call identity fixture is required in pinned GameHub CI',()=
  assert.ok(yaml.includes('47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b'));
  assert.ok(yaml.includes('8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3'));
 });
+test('pinned GameHub numeric discovery requires the full original source inventory',()=>{
+ const yaml=read('.github/workflows/phase2-three-source-gamehub.yml');
+ const gate=yaml.indexOf('PINNED_GAMEHUB_NUMERIC_INVENTORY_COMPLETE_238');
+ assert.ok(gate>yaml.indexOf('prepare-inventory.cjs \\'));
+ assert.ok(gate<yaml.indexOf('Run numeric Hunter before exposing the JVM oracle'));
+ for(const predicate of ['inventory.files.length!==238',
+  'inventory.skippedOversized!==0','inventory.skippedNoncanonical!==0'])
+  assert.ok(yaml.includes(predicate),predicate);
+});
 test('coverage workflow enforces 90% branches and lines without privileged PR code',()=>{
  const s=read('.github/workflows/phase2-control-plane-coverage.yml');
  assert.ok(s.includes('node --test --experimental-test-coverage'));

@@ -80,8 +80,8 @@ function scanKotlinNumericRisks(options){
   for(const file of files){
    if(typeof file.path!=='string'||!isSafeNovelKotlinPath(file.path)||
       typeof file.source!=='string'||file.source.length<10||
-      Buffer.byteLength(file.source,'utf8')>60000||file.source.includes('\0')||
-      file.source.includes('\r')||!file.source.endsWith('\n')||
+      Buffer.byteLength(file.source,'utf8')>65536||file.source.includes('\0')||
+      file.source.includes('\r')||Buffer.from(file.source,'utf8').toString('utf8')!==file.source||
       typeof file.expectedBlobSha!=='string'||!SHA.test(file.expectedBlobSha))
     return result('BLOCKED_SOURCE_CONTRACT');
    if(seen.has(file.path))return result('BLOCKED_DUPLICATE_PATH');
