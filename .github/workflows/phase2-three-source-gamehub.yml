@@ -31,6 +31,13 @@ on:
       - tests/unit/phase2-telemetry-counterfactuals.test.cjs
       - tests/unit/phase2-three-source-experiment.test.cjs
       - tests/fixtures/gamehub-three-source/**
+      - tests/fixtures/gamehub-codec/**
+      - packages/family-hunter/phase2-codec-integrity-hunter.cjs
+      - packages/family-hunter/phase2-blind-codec-worker.cjs
+      - packages/recovery/phase2-codec-integrity-candidate.cjs
+      - tests/unit/phase2-codec-integrity-hunter.test.cjs
+      - tests/unit/phase2-codec-integrity-candidate.test.cjs
+      - tests/unit/phase2-codec-blind-integration.test.cjs
       - .github/workflows/phase2-three-source-gamehub.yml
   workflow_dispatch:
 permissions:
@@ -142,6 +149,59 @@ jobs:
             "$RUNNER_TEMP/numeric-hunter-output" > "$RUNNER_TEMP/numeric-blind.log" 2>&1
           chmod 400 "$RUNNER_TEMP/numeric-hunter-output/discovery.json"
           sha256sum "$RUNNER_TEMP/numeric-hunter-output/discovery.json" > "$RUNNER_TEMP/numeric-discovery.sha256"
+      - name: Prepare Git-authenticated source-only GameHub inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node tests/fixtures/gamehub-codec/prepare-blind-inventory.cjs \
+            "$GITHUB_WORKSPACE/original-gamehub" e4ca122422f1cb591d407db3fb21fb00fd78b022 \
+            app/src/main/java/com/cardenaspiero255/gamehubultra \
+            "$RUNNER_TEMP/codec-inventory.json"
+      - name: Run blind codec Hunter in a separate no-network namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/codec-blind-output"
+          bash tests/fixtures/gamehub-codec/run-blind-codec-hunter.sh \
+            "$RUNNER_TEMP/codec-inventory.json" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-codec-integrity-hunter.cjs" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-blind-codec-worker.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/plain-kotlin-payload.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/novel-kotlin-path-policy.cjs" \
+            "$RUNNER_TEMP/codec-blind-output"
+          sha256sum "$RUNNER_TEMP/codec-blind-output/discovery.json" > "$RUNNER_TEMP/codec-blind.sha256"
+      - name: Execute original codec JVM after sealed blind source discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-telemetry/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --dir /input --ro-bind "$RUNNER_TEMP/codec-blind-output/discovery.json" /input/discovery.json \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/gamehub-codec/reproduce.sh \
+            /sentinel/original-gamehub /kotlin /sentinel /input/discovery.json > "$RUNNER_TEMP/blind-codec.log" 2>&1; then
+            tail -100 "$RUNNER_TEMP/blind-codec.log" >&2
+            exit 1
+          fi
+          grep -Fxq 'BLIND_CODEC_ORIGINAL_RED_GREEN_VETO_ROLLBACK_PASS' "$RUNNER_TEMP/blind-codec.log"
+          sha256sum --status --check "$RUNNER_TEMP/codec-blind.sha256"
       - name: Execute pinned three-source JVMs, controls, Judge and rollback
         shell: bash
         run: |
@@ -183,6 +243,8 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: phase2-gamehub-three-source-counterfactuals
-          path: ${{ runner.temp }}/three-source-factorial.log
+          path: |
+            ${{ runner.temp }}/three-source-factorial.log
+            ${{ runner.temp }}/blind-codec.log
           retention-days: 14
           if-no-files-found: warn

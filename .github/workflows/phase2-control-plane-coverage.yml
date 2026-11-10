@@ -2,6 +2,13 @@ name: Ultra Sentinel — phase 2 control-plane regression coverage
 on:
   pull_request:
     paths:
+      - packages/family-hunter/phase2-codec-integrity-hunter.cjs
+      - packages/family-hunter/phase2-blind-codec-worker.cjs
+      - packages/recovery/phase2-codec-integrity-candidate.cjs
+      - tests/unit/phase2-codec-integrity-hunter.test.cjs
+      - tests/unit/phase2-codec-integrity-candidate.test.cjs
+      - tests/unit/phase2-codec-blind-integration.test.cjs
+      - tests/fixtures/gamehub-codec/**
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
       - packages/family-hunter/blind-numeric-worker.cjs
       - tests/unit/phase2-blind-numeric-worker.test.cjs
@@ -95,6 +102,14 @@ jobs:
             --test-coverage-include=packages/family-hunter/phase2-numeric-risk-hunter.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-numeric-risk-hunter.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/phase2-codec-integrity-hunter.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-codec-integrity-hunter.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/recovery/phase2-codec-integrity-candidate.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-codec-integrity-candidate.test.cjs
           node --test --experimental-test-coverage \
             --test-coverage-include=packages/family-hunter/phase2-numeric-semantic-evidence.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \

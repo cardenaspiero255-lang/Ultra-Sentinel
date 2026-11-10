@@ -2,6 +2,13 @@ name: Ultra Sentinel — original JARVIS note-persistence JVM experiment
 on:
   pull_request:
     paths:
+      - packages/family-hunter/phase2-codec-integrity-hunter.cjs
+      - packages/family-hunter/phase2-blind-codec-worker.cjs
+      - packages/recovery/phase2-codec-integrity-candidate.cjs
+      - tests/unit/phase2-codec-integrity-hunter.test.cjs
+      - tests/unit/phase2-codec-integrity-candidate.test.cjs
+      - tests/unit/phase2-codec-blind-integration.test.cjs
+      - tests/fixtures/gamehub-codec/**
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
       - packages/family-hunter/blind-numeric-worker.cjs
       - tests/unit/phase2-blind-numeric-worker.test.cjs

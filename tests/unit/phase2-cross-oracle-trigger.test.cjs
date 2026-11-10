@@ -2,6 +2,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const repo=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(repo,p),'utf8');
 const targets=[
+ 'packages/family-hunter/phase2-codec-integrity-hunter.cjs',
+ 'packages/recovery/phase2-codec-integrity-candidate.cjs',
+ 'tests/unit/phase2-codec-integrity-hunter.test.cjs',
+ 'tests/unit/phase2-codec-integrity-candidate.test.cjs',
+ 'tests/unit/phase2-codec-blind-integration.test.cjs',
  'packages/family-hunter/phase2-numeric-risk-hunter.cjs',
  'packages/family-hunter/blind-numeric-worker.cjs',
  'tests/unit/phase2-blind-numeric-worker.test.cjs',
@@ -62,4 +67,30 @@ test('coverage workflow enforces 90% branches and lines without privileged PR co
 
  assert.ok(s.includes('permissions:\n  contents: read'));
  assert.ok(!s.includes('pull_request_target'));
+});
+
+test('both blinded GameHub findings are sealed before either original oracle runs',()=>{
+ const yaml=read('.github/workflows/phase2-three-source-gamehub.yml');
+ assert.doesNotMatch(yaml,/^(?:<{7}|={7}|>{7})/m,'workflow has unresolved merge conflicts');
+ const names=[
+  'Run blind codec Hunter in a separate no-network namespace',
+  'Run numeric Hunter before exposing the JVM oracle',
+  'Execute original codec JVM after sealed blind source discovery',
+  'Execute pinned three-source JVMs, controls, Judge and rollback'
+ ];
+ const positions=names.map(name=>{
+  const i=yaml.indexOf(name);assert.notEqual(i,-1,name);return i;
+ });
+ assert.ok(Math.max(...positions.slice(0,2))<Math.min(...positions.slice(2)),
+  'both discoveries must be sealed before any original oracle is run');
+ for(const [report,seal] of [
+  ['codec-blind-output/discovery.json','codec-blind.sha256'],
+  ['numeric-hunter-output/discovery.json','numeric-discovery.sha256']
+ ]){
+  const sealAt=yaml.indexOf(' > "$RUNNER_TEMP/'+seal+'"');
+  assert.ok(sealAt>yaml.indexOf(report)&&sealAt<Math.min(...positions.slice(2)),seal);
+  const checks=['sha256sum --check "$RUNNER_TEMP/'+seal+'"',
+                'sha256sum --status --check "$RUNNER_TEMP/'+seal+'"'];
+  assert.ok(checks.some(check=>yaml.includes(check)),seal+' is checked after execution');
+ }
 });
