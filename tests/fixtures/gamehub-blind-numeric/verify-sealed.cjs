@@ -15,7 +15,7 @@ function validate(input){
  try{
   const v=snapshotRecord(input,['expectedHeadSha','originalBlobSha','report']);
   if(v.expectedHeadSha!==PIN||v.originalBlobSha!==SOURCE)return output('BLOCKED_PINNED_NUMERIC_IDENTITY');
-  const r=snapshotRecord(v.report,['schema','status','findings','filesScanned','skippedOversized','sourceByteIntegrityVerified',
+  const r=snapshotRecord(v.report,['schema','status','findings','filesScanned','skippedOversized','skippedNoncanonical','sourceByteIntegrityVerified',
    'compilerAuthenticated','sourceRepositoryAuthenticated','originalOracleVerified','repairAuthorized','remoteWrites','mergeAllowed']);
   if(r.schema!=='ultra-sentinel-blind-numeric/v1'||
    !['NUMERIC_BLIND_HYPOTHESES_UNVERIFIED','NUMERIC_BLIND_PARTIAL_INVENTORY_UNVERIFIED'].includes(r.status)||
@@ -23,7 +23,8 @@ function validate(input){
    r.sourceRepositoryAuthenticated!==false||r.originalOracleVerified!==false||r.repairAuthorized!==false||
    r.remoteWrites!==false||r.mergeAllowed!==false||
    !Number.isSafeInteger(r.filesScanned)||r.filesScanned<1||r.filesScanned>4096||
-   !Number.isSafeInteger(r.skippedOversized)||r.skippedOversized<0||r.skippedOversized>4096)return output('BLOCKED_NUMERIC_DISCOVERY_CONTRACT');
+   !Number.isSafeInteger(r.skippedOversized)||r.skippedOversized<0||r.skippedOversized>4096||
+   !Number.isSafeInteger(r.skippedNoncanonical)||r.skippedNoncanonical<0||r.skippedNoncanonical>4096)return output('BLOCKED_NUMERIC_DISCOVERY_CONTRACT');
   const a=r.findings;
   if(!Array.isArray(a)||types.isProxy(a)||Object.getPrototypeOf(a)!==Array.prototype||
      a.length<1||a.length>256||Reflect.ownKeys(a).length!==a.length+1)
