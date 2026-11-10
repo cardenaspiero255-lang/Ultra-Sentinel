@@ -17,8 +17,19 @@ function output(t,name){const d=fs.mkdtempSync(path.join(os.tmpdir(),'num-output
 test('derives original sources from clean Git objects without defect hints',t=>{
  const x=repo(t),out=output(t,'valid');
  const r=prepare([x.d,x.head,scope,out]);
- assert.deepEqual(r,{files:1,skippedOversized:1,allKotlin:2});
+ assert.deepEqual(r,{files:1,skippedOversized:1,skippedNoncanonical:0,allKotlin:2});
  const v=JSON.parse(fs.readFileSync(out,'utf8'));assert.equal(v.files[0].path,scope+'/A.kt');assert.equal(v.skippedOversized,1);
+});
+test('a noncanonical but authenticated Kotlin file is omitted explicitly, not silently normalized',t=>{
+ const x=repo(t),out=output(t,'noncanonical');
+ const other=x.p.replace('A.kt','CRLF.kt');
+ fs.writeFileSync(other,'package example\\r\\nval bad=42\\r\\n');
+ x.git('add','.');x.git('commit','-qm','noncanonical fixture');
+ const r=prepare([x.d,x.git('rev-parse','HEAD'),scope,out]);
+ assert.deepEqual(r,{files:1,skippedOversized:1,skippedNoncanonical:1,allKotlin:3});
+ const receipt=JSON.parse(fs.readFileSync(out,'utf8'));
+ assert.equal(receipt.skippedNoncanonical,1);
+ assert.equal(receipt.files.some(f=>f.path.endsWith('/CRLF.kt')),false);
 });
 test('dirty checkout, mismatched SHA, invalid scopes and non-Git roots fail closed',t=>{
  const x=repo(t),out=output(t,'blocked');
