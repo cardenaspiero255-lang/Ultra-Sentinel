@@ -40,6 +40,40 @@ test('identity may be excluded but untrusted revocation does not promote any rec
   assert.throws(()=>quarantineMemoryCandidates(ledger(),{untrustedRevokedIds:bad}),
    /INVALID_UNTRUSTED_REVOCATIONS/);
 });
+test('revocation hints and options reject active objects without executing their code',()=>{
+ let effects=0;
+ const accessor=[];
+ Object.defineProperty(accessor,'0',{enumerable:true,configurable:true,get(){effects++;return 'voice-fix-001';}});
+ const iterator=['voice-fix-001'];
+ Object.defineProperty(iterator,Symbol.iterator,{value:function*(){effects++;yield 'voice-fix-001';}});
+ const proxied=new Proxy(['voice-fix-001'],{
+  get(){effects++;throw Error('proxy trap');},
+  ownKeys(){effects++;throw Error('proxy trap');},
+  getPrototypeOf(){effects++;throw Error('proxy trap');}
+ });
+ const sparse=new Array(1);
+ const exotic=['voice-fix-001'];Object.setPrototypeOf(exotic,null);
+ for(const hints of [accessor,iterator,proxied,sparse,exotic])
+  assert.throws(()=>quarantineMemoryCandidates(ledger(),{untrustedRevokedIds:hints}),
+   /INVALID_UNTRUSTED_REVOCATIONS/);
+ for(const key of ['untrustedRevokedIds','localRevocationJournal']){
+  const options={};
+  Object.defineProperty(options,key,{enumerable:true,get(){effects++;return [];}});
+  assert.throws(()=>quarantineMemoryCandidates(ledger(),options),/INVALID_QUARANTINE_OPTIONS/);
+ }
+ const proxyOptions=new Proxy({},{get(){effects++;throw Error('proxy trap');}});
+ assert.throws(()=>quarantineMemoryCandidates(ledger(),proxyOptions),/INVALID_QUARANTINE_OPTIONS/);
+ assert.equal(effects,0,'untrusted getter, iterator and proxy traps must remain inert');
+});
+test('revocation options accept empty defaults and reject unexpected shapes',()=>{
+ for(const options of [undefined,{}, {untrustedRevokedIds:undefined,localRevocationJournal:undefined}])
+  assert.equal(quarantineMemoryCandidates(ledger(),options).quarantined,1);
+ for(const options of [null,[],Object.create(null),{unexpected:true},{[Symbol('hidden')]:1}])
+  assert.throws(()=>quarantineMemoryCandidates(ledger(),options),/INVALID_QUARANTINE_OPTIONS/);
+ const extra=['voice-fix-001'];extra.untrusted=true;
+ assert.throws(()=>quarantineMemoryCandidates(ledger(),{untrustedRevokedIds:extra}),
+  /INVALID_UNTRUSTED_REVOCATIONS/);
+});
 test('changing remediation advice changes evidence digest and never establishes authorization',()=>{
  const a=quarantineMemoryCandidates(ledger());
  const b=quarantineMemoryCandidates(ledger([{...record(),
