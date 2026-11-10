@@ -61,6 +61,17 @@ test('shared Hunter input boundaries trigger each dependent phase 2 workflow',()
   for(const dep of deps)assert.equal(paths.filter(path=>path===dep).length,1,workflow+': '+dep);
  }
 });
+test('private readiness receipt changes run coverage for the evaluator and its reader',()=>{
+ const workflow=read('.github/workflows/phase2-control-plane-coverage.yml');
+ const paths=changes(workflow);
+ for(const target of ['packages/quality-gates/private-edition-readiness.cjs',
+  'scripts/evaluate-private-edition-readiness.cjs',
+  'tests/unit/private-edition-readiness.test.cjs','tests/unit/private-edition-readiness-cli.test.cjs'])
+  assert.equal(paths.filter(path=>path===target).length,1,target);
+ for(const target of ['packages/quality-gates/private-edition-readiness.cjs',
+  'scripts/evaluate-private-edition-readiness.cjs'])
+  assert.ok(workflow.includes('--test-coverage-include='+target),target);
+});
 test('coverage workflow enforces 90% branches and lines without privileged PR code',()=>{
  const s=read('.github/workflows/phase2-control-plane-coverage.yml');
  assert.ok(s.includes('node --test --experimental-test-coverage'));

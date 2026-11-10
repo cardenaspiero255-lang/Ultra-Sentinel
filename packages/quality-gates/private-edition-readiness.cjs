@@ -4,6 +4,8 @@
  * No fixed label count; a reported receipt is NOT authenticated by this code.
  * Deliberately never grants merge, repair, deployment or release authority.
  */
+const {types}=require('node:util');
+const {snapshotRecord}=require('../investigation/plain-kotlin-payload.cjs');
 const REPOSITORY='cardenaspiero255-lang/Ultra-Sentinel';
 const SHA=/^[a-f0-9]{40}$/;
 const DIGEST=/^[a-f0-9]{64}$/;
@@ -17,22 +19,34 @@ const REQUIRED_CONTROLS=Object.freeze([
 const INPUT_KEYS=['schema','repository','headSha','openBlockingFindings','proofs'];
 const PROOF_KEYS=['control','headSha','runId','artifactSha256','result'];
 function fail(reason){throw Error('PRIVATE_READINESS_'+reason);}
-function exactRecord(value,keys){
- return value!==null&&typeof value==='object'&&!Array.isArray(value)&&
-  Object.getPrototypeOf(value)===Object.prototype&&Object.keys(value).length===keys.length&&
-  keys.every(key=>Object.hasOwn(value,key));
+function record(value,keys,reason){
+ try{return snapshotRecord(value,keys);}catch{fail(reason);}
+}
+function proofsSnapshot(value){
+ if(types.isProxy(value)||!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||
+    value.length>REQUIRED_CONTROLS.length||Reflect.ownKeys(value).length!==value.length+1)
+  fail('INVALID_INPUT');
+ const proofs=[];
+ for(let i=0;i<value.length;i++){
+  const descriptor=Object.getOwnPropertyDescriptor(value,String(i));
+  if(!descriptor||!Object.hasOwn(descriptor,'value'))fail('INVALID_PROOF');
+  proofs.push(record(descriptor.value,PROOF_KEYS,'INVALID_PROOF'));
+ }
+ return proofs;
 }
 function assessPrivateEditionReadiness(input){
- if(!exactRecord(input,INPUT_KEYS)||input.schema!=='ultra-sentinel-private-edition-input/v1'||
-  input.repository!==REPOSITORY||!SHA.test(input.headSha)||
-  !Number.isSafeInteger(input.openBlockingFindings)||input.openBlockingFindings<0||
-  !Array.isArray(input.proofs)||input.proofs.length>REQUIRED_CONTROLS.length)
+ const data=record(input,INPUT_KEYS,'INVALID_INPUT');
+ if(data.schema!=='ultra-sentinel-private-edition-input/v1'||
+  data.repository!==REPOSITORY||typeof data.headSha!=='string'||!SHA.test(data.headSha)||
+  !Number.isSafeInteger(data.openBlockingFindings)||data.openBlockingFindings<0)
   fail('INVALID_INPUT');
+ const proofs=proofsSnapshot(data.proofs);
  const seen=new Map();
- for(const proof of input.proofs){
-  if(!exactRecord(proof,PROOF_KEYS)||!REQUIRED_CONTROLS.includes(proof.control)||
-    proof.headSha!==input.headSha||!Number.isSafeInteger(proof.runId)||proof.runId<=0||
-    !DIGEST.test(proof.artifactSha256)||!['SUCCESS','FAILURE'].includes(proof.result))
+ for(const proof of proofs){
+  if(!REQUIRED_CONTROLS.includes(proof.control)||
+    proof.headSha!==data.headSha||!Number.isSafeInteger(proof.runId)||proof.runId<=0||
+    typeof proof.artifactSha256!=='string'||!DIGEST.test(proof.artifactSha256)||
+    !['SUCCESS','FAILURE'].includes(proof.result))
    fail('INVALID_PROOF');
   if(seen.has(proof.control))fail('DUPLICATE_PROOF');
   seen.set(proof.control,proof.result);
@@ -40,16 +54,16 @@ function assessPrivateEditionReadiness(input){
  const missingControls=REQUIRED_CONTROLS.filter(x=>!seen.has(x));
  const failedControls=REQUIRED_CONTROLS.filter(x=>seen.get(x)==='FAILURE');
  const reportedControlsComplete=missingControls.length===0&&failedControls.length===0&&
-  input.openBlockingFindings===0;
- const verdict=input.openBlockingFindings>0?'BLOCKING_FINDINGS':
+  data.openBlockingFindings===0;
+ const verdict=data.openBlockingFindings>0?'BLOCKING_FINDINGS':
   failedControls.length?'FAILED_OPERATIONAL_EVIDENCE':
   missingControls.length?'MISSING_OPERATIONAL_EVIDENCE':'UNAUTHENTICATED_EVIDENCE';
  return Object.freeze({
   schema:'ultra-sentinel-private-edition-readiness/v1',
-  repository:REPOSITORY,headSha:input.headSha,scope:'EXCLUSIVE_PRIVATE_EDITION',
+  repository:REPOSITORY,headSha:data.headSha,scope:'EXCLUSIVE_PRIVATE_EDITION',
   requiredControls:REQUIRED_CONTROLS,
   missingControls:Object.freeze(missingControls),failedControls:Object.freeze(failedControls),
-  selfReportedBlockingFindings:input.openBlockingFindings,
+  selfReportedBlockingFindings:data.openBlockingFindings,
   reportedControlsComplete,realWorldEvidenceAuthenticated:false,
   verdict,releaseAuthorized:false,mergeAllowed:false,autoRepairAllowed:false,
   deploymentAllowed:false,repositoryVisibilityChanged:false,

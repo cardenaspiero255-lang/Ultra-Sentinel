@@ -2,6 +2,10 @@ name: Ultra Sentinel — phase 2 control-plane regression coverage
 on:
   pull_request:
     paths:
+      - packages/quality-gates/private-edition-readiness.cjs
+      - scripts/evaluate-private-edition-readiness.cjs
+      - tests/unit/private-edition-readiness.test.cjs
+      - tests/unit/private-edition-readiness-cli.test.cjs
       - packages/investigation/plain-kotlin-payload.cjs
       - packages/investigation/novel-kotlin-path-policy.cjs
       - packages/family-hunter/phase2-codec-integrity-hunter.cjs
@@ -78,6 +82,14 @@ jobs:
       - name: Require 90 percent coverage across bounded causal, Judge and memory modules
         run: |
           set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/private-edition-readiness.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/private-edition-readiness.test.cjs tests/unit/private-edition-readiness-cli.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=scripts/evaluate-private-edition-readiness.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/private-edition-readiness-cli.test.cjs
           node --test --experimental-test-coverage \
             --test-coverage-include=packages/quality-gates/phase2-causal-factorial.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
