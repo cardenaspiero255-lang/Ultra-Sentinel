@@ -7,7 +7,9 @@
 const {analyzeFamilies}=require('./ultra_sentinel_family_fingerprints.cjs');
 const {compareFamilySnapshots}=require('./family-delta.cjs');
 const {planDependencyExpansion}=require('./dependency-expansion-planner.cjs');
-const MAX_FACTORIAL_FILES=4;
+// Exhaustive 2^n scenarios match the separate bounded 12-file adjudicator.
+// Beyond 12 files, avoid a false claim of exhaustiveness or exponential growth.
+const MAX_FACTORIAL_FILES=12;
 function locationsByRule(report){
  const result=new Map();
  for(const family of report.families){
@@ -25,6 +27,21 @@ function freezeExperiment(mask,files){
  return Object.freeze({kind:mask===0?'baseline':mask===(1<<files.length)-1?
   'combined':'subset',selectedFiles:selected,executed:false,
   independentOracleVerified:false});
+}
+// Screening is intentionally non-exhaustive: a baseline, each single-file
+// intervention, each leave-one-out intervention, then the combined case.
+// It never establishes a minimal interacting set or a verified repair.
+function screeningExperiment(kind,selectedFiles){
+ return Object.freeze({kind,selectedFiles:Object.freeze(selectedFiles),executed:false,
+  independentOracleVerified:false});
+}
+function screenLargeInterventions(files){
+ const rows=[screeningExperiment('baseline',[])];
+ for(const file of files)rows.push(screeningExperiment('single',[file]));
+ for(let omitted=0;omitted<files.length;omitted++)
+  rows.push(screeningExperiment('leave-one-out',files.filter((_,i)=>i!==omitted)));
+ rows.push(screeningExperiment('combined',[...files]));
+ return rows;
 }
 function result(baseSha,headSha,status,candidates=[],truncated=false){
  return Object.freeze({
@@ -55,13 +72,16 @@ function planCrossFileInterventions(beforeCore,afterCore){
   // A repeated pattern on two files is NOT proof those files interact.
   const all=[...new Set([...previous.values(),...next.values()].map(x=>x.path))].sort();
   if(all.length<2)continue;
-  if(all.length>MAX_FACTORIAL_FILES)
-   return result(before.sha,after.sha,'SCOPE_EXCEEDED',[],true);
+  const exhaustive=all.length<=MAX_FACTORIAL_FILES;
   const newPaths=[...new Set([...next.values()].map(x=>x.path))];
   const previousPaths=new Set([...previous.values()].map(x=>x.path));
-  const scenarios=Array.from({length:2**all.length},(_,mask)=>freezeExperiment(mask,all));
+  const scenarios=exhaustive?
+   Array.from({length:2**all.length},(_,mask)=>freezeExperiment(mask,all)):
+   screenLargeInterventions(all);
   candidates.push(Object.freeze({
    rule,files:Object.freeze(all),
+   experimentDesign:exhaustive?'EXHAUSTIVE_SUBSETS_UNVERIFIED':
+    'SINGLE_AND_LEAVE_ONE_OUT_SCREEN_ONLY',matrixExhaustive:exhaustive,
    beforeOccurrences:oldKeys.length,afterOccurrences:newKeys.length,
    newlyObservedFiles:Object.freeze(newPaths.filter(x=>!previousPaths.has(x)).sort()),
    experiments:Object.freeze(scenarios),
