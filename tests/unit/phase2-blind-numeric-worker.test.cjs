@@ -8,7 +8,7 @@ const f=(name,source)=>({path:p+name+'.kt',source,expectedBlobSha:sha(source)});
 const sourceA='package example\nfun p(level:Int,scale:Int) = ((level.toLong() * 100L) / scale).toInt().coerceIn(0, 100)\n';
 const sourceB='package example\nfun q(samples:Int) = (samples * 500).toLong()\n';
 const sourceC='package example\nfun safe(samples:Int) = (samples.toLong() * 500L)\n';
-const input=()=>({expectedCommitSha:commit,files:[f('Z',sourceC),f('B',sourceB),f('A',sourceA)],skippedOversized:0});
+const input=()=>({expectedCommitSha:commit,files:[f('Z',sourceC),f('B',sourceB),f('A',sourceA)],skippedOversized:0,skippedNoncanonical:0});
 test('blindly scans all source files without a target or oracle input',()=>{
  const result=run(input());assert.equal(result.status,'NUMERIC_BLIND_HYPOTHESES_UNVERIFIED');
  assert.deepEqual(result.findings.map(x=>[x.path,x.rule]),[
@@ -23,10 +23,15 @@ test('partial or safe inventory never certifies absence of defects',()=>{
  const safe=input();safe.files=[f('C',sourceC)];
  assert.equal(run(safe).status,'NO_NUMERIC_HYPOTHESES_NOT_CERTIFIED');
 });
+test('noncanonical omissions are reported as partial rather than silent success',()=>{
+ const x=input();x.skippedNoncanonical=4;
+ const r=run(x);assert.equal(r.status,'NUMERIC_BLIND_PARTIAL_INVENTORY_UNVERIFIED');
+ assert.equal(r.skippedNoncanonical,4);
+});
 test('invalid inventories, duplicate paths, unsupported and altered blobs block',()=>{
  for(const change of [
  x=>x.files.push(x.files[0]),x=>{x.files[0].source+='// tampered\n';},x=>x.expectedCommitSha='x',
- x=>x.skippedOversized=-1,x=>x.skippedOversized=1.5,x=>x.files=[],
+ x=>x.skippedOversized=-1,x=>x.skippedNoncanonical=-1,x=>x.skippedOversized=1.5,x=>x.files=[],
  x=>{x.files[0].path='../bad.kt';},x=>{x.files[0].expectedBlobSha='b'.repeat(40);},
  ]){const x=input();change(x);const r=run(x);assert.match(r.status,/^BLOCKED_/);assert.equal(r.findings.length,0);}
 });
@@ -65,7 +70,7 @@ test('bounded inference refuses array holes, excessive data and unexpected field
 });
 test('more than 256 findings are rejected instead of silently truncated',()=>{
  const code='package sample\n'+Array.from({length:280},(_,i)=>'val v'+i+' = ((x.toLong() * 100L) / n).toInt().coerceIn(0, 100)').join('\n')+'\n';
- const r=run({expectedCommitSha:commit,files:[f('Many',code)],skippedOversized:0});
+ const r=run({expectedCommitSha:commit,files:[f('Many',code)],skippedOversized:0,skippedNoncanonical:0});
  assert.match(r.status,/^BLOCKED_/);assert.equal(r.findings.length,0);
 });
 test('standalone rejects malformed, symlinked or oversized inventory files',t=>{
