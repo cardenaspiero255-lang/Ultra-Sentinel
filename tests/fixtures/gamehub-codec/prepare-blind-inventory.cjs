@@ -51,7 +51,7 @@ function run() {
     if (actual !== blob) throw Error('SOURCE_BLOB_MISMATCH');
     const source = new TextDecoder('utf-8', {fatal:true}).decode(bytes);
     if (source.includes('\0') || source.includes('\r') || !source.endsWith('\n') ||
-        source.split('\n').length > 4000) throw Error('INVALID_SOURCE_TEXT');
+        source.split('\n').length > 4000) throw Error('INVALID_SOURCE_TEXT:'+name);
     files.push({path:name, source, expectedBlobSha:blob});
   }
   if (!files.length || files.length > 300) throw Error('INVENTORY_SIZE');
