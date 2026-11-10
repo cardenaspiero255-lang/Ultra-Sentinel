@@ -57,7 +57,7 @@ function prepare(args){
  const raw=git('ls-tree','-r','-z','--full-tree',head,'--',scope).toString('utf8');
  const rows=raw.split('\0');
  if(rows.pop()!=='')throw Error('TRUNCATED_GIT_TREE');
- const files=[];let skippedOversized=0,allKotlin=0;
+ const files=[];let skippedOversized=0,skippedNoncanonical=0,allKotlin=0;
  for(const row of rows){
   const entry=parseTreeRow(row,scope);
   if(entry===null)continue;
@@ -70,22 +70,30 @@ function prepare(args){
   if(size<10)throw Error('INVALID_GIT_SOURCE_SIZE');
   const bytes=git('cat-file','blob',blob);
   if(bytes.length!==size)throw Error('MISMATCHED_GIT_BLOB_SIZE');
-  const source=decodeSource(bytes,blob);
+  const rawSha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+  if(rawSha!==blob)throw Error('MISMATCHED_ORIGINAL_GIT_BLOB');
+  let source;
+  try{source=decodeSource(bytes,blob);}
+  catch(e){
+   if(e.message!=='INVALID_KOTLIN_TEXT'&&e.name!=='TypeError')throw e;
+   skippedNoncanonical++;continue;
+  }
   files.push({path:name,source,expectedBlobSha:blob});
  }
  if(!files.length)throw Error('EMPTY_OR_OVERSIZED_INVENTORY');
  files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
  if(new Set(files.map(f=>f.path)).size!==files.length)throw Error('DUPLICATED_GIT_PATH');
- const data=JSON.stringify({expectedCommitSha:head,files,skippedOversized});
+ const data=JSON.stringify({expectedCommitSha:head,files,skippedOversized,skippedNoncanonical});
  requireBudget(Buffer.byteLength(data),40*1024*1024,'INVENTORY_TOTAL_BUDGET');
  requireClean();
  fs.writeFileSync(output,data,{flag:'wx',mode:0o600});
- return {files:files.length,skippedOversized,allKotlin};
+ return {files:files.length,skippedOversized,skippedNoncanonical,allKotlin};
 }
 if(require.main===module){
  try{const r=prepare(process.argv.slice(2));
   console.log('blind_numeric_inventory_files='+r.files);
   console.log('blind_numeric_inventory_skipped='+r.skippedOversized);
+  console.log('blind_numeric_inventory_noncanonical='+r.skippedNoncanonical);
  }catch(e){console.error('BLIND_NUMERIC_INVENTORY_BLOCKED:'+e.message);process.exitCode=1;}
 }
 module.exports=Object.freeze({prepare,parseTreeRow,decodeSource,requireBudget});
