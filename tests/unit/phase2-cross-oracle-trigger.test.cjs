@@ -33,6 +33,8 @@ const targets=[
  'tests/unit/phase2-generic-jvm-judge.test.cjs',
  'packages/memory/phase2-signed-revocation-filter.cjs',
  'tests/unit/phase2-signed-revocation-filter.test.cjs',
+ 'packages/memory/memory-local-revocation-journal.cjs',
+ 'tests/unit/memory-local-revocation-journal.test.cjs',
  'packages/memory/ultra_sentinel_memory_quarantine.cjs',
  'tests/unit/memory-signed-quarantine-integration.test.cjs',
  'tests/unit/memory-witness-quarantine-integration.test.cjs',
@@ -48,6 +50,15 @@ test('every Phase 2 logic change triggers both original pinned JVM experiments',
   '.github/workflows/phase2-blind-elapsed-original-oracle.yml']){
   const s=read(p),list=changes(s);
   for(const required of targets)assert.equal(list.filter(v=>v===required).length,1,p+': '+required);
+ }
+});
+test('shared Hunter input boundaries trigger each dependent phase 2 workflow',()=>{
+ const deps=['packages/investigation/plain-kotlin-payload.cjs',
+  'packages/investigation/novel-kotlin-path-policy.cjs'];
+ for(const workflow of ['phase2-jarvis-note-oracle.yml','phase2-blind-elapsed-original-oracle.yml',
+  'phase2-control-plane-coverage.yml','phase2-three-source-gamehub.yml']){
+  const paths=changes(read('.github/workflows/'+workflow));
+  for(const dep of deps)assert.equal(paths.filter(path=>path===dep).length,1,workflow+': '+dep);
  }
 });
 test('coverage workflow enforces 90% branches and lines without privileged PR code',()=>{
