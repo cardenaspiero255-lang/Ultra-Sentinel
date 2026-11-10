@@ -14,7 +14,7 @@ function readRegular(p,max=102400){
  if(!st.isFile()||st.isSymbolicLink()||st.size>max)throw Error('NONREGULAR_SEMANTIC_INPUT');
  return fs.readFileSync(p);
 }
-function sha(bytes){return createHash('sha1').update('blob '+bytes.length+'\\0').update(bytes).digest('hex');}
+function sha(bytes){return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');}
 const originalPath=path.join(root,REL),candidatePath=path.join(work,'candidate-0.kt');
 const originalBlobSha=sha(readRegular(originalPath,60000));
 const candidateBlobSha=sha(readRegular(candidatePath,60000));
