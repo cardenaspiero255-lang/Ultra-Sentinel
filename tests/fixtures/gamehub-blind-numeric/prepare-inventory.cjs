@@ -20,11 +20,11 @@ function parseTreeRow(row,scope){
  return {name,blob};
 }
 function decodeSource(bytes,expectedBlobSha){
- if(!Buffer.isBuffer(bytes)||bytes.length<10||bytes.length>60000||
+ if(!Buffer.isBuffer(bytes)||bytes.length<10||bytes.length>65536||
     createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex')!==expectedBlobSha)
   throw Error('INCONSISTENT_GIT_BLOB');
- const source=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
- if(source.includes('\0')||source.includes('\r')||!source.endsWith('\n')||
+ const source=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes);
+ if(!Buffer.from(source,'utf8').equals(bytes)||source.includes('\0')||source.includes('\r')||
     source.split('\n').length>4000)throw Error('INVALID_KOTLIN_TEXT');
  return source;
 }
@@ -66,7 +66,7 @@ function prepare(args){
   requireBudget(allKotlin,4096,'TOO_MANY_KOTLIN_FILES');
   const size=Number(text('cat-file','-s',blob));
   if(!Number.isSafeInteger(size))throw Error('INVALID_GIT_BLOB_SIZE');
-  if(size>60000){skippedOversized++;continue;}
+  if(size>65536){skippedOversized++;continue;}
   if(size<10)throw Error('INVALID_GIT_SOURCE_SIZE');
   const bytes=git('cat-file','blob',blob);
   if(bytes.length!==size)throw Error('MISMATCHED_GIT_BLOB_SIZE');
