@@ -45,12 +45,44 @@ test('partial analysis must block an attractive multi-file hypothesis',()=>{
  assert.equal(report.causalityVerified,false);
 });
 
-test('five-file experiment is quarantined rather than silently dropping a relevant file',()=>{
+test('five-file factorial plan is exhaustive but never claims causal execution',()=>{
  const many=Array.from({length:5},(_,i)=>'app/src/main/java/voice/Part'+i+'.kt');
  const report=planCrossFileInterventions(core(A,[many[0]]),core(B,many));
- assert.equal(report.status,'SCOPE_EXCEEDED');
- assert.deepEqual(report.candidates,[]);
- assert.equal(report.truncated,true);
+ assert.equal(report.status,'EXPERIMENTS_REQUIRED');
+ assert.equal(report.candidates.length,1);
+ const candidate=report.candidates[0];
+ assert.equal(candidate.experimentDesign,'EXHAUSTIVE_SUBSETS_UNVERIFIED');
+ assert.equal(candidate.matrixExhaustive,true);
+ assert.equal(candidate.experiments.length,32);
+ assert.deepEqual(candidate.experiments[0].selectedFiles,[]);
+ assert.deepEqual(candidate.experiments[31].selectedFiles,many);
+ assert.ok(candidate.experiments.every(e=>!e.executed&&!e.independentOracleVerified));
+ assert.equal(report.causalityVerified,false);
+ assert.equal(report.mergeAllowed,false);
+});
+
+test('12-file exhaustive boundary and 13-file sparse screening disclose incompleteness',()=>{
+ for(const size of [12,13]){
+  const paths=Array.from({length:size},(_,i)=>'app/src/main/java/voice/File'+String(i).padStart(2,'0')+'.kt');
+  const report=planCrossFileInterventions(core(A,[paths[0]]),core(B,paths));
+  assert.equal(report.status,'EXPERIMENTS_REQUIRED');
+  const c=report.candidates[0];
+  assert.deepEqual(c.files,paths);
+  assert.equal(c.matrixExhaustive,size===12);
+  assert.equal(c.experimentDesign,size===12?'EXHAUSTIVE_SUBSETS_UNVERIFIED':'SINGLE_AND_LEAVE_ONE_OUT_SCREEN_ONLY');
+  assert.equal(c.experiments.length,size===12?4096:2*size+2);
+  assert.deepEqual(c.experiments[0].selectedFiles,[]);
+  assert.deepEqual(c.experiments.at(-1).selectedFiles,paths);
+  assert.ok(c.experiments.every(e=>e.executed===false&&e.independentOracleVerified===false));
+  if(size===13){
+   assert.deepEqual(c.experiments[1].selectedFiles,[paths[0]]);
+   assert.deepEqual(c.experiments[1+size].selectedFiles,paths.slice(1));
+   assert.deepEqual(c.experiments[2*size].selectedFiles,paths.slice(0,-1));
+  }
+  assert.equal(report.sourceAuthenticated,false);
+  assert.equal(report.causalityVerified,false);
+  assert.equal(report.commitAllowed,false);
+ }
 });
 
 test('multi-file supervised planning can only suggest tests and never approves a commit',()=>{
