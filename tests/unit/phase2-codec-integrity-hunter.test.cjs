@@ -72,3 +72,36 @@ test('orders source observations deterministically and keeps outputs immutable',
  assert.deepEqual(r.findings.map(f=>f.path),[f2.path,f1.path]);
  assert.equal(Object.isFrozen(r.findings),true);
 });
+
+test('nested Kotlin block and raw literals cannot fabricate findings',()=>{
+ const raw='package sample\n'+
+ '/* outer\n /* nested '+risk+' */\n '+risk+'\n */\n'+
+ 'val example = """\n'+risk+'\n"""\n';
+ const r=scanCodecIntegrityHypotheses(input(raw));
+ assert.equal(r.findings.length,0);
+});
+test('string escapes, char literal and inline comments are ignored',()=>{
+ const src='package sample\n'+
+ 'val a = "\\\" String(Base64.getDecoder().decode(fields[i]), StandardCharsets.UTF_8)"\n'+
+ "val quote = '\\''\n"+
+ '// '+risk+'\n'+
+ 'val active = 1 /* '+risk+' */ // '+risk+'\n';
+ const r=scanCodecIntegrityHypotheses(input(src));
+ assert.equal(r.findings.length,0);
+});
+test('refuses unsafe field types before generating observations',()=>{
+ const src='package sample\n'+risk+'\n';
+ for(const mutate of [
+  x=>x.files[0].expectedBlobSha=123,
+  x=>x.files[0].path=123,
+  x=>x.files[0].source=null,
+  x=>x.files[0].source='short\n',
+  x=>x.files[0].source=src.replace(/\n/g,'\r\n'),
+  x=>x.files[0].path='app/src/test/java/Foo.kt',
+  x=>x.expectedCommitSha=42,
+  x=>x.files[0].source='package sample\n'+risk+'\n\0'
+ ]){
+  const r=input(src);mutate(r);
+  assert.match(scanCodecIntegrityHypotheses(r).status,/^BLOCKED_/);
+ }
+});
