@@ -145,7 +145,7 @@ jobs:
             exit 1
           fi
           grep -Fxq 'BLIND_CODEC_ORIGINAL_RED_GREEN_VETO_ROLLBACK_PASS' "$RUNNER_TEMP/blind-codec.log"
-          grep -Fxq 'PINNED_NUMERIC_SOURCE_ADVISORY_NOT_ORACLE' "$RUNNER_TEMP/blind-codec.log"
+          sha256sum --status --check "$RUNNER_TEMP/codec-blind.sha256"
       - name: Execute pinned three-source JVMs, controls, Judge and rollback
         shell: bash
         run: |
