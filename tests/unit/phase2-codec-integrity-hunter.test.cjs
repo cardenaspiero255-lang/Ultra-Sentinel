@@ -48,8 +48,7 @@ test('rejects modified blobs, duplicate paths, unsafe files and malformed head',
   r=>r.files[0].source='x'.repeat(160010)+'\n',
   r=>r.files[0].source='package sample\n',
   r=>r.files[0].source+='x\0',
-  r=>r.files=[],
-  r=>r.files[0].source=src.trimEnd()
+  r=>r.files=[]
  ]){
   const r=input(src);change(r);
   const verdict=scanCodecIntegrityHypotheses(r);
@@ -104,4 +103,12 @@ test('refuses unsafe field types before generating observations',()=>{
   const r=input(src);mutate(r);
   assert.match(scanCodecIntegrityHypotheses(r).status,/^BLOCKED_/);
  }
+});
+
+test('valid Kotlin without terminal newline preserves exact Git blob identity',()=>{
+ const src='package sample\n'+risk;
+ const result=scanCodecIntegrityHypotheses(input(src));
+ assert.equal(result.status,'CODEC_INTEGRITY_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE');
+ assert.equal(result.findings.length,1);
+ assert.equal(result.findings[0].expectedBlobSha,gitBlob(src));
 });
