@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtParenthesizedExpression
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
+import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.calls.model.isReallySuccess
 import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
 import java.io.File
@@ -46,8 +48,12 @@ private fun blobSha(source: String): String {
 private data class Claim(val path: String, val line: Int, val rule: String, val blobSha: String) {
     fun json(): String = "{\"path\":${quoted(path)},\"line\":$line,\"rule\":${quoted(rule)},\"blobSha\":${quoted(blobSha)}}"
 }
-private fun resolved(call: KtCallExpression, context: BindingContext, name: String): Boolean =
-    call.calleeExpression?.text == name && call.getResolvedCall(context)?.isReallySuccess() == true
+private fun resolved(call: KtCallExpression, context: BindingContext, qualifiedName: String): Boolean {
+    val descriptor = call.getResolvedCall(context)?.takeIf { it.isReallySuccess() }?.resultingDescriptor?.original
+        ?: return false
+    return DescriptorUtils.getFqName(descriptor).asString() == qualifiedName &&
+        DescriptorToSourceUtils.descriptorToDeclaration(descriptor) == null
+}
 
 private fun expressionType(expr: KtExpression, context: BindingContext): String? =
     context[BindingContext.EXPRESSION_TYPE_INFO, expr]?.type?.toString()
@@ -59,17 +65,17 @@ private fun scan(file: KtFile, context: BindingContext): List<Claim> {
     file.accept(object : KtTreeVisitorVoid() {
         override fun visitDotQualifiedExpression(expression: KtDotQualifiedExpression) {
             val outer = expression.selectorExpression as? KtCallExpression
-            if (outer != null && resolved(outer, context, "coerceIn")) {
+            if (outer != null && resolved(outer, context, "kotlin.ranges.coerceIn")) {
                 val narrow = expression.receiverExpression as? KtDotQualifiedExpression
                 val narrowCall = narrow?.selectorExpression as? KtCallExpression
-                if (narrow != null && narrowCall != null && resolved(narrowCall, context, "toInt") &&
+                if (narrow != null && narrowCall != null && resolved(narrowCall, context, "kotlin.Long.toInt") &&
                     expressionType(narrow.receiverExpression, context) == "Long" &&
                     expressionType(narrow, context) == "Int") {
                     result.add(Claim(path, file.text.substring(0, expression.textOffset).count { it == '\n' } + 1,
                         "WIDE_NUMERIC_NARROWED_BEFORE_CLAMP", hash))
                 }
             }
-            if (outer != null && resolved(outer, context, "toLong") &&
+            if (outer != null && resolved(outer, context, "kotlin.Int.toLong") &&
                 expressionType(expression.receiverExpression, context) == "Int") {
                 val receiver = expression.receiverExpression
                 val mul = (receiver as? KtParenthesizedExpression)?.expression as? KtBinaryExpression

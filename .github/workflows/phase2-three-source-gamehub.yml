@@ -2,6 +2,7 @@ name: Ultra Sentinel — original GameHub three-source JVM counterfactuals
 on:
   pull_request:
     paths:
+      - tests/fixtures/kotlin-numeric-identity/**
       - packages/investigation/plain-kotlin-payload.cjs
       - packages/investigation/novel-kotlin-path-policy.cjs
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
@@ -105,6 +106,17 @@ jobs:
           test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
           mkdir "$RUNNER_TEMP/kotlin-telemetry"
           unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-telemetry"
+      - name: Verify Kotlin numeric call identity and changed-line coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          agent="$RUNNER_TEMP/jacoco-agent-0.8.13.jar"
+          cli="$RUNNER_TEMP/jacoco-cli-0.8.13.jar"
+          curl -fsSL --retry 2 -o "$agent" https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar
+          curl -fsSL --retry 2 -o "$cli" https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.cli/0.8.13/org.jacoco.cli-0.8.13-nodeps.jar
+          test "$(sha256sum "$agent" | cut -d' ' -f1)" = 47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b
+          test "$(sha256sum "$cli" | cut -d' ' -f1)" = 8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3
+          bash tests/fixtures/kotlin-numeric-identity/verify.sh "$RUNNER_TEMP/kotlin-telemetry/kotlinc" "$GITHUB_WORKSPACE" "$agent" "$cli"
       - name: Checkout pinned original GameHub without persisted credentials
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
