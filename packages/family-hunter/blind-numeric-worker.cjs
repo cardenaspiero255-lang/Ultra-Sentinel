@@ -6,7 +6,7 @@ const {snapshotRecord}=require('../investigation/plain-kotlin-payload.cjs');
 const {scanKotlinNumericRisks}=require('./phase2-numeric-risk-hunter.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 function blocked(){return Object.freeze({status:'BLOCKED_BLIND_NUMERIC_INPUT',findings:Object.freeze([]),
- filesScanned:0,skippedOversized:0,compilerAuthenticated:false,sourceRepositoryAuthenticated:false,
+ filesScanned:0,skippedOversized:0,skippedNoncanonical:0,compilerAuthenticated:false,sourceRepositoryAuthenticated:false,
  originalOracleVerified:false,repairAuthorized:false,remoteWrites:false,mergeAllowed:false});}
 function safeArray(value){
  if(!Array.isArray(value)||types.isProxy(value)||Object.getPrototypeOf(value)!==Array.prototype||
@@ -21,9 +21,10 @@ function safeArray(value){
 }
 function runBlindNumericInventory(options){
  try{
-  const input=snapshotRecord(options,['expectedCommitSha','files','skippedOversized']);
+  const input=snapshotRecord(options,['expectedCommitSha','files','skippedOversized','skippedNoncanonical']);
   if(typeof input.expectedCommitSha!=='string'||!SHA.test(input.expectedCommitSha)||
-   !Number.isSafeInteger(input.skippedOversized)||input.skippedOversized<0||input.skippedOversized>4096)
+   !Number.isSafeInteger(input.skippedOversized)||input.skippedOversized<0||input.skippedOversized>4096||
+   !Number.isSafeInteger(input.skippedNoncanonical)||input.skippedNoncanonical<0||input.skippedNoncanonical>4096)
    return blocked();
   const files=safeArray(input.files),seen=new Set(),findings=[];
   for(const file of files){
@@ -41,10 +42,10 @@ function runBlindNumericInventory(options){
    }
   }
   findings.sort((a,b)=>a.path.localeCompare(b.path)||a.line-b.line||a.rule.localeCompare(b.rule));
-  const status=input.skippedOversized>0?'NUMERIC_BLIND_PARTIAL_INVENTORY_UNVERIFIED':
+  const status=(input.skippedOversized>0||input.skippedNoncanonical>0)?'NUMERIC_BLIND_PARTIAL_INVENTORY_UNVERIFIED':
    findings.length?'NUMERIC_BLIND_HYPOTHESES_UNVERIFIED':'NO_NUMERIC_HYPOTHESES_NOT_CERTIFIED';
   return Object.freeze({schema:'ultra-sentinel-blind-numeric/v1',status,findings:Object.freeze(findings),
-   filesScanned:files.length,skippedOversized:input.skippedOversized,
+   filesScanned:files.length,skippedOversized:input.skippedOversized,skippedNoncanonical:input.skippedNoncanonical,
    sourceByteIntegrityVerified:true,compilerAuthenticated:false,sourceRepositoryAuthenticated:false,
    originalOracleVerified:false,repairAuthorized:false,remoteWrites:false,mergeAllowed:false});
  }catch{return blocked();}
