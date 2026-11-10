@@ -5,7 +5,7 @@ const target='app/src/main/java/com/cardenaspiero255/gamehubultra/BatteryTelemet
 const sha='8b9e934ca90852d77ddab274b60fd8dce4f4a2ca';
 const head='e4ca122422f1cb591d407db3fb21fb00fd78b022';
 const finding=(path=target,blob=sha)=>({path,line:8,rule:'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP',expectedBlobSha:blob});
-const data=()=>({expectedHeadSha:head,originalBlobSha:sha,report:{schema:'ultra-sentinel-blind-numeric/v1',status:'NUMERIC_BLIND_HYPOTHESES_UNVERIFIED',findings:[finding()],filesScanned:40,skippedOversized:0,sourceByteIntegrityVerified:true,compilerAuthenticated:false,sourceRepositoryAuthenticated:false,originalOracleVerified:false,repairAuthorized:false,remoteWrites:false,mergeAllowed:false}});
+const data=()=>({expectedHeadSha:head,originalBlobSha:sha,report:{schema:'ultra-sentinel-blind-numeric/v1',status:'NUMERIC_BLIND_HYPOTHESES_UNVERIFIED',findings:[finding()],filesScanned:40,skippedOversized:0,skippedNoncanonical:0,sourceByteIntegrityVerified:true,compilerAuthenticated:false,sourceRepositoryAuthenticated:false,originalOracleVerified:false,repairAuthorized:false,remoteWrites:false,mergeAllowed:false}});
 test('valid sealed original finding is advisory, never evidence of unknown family',()=>{
  const result=validate(data());assert.equal(result.status,'SEALED_NUMERIC_FINDING_REQUIRES_INDEPENDENT_ORACLE');
  for(const k of ['sourceRepositoryAuthenticated','originalOracleVerified','causalityVerified','newFamilyDiscovered','remoteWrites','mergeAllowed'])assert.equal(result[k],false);
@@ -23,7 +23,7 @@ test('missing, duplicate, forged and altered original target claims are rejected
   x=>x.report.findings[0].path='../bad.kt',x=>x.report.schema='changed',
   x=>x.report.status='CERTIFIED',x=>x.report.compilerAuthenticated=true,
   x=>x.report.remoteWrites=true,x=>x.report.mergeAllowed=true,
-  x=>x.report.filesScanned=0,x=>x.report.skippedOversized=-1,
+  x=>x.report.filesScanned=0,x=>x.report.skippedOversized=-1,x=>x.report.skippedNoncanonical=-1,
   x=>x.report.findings[0].line=2.5,
   x=>{x.report.findings=new Array(2);x.report.findings[0]=finding();}
  ]){const x=data();edit(x);assert.match(validate(x).status,/^BLOCKED_/);}
