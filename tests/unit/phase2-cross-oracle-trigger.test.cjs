@@ -41,8 +41,9 @@ test('coverage workflow enforces 90% branches and lines without privileged PR co
  assert.ok(s.includes('node --test --experimental-test-coverage'));
  assert.ok(s.includes('--test-coverage-lines=90'));
  assert.ok(s.includes('--test-coverage-branches=90'));
- for(const module of targets.filter(p=>p.startsWith('packages/')))
+ for(const module of targets.filter(p=>p.startsWith('packages/') && p.endsWith('.cjs')))
   assert.ok(s.includes('--test-coverage-include='+module),module);
+ assert.ok(read('tests/fixtures/gamehub-three-source/reproduce.sh').includes('C2NumericSemanticClaims.kt'));
  assert.ok(s.includes('permissions:\n  contents: read'));
  assert.ok(!s.includes('pull_request_target'));
 });
