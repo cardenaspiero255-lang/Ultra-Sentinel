@@ -9,6 +9,10 @@ const targets=[
  'tests/unit/phase2-blind-numeric-receipt.test.cjs',
  'tests/unit/phase2-blind-numeric-isolation.test.cjs',
  'packages/family-hunter/phase2-numeric-semantic-evidence.cjs',
+ 'packages/family-hunter/phase2-numeric-sealed-semantic-link.cjs',
+ 'tests/unit/phase2-numeric-sealed-semantic-link.test.cjs',
+ 'tests/unit/phase2-numeric-sealed-link-cli.test.cjs',
+ 'tests/fixtures/gamehub-three-source/verify-numeric-link.cjs',
  'packages/kotlin-semantic/C2NumericSemanticClaims.kt',
  'tests/unit/phase2-numeric-semantic-evidence.test.cjs',
  'tests/fixtures/gamehub-three-source/verify-numeric-semantic.cjs',
@@ -49,6 +53,8 @@ test('coverage workflow enforces 90% branches and lines without privileged PR co
  for(const module of targets.filter(p=>p.startsWith('packages/') && p.endsWith('.cjs')))
   assert.ok(s.includes('--test-coverage-include='+module),module);
  assert.ok(read('tests/fixtures/gamehub-three-source/reproduce.sh').includes('C2NumericSemanticClaims.kt'));
+ assert.ok(read('tests/fixtures/gamehub-three-source/reproduce.sh').includes('verify-numeric-link.cjs'));
+ assert.ok(read('.github/workflows/phase2-three-source-gamehub.yml').includes('SEALED_NUMERIC_COMPILER_LINE_RULE_LINKED_ADVISORY_NOT_ORACLE'));
  for(const p of ['tests/fixtures/gamehub-blind-numeric/prepare-inventory.cjs',
                  'tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs'])
    assert.ok(s.includes('--test-coverage-include='+p),p);

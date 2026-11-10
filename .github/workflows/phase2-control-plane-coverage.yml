@@ -10,6 +10,10 @@ on:
       - tests/unit/phase2-blind-numeric-isolation.test.cjs
       - tests/fixtures/gamehub-blind-numeric/**
       - packages/family-hunter/phase2-numeric-semantic-evidence.cjs
+      - packages/family-hunter/phase2-numeric-sealed-semantic-link.cjs
+      - tests/unit/phase2-numeric-sealed-semantic-link.test.cjs
+      - tests/unit/phase2-numeric-sealed-link-cli.test.cjs
+      - tests/fixtures/gamehub-three-source/verify-numeric-link.cjs
       - packages/kotlin-semantic/C2NumericSemanticClaims.kt
       - tests/unit/phase2-numeric-semantic-evidence.test.cjs
       - tests/fixtures/gamehub-three-source/verify-numeric-semantic.cjs
@@ -107,3 +111,8 @@ jobs:
             --test-coverage-include=tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-blind-numeric-receipt.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/phase2-numeric-sealed-semantic-link.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-numeric-sealed-semantic-link.test.cjs \
+            tests/unit/phase2-numeric-sealed-link-cli.test.cjs
