@@ -54,6 +54,7 @@ java -cp "$work/emitter.jar:$kotlin/lib/*" C2NumericSemanticClaimsKt \
  "$work/candidate-0.kt" "$original/${paths[1]}" "$original/${paths[2]}" \
  "$fixture"/*.kt > "$work/numeric-candidate.json"
 node "$fixture/verify-numeric-semantic.cjs" "$original" "$sentinel" "$work" "$head"
+node "$fixture/verify-numeric-link.cjs" "$original" "$sentinel" "$work" "$head" "$4"
 git -c core.hooksPath=/dev/null clone --no-hardlinks -q "$original" "$work/local-git"
 git -C "$work/local-git" remote remove origin
 git -C "$work/local-git" switch -q -c sandbox/telemetry-three-source
