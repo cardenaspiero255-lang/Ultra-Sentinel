@@ -52,6 +52,7 @@ test('fabricated transcripts do not become authenticated JVM or causal claims',(
   assert.deepEqual(result.oracleVector.minimalPassingSubsetsByOracle,{
    BENIGN:[[]],EXTREME:[[entries[0]],[entries[1]]]
   });
+  assert.equal(result.oracleVector.status,'ALTERNATIVE_SINGLE_FILE_EFFECTS_OBSERVED');
   assert.equal(result.oracleVector.jvmReceiptsAuthenticatedByThisFunction,false);
   assert.equal(result.mergeAllowed,false);
   fs.writeFileSync(path.join(dir,'case-0.exit'),'0\n');
