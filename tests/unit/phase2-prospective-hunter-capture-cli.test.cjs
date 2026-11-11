@@ -78,3 +78,33 @@ test('CLI neither exports source code nor returns success on a forged manifest',
   assert.equal(fs.existsSync(out),false);
  }finally{fs.rmSync(dir,{force:true,recursive:true});}
 });
+
+test('CLI blocks malformed argument structure, relative paths and files with unsafe metadata',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'prospective-capture-'));
+ try{
+  const p=paths(dir),out=path.join(dir,'receipt.json');
+  const valid=[manifest,p.numeric,p.codec,p.identity,out];
+  for(const args of [null,[],valid.slice(0,4),[...valid.slice(0,4),'relative-out.json'],
+   ['relative-manifest.json',...valid.slice(1)],
+   [manifest,'relative-numeric.json',...valid.slice(2)]]){
+   assert.throws(()=>capture(args));
+   assert.equal(fs.existsSync(out),false);
+  }
+  const original=p.numeric;
+  const bad=path.join(dir,'numeric.bad.json');
+  for(const value of ['x','x'.repeat(1048577),'not json but long enough']){
+   fs.writeFileSync(bad,value);
+   assert.throws(()=>capture([manifest,bad,p.codec,p.identity,out]));
+   assert.equal(fs.existsSync(out),false);
+  }
+  fs.unlinkSync(bad);
+  fs.symlinkSync(original,bad);
+  assert.throws(()=>capture([manifest,bad,p.codec,p.identity,out]));
+  fs.unlinkSync(bad);
+  assert.throws(()=>capture([manifest,dir,p.codec,p.identity,out]));
+  fs.linkSync(original,bad);
+  assert.throws(()=>capture([manifest,bad,p.codec,p.identity,out]));
+  fs.unlinkSync(bad);
+  assert.equal(fs.existsSync(out),false);
+ }finally{fs.rmSync(dir,{force:true,recursive:true});}
+});
