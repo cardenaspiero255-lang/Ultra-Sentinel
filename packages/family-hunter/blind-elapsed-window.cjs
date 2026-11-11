@@ -79,7 +79,9 @@ function scanBlindElapsedWindows(options){
       !f.path.includes('/src/main/')||f.path.startsWith('/')||f.path.split('/').some(p=>!p||p==='.'||p==='..')||
       seen.has(f.path)||typeof f.source!=='string'||f.source.length<10||
       f.source.includes('\0')||f.source.includes('\r')||!f.source.endsWith('\n')||
-      Buffer.byteLength(f.source,'utf8')>160000||f.source.split('\n').length>4000||
+      Buffer.byteLength(f.source,'utf8')>160000||
+      Buffer.from(f.source,'utf8').toString('utf8')!==f.source||
+      f.source.split('\n').length>4000||
       typeof f.expectedBlobSha!=='string'||!COMMIT.test(f.expectedBlobSha))
      return blocked('BLOCKED_INVENTORY');
    seen.add(f.path);
