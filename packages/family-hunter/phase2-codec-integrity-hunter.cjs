@@ -5,7 +5,7 @@ const {createHash}=require('node:crypto');
 const {snapshotRecord,snapshotArray}=require('../investigation/plain-kotlin-payload.cjs');
 const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
-const PATTERN=/\bString\s*\(\s*Base64\s*\.\s*get(?:Url)?Decoder\s*\(\s*\)\s*\.\s*decode\s*\([^)\n]*\)\s*,\s*StandardCharsets\s*\.\s*UTF_8\s*\)/g;
+const PATTERN=/\bString\s*\(\s*Base64\s*\.\s*get(?:Url)?Decoder\s*\(\s*\)\s*\.\s*decode\s*\([^)]{0,512}\)\s*,\s*StandardCharsets\s*\.\s*UTF_8\s*\)/g;
 function blob(text){const bytes=Buffer.from(text,'utf8');return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');}
 function report(status,findings=[],valid=false){
  return Object.freeze({schema:'ultra-sentinel-codec-integrity-hunter/v1',status,findings:Object.freeze(findings),
@@ -40,18 +40,19 @@ function scanCodecIntegrityHypotheses(options){
   for(const f of files){
    if(typeof f.path!=='string'||!isSafeNovelKotlinPath(f.path)||unique.has(f.path)||
      typeof f.source!=='string'||f.source.length<10||Buffer.byteLength(f.source,'utf8')>160000||
-     f.source.includes('\r')||f.source.includes('\0')||typeof f.expectedBlobSha!=='string'||!SHA.test(f.expectedBlobSha))return report('BLOCKED_SOURCE');
+     f.source.includes('\r')||f.source.includes('\0')||Buffer.from(f.source,'utf8').toString('utf8')!==f.source||typeof f.expectedBlobSha!=='string'||!SHA.test(f.expectedBlobSha))return report('BLOCKED_SOURCE');
    if(blob(f.source)!==f.expectedBlobSha)return report('BLOCKED_BLOB');
    unique.add(f.path);
   }
   const findings=[];
   for(const f of files){
-   const lines=sanitizedLines(f.source);
-   for(let i=0;i<lines.length;i++){
-    for(const match of lines[i].matchAll(PATTERN)){
-     findings.push(Object.freeze({rule:'LOSSY_BASE64_UTF8_DECODE',path:f.path,line:i+1,
-      expectedBlobSha:f.expectedBlobSha,status:'HYPOTHESIS_REQUIRES_INDEPENDENT_KOTLIN_ORACLE'}));
-    }
+   // Kotlin invocation arguments can span lines. Keep newlines in the
+   // inert lexical snapshot so each match retains its original source line.
+   const clean=sanitizedLines(f.source).join('\n');
+   for(const match of clean.matchAll(PATTERN)){
+    const line=clean.slice(0,match.index).split('\n').length;
+    findings.push(Object.freeze({rule:'LOSSY_BASE64_UTF8_DECODE',path:f.path,line,
+     expectedBlobSha:f.expectedBlobSha,status:'HYPOTHESIS_REQUIRES_INDEPENDENT_KOTLIN_ORACLE'}));
    }
   }
   findings.sort((a,b)=>a.path.localeCompare(b.path)||a.line-b.line||a.rule.localeCompare(b.rule));
