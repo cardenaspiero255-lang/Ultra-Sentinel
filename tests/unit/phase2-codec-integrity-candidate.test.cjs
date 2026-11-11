@@ -78,7 +78,7 @@ test('Fixer refuses a multiline finding altered after the sealed Hunter scan',()
 });
 test('Fixer does not trust a source-only finding generated from malformed Unicode bytes',()=>{
  const input=data();
- input.file.source=input.file.source.replace('package sample','package sample // \\uD800');
+ input.file.source=input.file.source.replace('package sample','package sample // \uD800');
  input.file.expectedBlobSha=blob(input.file.source);
  input.finding.expectedBlobSha=input.file.expectedBlobSha;
  assert.equal(draftCodecIntegrityCandidate(input).status,'BLOCKED_CODEC_CANDIDATE');
