@@ -121,3 +121,21 @@ test('Fixer refuses different discovery receipts and malformed input without acc
  assert.match(draftElapsedWindowCandidate(input).status,/^BLOCKED_/);
  assert.equal(invoked,false);
 });
+
+test('blind source inventory refuses lossy UTF-16 before reporting an authenticated blob',()=>{
+ // Node replaces an isolated surrogate with U+FFFD when encoding UTF-8.
+ // A SHA-1 computed over those replacement bytes cannot attest the original
+ // JavaScript string used by a source-only detector.
+ const malformed=source.replace('class Consent', 'class \uD800Consent');
+ const r=scanBlindElapsedWindows({expectedCommitSha:head,files:[pack(path,malformed)]});
+ assert.equal(r.status,'BLOCKED_INVENTORY');
+ assert.deepEqual(r.findings,[]);
+ assert.equal(r.remoteWrites,false);
+});
+test('well-formed supplementary Unicode remains a valid source inventory',()=>{
+ const wellFormed=source.replace('class Consent','// 😀 supplementary character\nclass Consent');
+ const r=scanBlindElapsedWindows({expectedCommitSha:head,files:[pack(path,wellFormed)]});
+ assert.equal(r.status,'UNVERIFIED_ELAPSED_WINDOW_HYPOTHESES');
+ assert.equal(r.findings.length,1);
+ assert.equal(r.findings[0].sourceBlobSha,HASH(wellFormed));
+});
