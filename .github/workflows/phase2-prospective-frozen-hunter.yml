@@ -1,0 +1,183 @@
+name: Ultra Sentinel — prospectively frozen Hunter on external Kotlin holdout
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json
+      - packages/quality-gates/phase2-prospective-hunter-freeze.cjs
+      - packages/quality-gates/phase2-prospective-hunter-capture.cjs
+      - scripts/phase2-capture-frozen-hunter.cjs
+      - tests/unit/phase2-prospective-hunter-capture*.test.cjs
+      - .github/workflows/phase2-prospective-frozen-hunter.yml
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prospective-source-only-capture:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186') ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact control-plane PR head without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify complete local structural and regression contracts
+        run: npm run check
+      - name: Checkout immutable pre-registered Hunter (NOT PR HEAD)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 2db0d9890d437ea407b61349203c94e3d76f2d5b
+          path: frozen-hunter
+          persist-credentials: false
+      - name: Checkout unopened public external holdout at registered SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: android/nowinandroid
+          ref: 2982e63cb691ad49cd009aab43dc206fee6699c2
+          path: reserved-source
+          persist-credentials: false
+      - name: Verify complete Git tree, frozen engine and every original source identity before scanning
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'JS'
+          'use strict';
+          const fs=require('node:fs'),cp=require('node:child_process'),path=require('node:path');
+          const bytes=fs.readFileSync('docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json');
+          const lock=require('./packages/quality-gates/phase2-prospective-hunter-freeze.cjs')
+           .inspectProspectiveFreeze(bytes);
+          if(lock.status!=='FROZEN_SOURCE_METADATA_ONLY'||lock.sourceCount!==9)throw Error('NO_IMMUTABLE_FREEZE');
+          const manifest=JSON.parse(bytes),frozen=path.resolve('frozen-hunter'),
+           heldout=path.resolve('reserved-source');
+          const git=(dir,...args)=>cp.execFileSync('git',['-C',dir,'-c','core.hooksPath=/dev/null',
+           '-c','core.fsmonitor=false',...args],{encoding:'utf8',timeout:15000,
+           env:{PATH:process.env.PATH,HOME:'/tmp',GIT_NO_REPLACE_OBJECTS:'1',
+            GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',
+            GIT_TERMINAL_PROMPT:'0'}}).trim();
+          for(const [dir,item] of [[frozen,manifest.engine],[heldout,manifest.holdout]]){
+           if(git(dir,'rev-parse','HEAD')!==item.commitSha||
+            git(dir,'rev-parse','HEAD^{tree}')!==item.treeSha||
+            git(dir,'status','--porcelain','--untracked-files=all')!=='')throw Error('CHECKOUT_DRIFT');
+          }
+          for(const module of manifest.engine.modules)
+           if(git(frozen,'rev-parse','HEAD:'+module.path)!==module.blobSha)
+            throw Error('ENGINE_MODULE_REPLACED');
+          const rows=git(heldout,'ls-tree','-r','--full-tree',manifest.holdout.commitSha,'--','app/src/main/kotlin')
+           .split('\n').filter(x=>x.endsWith('.kt'));
+          if(rows.length!==manifest.holdout.files.length)throw Error('INCOMPLETE_SOURCE_DIRECTORY');
+          const expected=new Map(manifest.holdout.files.map(x=>[x.path,x.blobSha]));
+          for(const row of rows){
+           const m=/^(100644) blob ([a-f0-9]{40})\t(.+\.kt)$/.exec(row);
+           if(!m||expected.get(m[3])!==m[2])throw Error('MISMATCHED_SOURCE_BLOB');
+          }
+          console.log('FROZEN_ENGINE_AND_COMPLETE_HOLDOUT_GIT_TREES_VERIFIED');
+          JS
+      - name: Require networkless Bubblewrap and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Build original source-only inventories from immutable Git blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          root="$GITHUB_WORKSPACE/reserved-source"
+          engine="$GITHUB_WORKSPACE/frozen-hunter"
+          sha=2982e63cb691ad49cd009aab43dc206fee6699c2
+          scope=app/src/main/kotlin
+          node "$engine/tests/fixtures/gamehub-blind-numeric/prepare-inventory.cjs" \
+            "$root" "$sha" "$scope" "$RUNNER_TEMP/prospective-numeric-inventory.json"
+          node "$engine/tests/fixtures/gamehub-codec/prepare-blind-inventory.cjs" \
+            "$root" "$sha" "$scope" "$RUNNER_TEMP/prospective-codec-inventory.json"
+          node <<'JS'
+          'use strict';
+          const fs=require('node:fs');
+          const lock=JSON.parse(fs.readFileSync('docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json','utf8'));
+          for(const kind of ['numeric','codec']){
+           const data=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/prospective-'+kind+'-inventory.json','utf8'));
+           if(data.expectedCommitSha!==lock.holdout.commitSha||data.files.length!==9)throw Error('INVENTORY_NOT_COMPLETE');
+           for(let i=0;i<9;i++){
+            if(data.files[i].path!==lock.holdout.files[i].path||
+             data.files[i].expectedBlobSha!==lock.holdout.files[i].blobSha)
+             throw Error('INVENTORY_GIT_BLOB_MISMATCH');
+           }
+           if(kind==='numeric'&&(data.skippedOversized!==0||data.skippedNoncanonical!==0))
+            throw Error('NUMERIC_PARTIAL_INVENTORY');
+          }
+          console.log('ALL_NINE_ORIGINAL_SOURCE_BLOBS_MATCH_FROZEN_MANIFEST');
+          JS
+      - name: Run three frozen source-only Hunters in separate no-network namespaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          engine="$GITHUB_WORKSPACE/frozen-hunter"
+          helper="$engine/packages/investigation/plain-kotlin-payload.cjs"
+          policy="$engine/packages/investigation/novel-kotlin-path-policy.cjs"
+          for kind in numeric codec identity; do
+            mkdir -m 700 "$RUNNER_TEMP/prospective-$kind-output"
+          done
+          bash "$engine/tests/fixtures/gamehub-blind-numeric/run-hunter.sh" \
+            "$RUNNER_TEMP/prospective-numeric-inventory.json" \
+            "$engine/packages/family-hunter/phase2-numeric-risk-hunter.cjs" \
+            "$engine/packages/family-hunter/blind-numeric-worker.cjs" \
+            "$helper" "$policy" "$RUNNER_TEMP/prospective-numeric-output"
+          bash "$engine/tests/fixtures/gamehub-codec/run-blind-codec-hunter.sh" \
+            "$RUNNER_TEMP/prospective-codec-inventory.json" \
+            "$engine/packages/family-hunter/phase2-codec-integrity-hunter.cjs" \
+            "$engine/packages/family-hunter/phase2-blind-codec-worker.cjs" \
+            "$helper" "$policy" "$RUNNER_TEMP/prospective-codec-output"
+          bash "$engine/tests/fixtures/gamehub-identity/run-blind-identity-hunter.sh" \
+            "$RUNNER_TEMP/prospective-codec-inventory.json" \
+            "$engine/packages/family-hunter/phase2-identity-delimiter-hunter.cjs" \
+            "$engine/packages/family-hunter/phase2-blind-identity-worker.cjs" \
+            "$helper" "$policy" "$RUNNER_TEMP/prospective-identity-output"
+          echo 'FROZEN_NO_NETWORK_HUNTER_WORKERS_COMPLETED'
+      - name: Seal source-only predictions WITHOUT any oracle, labels or baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/prospective-evidence"
+          node scripts/phase2-capture-frozen-hunter.cjs \
+            "$GITHUB_WORKSPACE/docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json" \
+            "$RUNNER_TEMP/prospective-numeric-output/discovery.json" \
+            "$RUNNER_TEMP/prospective-codec-output/discovery.json" \
+            "$RUNNER_TEMP/prospective-identity-output/discovery.json" \
+            "$RUNNER_TEMP/prospective-evidence/receipt.json"
+          cp "$RUNNER_TEMP/prospective-numeric-output/discovery.json" "$RUNNER_TEMP/prospective-evidence/numeric.json"
+          cp "$RUNNER_TEMP/prospective-codec-output/discovery.json" "$RUNNER_TEMP/prospective-evidence/codec.json"
+          cp "$RUNNER_TEMP/prospective-identity-output/discovery.json" "$RUNNER_TEMP/prospective-evidence/identity.json"
+          (cd "$RUNNER_TEMP/prospective-evidence" && sha256sum numeric.json codec.json identity.json receipt.json > SHA256SUMS.txt)
+          node -e 'const x=require(process.argv[1]);if(x.falsePositiveCount!==null||x.precision!==null||x.recall!==null||x.verifiedRepairs!==0||x.engineExecutedAndAuthenticated!==false)throw Error("FABRICATED_PERFORMANCE")' "$RUNNER_TEMP/prospective-evidence/receipt.json"
+      - name: Publish SHA-bound sanitized unscored predictions only
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-external-kotlin-frozen-hunter-unscored
+          path: ${{ runner.temp }}/prospective-evidence/
+          retention-days: 30
+          if-no-files-found: warn
