@@ -46,6 +46,13 @@ test('fabricated transcripts do not become authenticated JVM or causal claims',(
   assert.equal(result.threeFileMinimalInteractionProven,false);
   assert.deepEqual(result.minimalRepairSets,[[entries[0]],[entries[1]]]);
   assert.deepEqual(result.necessaryFiles,[]);
+  assert.deepEqual(result.oracleVector.oracleDependencies,{
+   BENIGN:[],EXTREME:[entries[0],entries[1]]
+  });
+  assert.deepEqual(result.oracleVector.minimalPassingSubsetsByOracle,{
+   BENIGN:[[]],EXTREME:[[entries[0]],[entries[1]]]
+  });
+  assert.equal(result.oracleVector.jvmReceiptsAuthenticatedByThisFunction,false);
   assert.equal(result.mergeAllowed,false);
   fs.writeFileSync(path.join(dir,'case-0.exit'),'0\n');
   const invalid=spawnSync(process.execPath,[path.join(fixture,'adjudicate.cjs'),root,dir,head]);
