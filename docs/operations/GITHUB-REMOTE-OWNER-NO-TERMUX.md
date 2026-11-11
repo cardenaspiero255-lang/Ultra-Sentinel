@@ -32,6 +32,6 @@ Con el modo adicional habilitado, el ejecutor reobtiene la fuente Kotlin mediant
 
 ## Rollback y límites
 
-El retorno a los blobs originales exige un **nuevo** consentimiento para `ROLLBACK_EXISTING_DRAFT_PR_BRANCH`, otro nonce y una verificación independiente del árbol resultante. **No se ha implementado todavía el aprobador GitHub/OIDC para ese segundo paso**; la ruta anterior utiliza Ed25519. Por seguridad, dejar el modo de escritura deshabilitado hasta terminar y ensayar el rollback sin Termux. La existencia de un JWT OIDC o recibo local no sustituye la comprobación real de GitHub después de cada commit.
+El retorno a los blobs originales exige un **nuevo** consentimiento para `ROLLBACK_EXISTING_DRAFT_PR_BRANCH`, otro nonce y una verificación independiente del árbol resultante. Existe un [flujo separado de rollback con GitHub/OIDC](GITHUB-REMOTE-ROLLBACK-NO-TERMUX.md), además de la ruta anterior Ed25519; la existencia de ambos no demuestra que se haya ejecutado un rollback remoto real. Por seguridad, dejar el modo de escritura deshabilitado hasta verificar el preflight y ensayar la recuperación con las autorizaciones específicas. La existencia de un JWT OIDC o recibo local no sustituye la comprobación real de GitHub después de cada commit.
 
 Este mecanismo no certifica Android físico, Sentry ni los 13 controles Private Edition. **Nunca publicar tokens, firmas, archivos de autorización o datos privados en comentarios, PR o artefactos.**
