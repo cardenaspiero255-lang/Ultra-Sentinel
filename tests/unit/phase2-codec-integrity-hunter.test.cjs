@@ -149,3 +149,18 @@ test('multiline literals, comments and benign decoders cannot fabricate codec fi
  const out=scanCodecIntegrityHypotheses(input(src));
  assert.deepEqual(out.findings,[]);
 });
+
+test('rejects lossy UTF-16 source with a matching replacement-byte Git blob',()=>{
+ const malformed='package sample\nval name = "\\uD800"\n'+risk+'\n';
+ const verdict=scanCodecIntegrityHypotheses(input(malformed));
+ assert.equal(verdict.status,'BLOCKED_SOURCE');
+ assert.deepEqual(verdict.findings,[]);
+ assert.equal(verdict.sourceByteIntegrityVerified,false);
+});
+test('accepts exact UTF-8 supplementary characters without weakening source checks',()=>{
+ const source='package sample\n// 😀 supplementary code point\n'+risk+'\n';
+ const verdict=scanCodecIntegrityHypotheses(input(source));
+ assert.equal(verdict.status,'CODEC_INTEGRITY_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE');
+ assert.equal(verdict.findings.length,1);
+ assert.equal(verdict.findings[0].expectedBlobSha,gitBlob(source));
+});
