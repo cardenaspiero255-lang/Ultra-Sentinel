@@ -37,6 +37,11 @@ on:
       - tests/unit/phase2-three-source-experiment.test.cjs
       - tests/fixtures/gamehub-three-source/**
       - tests/fixtures/gamehub-codec/**
+      - tests/fixtures/gamehub-identity/**
+      - packages/family-hunter/phase2-identity-delimiter-hunter.cjs
+      - packages/family-hunter/phase2-blind-identity-worker.cjs
+      - packages/recovery/phase2-identity-delimiter-candidate.cjs
+      - tests/unit/phase2-identity-delimiter.test.cjs
       - packages/family-hunter/phase2-codec-integrity-hunter.cjs
       - packages/family-hunter/phase2-blind-codec-worker.cjs
       - packages/recovery/phase2-codec-integrity-candidate.cjs
@@ -94,6 +99,17 @@ jobs:
             --test-coverage-include=tests/fixtures/gamehub-blind-numeric/verify-sealed.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/phase2-blind-numeric-receipt.test.cjs
+      - name: Require 90 percent coverage of new identity Hunter and Fixer
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/phase2-identity-delimiter-hunter.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-identity-delimiter.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/recovery/phase2-identity-delimiter-candidate.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-identity-delimiter.test.cjs
       - name: Verify complete structure and unit suite
         run: npm run check
       - name: Set up JDK 21
@@ -194,6 +210,51 @@ jobs:
             "$GITHUB_WORKSPACE/packages/investigation/novel-kotlin-path-policy.cjs" \
             "$RUNNER_TEMP/codec-blind-output"
           sha256sum "$RUNNER_TEMP/codec-blind-output/discovery.json" > "$RUNNER_TEMP/codec-blind.sha256"
+      - name: Run blind identity Hunter in separate no-network namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/identity-blind-output"
+          bash tests/fixtures/gamehub-identity/run-blind-identity-hunter.sh \
+            "$RUNNER_TEMP/codec-inventory.json" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-identity-delimiter-hunter.cjs" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-blind-identity-worker.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/plain-kotlin-payload.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/novel-kotlin-path-policy.cjs" \
+            "$RUNNER_TEMP/identity-blind-output"
+          sha256sum "$RUNNER_TEMP/identity-blind-output/discovery.json" > "$RUNNER_TEMP/identity-blind.sha256"
+      - name: Execute original identity JVM after sealed blind source discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-telemetry/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --dir /input --ro-bind "$RUNNER_TEMP/identity-blind-output/discovery.json" /input/discovery.json \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/gamehub-identity/reproduce.sh \
+            /sentinel/original-gamehub /kotlin /sentinel /input/discovery.json > "$RUNNER_TEMP/identity-original.log" 2>&1; then
+            tail -100 "$RUNNER_TEMP/identity-original.log" >&2
+            exit 1
+          fi
+          grep -Fxq 'BLIND_IDENTITY_ORIGINAL_RED_GREEN_VETO_ROLLBACK_PASS' "$RUNNER_TEMP/identity-original.log"
+          grep -Fxq 'IDENTITY_ORIGINAL_JVM_RED_GREEN_WRONG_VETO_PASS' "$RUNNER_TEMP/identity-original.log"
+          sha256sum --status --check "$RUNNER_TEMP/identity-blind.sha256"
       - name: Execute original codec JVM after sealed blind source discovery
         shell: bash
         run: |
@@ -269,5 +330,6 @@ jobs:
           path: |
             ${{ runner.temp }}/three-source-factorial.log
             ${{ runner.temp }}/blind-codec.log
+            ${{ runner.temp }}/identity-original.log
           retention-days: 14
           if-no-files-found: warn
