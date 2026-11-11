@@ -40,10 +40,13 @@ jobs:
           node-version: '22'
       - name: Verify complete local structural and regression contracts
         run: npm run check
-      - name: Reject unverified holdout scores with adversarial adjudication tests
+      - name: Require 90 percent line and branch coverage of heldout adjudication preflight
         run: |
           set -euo pipefail
-          node --test tests/unit/phase2-heldout-adjudication-preflight.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/phase2-heldout-adjudication-preflight.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-heldout-adjudication-preflight.test.cjs
       - name: Checkout immutable pre-registered Hunter (NOT PR HEAD)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
