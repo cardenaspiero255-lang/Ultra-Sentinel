@@ -12,8 +12,7 @@ function result(status,findings=[],integrity=false){
   sourceRepositoryAuthenticated:false,originalFunctionalOracleVerified:false,
   causalityVerified:false,generalizationVerified:false,remoteWrites:false,mergeAllowed:false});
 }
-// Conservative line scanner: skip literal strings, nested comments and raw strings.
-// Unsupported multiline arithmetic is not interpreted as a safe result.
+// Skip literal strings, nested comments and raw strings while preserving lines.
 function codeLines(source){
  let block=0,raw=false;
  return source.split('\n').map(line=>{
@@ -48,19 +47,36 @@ function scanFile(file){
   const match=/^\s*import\s+kotlin\s*\.\s*ranges\s*\.\s*coerceIn\s+as\s+([A-Za-z_]\w*)\s*$/.exec(row);
   if(match){clamps.add(match[1]);if(clamps.size>33)throw Error('TOO_MANY_CLAMP_ALIASES');}
  }
+ // A Kotlin call chain may continue on later lines. Search the sanitized
+ // source as a whole, but bound the receiver to its containing expression so
+ // an earlier statement's arithmetic does not become evidence for this call.
+ const code=lines.join('\n');
+ const narrowing=/\.toInt\s*\(\s*\)\s*\.\s*([A-Za-z_]\w*)\s*\(\s*-?\d+\s*,\s*-?\d+\s*\)/g;
+ let lineNumber=1,lastOffset=0;
+ for(const m of code.matchAll(narrowing)){
+  for(let i=lastOffset;i<m.index;i++)if(code[i]==='\n')lineNumber++;
+  lastOffset=m.index;
+  if(!clamps.has(m[1]))continue;
+  let end=m.index-1;
+  while(end>=0&&/\s/.test(code[end]))end--;
+  let start=end,depth=0;
+  while(start>=0&&end-start<512){
+   const c=code[start];
+   if(c===')')depth++;
+   else if(c==='('){if(depth===0)break;depth--;}
+   if(depth===0&&/[=;{}\n]/.test(c))break;
+   start--;
+  }
+  if(depth!==0)continue;
+  const receiver=code.slice(start+1,m.index);
+  if(!/(?:\.toLong\s*\(\s*\)|\b\d+L\b)/.test(receiver)||!/[*/+-]/.test(receiver))continue;
+  findings.push(Object.freeze({rule:'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP',
+   path:file.path,line:lineNumber,expectedBlobSha:file.expectedBlobSha,
+   status:'HYPOTHESIS_REQUIRES_INDEPENDENT_KOTLIN_ORACLE'}));
+ }
  for(let index=0;index<lines.length;index++){
   const line=lines[index];
   for(const chunk of line.split(';')){
-   // Widened arithmetic converted to Int before a bounds clamp may wrap.
-   const narrowing=/\.toInt\s*\(\s*\)\s*\.\s*([A-Za-z_]\w*)\s*\(\s*-?\d+\s*,\s*-?\d+\s*\)/g;
-   for(const m of chunk.matchAll(narrowing)){
-    if(!clamps.has(m[1]))continue;
-    const prefix=chunk.slice(Math.max(0,m.index-240),m.index);
-    if(!/(?:\.toLong\s*\(\s*\)|\b\d+L\b)/.test(prefix)||!/[*/+-]/.test(prefix))continue;
-    findings.push(Object.freeze({rule:'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP',
-     path:file.path,line:index+1,expectedBlobSha:file.expectedBlobSha,
-     status:'HYPOTHESIS_REQUIRES_INDEPENDENT_KOTLIN_ORACLE'}));
-   }
    // The multiplication can overflow before a later conversion to Long.
    if(/\(\s*[A-Za-z_]\w*\s*\*\s*\d+\s*\)\s*\.toLong\s*\(\s*\)/.test(chunk)){
     findings.push(Object.freeze({rule:'INT_MULTIPLICATION_BEFORE_WIDENING',

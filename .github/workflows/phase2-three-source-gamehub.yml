@@ -36,6 +36,7 @@ on:
       - tests/unit/phase2-telemetry-counterfactuals.test.cjs
       - tests/unit/phase2-three-source-experiment.test.cjs
       - tests/fixtures/gamehub-three-source/**
+      - tests/fixtures/gamehub-multiline-numeric/**
       - tests/fixtures/gamehub-codec/**
       - tests/fixtures/gamehub-identity/**
       - packages/family-hunter/phase2-identity-delimiter-hunter.cjs
@@ -87,6 +88,10 @@ jobs:
       - name: Require numeric blind worker, inventory and receipt coverage
         run: |
           set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/phase2-numeric-risk-hunter.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-numeric-risk-hunter.test.cjs
           node --test --experimental-test-coverage \
             --test-coverage-include=packages/family-hunter/blind-numeric-worker.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
@@ -321,6 +326,7 @@ jobs:
           grep -Fxq 'PINNED_KOTLIN_NUMERIC_TYPES_BOUND_NOT_ORACLE' "$RUNNER_TEMP/three-source-factorial.log"
           grep -Fxq 'SEALED_NUMERIC_COMPILER_LINE_RULE_LINKED_ADVISORY_NOT_ORACLE' "$RUNNER_TEMP/three-source-factorial.log"
           grep -Fxq 'BLIND_NUMERIC_SOURCE_SELECTION_NOT_NEW_FAMILY' "$RUNNER_TEMP/three-source-factorial.log"
+          grep -Fxq 'MULTILINE_STORAGE_ORIGINAL_RED_GREEN_VETO_ROLLBACK_PASS' "$RUNNER_TEMP/three-source-factorial.log"
           sha256sum --check "$RUNNER_TEMP/numeric-discovery.sha256"
       - name: Publish bounded experiment receipt
         if: always()

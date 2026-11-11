@@ -28,6 +28,28 @@ test('detects syntactically different bounded numeric conversions without hardco
  assert.equal(output.findings[0].path,'module/src/main/kotlin/org/test/Counter.kt');
 });
 
+test('discovers narrowing and clamping split across lines with the correct source line',()=>{
+ for(const src of [
+  'package sample\nval value = ((amount * 100L) / limit)\n    .toInt()\n    .coerceIn(0, 100)\n',
+  'package sample\nval value = ((amount\n * 100L) / limit).toInt()\n    .coerceIn(0, 100)\n',
+  'package sample\nimport kotlin.ranges.coerceIn as bound\nval value = ((amount * 100L) / limit)\n .toInt()\n .bound(0, 100)\n'
+ ]){
+  const r=scanKotlinNumericRisks(request(src));
+  const expectedLine=src.slice(0,src.indexOf('.toInt()')).split('\n').length;
+  assert.deepEqual(r.findings.map(f=>[f.line,f.rule]),[[expectedLine,'WIDE_NUMERIC_NARROWED_BEFORE_CLAMP']]);
+  assert.equal(r.originalFunctionalOracleVerified,false);
+ }
+});
+
+test('multiline scanning does not borrow numeric evidence from unrelated statements or literals',()=>{
+ for(const body of [
+  'val other = x * 100L\nval safe = y\n .toInt()\n .coerceIn(0, 100)',
+  'val safe = (x * 100L)\n .coerceIn(0L, 100L)\n .toInt()',
+  '/* val x = (y * 100L)\n .toInt()\n .coerceIn(0, 100) */',
+  'val text = """(y * 100L)\n .toInt()\n .coerceIn(0, 100)"""'
+ ])assert.equal(scanKotlinNumericRisks(request('package sample\n'+body+'\n')).findings.length,0,body);
+});
+
 test('finds Kotlin standard clamp imports under aliases as unverified hypotheses',()=>{
  for(const alias of ['clamp','limitValue','bound_2']){
   const src='package sample\nimport kotlin.ranges.coerceIn as '+alias+'\n'+
