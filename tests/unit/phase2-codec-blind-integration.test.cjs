@@ -59,3 +59,12 @@ test('independent held-out Kotlin oracle preserves benign records and rejects ma
  assert.match(read(prefix+'reproduce.sh'),/phase2-executed-jvm-triplet.cjs/);
  assert.match(read(prefix+'reproduce.sh'),/rollbackSandbox/);
 });
+
+test('the pinned original Kotlin JVM oracle also executes RED and GREEN on a multiline format variant',()=>{
+ const replay=read(prefix+'reproduce.sh');
+ const yaml=read(workflow);
+ assert.match(replay,/multiline-original\.jar/);
+ assert.match(replay,/multiline-candidate\.jar/);
+ assert.match(replay,/CODEC_MULTILINE_ORIGINAL_RED_GREEN_PASS/);
+ assert.match(yaml,/grep -Fxq 'CODEC_MULTILINE_ORIGINAL_RED_GREEN_PASS'/);
+});
