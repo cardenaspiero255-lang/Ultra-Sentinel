@@ -1,0 +1,23 @@
+{
+  "schema": "ultra-sentinel-prospective-detekt/v1",
+  "engineCommit": "f5be850a7d50c8978318b3bc371f4f03ef49d983",
+  "engineTree": "ef9114cda9a4acc3f816387708940667bb4ab0b0",
+  "repository": "detekt/detekt",
+  "scope": "detekt-api/src/main/kotlin",
+  "revisions": [
+    {
+      "id": "a",
+      "commit": "04f97401d462e899383156b25d026b7b8c181401",
+      "tree": "1d990fe1dfd22f5735fd57a71c605b5315128307",
+      "kotlinFiles": 33
+    },
+    {
+      "id": "b",
+      "commit": "ba8f3a29716cd0ee540e8c449064098b203ee34d",
+      "tree": "7241d29184caa9ad11eb7f6ed3199013e6d71bb7",
+      "kotlinFiles": 33
+    }
+  ],
+  "truthCommitmentSha256": "255d0ce2ae462746b38293256c0504f3800dce7bc1a4485ec0a68e0bc3d09b6f",
+  "protocol": "Scan both entire source directories using the frozen three source-only workers. The committed salted truth and JVM oracle remain outside the worker. Seal all predictions before truth is revealed. These related revisions are a bounded development-selected pilot, not an unbiased population benchmark."
+}

@@ -1,0 +1,90 @@
+name: Ultra Sentinel — frozen Hunter prospective Detekt pilot
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-prospective-detekt.yml
+      - docs/quality/PHASE2-DETEKT-PROSPECTIVE-20261111.json
+      - scripts/phase2-detekt-frozen-capture.sh
+permissions:
+  contents: read
+jobs:
+  frozen-source-only-capture:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout preregistration commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Checkout frozen Hunter
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: f5be850a7d50c8978318b3bc371f4f03ef49d983
+          path: frozen-hunter
+          persist-credentials: false
+      - name: Checkout source revision A
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: detekt/detekt
+          ref: 04f97401d462e899383156b25d026b7b8c181401
+          path: source-a
+          persist-credentials: false
+      - name: Checkout source revision B
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: detekt/detekt
+          ref: ba8f3a29716cd0ee540e8c449064098b203ee34d
+          path: source-b
+          persist-credentials: false
+      - name: Require networkless Bubblewrap and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Verify frozen-worker isolation
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-hunter/tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-hunter/tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Verify preregistered commitment and capture source-only predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'JS'
+          const assert=require('node:assert/strict');
+          const m=require('./docs/quality/PHASE2-DETEKT-PROSPECTIVE-20261111.json');
+          assert.equal(m.schema,'ultra-sentinel-prospective-detekt/v1');
+          assert.equal(m.truthCommitmentSha256,'255d0ce2ae462746b38293256c0504f3800dce7bc1a4485ec0a68e0bc3d09b6f');
+          assert.equal(m.engineCommit,'f5be850a7d50c8978318b3bc371f4f03ef49d983');
+          assert.equal(m.engineTree,'ef9114cda9a4acc3f816387708940667bb4ab0b0');
+          assert.equal(m.repository,'detekt/detekt');
+          assert.equal(m.scope,'detekt-api/src/main/kotlin');
+          assert.deepEqual(m.revisions,[
+            {id:'a',commit:'04f97401d462e899383156b25d026b7b8c181401',tree:'1d990fe1dfd22f5735fd57a71c605b5315128307',kotlinFiles:33},
+            {id:'b',commit:'ba8f3a29716cd0ee540e8c449064098b203ee34d',tree:'7241d29184caa9ad11eb7f6ed3199013e6d71bb7',kotlinFiles:33}
+          ]);
+          JS
+          mkdir "$RUNNER_TEMP/detekt-predictions"
+          bash scripts/phase2-detekt-frozen-capture.sh "$GITHUB_WORKSPACE/frozen-hunter" \
+            "$GITHUB_WORKSPACE/source-a" "$GITHUB_WORKSPACE/source-b" "$RUNNER_TEMP/detekt-predictions"
+      - name: Publish sealed unscored predictions
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-detekt-frozen-predictions
+          path: ${{ runner.temp }}/detekt-predictions/
+          retention-days: 30
+          if-no-files-found: error
