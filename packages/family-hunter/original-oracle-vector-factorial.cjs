@@ -93,9 +93,17 @@ function classifyOracleVectorFactorial(input){
   }
   const sets=Object.values(dependencies);
   const unique=new Set(sets.filter(v=>v.length===1).map(v=>v[0]));
+  // Marginal sensitivity to several files is NOT a joint repair. The
+  // original GameHub three-source JVM matrix passes if EITHER of two
+  // one-file repairs is applied; interpreting this as a multi-file cause
+  // misstates the counterfactual. Use minimal passing subsets instead.
+  const jointMinimal=oracleIds.some(id=>minimalByOracle[id].some(s=>s.length>1));
+  const alternativeSingletons=oracleIds.some(id=>
+   minimalByOracle[id].length>1&&minimalByOracle[id].every(s=>s.length===1));
   const status=sets.length>=2&&sets.every(v=>v.length===1)&&unique.size===sets.length?
    'INDEPENDENT_ORACLE_EFFECTS_OBSERVED':
-   sets.some(v=>v.length>1)?'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS':
+   jointMinimal?'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS':
+   alternativeSingletons?'ALTERNATIVE_SINGLE_FILE_EFFECTS_OBSERVED':
    'NONDIAGNOSTIC_ORACLE_MATRIX';
   return result(status,dependencies,minimalByOracle);
  }catch{return result('BLOCKED_UNTRUSTED_ORACLE_MATRIX');}
