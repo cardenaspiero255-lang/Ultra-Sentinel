@@ -5,6 +5,8 @@ on:
       - docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json
       - packages/quality-gates/phase2-prospective-hunter-freeze.cjs
       - packages/quality-gates/phase2-prospective-hunter-capture.cjs
+      - packages/quality-gates/phase2-heldout-adjudication-preflight.cjs
+      - tests/unit/phase2-heldout-adjudication-preflight.test.cjs
       - scripts/phase2-capture-frozen-hunter.cjs
       - tests/unit/phase2-prospective-hunter-capture*.test.cjs
       - .github/workflows/phase2-prospective-frozen-hunter.yml
@@ -38,6 +40,13 @@ jobs:
           node-version: '22'
       - name: Verify complete local structural and regression contracts
         run: npm run check
+      - name: Require 90 percent line and branch coverage of heldout adjudication preflight
+        run: |
+          set -euo pipefail
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/phase2-heldout-adjudication-preflight.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-heldout-adjudication-preflight.test.cjs
       - name: Checkout immutable pre-registered Hunter (NOT PR HEAD)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
