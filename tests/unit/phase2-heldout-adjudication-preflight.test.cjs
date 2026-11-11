@@ -40,9 +40,10 @@ test('a complete but self-asserted nine-source truth cannot be mistaken for veri
  a.cases[0].positiveLabels.push({rule:'UNSEEN_FAMILY',line:18});
  a.cases[1].negativeLabels.push({rule:'BENIGN_CONTROL',line:3});
  const r=check(p,a);
- assert.equal(r.reason,'EVIDENCE_REFERENCES_REQUIRE_TRUSTED_EXTERNAL_VERIFICATION');
- assert.equal(r.sourceUniverseComplete,true);
- assert.equal(r.negativeUniverseComplete,true);
+ assert.equal(r.reason,'NO_PROSPECTIVE_TRUTH_COMMITMENT');
+ assert.equal(r.sourceUniverseComplete,false);
+ assert.equal(r.negativeUniverseComplete,false);
+ assert.equal(r.assertedSourceEntriesComplete,true);
  assert.equal(r.assertedPositiveLabels,1);
  assert.equal(r.assertedNegativeLabels,1);
  assert.equal(r.oracleIndependenceAuthenticated,false);
@@ -131,6 +132,16 @@ test('reject active getters and proxies before invoking them',()=>{
  const a=adjudication();
  Object.defineProperty(a.cases[0],'path',{enumerable:true,get(){reads++;throw Error('getter');}});
  assert.equal(check(predictions(),a).reason,'UNTRUSTED_OR_INCOMPLETE_ADJUDICATION');
+ assert.equal(reads,0);
+});
+test('reject top-level accessors and proxies without executing caller code',()=>{
+ let reads=0;
+ const args={predictions:predictions()};
+ Object.defineProperty(args,'manifestBytes',{enumerable:true,get(){reads++;throw Error('getter');}});
+ assert.equal(inspect(args).reason,'UNTRUSTED_OR_INCOMPLETE_ADJUDICATION');
+ const proxy=new Proxy({manifestBytes,predictions:predictions()},
+  {ownKeys(){reads++;throw Error('proxy');}});
+ assert.equal(inspect(proxy).reason,'UNTRUSTED_OR_INCOMPLETE_ADJUDICATION');
  assert.equal(reads,0);
 });
 test('reject tampered manifest and missing required fields',()=>{

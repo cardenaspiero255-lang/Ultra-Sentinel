@@ -49,8 +49,12 @@ function array(value,min,max){
  }
  return out;
 }
-function inspectIndependentAdjudication({manifestBytes,predictions,adjudication}={}){
+function inspectIndependentAdjudication(input){
  try{
+  if(!input||typeof input!=='object'||types.isProxy(input))fail('INVALID_RECORD');
+  const keys=Object.hasOwn(input,'adjudication')
+   ?['manifestBytes','predictions','adjudication']:['manifestBytes','predictions'];
+  const {manifestBytes,predictions,adjudication}=record(input,keys);
   if(!Buffer.isBuffer(manifestBytes))fail('INVALID_FREEZE');
   const freeze=inspectProspectiveFreeze(manifestBytes);
   if(freeze.status!=='FROZEN_SOURCE_METADATA_ONLY')fail('INVALID_FREEZE');
@@ -128,9 +132,10 @@ function inspectIndependentAdjudication({manifestBytes,predictions,adjudication}
   }
   // A complete list of labels is not necessarily a complete universe of
   // valid findings. Independent executable oracles and provenance are needed.
-  return Object.freeze({...blocked('EVIDENCE_REFERENCES_REQUIRE_TRUSTED_EXTERNAL_VERIFICATION'),
-   sourceUniverseComplete:true,negativeUniverseComplete:negatives>0,
-   truthPrecommittedBeforePredictions:false,
+  // This exact SHA-pinned manifest explicitly states that no truth was
+  // committed before predictions. Later caller assertions cannot change it.
+  return Object.freeze({...blocked('NO_PROSPECTIVE_TRUTH_COMMITMENT'),
+   assertedSourceEntriesComplete:true,
    assertedPositiveLabels:positives,assertedNegativeLabels:negatives,
    evidenceReferenceCount:4+cases.length});
  }catch{return blocked('UNTRUSTED_OR_INCOMPLETE_ADJUDICATION');}

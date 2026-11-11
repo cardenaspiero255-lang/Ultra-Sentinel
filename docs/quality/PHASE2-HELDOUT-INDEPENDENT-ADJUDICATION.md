@@ -20,7 +20,7 @@ The [successful main run 43107038443](https://github.com/cardenaspiero255-lang/U
 
 ## Gate behavior
 
-`packages/quality-gates/phase2-heldout-adjudication-preflight.cjs` checks structural consistency, source identities, case completeness, truth commitment references and contradictory labels. It **always blocks scoring** until an independent trusted attestation verifier is implemented and original evidence authenticated. Self-declared hashes, timestamps and verification flags are not trusted attestations. Its positive/negative label counts, when supplied, are **asserted counts**, not validated facts.
+`packages/quality-gates/phase2-heldout-adjudication-preflight.cjs` checks structural consistency, listed source identities, case entries, truth commitment references and contradictory labels. It **always blocks scoring** until an independent trusted attestation verifier is implemented and original evidence authenticated. The pinned manifest explicitly has no prospective truth commitment; a later caller assertion cannot change that. Self-declared hashes, timestamps and verification flags are not trusted attestations. Its label counts and source-entry completeness, when supplied, are **assertions**, not validated facts; neither the source nor the negative universe is certified complete.
 
 No automatic deployment, protected action, certification, model comparison or Triple S+ claim is authorized by this preflight.
 
