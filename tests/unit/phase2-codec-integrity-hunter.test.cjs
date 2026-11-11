@@ -112,3 +112,40 @@ test('valid Kotlin without terminal newline preserves exact Git blob identity',(
  assert.equal(result.findings.length,1);
  assert.equal(result.findings[0].expectedBlobSha,gitBlob(src));
 });
+
+test('finds multiline Kotlin Base64 decoder expressions without losing source location',()=>{
+ const src=[
+  'package sample',
+  'val harmless = String(bytes, StandardCharsets.UTF_8)',
+  'val repaired = String(',
+  '  Base64.getUrlDecoder()',
+  '    .decode(payload),',
+  '  StandardCharsets.UTF_8',
+  ')',
+  ''
+ ].join('\n');
+ const out=scanCodecIntegrityHypotheses(input(src));
+ assert.equal(out.status,'CODEC_INTEGRITY_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE');
+ assert.deepEqual(out.findings.map(f=>[f.rule,f.line,f.expectedBlobSha]),[
+  ['LOSSY_BASE64_UTF8_DECODE',3,gitBlob(src)]
+ ]);
+ assert.equal(out.causalityVerified,false);
+});
+test('multiline literals, comments and benign decoders cannot fabricate codec findings',()=>{
+ const src=[
+  'package sample',
+  '/* String(',
+  ' Base64.getDecoder().decode(data),',
+  ' StandardCharsets.UTF_8)',
+  '*/',
+  'val escaped = """String(',
+  ' Base64.getDecoder().decode(data),',
+  ' StandardCharsets.UTF_8)"""',
+  'val safe = String(',
+  ' bytes,',
+  ' StandardCharsets.UTF_8)',
+  ''
+ ].join('\n');
+ const out=scanCodecIntegrityHypotheses(input(src));
+ assert.deepEqual(out.findings,[]);
+});
