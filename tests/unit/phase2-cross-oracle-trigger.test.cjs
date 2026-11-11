@@ -87,6 +87,17 @@ test('vector factorial changes run exact-head coverage and the pinned GameHub ex
  assert.ok(coverage.includes('--test-coverage-include='+vector));
  assert.ok(coverage.includes('--test-coverage-lines=90 --test-coverage-branches=90'));
 });
+test('Phase 2 coverage and isolated oracles also run on the exact owner main push',()=>{
+ for(const workflow of ['phase2-control-plane-coverage.yml','phase2-three-source-gamehub.yml',
+  'phase2-jarvis-note-oracle.yml','phase2-blind-elapsed-original-oracle.yml']){
+  const yaml=read('.github/workflows/'+workflow);
+  assert.match(yaml,/^  push:\n    branches: \[main\]$/m,workflow);
+  assert.match(yaml,/github\.event_name == 'push' && github\.ref == 'refs\/heads\/main' &&\s*\n\s*github\.actor_id == '322222186'/,workflow);
+  assert.ok(yaml.includes('ref: ${{ github.event.pull_request.head.sha || github.sha }}'),workflow);
+  assert.ok(yaml.includes('permissions:\n  contents: read'),workflow);
+  assert.ok(!yaml.includes('pull_request_target'),workflow);
+ }
+});
 test('Kotlin numeric call identity fixture is required in pinned GameHub CI',()=>{
  const yaml=read('.github/workflows/phase2-three-source-gamehub.yml');
  assert.equal(changes(yaml).filter(path=>path==='tests/fixtures/kotlin-numeric-identity/**').length,1);
