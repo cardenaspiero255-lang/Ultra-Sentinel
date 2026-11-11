@@ -126,3 +126,41 @@ test('rejects accessors, proxies and extra active properties without invoking th
  assert.equal(classifyOracleVectorFactorial(proxied).status,'BLOCKED_UNTRUSTED_ORACLE_MATRIX');
  assert.equal(effects,0);
 });
+
+test('GameHub three-source original matrix has alternative single-file repairs, not a joint cause',()=>{
+ const files=['A','B','C'].map(x=>`app/src/main/java/example/${x}.kt`);
+ const output=classifyOracleVectorFactorial(matrix(files,{
+  BENIGN:()=>true,
+  EXTREME:mask=>Boolean(mask&1)||Boolean(mask&2)
+ }));
+ assert.equal(output.status,'ALTERNATIVE_SINGLE_FILE_EFFECTS_OBSERVED');
+ assert.deepEqual(output.oracleDependencies,{BENIGN:[],EXTREME:[files[0],files[1]]});
+ assert.deepEqual(output.minimalPassingSubsetsByOracle,{
+  BENIGN:[[]],EXTREME:[[files[0]],[files[1]]]
+ });
+ assert.equal(output.causalityVerified,false);
+ assert.equal(output.jvmReceiptsAuthenticatedByThisFunction,false);
+ assert.equal(output.mergeAllowed,false);
+});
+
+test('three-file minimal repair remains joint even with a benign always-passing oracle',()=>{
+ const files=['A','B','C'].map(x=>`app/src/main/java/example/${x}.kt`);
+ const output=classifyOracleVectorFactorial(matrix(files,{
+  BENIGN:()=>true,
+  CONTRACT:mask=>(mask&7)===7
+ }));
+ assert.equal(output.status,'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS');
+ assert.deepEqual(output.minimalPassingSubsetsByOracle.CONTRACT,[[...files]]);
+ assert.equal(output.causalityVerified,false);
+});
+
+test('a baseline-passing oracle with regressions on two interventions does not prove a repair',()=>{
+ const files=['A','B','C'].map(x=>`app/src/main/java/example/${x}.kt`);
+ const output=classifyOracleVectorFactorial(matrix(files,{
+  BENIGN:()=>true,
+  REGRESSION:mask=>mask===0||mask===7
+ }));
+ assert.equal(output.status,'NONDIAGNOSTIC_ORACLE_MATRIX');
+ assert.deepEqual(output.minimalPassingSubsetsByOracle.REGRESSION,[[]]);
+ assert.equal(output.causalityVerified,false);
+});
