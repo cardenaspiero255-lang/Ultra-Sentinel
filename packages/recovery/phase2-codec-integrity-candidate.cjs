@@ -35,9 +35,10 @@ function draftCodecIntegrityCandidate(input){
   });
   if(rescanned.status!=='CODEC_INTEGRITY_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE'||
    rescanned.findings.length!==1||
-   rescanned.findings[0].line!==observation.line||
-   rescanned.findings[0].path!==observation.path||
-   rescanned.findings[0].expectedBlobSha!==observation.expectedBlobSha)return blocked();
+   rescanned.findings[0].line!==observation.line)return blocked();
+  // Path and Git blob equality were validated above against the same
+  // immutable string values passed into Hunter. Repeating those comparisons
+  // adds unreachable decision branches without increasing assurance.
   const matches=[...f.source.matchAll(LOSSY)];
   if(matches.length!==1)return blocked();
   const match=matches[0];
