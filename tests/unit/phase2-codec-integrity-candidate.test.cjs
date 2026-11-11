@@ -83,3 +83,30 @@ test('Fixer does not trust a source-only finding generated from malformed Unicod
  input.finding.expectedBlobSha=input.file.expectedBlobSha;
  assert.equal(draftCodecIntegrityCandidate(input).status,'BLOCKED_CODEC_CANDIDATE');
 });
+
+test('Fixer refuses a raw regex matching text that Hunter correctly ignored in a comment',()=>{
+ const request=data();
+ const comment='\n// String(Base64.getDecoder().decode(fields[index]), StandardCharsets.UTF_8)\n';
+ request.file.source+=comment;
+ request.file.expectedBlobSha=blob(request.file.source);
+ request.finding.expectedBlobSha=request.file.expectedBlobSha;
+ const hunter=scanCodecIntegrityHypotheses({
+  expectedCommitSha:request.expectedCommitSha,files:[request.file]
+ });
+ assert.equal(hunter.findings.length,1);
+ assert.equal(draftCodecIntegrityCandidate({...request,finding:hunter.findings[0]}).status,
+  'BLOCKED_CODEC_CANDIDATE');
+});
+
+test('Fixer refuses to rewrite a source expression spanning unsupported comment syntax',()=>{
+ const request=data();
+ request.file.source=request.file.source.replace(
+  ', StandardCharsets.UTF_8)',', /* Kotlin comment */ StandardCharsets.UTF_8)');
+ request.file.expectedBlobSha=blob(request.file.source);
+ const hunter=scanCodecIntegrityHypotheses({
+  expectedCommitSha:request.expectedCommitSha,files:[request.file]
+ });
+ assert.equal(hunter.findings.length,1);
+ assert.equal(draftCodecIntegrityCandidate({...request,finding:hunter.findings[0]}).status,
+  'BLOCKED_CODEC_CANDIDATE');
+});
