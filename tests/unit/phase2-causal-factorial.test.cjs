@@ -64,3 +64,19 @@ test('nested blob hashes and relation endpoints must be primitive before seriali
  assert.match(adjudicateFactorialCausalHypotheses(maliciousEdge).status,/^BLOCKED_/);
  assert.equal(effects,0);
 });
+
+
+test('rejects Windows separator traversal masquerading as a distinct Kotlin source path',()=>{
+ const s=sample();
+ const unsafe='app\\\\..\\\\Secret.kt';
+ const forged={
+  ...s,
+  files:s.files.map((file,i)=>i===0?{...file,path:unsafe}:file),
+  relations:s.relations.map(edge=>({
+   ...edge,
+   from:edge.from===paths[0]?unsafe:edge.from,
+   to:edge.to===paths[0]?unsafe:edge.to
+  }))
+ };
+ assert.equal(adjudicateFactorialCausalHypotheses(forged).status,'BLOCKED_COUNTERFACTUAL_MATRIX');
+});
