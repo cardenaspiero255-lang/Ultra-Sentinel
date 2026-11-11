@@ -32,7 +32,7 @@ const oracleVector=classifyOracleVectorFactorial({files:paths,oracleIds:['BENIGN
   selectedFiles:paths.filter((_,i)=>Boolean(row.mask&(1<<i))),
   verdicts:{BENIGN:row.benignPassed?'PASS':'FAIL',EXTREME:row.defectObserved?'FAIL':'PASS'}
  }))});
-if(oracleVector.status!=='SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS'||
+if(oracleVector.status!=='ALTERNATIVE_SINGLE_FILE_EFFECTS_OBSERVED'||
  oracleVector.causalityVerified!==false||oracleVector.jvmReceiptsAuthenticatedByThisFunction!==false)
  throw Error('ORACLE_VECTOR_FILTER_VETO');
 // The contrast is predeclared. A surprising result fails the experiment.
