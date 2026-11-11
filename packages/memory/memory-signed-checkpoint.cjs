@@ -256,7 +256,12 @@ class PersistentSignedRevocationStore{
     fs.constants.O_CREAT|fs.constants.O_EXCL|fs.constants.O_WRONLY|fs.constants.O_NOFOLLOW,
     0o600);
    let previous=null;
-   if(fs.existsSync(this.filename))
+   // existsSync follows dangling symlinks and reports them as absent. Never
+   // overwrite an unverified directory entry as if this were a new store.
+   let present=true;
+   try{fs.lstatSync(this.filename);}
+   catch(e){if(e.code==='ENOENT')present=false;else throw e;}
+   if(present)
     previous=inspectStored(readFile(this.filename),stableEntries,stableKey);
    if(requireWitness){
     if(!previous)denied('CHECKPOINT_NOT_FOUND');
@@ -285,7 +290,14 @@ class PersistentSignedRevocationStore{
    const len=Buffer.byteLength(serialized);
    if(fs.writeSync(fd,serialized)!==len)denied('CHECKPOINT_PARTIAL_WRITE');
    fs.fsyncSync(fd);fs.closeSync(fd);fd=null;
-   fs.renameSync(temp,this.filename);
+   if(previous)fs.renameSync(temp,this.filename);
+   else{
+    // First creation must not replace a directory entry introduced after
+    // preflight. linkSync fails with EEXIST; a leftover temporary file then
+    // requires supervised recovery, just as after an interrupted commit.
+    fs.linkSync(temp,this.filename);
+    fs.unlinkSync(temp);
+   }
    const dfd=fs.openSync(path.dirname(this.filename),fs.constants.O_RDONLY|
     fs.constants.O_DIRECTORY);
    try{fs.fsyncSync(dfd);}finally{fs.closeSync(dfd);}
