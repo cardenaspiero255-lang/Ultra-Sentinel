@@ -47,17 +47,69 @@ if(result.candidateSource.split(old).length!==2)throw Error('WRONG_CANDIDATE_AMB
 fs.writeFileSync(path.join(work,'candidate.kt'),result.candidateSource,{flag:'wx',mode:0o600});
 fs.writeFileSync(path.join(work,'wrong.kt'),result.candidateSource.replace(old,'if (true) return null'),{flag:'wx',mode:0o600});
 fs.writeFileSync(path.join(work,'candidate-blob.txt'),result.candidateBlobSha,{flag:'wx',mode:0o600});
+// This is a syntax-only metamorphic variant of the SHA-pinned ORIGINAL
+// GameHub source, not another product defect or an independent holdout.
+const oldCodec='String(Base64.getDecoder().decode(fields[index]), StandardCharsets.UTF_8)';
+if(source.split(oldCodec).length!==2)throw Error('MULTILINE_ORIGINAL_NOT_UNIQUE');
+const multilineCodec=[
+ 'String(',
+ '  Base64.getDecoder()',
+ '    .decode(fields[index]),',
+ '  StandardCharsets.UTF_8',
+ ')'
+].join('\n');
+const multilineOriginal=source.replace(oldCodec,multilineCodec);
+const multilineBlob=gitBlob(multilineOriginal);
+const {scanCodecIntegrityHypotheses}=require(path.join(sentinel,
+ 'packages/family-hunter/phase2-codec-integrity-hunter.cjs'));
+const multilineFile={path:rel,source:multilineOriginal,expectedBlobSha:multilineBlob};
+const multilineScan=scanCodecIntegrityHypotheses({expectedCommitSha:head,files:[multilineFile]});
+if(multilineScan.status!=='CODEC_INTEGRITY_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE'||
+ multilineScan.findings.length!==1||multilineScan.findings[0].path!==rel)
+ throw Error('MULTILINE_HUNTER_DID_NOT_DISCOVER');
+const multilineFix=draftCodecIntegrityCandidate({
+ expectedCommitSha:head,file:multilineFile,finding:multilineScan.findings[0]
+});
+if(multilineFix.status!=='CANDIDATE_REQUIRES_INDEPENDENT_ORIGINAL_JVM_ORACLE'||
+ gitBlob(multilineFix.candidateSource)!==multilineFix.candidateBlobSha||
+ multilineFix.remoteWrites!==false||multilineFix.mergeAllowed!==false||
+ multilineFix.originalFunctionalOracleVerified!==false)
+ throw Error('MULTILINE_FIXER_REJECTED');
+fs.writeFileSync(path.join(work,'multiline-original.kt'),multilineOriginal,{flag:'wx',mode:0o600});
+fs.writeFileSync(path.join(work,'multiline-candidate.kt'),multilineFix.candidateSource,{flag:'wx',mode:0o600});
+console.log('CODEC_MULTILINE_HUNTER_FIXER_HANDOFF_PASS');
 console.log('BLIND_CODEC_FINDING_TO_SCOPED_FIXER_PASS');
 JS
-for variant in original candidate wrong; do
+for variant in original candidate wrong multiline-original multiline-candidate; do
  case "$variant" in
   original) source="$original/$rel" ;;
   candidate) source="$work/candidate.kt" ;;
   wrong) source="$work/wrong.kt" ;;
+  multiline-original|multiline-candidate) source="$work/$variant.kt" ;;
  esac
  "$kotlin/bin/kotlinc" -nowarn "$source" "$fixture"/*.kt -include-runtime \
   -d "$work/$variant.jar"
 done
+# Execute the same independent original Kotlin oracle against a source
+# reflowed only at the codec call site: original RED, scoped Fixer GREEN.
+set +e
+java -XX:-UsePerfData -cp "$work/multiline-original.jar" \
+ com.cardenaspiero255.gamehubultra.data.OriginalCodecOracleKt \
+ > "$work/multiline-original.out" 2> "$work/multiline-original.err"
+multiline_red=$?
+java -XX:-UsePerfData -cp "$work/multiline-candidate.jar" \
+ com.cardenaspiero255.gamehubultra.data.OriginalCodecOracleKt \
+ > "$work/multiline-candidate.out" 2> "$work/multiline-candidate.err"
+multiline_green=$?
+set -e
+test "$multiline_red" -eq 2
+grep -Fxq 'BENIGN_CODEC_PASS' "$work/multiline-original.out"
+test "$(cat "$work/multiline-original.err")" = 'LOSSY_UTF8_RECORD_ACCEPTED'
+test "$multiline_green" -eq 0
+test ! -s "$work/multiline-candidate.err"
+grep -Fxq 'BENIGN_CODEC_PASS' "$work/multiline-candidate.out"
+grep -Fxq 'CODEC_INTEGRITY_ORACLE_PASS' "$work/multiline-candidate.out"
+printf '%s\n' 'CODEC_MULTILINE_ORIGINAL_RED_GREEN_PASS'
 git -c core.hooksPath=/dev/null clone --no-hardlinks -q "$original" "$work/disposable"
 git -C "$work/disposable" remote remove origin
 git -C "$work/disposable" switch -q -c sandbox/codec-blind-original
