@@ -1,0 +1,50 @@
+{
+  "schema": "sentinel-heldout-truth/v1",
+  "salt": "9004637b4ed5f489474208115a608b0dd8a0dcb69efc11d8d9d3358c00a0ffc6",
+  "engineCommit": "f5be850a7d50c8978318b3bc371f4f03ef49d983",
+  "repository": "detekt/detekt",
+  "originalCommit": "04f97401d462e899383156b25d026b7b8c181401",
+  "fixedCommit": "ba8f3a29716cd0ee540e8c449064098b203ee34d",
+  "source": "detekt-api/src/main/kotlin/dev/detekt/api/ConfigProperty.kt",
+  "originalBlob": "93658b34aebd8a7fb47feb08a80bc38b4ec0ee57",
+  "fixedBlob": "4f9280b2584e39ae8853d863ea4d89f17f672269",
+  "caseUnit": "one defect per version scoped to getListOrDefault; positive and fixed control are dependent",
+  "positive": {
+    "revision": "original",
+    "lineStart": 86,
+    "lineEnd": 95,
+    "expected": "incorrectly accepts lists containing non-strings"
+  },
+  "negative": {
+    "revision": "fixed",
+    "lineStart": 86,
+    "lineEnd": 94,
+    "expected": "rejects non-string lists while preserving valid strings and default"
+  },
+  "matchCriterion": "an alert must identify unchecked configured list element types or a generic unsound list cast in the scoped function",
+  "oracleSha256": "005844ab956975d667e4eb6c95ee2cc553bebbad00fe33772f3f905b3fe5945c",
+  "ruleStubSha256": "498cad56d61c47204638b025e26ca6ab7bd9064edb63ce575530e888760d34c5",
+  "pokoStubSha256": "c1feedee8e5cd63750a166b77ce3f1ca70a9ac3691055352fbcff9213f03cf80",
+  "oracleInputs": {
+    "invalid": [
+      [
+        "alpha",
+        7
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    "benign": [
+      [
+        "fallback"
+      ],
+      [
+        "alpha",
+        "beta"
+      ]
+    ]
+  },
+  "disclosures": "Independent JVM behavior oracle with original Config, ConfigProperty, ValuesWithReason and TestConfig; Rule and Poko are ABI stubs. Two versions share lineage; no population performance inference."
+}

@@ -1,0 +1,1 @@
+{"schema":"ultra-sentinel-blind-numeric/v1","status":"NO_NUMERIC_HYPOTHESES_NOT_CERTIFIED","findings":[],"filesScanned":33,"skippedOversized":0,"skippedNoncanonical":0,"sourceByteIntegrityVerified":true,"compilerAuthenticated":false,"sourceRepositoryAuthenticated":false,"originalOracleVerified":false,"repairAuthorized":false,"remoteWrites":false,"mergeAllowed":false}

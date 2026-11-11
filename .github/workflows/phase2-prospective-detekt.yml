@@ -5,6 +5,7 @@ on:
       - .github/workflows/phase2-prospective-detekt.yml
       - docs/quality/PHASE2-DETEKT-PROSPECTIVE-20261111.json
       - scripts/phase2-detekt-frozen-capture.sh
+      - tests/fixtures/detekt-prospective-20261111/**
 permissions:
   contents: read
 jobs:
@@ -86,5 +87,55 @@ jobs:
         with:
           name: phase2-detekt-frozen-predictions
           path: ${{ runner.temp }}/detekt-predictions/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Set up JDK 21 for revealed oracle
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch and authenticate Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-detekt"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-detekt"
+      - name: Replay disclosed original and upstream correction inside networkless sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          if ! env -i PATH=/usr/bin:/bin HOME=/tmp \
+            /usr/bin/bwrap --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/node/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-detekt/kotlinc" /kotlin --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --proc /proc --dev /dev --tmpfs /tmp --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/detekt-prospective-20261111/reproduce.sh \
+            /sentinel/source-a /sentinel/source-b /kotlin /sentinel > "$RUNNER_TEMP/detekt-oracle.log" 2>&1; then
+            tail -100 "$RUNNER_TEMP/detekt-oracle.log" >&2
+            exit 1
+          fi
+          grep -Fxq 'DETEKT_ORIGINAL_RED_GREEN_VETO_ROLLBACK_PASS' "$RUNNER_TEMP/detekt-oracle.log"
+      - name: Publish bounded oracle receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-detekt-oracle-replay
+          path: ${{ runner.temp }}/detekt-oracle.log
           retention-days: 30
           if-no-files-found: error
