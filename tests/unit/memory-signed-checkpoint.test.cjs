@@ -87,6 +87,64 @@ test('RED: corrupt file and symlink are never treated as valid persisted proof',
    .load({entries:evidences(),trustedPublicKey:key.publicKey}));
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('a dangling checkpoint symlink is never mistaken for a new signed store',()=>{
+ const key=owner(),s=snapshot(key.privateKey);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-dangling-'));
+ try{
+  const file=path.join(dir,'checkpoint.json'),target=path.join(dir,'missing.json');
+  fs.symlinkSync(target,file);
+  const store=new PersistentSignedRevocationStore(file);
+  assert.throws(()=>store.commit({...s,entries:evidences(),trustedPublicKey:key.publicKey}),
+   /CHECKPOINT_FILE_UNSAFE/);
+  assert.equal(fs.lstatSync(file).isSymbolicLink(),true);
+  assert.equal(fs.readlinkSync(file),target);
+  assert.equal(fs.existsSync(target),false);
+  assert.equal(fs.existsSync(file+'.lock'),false);
+  assert.equal(fs.existsSync(file+'.tmp'),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('checkpoint lookup errors are not treated as an empty store',t=>{
+ const key=owner(),s=snapshot(key.privateKey);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-lookup-'));
+ try{
+  const file=path.join(dir,'checkpoint.json'),original=fs.lstatSync;
+  t.mock.method(fs,'lstatSync',(name,...args)=>{
+   if(name===file)throw Object.assign(Error('lookup failed'),{code:'EACCES'});
+   return original(name,...args);
+  });
+  assert.throws(()=>new PersistentSignedRevocationStore(file).commit({
+   ...s,entries:evidences(),trustedPublicKey:key.publicKey
+  }),/lookup failed/);
+  assert.equal(fs.existsSync(file),false);
+  assert.equal(fs.existsSync(file+'.lock'),false);
+  assert.equal(fs.existsSync(file+'.tmp'),false);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('a checkpoint appearing during initial creation is preserved',t=>{
+ const key=owner(),s=snapshot(key.privateKey);
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-race-'));
+ try{
+  const file=path.join(dir,'checkpoint.json'),temp=file+'.tmp',original=fs.writeSync;
+  let injected=false;
+  t.mock.method(fs,'writeSync',(fd,...args)=>{
+   const result=original(fd,...args);
+   if(!injected&&fs.existsSync(temp)){
+    const live=fs.fstatSync(fd),candidate=fs.lstatSync(temp);
+    if(live.ino===candidate.ino&&live.dev===candidate.dev){
+     fs.symlinkSync('other-writer-target',file);injected=true;
+    }
+   }
+   return result;
+  });
+  assert.throws(()=>new PersistentSignedRevocationStore(file).commit({
+   ...s,entries:evidences(),trustedPublicKey:key.publicKey
+  }),error=>error.code==='EEXIST');
+  assert.equal(injected,true);
+  assert.equal(fs.readlinkSync(file),'other-writer-target');
+  assert.equal(fs.existsSync(file+'.lock'),false);
+  assert.equal(fs.existsSync(temp),true);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
 test('cleanup preserves a replacement lock owned by another writer',()=>{
  const key=owner(),s=snapshot(key.privateKey);
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-lock-replaced-'));

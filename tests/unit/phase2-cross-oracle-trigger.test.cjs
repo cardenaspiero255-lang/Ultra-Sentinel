@@ -35,6 +35,8 @@ const targets=[
  'tests/unit/phase2-signed-revocation-filter.test.cjs',
  'packages/memory/memory-local-revocation-journal.cjs',
  'tests/unit/memory-local-revocation-journal.test.cjs',
+ 'packages/memory/memory-signed-checkpoint.cjs',
+ 'tests/unit/memory-signed-checkpoint.test.cjs',
  'packages/memory/ultra_sentinel_memory_quarantine.cjs',
  'tests/unit/memory-signed-quarantine-integration.test.cjs',
  'tests/unit/memory-witness-quarantine-integration.test.cjs',
