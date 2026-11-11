@@ -97,3 +97,5 @@ node "$fixture/adjudicate.cjs" "$sentinel" "$work" "$head"
 sha256sum --check --status "$work/oracle-and-abi.sha256"
 verify_original
 printf '%s\n' 'THREE_SOURCE_EXECUTED_COUNTERFACTUALS_PASS'
+# Separate development case; no blind or novel-family claim.
+bash "$sentinel/tests/fixtures/gamehub-multiline-numeric/reproduce.sh" "$original" "$kotlin" "$sentinel"
