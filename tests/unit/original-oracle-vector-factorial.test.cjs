@@ -164,3 +164,27 @@ test('a baseline-passing oracle with regressions on two interventions does not p
  assert.deepEqual(output.minimalPassingSubsetsByOracle.REGRESSION,[[]]);
  assert.equal(output.causalityVerified,false);
 });
+
+
+test('two baseline-passing oracles that regress on distinct file changes are not independent repairs',()=>{
+ const files=['A','B'].map(x=>`app/src/main/java/example/${x}.kt`);
+ const output=classifyOracleVectorFactorial(matrix(files,{
+  BATTERY:mask=>!(mask&1),
+  NETWORK:mask=>!(mask&2)
+ }));
+ assert.equal(output.status,'NONDIAGNOSTIC_ORACLE_MATRIX');
+ assert.deepEqual(output.oracleDependencies,{BATTERY:[files[0]],NETWORK:[files[1]]});
+ assert.deepEqual(output.minimalPassingSubsetsByOracle,{BATTERY:[[]],NETWORK:[[]]});
+ assert.equal(output.causalityVerified,false);
+});
+
+test('a genuine repair and an unrelated baseline regression cannot establish independent repairs',()=>{
+ const files=['A','B'].map(x=>`app/src/main/java/example/${x}.kt`);
+ const output=classifyOracleVectorFactorial(matrix(files,{
+  AUTH:mask=>Boolean(mask&1),
+  VOICE:mask=>!(mask&2)
+ }));
+ assert.equal(output.status,'NONDIAGNOSTIC_ORACLE_MATRIX');
+ assert.deepEqual(output.minimalPassingSubsetsByOracle,{AUTH:[[files[0]]],VOICE:[[]]});
+ assert.equal(output.causalityVerified,false);
+});
