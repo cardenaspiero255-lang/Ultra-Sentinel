@@ -10,6 +10,8 @@ on:
       - packages/investigation/novel-kotlin-path-policy.cjs
       - packages/family-hunter/cross-file-interventions.cjs
       - tests/unit/cross-file-interventions.test.cjs
+      - packages/family-hunter/original-oracle-vector-factorial.cjs
+      - tests/unit/original-oracle-vector-factorial.test.cjs
       - packages/family-hunter/phase2-codec-integrity-hunter.cjs
       - packages/family-hunter/phase2-blind-codec-worker.cjs
       - packages/recovery/phase2-codec-integrity-candidate.cjs
@@ -74,6 +76,7 @@ jobs:
       - name: Checkout exact PR head without persistent credentials
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Install pinned Node major
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -88,6 +91,10 @@ jobs:
             --test-coverage-include=packages/family-hunter/cross-file-interventions.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \
             tests/unit/cross-file-interventions.test.cjs
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/original-oracle-vector-factorial.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/original-oracle-vector-factorial.test.cjs
           node --test --experimental-test-coverage \
             --test-coverage-include=packages/quality-gates/private-edition-readiness.cjs \
             --test-coverage-lines=90 --test-coverage-branches=90 \

@@ -25,6 +25,8 @@ on:
       - tests/unit/phase2-numeric-original-bridge.test.cjs
       - packages/quality-gates/phase2-telemetry-counterfactuals.cjs
       - packages/quality-gates/phase2-causal-factorial.cjs
+      - packages/family-hunter/original-oracle-vector-factorial.cjs
+      - tests/unit/original-oracle-vector-factorial.test.cjs
       - packages/recovery/phase2-executed-jvm-triplet.cjs
       - packages/recovery/phase2-generic-jvm-judge.cjs
       - packages/recovery/repair-judge.cjs
@@ -60,6 +62,7 @@ jobs:
       - name: Checkout Sentinel without persisted credentials
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Set up Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020

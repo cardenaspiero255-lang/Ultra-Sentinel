@@ -72,6 +72,19 @@ test('private readiness receipt changes run coverage for the evaluator and its r
   'scripts/evaluate-private-edition-readiness.cjs'])
   assert.ok(workflow.includes('--test-coverage-include='+target),target);
 });
+test('vector factorial changes run exact-head coverage and the pinned GameHub experiment',()=>{
+ const vector='packages/family-hunter/original-oracle-vector-factorial.cjs';
+ const vectorTest='tests/unit/original-oracle-vector-factorial.test.cjs';
+ for(const workflow of ['phase2-control-plane-coverage.yml','phase2-three-source-gamehub.yml']){
+  const yaml=read('.github/workflows/'+workflow),paths=changes(yaml);
+  for(const target of [vector,vectorTest])
+   assert.equal(paths.filter(p=>p===target).length,1,workflow+': '+target);
+  assert.ok(yaml.includes('ref: ${{ github.event.pull_request.head.sha || github.sha }}'),workflow);
+ }
+ const coverage=read('.github/workflows/phase2-control-plane-coverage.yml');
+ assert.ok(coverage.includes('--test-coverage-include='+vector));
+ assert.ok(coverage.includes('--test-coverage-lines=90 --test-coverage-branches=90'));
+});
 test('Kotlin numeric call identity fixture is required in pinned GameHub CI',()=>{
  const yaml=read('.github/workflows/phase2-three-source-gamehub.yml');
  assert.equal(changes(yaml).filter(path=>path==='tests/fixtures/kotlin-numeric-identity/**').length,1);

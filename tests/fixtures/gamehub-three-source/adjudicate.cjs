@@ -23,12 +23,28 @@ const {adjudicateFactorialCausalHypotheses}=require(path.join(sentinel,'packages
 const analysis=adjudicateFactorialCausalHypotheses({expectedHeadSha:head,files,relations:[],observations});
 if(analysis.status!=='INTERVENTION_HYPOTHESES_REQUIRING_TRUSTED_ORACLE'||
  analysis.causalityVerified!==false||analysis.completeMatrixRows!==8)throw Error('FACTORIAL_FILTER_VETO');
+// Preserve the benign and extreme outputs separately. Combining them with AND
+// could make multiple independent repairs appear to be one joint cause.
+const {classifyOracleVectorFactorial}=require(path.join(sentinel,'packages/family-hunter/original-oracle-vector-factorial.cjs'));
+const paths=files.map(f=>f.path);
+const oracleVector=classifyOracleVectorFactorial({files:paths,oracleIds:['BENIGN','EXTREME'],
+ scenarios:observations.map(row=>({
+  selectedFiles:paths.filter((_,i)=>Boolean(row.mask&(1<<i))),
+  verdicts:{BENIGN:row.benignPassed?'PASS':'FAIL',EXTREME:row.defectObserved?'FAIL':'PASS'}
+ }))});
+if(oracleVector.status!=='SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS'||
+ oracleVector.causalityVerified!==false||oracleVector.jvmReceiptsAuthenticatedByThisFunction!==false)
+ throw Error('ORACLE_VECTOR_FILTER_VETO');
 // The contrast is predeclared. A surprising result fails the experiment.
 if(JSON.stringify(analysis.minimalRepairSets)!==JSON.stringify([[files[0].path],[files[1].path]])||
- analysis.necessaryFiles.length!==0)throw Error('UNEXPECTED_LOCAL_CAUSAL_PATTERN');
+ analysis.necessaryFiles.length!==0||
+ JSON.stringify(oracleVector.minimalPassingSubsetsByOracle.EXTREME)!==
+  JSON.stringify([[files[0].path],[files[1].path]])||
+ JSON.stringify(oracleVector.minimalPassingSubsetsByOracle.BENIGN)!=='[[]]')
+ throw Error('UNEXPECTED_LOCAL_CAUSAL_PATTERN');
 console.log(JSON.stringify({status:'TRANSCRIPTS_REQUIRE_TRUSTED_EXECUTION_ATTESTATION',
  sourceHeadSha:head,sourceFiles:files,receipts,minimalRepairSets:analysis.minimalRepairSets,
- necessaryFiles:analysis.necessaryFiles,threeFileMinimalInteractionProven:false,
+ necessaryFiles:analysis.necessaryFiles,oracleVector,threeFileMinimalInteractionProven:false,
  jvmExecutionAuthenticatedByHelper:false,sourceRepositoryAuthenticatedByHelper:false,
  oracleProductContractBeyondTestUnverified:true,
  ownerAuthorizationGranted:false,remoteWrites:false,mergeAllowed:false}));
