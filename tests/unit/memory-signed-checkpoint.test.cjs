@@ -145,6 +145,55 @@ test('a checkpoint appearing during initial creation is preserved',t=>{
   assert.equal(fs.existsSync(temp),true);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('a private checkpoint directory beneath a replaceable parent is rejected',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-parent-'));
+ try{
+  const parent=path.join(root,'shared'),privateDir=path.join(parent,'private');
+  fs.mkdirSync(parent,{mode:0o777});fs.chmodSync(parent,0o777);
+  fs.mkdirSync(privateDir,{mode:0o700});
+  assert.throws(()=>new PersistentSignedRevocationStore(path.join(privateDir,'checkpoint.json')),
+   /CHECKPOINT_DIRECTORY_UNSAFE/);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('a checkpoint directory must be owned by the running user',t=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-owner-'));
+ try{
+  const original=fs.lstatSync,other=process.geteuid()===12345?12346:12345;
+  t.mock.method(fs,'lstatSync',(name,...args)=>{
+   const stat=original(name,...args);
+   return name===dir?Object.assign(Object.create(Object.getPrototypeOf(stat)),stat,{uid:other}):stat;
+  });
+  assert.throws(()=>new PersistentSignedRevocationStore(path.join(dir,'checkpoint.json')),
+   /CHECKPOINT_DIRECTORY_UNSAFE/);
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+test('a sticky shared parent owned by the trusted user allows a private store',()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-sticky-'));
+ try{
+  const parent=path.join(root,'shared'),privateDir=path.join(parent,'private');
+  fs.mkdirSync(parent,{mode:0o700});fs.chmodSync(parent,0o1777);
+  fs.mkdirSync(privateDir,{mode:0o700});
+  const key=owner(),s=snapshot(key.privateKey),store=new PersistentSignedRevocationStore(path.join(privateDir,'checkpoint.json'));
+  assert.equal(store.commit({...s,entries:evidences(),trustedPublicKey:key.publicKey}).status,
+   'SIGNED_REVOCATIONS_PERSISTED_NO_REMOTE_AUTHORITY');
+  assert.deepEqual(store.load({entries:evidences(),trustedPublicKey:key.publicKey}).revokedIds,['voice-fix-001']);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('an ancestor owned by another user is rejected even with a sticky bit',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-revocation-ancestor-owner-'));
+ try{
+  const parent=path.join(root,'shared'),privateDir=path.join(parent,'private');
+  fs.mkdirSync(parent,{mode:0o700});fs.chmodSync(parent,0o1777);
+  fs.mkdirSync(privateDir,{mode:0o700});
+  const original=fs.lstatSync,other=process.geteuid()===12345?12346:12345;
+  t.mock.method(fs,'lstatSync',(name,...args)=>{
+   const stat=original(name,...args);
+   return name===parent?Object.assign(Object.create(Object.getPrototypeOf(stat)),stat,{uid:other}):stat;
+  });
+  assert.throws(()=>new PersistentSignedRevocationStore(path.join(privateDir,'checkpoint.json')),
+   /CHECKPOINT_DIRECTORY_UNSAFE/);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
 test('cleanup preserves a replacement lock owned by another writer',()=>{
  const key=owner(),s=snapshot(key.privateKey);
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-lock-replaced-'));

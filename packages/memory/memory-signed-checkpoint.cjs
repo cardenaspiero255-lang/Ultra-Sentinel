@@ -182,11 +182,19 @@ function verifyPinnedRevocationHighWater({journal,checkpoint,entries,trustedPubl
 
 function privateLocation(filename){
  if(typeof filename!=='string'||!path.isAbsolute(filename)||
-  filename.length>500||filename.includes('\0'))denied('CHECKPOINT_PATH_UNSAFE');
- const dir=path.dirname(filename),st=fs.lstatSync(dir);
- if(!st.isDirectory()||st.isSymbolicLink()||
-  (st.mode&0o077)!==0||fs.realpathSync(dir)!==dir)
-  denied('CHECKPOINT_DIRECTORY_UNSAFE');
+  filename.length>500||filename.includes('\0')||typeof process.geteuid!=='function')
+  denied('CHECKPOINT_PATH_UNSAFE');
+ const dir=path.dirname(filename),root=path.parse(dir).root,uid=process.geteuid();
+ if(fs.realpathSync(dir)!==dir)denied('CHECKPOINT_DIRECTORY_UNSAFE');
+ let current=root;
+ for(const part of [root,...path.relative(root,dir).split(path.sep).filter(Boolean)]){
+  if(part!==root)current=path.join(current,part);
+  const st=fs.lstatSync(current);
+  if(!st.isDirectory()||st.isSymbolicLink()||(st.uid!==0&&st.uid!==uid)||
+   ((st.mode&0o022)!==0&&(st.mode&0o1000)===0)||
+   (current===dir&&(st.uid!==uid||(st.mode&0o077)!==0)))
+   denied('CHECKPOINT_DIRECTORY_UNSAFE');
+ }
 }
 function readFile(filename){
  privateLocation(filename);
