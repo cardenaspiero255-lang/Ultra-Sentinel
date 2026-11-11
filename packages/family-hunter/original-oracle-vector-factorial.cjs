@@ -100,7 +100,11 @@ function classifyOracleVectorFactorial(input){
   const jointMinimal=oracleIds.some(id=>minimalByOracle[id].some(s=>s.length>1));
   const alternativeSingletons=oracleIds.some(id=>
    minimalByOracle[id].length>1&&minimalByOracle[id].every(s=>s.length===1));
-  const status=sets.length>=2&&sets.every(v=>v.length===1)&&unique.size===sets.length?
+  // An independent repair requires each baseline oracle to start FAIL.
+  // Distinct PASS-to-FAIL regressions are sensitive to different files, but
+  // must never be represented as independent successful repairs.
+  const allOraclesNeedRepair=oracleIds.every(id=>values[0][id]==='FAIL');
+  const status=allOraclesNeedRepair&&sets.length>=2&&sets.every(v=>v.length===1)&&unique.size===sets.length?
    'INDEPENDENT_ORACLE_EFFECTS_OBSERVED':
    jointMinimal?'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS':
    alternativeSingletons?'ALTERNATIVE_SINGLE_FILE_EFFECTS_OBSERVED':
