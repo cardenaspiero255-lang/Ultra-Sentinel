@@ -93,7 +93,7 @@ test('forged changes in frozen engine, holdout, policy or whitespace invalidate 
   b=>Buffer.concat([b,Buffer.from(' ')]),
   b=>Buffer.from(b.toString('utf8').replace('2982e63c','9982e63c')),
   b=>Buffer.from(b.toString('utf8').replace('true','false')),
-  b=>Buffer.from(b.toString('utf8').replace('9679e','9678e'))
+  b=>Buffer.from(b.toString('utf8').replace('P2-NOWINANDROID','P3-NOWINANDROID'))
  ]){
   const mutated=change(bytes);
   assert.equal(inspectProspectiveFreeze(mutated).status,'BLOCKED_UNTRUSTED_FREEZE');
