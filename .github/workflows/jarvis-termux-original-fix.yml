@@ -23,6 +23,7 @@ on:
       - packages/family-hunter/factorial-oracle-evidence.cjs
       - packages/family-hunter/original-oracle-vector-factorial.cjs
       - tests/unit/factorial-oracle-evidence.test.cjs
+      - tests/unit/cross-file-sandbox-reproduction.test.cjs
       - tests/unit/original-oracle-vector-factorial.test.cjs
       - tests/oracles/jarvis-two-policy-factorial.kt
       - scripts/jarvis-dual-policy-factorial-original.sh
@@ -65,6 +66,7 @@ jobs:
       - name: Checkout without writing token to disk
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Install Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -72,6 +74,12 @@ jobs:
           node-version: '22'
       - name: Verify full Node suite
         run: npm run check
+      - name: Require factorial evidence coverage
+        run: |
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/family-hunter/factorial-oracle-evidence.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/factorial-oracle-evidence.test.cjs
       - name: Set up JDK 21
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:

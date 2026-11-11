@@ -4,6 +4,7 @@ const fs=require('node:fs'),os=require('node:os');
 const {analyze}=require('../../packages/core/ultra_sentinel_core.cjs');
 const {planCrossFileInterventions}=require('../../packages/family-hunter/cross-file-interventions.cjs');
 const {reproduceCrossFileInterventions}=require('../../packages/recovery/cross-file-sandbox-reproduction.cjs');
+const {interpretFactorialOracleEvidence}=require('../../packages/family-hunter/factorial-oracle-evidence.cjs');
 const A='a'.repeat(40),B='b'.repeat(40);
 const first='app/src/main/java/voice/First.kt';
 const second='app/src/main/java/voice/Second.kt';
@@ -39,6 +40,9 @@ test('real disposable Git factorial experiments exercise Judge and restore exact
  assert.equal(r.independentOracleProvenanceVerified,false);
  assert.equal(r.commitAllowed,false);assert.equal(r.mergeAllowed,false);
  assert.equal(r.productionReleaseAllowed,false);
+ const interpretation=interpretFactorialOracleEvidence({files:[first,second],reproduction:r});
+ assert.equal(interpretation.status,'REGRESSION_OR_NONREPAIR_OBSERVED');
+ assert.equal(interpretation.causalityVerified,false);
 });
 test('caller cannot forge, omit or reorder the exact planned subset matrix',()=>{
  const {plan,versions}=sample(),bad={...plan,candidates:plan.candidates.map(c=>
