@@ -1,0 +1,100 @@
+{
+  "schema": "ultra-sentinel-phase2-prospective-hunter-freeze/v1",
+  "freezeId": "P2-NOWINANDROID-20261111-APP-MAIN-KOTLIN",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "2db0d9890d437ea407b61349203c94e3d76f2d5b",
+    "treeSha": "d1281730ff0bbddd15f99ba9954dddb8327c02de",
+    "modules": [
+      {
+        "path": "packages/family-hunter/blind-elapsed-window.cjs",
+        "blobSha": "e288a7b11509472cf2e1b03ace6e64a425702e0f"
+      },
+      {
+        "path": "packages/family-hunter/combined-kotlin-family-advisories.cjs",
+        "blobSha": "66b513f4b6378e801ec0675cef34cf185b79a2e3"
+      },
+      {
+        "path": "packages/family-hunter/ephemeral-kotlin-history-hunter.cjs",
+        "blobSha": "ae74fc3a4afa4d54cb19bb6f0146400ebd3c7bc9"
+      },
+      {
+        "path": "packages/family-hunter/phase2-codec-integrity-hunter.cjs",
+        "blobSha": "e013a1b4727341f5164bee986b2761ecc1b9813b"
+      },
+      {
+        "path": "packages/family-hunter/phase2-identity-delimiter-hunter.cjs",
+        "blobSha": "52a987f141cc1295164ce37834635e84bd13812d"
+      },
+      {
+        "path": "packages/family-hunter/phase2-numeric-risk-hunter.cjs",
+        "blobSha": "f70f26b3c8cf74d6ecbcda559a32fde1ca3e1675"
+      },
+      {
+        "path": "packages/family-hunter/voice-boundary-metamorphic-hunter.cjs",
+        "blobSha": "af6db3e6ab8f5fb88c20c59b044f79d777b8a448"
+      }
+    ]
+  },
+  "holdout": {
+    "repository": "android/nowinandroid",
+    "commitSha": "2982e63cb691ad49cd009aab43dc206fee6699c2",
+    "treeSha": "83650553ea17c41794eff36c317e8ab408835c26",
+    "selection": "ALL_APP_SRC_MAIN_KOTLIN_BLOBS_AT_FROZEN_TREE",
+    "files": [
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/MainActivity.kt",
+        "blobSha": "6e8d4b9a9fa5853f9dd3aa7f7e27aac709e43348"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/MainActivityViewModel.kt",
+        "blobSha": "2d22b7d9cdc4ba3138f9740bc2cdac475421a77c"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/NiaApplication.kt",
+        "blobSha": "4975e5d65fa5b8132a53a0d8489e11ce9595ac5e"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/di/JankStatsModule.kt",
+        "blobSha": "56d1b6e242fb6d3548b51f9d120274a5c41475b3"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/navigation/TopLevelNavItem.kt",
+        "blobSha": "cc1c495d1aba65d8ec3e1201268634b4ad676046"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/ui/NiaApp.kt",
+        "blobSha": "a0e36e723fc2cef20ab466bece27868e77546ee4"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/ui/NiaAppState.kt",
+        "blobSha": "9591338f04b21afe9f0424d6054136de0688c053"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/util/ProfileVerifierLogger.kt",
+        "blobSha": "659b134b8fba1fc72d4c417a0ace7e5210583a97"
+      },
+      {
+        "path": "app/src/main/kotlin/com/google/samples/apps/nowinandroid/util/UiExtensions.kt",
+        "blobSha": "20d55ab4ce7a2b94c12c06375f1a973a0218a6f6"
+      }
+    ]
+  },
+  "protocol": {
+    "unit": "PER_FILE_SOURCE_FINDING_ADVISORY",
+    "noTrainingAfterFreeze": true,
+    "sourceReadBeforeFreeze": false,
+    "labelsReadBeforeFreeze": false,
+    "predictionsReadBeforeFreeze": false,
+    "truthCommitmentSha256": null,
+    "oracleEvidenceBeforePredictions": false,
+    "baselineEngineSha": null,
+    "requiresIndependentOriginalKotlinOracle": true,
+    "requiresMatchedBenignNegativeOracle": true,
+    "requiresUnseenFamilyProvenance": true,
+    "requiresCompleteLabeledUniverseForPrecision": true,
+    "unverifiedFindingsAreNotFalsePositives": true,
+    "releaseClaimsForbidden": true
+  },
+  "note": "Public metadata-only pre-registration; the 9 source files were selected by whole-directory metadata before source inspection. No evidence of independent truth, family novelty, negative labels, training-set separation, or executable repairs. Do not score precision/recall/FP/F1 until separate blind oracles and lineage verification are sealed. The engine is frozen at the full Git tree, not only the listed entry-point modules."
+}
