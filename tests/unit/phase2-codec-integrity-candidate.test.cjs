@@ -41,3 +41,72 @@ test('rejects input getters and proxies without execution',()=>{
  assert.match(draftCodecIntegrityCandidate(b).status,/^BLOCKED_/);
  assert.equal(sideEffects,0);
 });
+
+const {scanCodecIntegrityHypotheses}=
+ require('../../packages/family-hunter/phase2-codec-integrity-hunter.cjs');
+function multilineInput(){
+ const src=[
+  'package sample',
+  'fun unpack(payload: String): String =',
+  ' String(',
+  '  Base64.getUrlDecoder()',
+  '   .decode(payload),',
+  '  StandardCharsets.UTF_8',
+  ' )',
+  ''
+ ].join('\n');
+ const file={path,source:src,expectedBlobSha:blob(src)};
+ const scan=scanCodecIntegrityHypotheses({expectedCommitSha:'a'.repeat(40),files:[file]});
+ assert.equal(scan.findings.length,1);
+ return {expectedCommitSha:'a'.repeat(40),file,finding:scan.findings[0]};
+}
+test('Fixer transforms an actual multiline Hunter finding into a strictly scoped candidate',()=>{
+ const request=multilineInput();
+ const out=draftCodecIntegrityCandidate(request);
+ assert.equal(out.status,'CANDIDATE_REQUIRES_INDEPENDENT_ORIGINAL_JVM_ORACLE');
+ assert.match(out.candidateSource,/Base64\.getUrlDecoder\(\)\s*\.decode\(payload\)/);
+ assert.match(out.candidateSource,/onMalformedInput\(java\.nio\.charset\.CodingErrorAction\.REPORT\)/);
+ assert.doesNotMatch(out.candidateSource,/\bString\s*\(\s*Base64/);
+ assert.equal(out.candidateBlobSha,blob(out.candidateSource));
+ assert.equal(out.originalFunctionalOracleVerified,false);
+ assert.equal(out.mergeAllowed,false);
+});
+test('Fixer refuses a multiline finding altered after the sealed Hunter scan',()=>{
+ const input=multilineInput();
+ input.finding={...input.finding,line:input.finding.line+1};
+ assert.equal(draftCodecIntegrityCandidate(input).status,'BLOCKED_CODEC_CANDIDATE');
+});
+test('Fixer does not trust a source-only finding generated from malformed Unicode bytes',()=>{
+ const input=data();
+ input.file.source=input.file.source.replace('package sample','package sample // \uD800');
+ input.file.expectedBlobSha=blob(input.file.source);
+ input.finding.expectedBlobSha=input.file.expectedBlobSha;
+ assert.equal(draftCodecIntegrityCandidate(input).status,'BLOCKED_CODEC_CANDIDATE');
+});
+
+test('Fixer refuses a raw regex matching text that Hunter correctly ignored in a comment',()=>{
+ const request=data();
+ const comment='\n// String(Base64.getDecoder().decode(fields[index]), StandardCharsets.UTF_8)\n';
+ request.file.source+=comment;
+ request.file.expectedBlobSha=blob(request.file.source);
+ request.finding.expectedBlobSha=request.file.expectedBlobSha;
+ const hunter=scanCodecIntegrityHypotheses({
+  expectedCommitSha:request.expectedCommitSha,files:[request.file]
+ });
+ assert.equal(hunter.findings.length,1);
+ assert.equal(draftCodecIntegrityCandidate({...request,finding:hunter.findings[0]}).status,
+  'BLOCKED_CODEC_CANDIDATE');
+});
+
+test('Fixer refuses to rewrite a source expression spanning unsupported comment syntax',()=>{
+ const request=data();
+ request.file.source=request.file.source.replace(
+  ', StandardCharsets.UTF_8)',', /* Kotlin comment */ StandardCharsets.UTF_8)');
+ request.file.expectedBlobSha=blob(request.file.source);
+ const hunter=scanCodecIntegrityHypotheses({
+  expectedCommitSha:request.expectedCommitSha,files:[request.file]
+ });
+ assert.equal(hunter.findings.length,1);
+ assert.equal(draftCodecIntegrityCandidate({...request,finding:hunter.findings[0]}).status,
+  'BLOCKED_CODEC_CANDIDATE');
+});
