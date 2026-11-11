@@ -151,7 +151,7 @@ test('multiline literals, comments and benign decoders cannot fabricate codec fi
 });
 
 test('rejects lossy UTF-16 source with a matching replacement-byte Git blob',()=>{
- const malformed='package sample\nval name = "\\uD800"\n'+risk+'\n';
+ const malformed='package sample\nval name = "\uD800"\n'+risk+'\n';
  const verdict=scanCodecIntegrityHypotheses(input(malformed));
  assert.equal(verdict.status,'BLOCKED_SOURCE');
  assert.deepEqual(verdict.findings,[]);
