@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - packages/quality-gates/private-edition-readiness.cjs
+      - packages/quality-gates/phase2-prospective-hunter-freeze.cjs
+      - tests/unit/phase2-prospective-hunter-freeze.test.cjs
+      - docs/quality/PHASE2-PROSPECTIVE-HUNTER-FREEZE-20261111.json
       - scripts/evaluate-private-edition-readiness.cjs
       - tests/unit/private-edition-readiness.test.cjs
       - tests/unit/private-edition-readiness-cli.test.cjs
@@ -90,6 +93,12 @@ jobs:
           node-version: '22'
       - name: Complete structure and regression suite
         run: npm run check
+      - name: Require 90 percent coverage of prospective frozen-Hunter gates
+        run: |
+          node --test --experimental-test-coverage \
+            --test-coverage-include=packages/quality-gates/phase2-prospective-hunter-freeze.cjs \
+            --test-coverage-lines=90 --test-coverage-branches=90 \
+            tests/unit/phase2-prospective-hunter-freeze.test.cjs
       - name: Require 90 percent coverage across bounded causal, Judge and memory modules
         run: |
           set -euo pipefail
