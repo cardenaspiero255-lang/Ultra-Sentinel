@@ -22,7 +22,7 @@ test('child processes share a strict kernel-enforced aggregate memory and task b
   'assert-cgroup-and-exec.sh','--uid','--gid'])
   assert.ok(launcher.includes(token),'aggregate budget missing: '+token);
  for(const token of ['/proc/self/cgroup','/sys/fs/cgroup','memory.max','pids.max',
-  'exec "\\$@"'])
+  'exec "$@"'])
   assert.ok(guard.includes(token),'pre-execution guard missing: '+token);
  assert.doesNotMatch(launcher,/ulimit -v|--memory-swappiness/);
 });
