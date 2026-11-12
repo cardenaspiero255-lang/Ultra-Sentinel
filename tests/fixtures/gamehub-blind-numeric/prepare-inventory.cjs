@@ -5,6 +5,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 const {TextDecoder}=require('node:util');
+const {isSafeNovelKotlinPath}=require('../../../packages/investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 function requireBudget(value,max,label){
  if(!Number.isSafeInteger(value)||value<0||value>max)throw Error(label);
@@ -32,7 +33,7 @@ function prepare(args){
  const [rootArg,head,scope,output]=args;
  if(args.length!==4||!path.isAbsolute(rootArg)||!path.isAbsolute(output)||
     typeof head!=='string'||!SHA.test(head)||typeof scope!=='string'||
-    !/^[A-Za-z0-9_.\/-]+$/.test(scope)||!scope.includes('/src/main/')||
+    !/^[A-Za-z0-9_.\/-]+$/.test(scope)||!isSafeNovelKotlinPath(scope+'/KmpScopeProbe.kt')||
     scope.startsWith('/')||scope.split('/').some(s=>!s||s==='.'||s==='..'))
     throw Error('BAD_NUMERIC_INVENTORY_ARGUMENTS');
  const root=fs.realpathSync(rootArg);
