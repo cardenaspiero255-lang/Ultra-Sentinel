@@ -33,3 +33,26 @@ test('shared authority rejects tests, traversal, non-Kotlin, unrelated roots and
   null,12,{}
  ])assert.equal(isSafeNovelKotlinPath(path),false,String(path));
 });
+
+test('recognizes Kotlin multiplatform production source sets with bounded nested modules',()=>{
+ for(const path of [
+  'kotlinpoet/src/commonMain/kotlin/com/squareup/NameAllocator.kt',
+  'kotlinpoet/src/jvmMain/kotlin/com/squareup/CodePoint.jvm.kt',
+  'features/search/src/androidMain/kotlin/org/example/Feature.kt',
+  'interop/kotlin-metadata/src/commonMain/kotlin/org/example/Metadata.kt',
+  'a/b/c/d/src/jvmMain/kotlin/FourLevels.kt'
+ ])assert.equal(isSafeNovelKotlinPath(path),true,path);
+ for(const path of [
+  'module/src/commonTest/kotlin/Leak.kt',
+  'module/src/jvmTest/kotlin/Leak.kt',
+  'module/src/test/kotlin/Leak.kt',
+  'module/src/commonMain/java/Leak.kt',
+  'module/src/iosTest/kotlin/Leak.kt',
+  'module/src/commonMain/kotlin/../../Leak.kt',
+  'module/src/commonMain/kotlin//Leak.kt',
+  'module/src/commonMain/kotlin/Env\\Secrets.kt',
+  'module/src/commonMain/kotlin/Name..kt',
+  'module/src/commonMain/kotlin/Bad.java',
+  'a/b/c/d/e/src/commonMain/kotlin/TooDeep.kt'
+ ])assert.equal(isSafeNovelKotlinPath(path),false,path);
+});
