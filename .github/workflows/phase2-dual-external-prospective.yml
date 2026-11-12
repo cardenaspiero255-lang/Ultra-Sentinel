@@ -112,6 +112,7 @@ jobs:
         run: |
           set -euo pipefail
           jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
           mounts=(--ro-bind /usr /usr)
           for mount in /bin /lib /lib64; do
             if [ -L "$mount" ]; then
@@ -123,9 +124,9 @@ jobs:
           done
           timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
             --die-with-parent --unshare-all --new-session --clearenv \
-            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin \
+            --setenv PATH /kotlin/bin:/jdk/bin:/node/bin:/usr/bin:/bin \
             --setenv JAVA_HOME /jdk --setenv HOME /tmp --setenv RUNNER_TEMP /tmp \
-            ${mounts[@]} --ro-bind "$jdk" /jdk \
+            ${mounts[@]} --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
             --ro-bind "$RUNNER_TEMP/kotlin-dual/kotlinc" /kotlin \
             --ro-bind "$GITHUB_WORKSPACE" /sentinel \
             --bind "$RUNNER_TEMP/dual-predictions" /evidence \
