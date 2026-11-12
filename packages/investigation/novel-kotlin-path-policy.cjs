@@ -13,4 +13,23 @@ function isSafeNovelKotlinPath(value){
  const segments=value.split('/');
  return !segments.some(x=>x===''||x==='.'||x==='..');
 }
-module.exports=Object.freeze({isSafeNovelKotlinPath});
+
+// Version 2 of the *advisory Hunter-only* source path authority.
+// Older Kotlin MPP repositories use module/common/src or module/jvm/src.
+// Do not broaden isSafeNovelKotlinPath: Fixer/Judge still require its stricter roots.
+const LEGACY_PRODUCTION_PATH=/^(?:[A-Za-z0-9_-]+\/){1,4}(?:common|jvm|android)\/src\/[A-Za-z0-9_./-]+\.kt$/;
+const NON_PRODUCTION_SEGMENTS=new Set([
+ 'test','tests','testdata','testfixtures','fixtures','generated',
+ 'build','out','tmp','benchmark','benchmarks','samples','__tests__','.github'
+]);
+function isSafeHunterKotlinPath(value){
+ if(isSafeNovelKotlinPath(value))return true;
+ if(typeof value!=='string'||value.length<10||value.length>300||
+    !LEGACY_PRODUCTION_PATH.test(value)||value.includes('..')||
+    value.includes('//')||value.includes('\\'))return false;
+ const segments=value.split('/');
+ if(segments.some(part=>!part||part==='.'||part==='..'||NON_PRODUCTION_SEGMENTS.has(part.toLowerCase())))return false;
+ const sourceIndex=segments.indexOf('src');
+ return sourceIndex>1&&sourceIndex<segments.length-1;
+}
+module.exports=Object.freeze({isSafeNovelKotlinPath,isSafeHunterKotlinPath});

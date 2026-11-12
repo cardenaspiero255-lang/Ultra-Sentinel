@@ -3,7 +3,7 @@
  * Accept only ordinary inert data and locally consistent Git object IDs. */
 const {createHash}=require('node:crypto');
 const {snapshotRecord,snapshotArray}=require('../investigation/plain-kotlin-payload.cjs');
-const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
+const {isSafeHunterKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const {scanSignedNumericFlow}=require('./bounded-kotlin-range-flow.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 function blobSha(source){const bytes=Buffer.from(source,'utf8');return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');}
@@ -95,7 +95,7 @@ function scanKotlinNumericRisks(options){
   if(typeof input.expectedCommitSha!=='string'||!SHA.test(input.expectedCommitSha))return result('BLOCKED_COMMIT_CONTRACT');
   const seen=new Set();
   for(const file of files){
-   if(typeof file.path!=='string'||!isSafeNovelKotlinPath(file.path)||
+   if(typeof file.path!=='string'||!isSafeHunterKotlinPath(file.path)||
       typeof file.source!=='string'||file.source.length<10||
       Buffer.byteLength(file.source,'utf8')>65536||file.source.includes('\0')||
       file.source.includes('\r')||Buffer.from(file.source,'utf8').toString('utf8')!==file.source||
