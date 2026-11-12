@@ -6,12 +6,13 @@ const path = require('node:path');
 const {createHash} = require('node:crypto');
 const {spawnSync} = require('node:child_process');
 const {TextDecoder} = require('node:util');
+const {isSafeNovelKotlinPath}=require('../../../packages/investigation/novel-kotlin-path-policy.cjs');
 
 function run() {
   const [rootArg, head, scope, output] = process.argv.slice(2);
   if (process.argv.length !== 6 || !path.isAbsolute(rootArg) || !path.isAbsolute(output) ||
       !/^[a-f0-9]{40}$/.test(head) || typeof scope !== 'string' ||
-      !/^[A-Za-z0-9_.\/-]+$/.test(scope) || !scope.includes('/src/main/') ||
+      !/^[A-Za-z0-9_.\/-]+$/.test(scope) || !isSafeNovelKotlinPath(scope+'/KmpScopeProbe.kt') ||
       scope.startsWith('/') || scope.split('/').some(s => !s || s === '.' || s === '..'))
     throw Error('INVALID_INVENTORY_INPUT');
   const root = fs.realpathSync(rootArg);
