@@ -233,10 +233,25 @@
     }
   ],
   "truth": {
-    "commitmentSha256": null,
-    "originalJVMOraclePrepared": false,
+    "commitmentSha256": "0e74b367c33f65f01d67c96b35fcda0185f9b49d410f9cfeb00f960bfde4155c",
+    "committedOracleFile": "tests/fixtures/phase2-frozen-kmp-20261112/IndependentPluralOracle.kt",
+    "committedOracleGitBlobSha": "d397f53dad70d33d4f99815bd68e50b9c96f830b",
+    "sourceOriginalCommitSha": "8431de3fdab6251ce5a0d7ab07303f5c85b13827",
+    "scopedPositive": {
+      "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRule.kt",
+      "sourceBlobSha": "a5723bab593674e421c935862961ce23e0bff541",
+      "line": 136,
+      "independentBehavior": "CLDR n absolute operand must handle Int.MIN_VALUE magnitude using Long; modulo 3 equals 2"
+    },
+    "scopedBenignControl": {
+      "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralCategory.kt",
+      "sourceBlobSha": "6640784432d6b59284133ed7e160c99267489d15",
+      "line": 20,
+      "independentBehavior": "case-insensitive category mapping and ordinary plural evaluations remain correct"
+    },
     "independentHumanAdjudication": false,
-    "completePositiveNegativeTruth": false
+    "completePositiveNegativeTruth": false,
+    "oraclePreparedBeforeWorkerPredictions": true
   },
   "protocol": {
     "sourceBodiesReadBeforeFreeze": false,
@@ -248,5 +263,5 @@
     "remoteWrites": false,
     "mergeAllowedFromExperiment": false
   },
-  "limitations": "No truth committed yet. Do not interpret source-only alert counts as true/false positives, or zero findings as a clean repo. New Kotlin Multiplatform path coverage is an engineering fact, not novel-family detection."
+  "limitations": "No truth committed yet. Do not interpret source-only alert counts as true/false positives, or zero findings as a clean repo. New Kotlin Multiplatform path coverage is an engineering fact, not novel-family detection. Oracle author inspected PluralRule only after freeze to design independent behavioral contract, then SHA256 committed oracle before blind scanning; not independent human labeling; do not assume full-coverage ground truth."
 }
