@@ -38,7 +38,7 @@ if ! (ulimit -f 1024; ulimit -n 128; exec timeout --kill-after=2s 45s env -i PAT
  /usr/bin/sudo -n /usr/bin/systemd-run --system --scope --quiet --collect \
  --uid="$(id -u)" --gid="$(id -g)" --property=MemoryMax=512M \
  --property=MemorySwapMax=0 --property=TasksMax=32 \
- /bin/bash "$guard" /usr/bin/bwrap \
+ /bin/bash "$guard" "$(id -u)" "$(id -g)" /usr/bin/bwrap \
  --die-with-parent --unshare-all --new-session --clearenv \
  --setenv PATH /jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
  "${mounts[@]}" --ro-bind "$jdk" /jdk --dir /probe --dir /input \

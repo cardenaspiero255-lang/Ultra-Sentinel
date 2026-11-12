@@ -26,6 +26,18 @@ test('child processes share a strict kernel-enforced aggregate memory and task b
   assert.ok(guard.includes(token),'pre-execution guard missing: '+token);
  assert.doesNotMatch(launcher,/ulimit -v|--memory-swappiness/);
 });
+test('the cgroup scope refuses root or unexpected effective UID/GID before launching JVM bytecode',()=>{
+ const source=fs.readFileSync(runner,'utf8');
+ const guardFile=path.join(root,'tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh');
+ const guard=fs.readFileSync(guardFile,'utf8');
+ assert.ok(source.includes('"$(id -u)" "$(id -g)"'), 'expected unprivileged owner identity missing');
+ for(const token of ['id -u','id -g','expected_uid','expected_gid'])
+  assert.ok(guard.includes(token),'effective identity not checked: '+token);
+ const uid=typeof process.getuid==='function'?process.getuid():0;
+ const gid=typeof process.getgid==='function'?process.getgid():0;
+ const mismatch=spawnSync('bash',[guardFile,String(uid+1),String(gid),'/bin/true'],{encoding:'utf8',timeout:10000});
+ assert.notEqual(mismatch.status,0,'a mismatched user cannot invoke the target');
+});
 test('the real namespace prevents a malicious probe reading host answers or environment',t=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-jvm-blind-'));
  try{
