@@ -86,9 +86,9 @@ function parameters(line){
  const env=new Map();
  if(!m[1].trim())return env;
  for(const p of m[1].split(',')){
-  const d=/^\s*(?:vararg\s+)?([A-Za-z_]\w*)\s*:\s*(Int|Long)\s*(?:=\s*[^,]+)?\s*$/.exec(p);
+  const d=/^\s*(?:vararg\s+)?([A-Za-z_]\w*)\s*:\s*([A-Za-z_]\w*\??)\s*(?:=\s*[^,]+)?\s*$/.exec(p);
   if(!d)return null;
-  env.set(d[1],top(d[2]));
+  if(BOUNDS[d[2]])env.set(d[1],top(d[2]));
  }
  return env;
 }
@@ -137,7 +137,11 @@ function guard(line,env){
  else if(op==='>=')hi=hi<bound?hi:bound-1n;
  else if(op==='!='&&bound>=lo&&bound<=hi){lo=bound;hi=bound;}
  const next=interval(v.type,lo,hi);
- if(next)env.set(m[1],next);
+ if(next){
+  // An immutable source alias has the same abstract identity. Refining only
+  // the original name would create spurious warnings in reaching aliases.
+  for(const [key,prior] of env)if(prior===v)env.set(key,next);
+ }
 }
 function assignment(line,env){
  const d=/^\s*(?:val|var)\s+([A-Za-z_]\w*)(?:\s*:\s*(Int|Long))?\s*=\s*(.+?)\s*;?\s*$/.exec(line);
@@ -161,12 +165,22 @@ function scanSignedNumericFlow(file,lines){
   const line=lines[i],fun=parameters(line);
   if(fun){env=fun;active=true;functionDepth=null;}
   if(active){
-   for(const _observation of operations(line,imported,env))
+   const continued=line.trimStart().startsWith('.')&&i>0;
+   const candidate=continued?lines[i-1]+' '+line:line;
+   for(const _observation of operations(candidate,imported,env))
     found.push(Object.freeze({rule:'SIGNED_MIN_ABSOLUTE_RANGE_RISK',
      path:file.path,line:i+1,expectedBlobSha:file.expectedBlobSha,
      status:'HYPOTHESIS_REQUIRES_INDEPENDENT_KOTLIN_ORACLE'}));
-   guard(line,env);
-   assignment(line,env);
+   // Only a top-level early exit dominates the rest of the function.
+   // A nested conditional or assignment cannot narrow later execution;
+   // conservatively invalidate mutable reaching definitions instead.
+   if(functionDepth!==null&&depth>functionDepth){
+    const mutation=/^\s*([A-Za-z_]\w*)\s*=\s*[^=]/.exec(line);
+    if(mutation&&env.has(mutation[1]))env.set(mutation[1],top(env.get(mutation[1]).type));
+   }else{
+    guard(line,env);
+    assignment(line,env);
+   }
   }
   depth+=(line.match(/\{/g)||[]).length-(line.match(/\}/g)||[]).length;
   if(fun){
