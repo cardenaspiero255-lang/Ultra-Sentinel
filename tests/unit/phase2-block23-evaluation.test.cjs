@@ -1,0 +1,23 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {validateUnsupportedPaths,sealAbstentions,verifySealed,adjudicateBenign}=require('../../scripts/phase2-block23-evaluation.cjs');
+const paths=['kotlinx-coroutines-core/common/src/flow/Builders.kt','kotlinx-coroutines-core/common/src/flow/Channels.kt','kotlinx-coroutines-core/common/src/flow/Flow.kt','kotlinx-coroutines-core/common/src/flow/FlowCollector.kt','kotlinx-coroutines-core/common/src/flow/Migration.kt','kotlinx-coroutines-core/common/src/flow/SharedFlow.kt','kotlinx-coroutines-core/common/src/flow/SharingStarted.kt','kotlinx-coroutines-core/common/src/flow/StateFlow.kt'];
+const POLICY=p=>/\/src\/(?:commonMain|jvmMain|androidMain|main)\/(?:kotlin|java)\//.test(p);
+const a=[{kind:'numeric',exitCode:1,stderr:'Error: BAD_BLIND_NUMERIC_INVENTORY'},{kind:'codec',exitCode:1,stderr:'BLIND_CODEC_WORKER_BLOCKED: UNTRUSTED_HUNTER_VERDICT'},{kind:'identity',exitCode:1,stderr:'BLIND_IDENTITY_HUNTER_BLOCKED: UNTRUSTED_IDENTITY_HUNTER_VERDICT'}];
+test('all eight original paths are unsupported by frozen Hunter',()=>{assert.equal(validateUnsupportedPaths(paths,POLICY),8);assert.throws(()=>validateUnsupportedPaths([...paths.slice(0,7),'module/src/main/kotlin/Injected.kt'],POLICY));});
+test('blocked worker executions seal abstentions, never clean predictions',()=>{const r=sealAbstentions(a,8);assert.equal(r.status,'ABSTAIN_UNSUPPORTED_FROZEN_PATH_POLICY');assert.equal(r.filesAnalyzed,0);assert.equal(r.abstentions,8);assert.equal(r.workerProcessesInvoked,3);assert.equal(r.precision,null);assert.equal(r.recall,null);assert.equal(r.falsePositiveCount,null);assert.equal(verifySealed(r).predictionDigest,r.predictionDigest);});
+test('incomplete or forged worker reports cannot become a passing seal',()=>{for(const changes of [a.slice(1),a.map((x,i)=>i===0?{...x,exitCode:0}:x),a.map((x,i)=>i===0?{...x,stderr:'silent'}:x),[...a,a[0]],a.map((x,i)=>i===1?{...x,kind:'identity'}:x)])assert.throws(()=>sealAbstentions(changes,8));const receipt=sealAbstentions(a,8);assert.throws(()=>verifySealed({...receipt,filesAnalyzed:8}));assert.throws(()=>verifySealed({...receipt,precision:1}));});
+test('only two benign controls can be adjudicated, six remain unlabeled',()=>{const seal=sealAbstentions(a,8);const out=adjudicateBenign(seal,['ORIGINAL_FLOW_COLLECTOR_BENIGN_CONTROLS_PASS','ORIGINAL_SHARING_STARTED_SCOPED_CONTROLS_PASS']);assert.equal(out.scopedBenignControlsPassed,2);assert.equal(out.unlabeledOriginalKotlinFiles,6);assert.equal(out.positiveOriginalDefectsVerified,false);assert.equal(out.novelFamilyVerified,false);assert.equal(out.precision,null);assert.equal(out.recall,null);assert.throws(()=>adjudicateBenign(seal,['ORIGINAL_FLOW_COLLECTOR_BENIGN_CONTROLS_PASS','NOPE']));});
+test('workflow gates original oracle evaluation on separate artifact-producing blind job',()=>{
+ const fs=require('node:fs');const path=require('node:path');
+ const workflow=fs.readFileSync(path.join(__dirname,'../../.github/workflows/phase2-block23-frozen-blind.yml'),'utf8');
+ assert.ok(workflow.indexOf('frozen-blind-capture:')<workflow.indexOf('independent-scoped-oracles-after-seal:'));
+ assert.match(workflow,/needs: frozen-blind-capture/);
+ assert.match(workflow,/actions\/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16/);
+ assert.match(workflow,/Publish immutable unscored worker abstentions BEFORE running any oracle/);
+ assert.match(workflow,/ref: 3668a4ff860c49c5aaf69a594efc4fa48d94def3/);
+ assert.match(workflow,/SENTINEL_REQUIRE_BLIND_BWRAP=1/);
+ assert.match(workflow,/--unshare-all --new-session --clearenv/);
+ assert.doesNotMatch(workflow,/pull_request_target:/);
+});

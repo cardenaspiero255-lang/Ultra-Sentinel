@@ -1,0 +1,244 @@
+name: Ultra Sentinel — Phase 2 Block 2.3 frozen blind execution
+on:
+  pull_request:
+    paths:
+      - scripts/phase2-block23-evaluation.cjs
+      - tests/unit/phase2-block23-evaluation.test.cjs
+      - docs/quality/PHASE2-BLOCK23-FROZEN-EVALUATION.md
+      - .github/workflows/phase2-block23-frozen-blind.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-blind-capture:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact protocol SHA without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run repository-wide tests and verify original PR 380 tree
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout frozen ORIGINAL Hunter, never HEAD
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 3668a4ff860c49c5aaf69a594efc4fa48d94def3
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout preselected original Kotlin source without changing paths
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx.coroutines
+          ref: ead082131ceb45b8e4fda027c74471103c1cd09f
+          path: reserved-coroutines
+          persist-credentials: false
+      - name: Enforce Bubblewrap and mandatory AppArmor isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Prove actual no-network worker isolation for this frozen engine
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Authenticate eight source blobs and prepare exact unchanged paths, no oracle access
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block23-evaluation.cjs prepare "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/reserved-coroutines" "$RUNNER_TEMP/block23-input"
+      - name: Invoke three original workers, record unsupported abstentions, never access oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          engine="$GITHUB_WORKSPACE/frozen-engine"
+          root="$GITHUB_WORKSPACE"
+          attempts="$RUNNER_TEMP/block23-attempts"
+          mkdir -m 700 "$attempts"
+          helper="$engine/packages/investigation/plain-kotlin-payload.cjs"
+          policy="$engine/packages/investigation/novel-kotlin-path-policy.cjs"
+          for kind in numeric codec identity; do
+            mkdir -m 700 "$attempts/$kind"
+            if [ "$kind" = numeric ]; then
+              script="$engine/tests/fixtures/gamehub-blind-numeric/run-hunter.sh"
+              inventory="$RUNNER_TEMP/block23-input/numeric.json"
+              scanner="$engine/packages/family-hunter/phase2-numeric-risk-hunter.cjs"
+              worker="$engine/packages/family-hunter/blind-numeric-worker.cjs"
+            elif [ "$kind" = codec ]; then
+              script="$engine/tests/fixtures/gamehub-codec/run-blind-codec-hunter.sh"
+              inventory="$RUNNER_TEMP/block23-input/codec.json"
+              scanner="$engine/packages/family-hunter/phase2-codec-integrity-hunter.cjs"
+              worker="$engine/packages/family-hunter/phase2-blind-codec-worker.cjs"
+            else
+              script="$engine/tests/fixtures/gamehub-identity/run-blind-identity-hunter.sh"
+              inventory="$RUNNER_TEMP/block23-input/codec.json"
+              scanner="$engine/packages/family-hunter/phase2-identity-delimiter-hunter.cjs"
+              worker="$engine/packages/family-hunter/phase2-blind-identity-worker.cjs"
+            fi
+            set +e
+            bash "$script" "$inventory" "$scanner" "$worker" "$helper" "$policy" "$attempts/$kind" > "$attempts/$kind.stdout" 2> "$attempts/$kind.stderr"
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$attempts/$kind.exit"
+            test "$rc" -eq 1 || { echo "UNEXPECTED_WORKER_EXIT:$kind:$rc" >&2; exit 2; }
+            test ! -e "$attempts/$kind/discovery.json" || exit 2
+          done
+          node scripts/phase2-block23-evaluation.cjs seal "$attempts" "$RUNNER_TEMP/block23-sealed"
+          node scripts/phase2-block23-evaluation.cjs verify "$RUNNER_TEMP/block23-sealed/prediction-seal.json"
+      - name: Publish immutable unscored worker abstentions BEFORE running any oracle
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block23-frozen-source-predictions-sealed-before-oracle
+          path: ${{ runner.temp }}/block23-sealed/prediction-seal.json
+          if-no-files-found: error
+          retention-days: 30
+  independent-scoped-oracles-after-seal:
+    needs: frozen-blind-capture
+    if: >-
+      needs.frozen-blind-capture.result == 'success' &&
+      github.event.repository.id == 1418338512
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact same protocol commit without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Download ONLY previously sealed artifact from required completed job
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: phase2-block23-frozen-source-predictions-sealed-before-oracle
+          path: ${{ runner.temp }}/block23-consumed
+      - name: Verify cryptographic prediction seal BEFORE accessing oracles
+        run: |
+          node scripts/phase2-block23-evaluation.cjs verify "$RUNNER_TEMP/block23-consumed/prediction-seal.json"
+      - name: Checkout exactly pinned original Kotlin sources
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx.coroutines
+          ref: ead082131ceb45b8e4fda027c74471103c1cd09f
+          path: reserved-coroutines
+          persist-credentials: false
+      - name: Verify precommitted original oracle SHA256 and source identity after seal
+        run: |
+          node scripts/verify-phase2-block22-source.cjs "$GITHUB_WORKSPACE/reserved-coroutines" > "$RUNNER_TEMP/block23-original-source-attestation.json"
+      - name: Use pinned Temurin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Enforce Bubblewrap and AppArmor for original JVM oracle execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch and authenticate Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block23-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block23-kotlin"
+      - name: Compile and execute ONLY precommitted benign original Kotlin JVM oracles after seal
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block23-compiled"
+          mkdir -m 700 "$RUNNER_TEMP/block23-oracle-logs"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block23-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/reserved-coroutines" /source
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block22-oracle" /oracle
+            --bind "$RUNNER_TEMP/block23-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          src=/source/kotlinx-coroutines-core/common/src/flow
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            "$src/FlowCollector.kt" /oracle/FlowCollectorContract.kt -d /out/flowcollector-benign.jar
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            "$src/FlowCollector.kt" "$src/SharingStarted.kt" \
+            /oracle/KotlinCoroutineStub.kt /oracle/KotlinFlowStub.kt \
+            /oracle/KotlinInternalStub.kt /oracle/KotlinFlowInternalStub.kt \
+            /oracle/SharingStartedContract.kt -d /out/sharingstarted-scoped.jar
+          for id in flowcollector sharingstarted; do
+            timeout --kill-after=3s 60s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+              --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /jdk/bin:/usr/bin:/bin --setenv HOME /tmp \
+              "${mounts[@]}" --ro-bind "$jdk" /jdk \
+              --ro-bind "$RUNNER_TEMP/block23-compiled" /jars \
+              --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp -- \
+              /jdk/bin/java -jar "/jars/$([ "$id" = flowcollector ] && echo flowcollector-benign || echo sharingstarted-scoped).jar" \
+              > "$RUNNER_TEMP/block23-oracle-logs/$id.log"
+          done
+          node scripts/phase2-block23-evaluation.cjs verdict \
+            "$RUNNER_TEMP/block23-consumed/prediction-seal.json" \
+            "$GITHUB_WORKSPACE/reserved-coroutines" \
+            "$RUNNER_TEMP/block23-oracle-logs" \
+            "$RUNNER_TEMP/block23-oracle-verdict.json"
+          jq -e '.status=="ABSTAINED_PATH_POLICY_WITH_TWO_SCOPED_BENIGN_CONTROLS" and
+            .scopedBenignControlsPassed==2 and .unlabeledOriginalKotlinFiles==6 and
+            .positiveOriginalDefectsVerified==false and .novelFamilyVerified==false and
+            .precision==null and .recall==null and .filesAnalyzed==0' "$RUNNER_TEMP/block23-oracle-verdict.json" >/dev/null
+      - name: Upload honest scoped verdict separately from sealed predictions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block23-scoped-original-oracle-verdict-after-seal
+          path: ${{ runner.temp }}/block23-oracle-verdict.json
+          retention-days: 30
+          if-no-files-found: warn
