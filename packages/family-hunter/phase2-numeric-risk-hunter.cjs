@@ -4,6 +4,7 @@
 const {createHash}=require('node:crypto');
 const {snapshotRecord,snapshotArray}=require('../investigation/plain-kotlin-payload.cjs');
 const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
+const {scanSignedNumericFlow}=require('./bounded-kotlin-range-flow.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 function blobSha(source){const bytes=Buffer.from(source,'utf8');return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');}
 function result(status,findings=[],integrity=false){
@@ -85,7 +86,7 @@ function scanFile(file){
    }
   }
  }
- return findings;
+ return findings.concat(scanSignedNumericFlow(file,lines));
 }
 function scanKotlinNumericRisks(options){
  try{

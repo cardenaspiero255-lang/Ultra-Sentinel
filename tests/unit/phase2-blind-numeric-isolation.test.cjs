@@ -7,6 +7,7 @@ test('blind numeric launcher uses isolated namespace and never mounts original r
  const s=fs.readFileSync(launcher,'utf8');
  assert.equal(spawnSync('bash',['-n',launcher],{encoding:'utf8'}).status,0);
  for(const required of ['--unshare-all','--clearenv','--ro-bind "$inventory"','--ro-bind "$hunter"','--ro-bind "$worker"','--bind "$output"'])assert.ok(s.includes(required),required);
+ assert.match(s,/--ro-bind "\$range_module" \/modules\/family-hunter\/bounded-kotlin-range-flow\.cjs/);
  assert.doesNotMatch(s,/--ro-bind\s+["']?\$\{?GITHUB_WORKSPACE\}?["']?\s+\/sentinel/);
  assert.doesNotMatch(s,/--(?:ro-)?bind\s+\/\s+\/\s/);
 });
@@ -24,6 +25,7 @@ test('malicious worker cannot read host answer or leaked environment inside real
  const sha=crypto.createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
  fs.writeFileSync(inventory,JSON.stringify({expectedCommitSha:'a'.repeat(40),files:[{path:'app/src/main/java/example/Clean.kt',source,expectedBlobSha:sha}],skippedOversized:0}));
  fs.writeFileSync(hunter,"'use strict';module.exports={};\n");fs.writeFileSync(payload,"'use strict';module.exports={};\n");fs.writeFileSync(policy,"'use strict';module.exports={};\n");
+ fs.writeFileSync(path.join(d,'bounded-kotlin-range-flow.cjs'),"'use strict';module.exports={};\n");
  fs.writeFileSync(worker,`'use strict';
  const fs=require('node:fs'),assert=require('node:assert/strict');
  assert.equal(process.env.SENTINEL_NUMERIC_HOST_SECRET,undefined);

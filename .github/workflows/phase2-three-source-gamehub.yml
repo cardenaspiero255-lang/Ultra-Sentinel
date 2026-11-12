@@ -6,6 +6,7 @@ on:
       - packages/investigation/plain-kotlin-payload.cjs
       - packages/investigation/novel-kotlin-path-policy.cjs
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - packages/family-hunter/bounded-kotlin-range-flow.cjs
       - tests/unit/phase2-blind-numeric-isolation.test.cjs
       - packages/family-hunter/blind-numeric-worker.cjs
       - tests/unit/phase2-blind-numeric-worker.test.cjs
