@@ -1,0 +1,126 @@
+{
+  "schema": "ultra-sentinel-phase2-block21-prospective-freeze/v1",
+  "block": "2.1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "3668a4ff860c49c5aaf69a594efc4fa48d94def3",
+    "treeSha": "09b8e8a9e598c4c1184fb0b97617cc3b2ff9c73e",
+    "relevantBlobs": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "2d89d301c97398097cac96ec40d05956024cc30e"
+      },
+      {
+        "path": "packages/family-hunter/blind-hunter-worker.cjs",
+        "blobSha": "1012c910ea4c1238420ed3861d3e8d32d911d150"
+      },
+      {
+        "path": "packages/family-hunter/blind-numeric-worker.cjs",
+        "blobSha": "5c290615d98bc01fc18e861b0857da736aa18387"
+      },
+      {
+        "path": "packages/family-hunter/bounded-kotlin-range-flow.cjs",
+        "blobSha": "e617f2ed073078422dac9fa47aa035a99a448e9d"
+      },
+      {
+        "path": "packages/family-hunter/phase2-blind-codec-worker.cjs",
+        "blobSha": "5c7ec73d81590e0222e778e7e429f84082bc1e8e"
+      },
+      {
+        "path": "packages/family-hunter/phase2-blind-identity-worker.cjs",
+        "blobSha": "f3d2fcfa354696866b3a6291a96094d0f52f2f69"
+      },
+      {
+        "path": "packages/family-hunter/phase2-codec-integrity-hunter.cjs",
+        "blobSha": "e013a1b4727341f5164bee986b2761ecc1b9813b"
+      },
+      {
+        "path": "packages/family-hunter/phase2-identity-delimiter-hunter.cjs",
+        "blobSha": "52a987f141cc1295164ce37834635e84bd13812d"
+      },
+      {
+        "path": "packages/family-hunter/phase2-numeric-risk-hunter.cjs",
+        "blobSha": "2668646304d04f5bb14f987c349117b103091223"
+      },
+      {
+        "path": "packages/investigation/novel-kotlin-path-policy.cjs",
+        "blobSha": "9c51eb9dddb292134c323d6298582cf43e180575"
+      },
+      {
+        "path": "packages/investigation/plain-kotlin-payload.cjs",
+        "blobSha": "d90f9131ea028686f74830670110b25e63f47ce2"
+      }
+    ],
+    "completeDependencyClosure": "ALL_GIT_BLOBS_IN_PINNED_ENGINE_TREE"
+  },
+  "cohort": {
+    "repository": "Kotlin/kotlinx.coroutines",
+    "commitSha": "ead082131ceb45b8e4fda027c74471103c1cd09f",
+    "treeSha": "6c999bde5fe9f473d1418e67127d06dbb4306426",
+    "scope": "kotlinx-coroutines-core/common/src/flow",
+    "scopeTreeSha": "3937a995d91588afdba190d90755c347a4afa80a",
+    "selection": "ALL_IMMEDIATE_DOT_KT_BLOBS_IN_SCOPE_AT_PINNED_TREE",
+    "files": [
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/Builders.kt",
+        "blobSha": "f91bb30cd97e45a662c3dfe85e920b447a0fc480",
+        "sizeBytes": 12466
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/Channels.kt",
+        "blobSha": "4c14028da365b6d42edc0170fb55974a9d5ab8cc",
+        "sizeBytes": 7135
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/Flow.kt",
+        "blobSha": "aebd9e455b66967924414e2940050ba1ae164e93",
+        "sizeBytes": 12399
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/FlowCollector.kt",
+        "blobSha": "2110a82800f881a537fa5f187b11b350bd621e09",
+        "sizeBytes": 949
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/Migration.kt",
+        "blobSha": "2f46567f965df3bb881d19685394ce664beb0b17",
+        "sizeBytes": 17363
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/SharedFlow.kt",
+        "blobSha": "80f5a7cfeee722e81436f71f2d3203b3839ceff0",
+        "sizeBytes": 36289
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/SharingStarted.kt",
+        "blobSha": "c95f35e567d311f6470c84ba3c1b32753b0089ee",
+        "sizeBytes": 9229
+      },
+      {
+        "path": "kotlinx-coroutines-core/common/src/flow/StateFlow.kt",
+        "blobSha": "981b9e5e9423a1099bf8217034e62bfeca7aecb1",
+        "sizeBytes": 19609
+      }
+    ]
+  },
+  "protocol": {
+    "sourceBodiesReadBeforeFreeze": false,
+    "oracleAnswersReadBeforeFreeze": false,
+    "hunterPredictionsRunBeforeFreeze": false,
+    "trainingOrRetuningOnThisCohortForbidden": true,
+    "requireIndependentOracleCommitmentBeforePrediction": true,
+    "requireSealedPredictionsBeforeOracleReveal": true,
+    "requireOriginalJvmFunctionalControls": true,
+    "requireBenignNegativeControls": true,
+    "unscoredUntilFullLabeledUniverse": true,
+    "notYetProvenTrainingDisjointness": true,
+    "preserveUnsupportedAndAbstentions": true,
+    "requiresExternalGitTreeAndBlobAuthentication": true,
+    "allowSourceInspectionInBlock21": false,
+    "allowHunterExecutionInBlock21": false,
+    "allowScoringInBlock21": false,
+    "allowRepairInBlock21": false,
+    "allowRemoteWritesInBlock21": false
+  },
+  "limitations": "Block 2.1 commits only metadata and pinned Git identities. It does not inspect source bodies, prepare or reveal independent oracles, perform detection, score any metrics, verify source authenticity from a local clone, prove absence of training overlap, or authorize remote repair. Eligibility of these sources for the frozen detector remains unverified. Block 2.2 must verify source trees and blobs and independently commit truth before Block 2.3 runs Hunter."
+}
