@@ -29,17 +29,20 @@ public final class GenericJvmMetamorphicProbe {
     private static final long MAX_JAR_BYTES = 32L * 1024 * 1024;
 
     private static boolean numeric(Class<?> type) {
-        return type == int.class || type == long.class || type == Integer.class || type == Long.class;
+        return type == byte.class || type == short.class || type == int.class || type == long.class ||
+            type == Byte.class || type == Short.class || type == Integer.class || type == Long.class;
     }
 
     private static Object value(Class<?> type, int variant) {
-        if (type == int.class || type == Integer.class) {
-            return Integer.valueOf(variant == 2 ? Integer.MAX_VALUE : variant);
-        }
+        if (type == byte.class || type == Byte.class) return Byte.valueOf((byte) (variant == 2 ? Byte.MAX_VALUE : variant));
+        if (type == short.class || type == Short.class) return Short.valueOf((short) (variant == 2 ? Short.MAX_VALUE : variant));
+        if (type == int.class || type == Integer.class) return Integer.valueOf(variant == 2 ? Integer.MAX_VALUE : variant);
         return Long.valueOf(variant == 2 ? Long.MAX_VALUE : variant);
     }
 
     private static Object anchor(Class<?> type, int anchor) {
+        if (type == byte.class || type == Byte.class) return Byte.valueOf((byte) anchor);
+        if (type == short.class || type == Short.class) return Short.valueOf((short) anchor);
         if (type == int.class || type == Integer.class) return Integer.valueOf(anchor);
         return Long.valueOf(anchor);
     }
@@ -47,7 +50,8 @@ public final class GenericJvmMetamorphicProbe {
     private static Long invoke(Method method, Object receiver, Object[] arguments) {
         try {
             Object result = method.invoke(receiver, arguments);
-            if (result instanceof Integer || result instanceof Long) return ((Number) result).longValue();
+            if (result instanceof Byte || result instanceof Short || result instanceof Integer || result instanceof Long)
+                return ((Number) result).longValue();
             return null;
         } catch (ReflectiveOperationException | IllegalArgumentException | LinkageError e) {
             return null;
@@ -139,7 +143,7 @@ public final class GenericJvmMetamorphicProbe {
         for (Method method : methods) {
             Class<?>[] params = method.getParameterTypes();
             if (!Modifier.isPublic(method.getModifiers()) || method.isSynthetic() || !numeric(method.getReturnType()) ||
-                params.length < 1 || params.length > 2 || Arrays.stream(params).anyMatch(p -> !numeric(p))) {
+                params.length < 1 || params.length > 3 || Arrays.stream(params).anyMatch(p -> !numeric(p))) {
                 result.unsupported++;
                 continue;
             }

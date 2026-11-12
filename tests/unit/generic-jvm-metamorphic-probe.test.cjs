@@ -32,7 +32,12 @@ public final class Fixtures {
  public String unsupported(String x) { return x; }
  public int unsupportedArgument(String x) { return x.length(); }
  public int noArguments() { return 1; }
- public int tooMany(int a,int b,int c) { return a+b+c; }
+ public long tooMany(int a,int b,int c) { return (long)a+b+c; }
+ public short shortPeak(short x) { return (short)(x==0?0:x==1?17:0); }
+ public byte byteValley(byte x) { return (byte)(x==0?3:x==1?0:3); }
+ public int boxedShortPeak(Short x) { return x==0?0:x==1?5:0; }
+ public static long triArgPeak(int x,short y,byte z) { return x==0?0:x==1?y+z:0; }
+
  private int hidden(int x) { return x; }
  public static long stable(long x) { return x; }
 }`);
@@ -55,7 +60,7 @@ test('reports reproducible turning points as hypotheses and keeps unsupported ca
  assert.equal(report.artifactSha256,crypto.createHash('sha256').update(fs.readFileSync(jar)).digest('hex'));
  assert.equal(report.status,'PARTIAL_HYPOTHESES_REQUIRE_ORACLE');
  assert.equal(report.classesInspected,2);
- assert.ok(report.methodsProbed>=8);
+ assert.ok(report.methodsProbed>=13);
  assert.ok(report.unsupportedMethods>=2);
  assert.ok(report.abstainedProbes>=4);
  assert.ok(report.nestedClassesSkipped>=1);
@@ -64,6 +69,12 @@ test('reports reproducible turning points as hypotheses and keeps unsupported ca
  assert.ok(names.some(x=>x.startsWith('valley(')));
  assert.ok(names.some(x=>x.startsWith('longPeak(')));
  assert.ok(names.some(x=>x.startsWith('scale(')));
+ assert.ok(names.some(x=>x.startsWith('shortPeak(')),'short primitive return and argument');
+ assert.ok(names.some(x=>x.startsWith('byteValley(')),'byte primitive return and argument');
+ assert.ok(names.some(x=>x.startsWith('boxedShortPeak(')),'boxed Short argument');
+ assert.ok(names.some(x=>x.startsWith('triArgPeak(')),'three numeric parameters');
+ assert.ok(!names.some(x=>x.startsWith('tooMany(')),'three-input monotonic method must not be flagged');
+
  assert.ok(!names.some(x=>x.startsWith('increasing(')));
  assert.ok(!names.some(x=>x.startsWith('stateful(')));
  for(const finding of report.findings){
