@@ -1,0 +1,54 @@
+name: Ultra Sentinel — Phase 2 Block 2.1 frozen engine preregistration
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK21-FREEZE-20261112.json
+      - docs/quality/PHASE2-BLOCK21-PLAN.md
+      - packages/quality-gates/phase2-block21-freeze.cjs
+      - scripts/verify-phase2-block21-freeze.cjs
+      - tests/unit/phase2-block21-freeze.test.cjs
+      - .github/workflows/phase2-block21-frozen-engine.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-tree-and-metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact head with complete Git object history and no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run repository structure, contracts and complete unit suite
+        run: npm run check
+      - name: Verify sealed bytes and ORIGINAL PR 380 Git tree and relevant blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-phase2-block21-freeze.cjs | tee "$RUNNER_TEMP/phase2-block21-freeze.json"
+          grep -Fq '"frozenGitEngineVerified":true' "$RUNNER_TEMP/phase2-block21-freeze.json"
+          grep -Fq '"externalSourceGitVerified":false' "$RUNNER_TEMP/phase2-block21-freeze.json"
+          grep -Fq '"predictionsExecuted":false' "$RUNNER_TEMP/phase2-block21-freeze.json"
+      - name: Publish non-scoring freeze receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block21-immutable-engine-and-metadata-only
+          path: ${{ runner.temp }}/phase2-block21-freeze.json
+          if-no-files-found: warn
+          retention-days: 30
