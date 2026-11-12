@@ -1,0 +1,115 @@
+name: Ultra Sentinel — bounded generic JVM metamorphic Hunter
+on:
+  pull_request:
+    paths:
+      - packages/family-hunter/GenericJvmMetamorphicProbe.java
+      - tests/unit/generic-jvm-metamorphic*.test.cjs
+      - tests/fixtures/jvm-metamorphic/**
+      - docs/quality/PHASE2-GENERIC-JVM-METAMORPHIC.md
+      - .github/workflows/phase2-generic-jvm-metamorphic.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  bounded-original-jvm-probe:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify complete unit suite
+        run: npm run check
+      - name: Require 90 percent line and branch coverage of the generic JVM probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          agent="$RUNNER_TEMP/jacoco-agent.jar"
+          cli="$RUNNER_TEMP/jacoco-cli.jar"
+          curl -fsSL --retry 2 -o "$agent" https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar
+          curl -fsSL --retry 2 -o "$cli" https://repo.maven.apache.org/maven2/org/jacoco/org.jacoco.cli/0.8.13/org.jacoco.cli-0.8.13-nodeps.jar
+          test "$(sha256sum "$agent" | cut -d' ' -f1)" = 47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b
+          test "$(sha256sum "$cli" | cut -d' ' -f1)" = 8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3
+          export JAVA_TOOL_OPTIONS="-javaagent:$agent=destfile=$RUNNER_TEMP/generic-jvm.exec,includes=GenericJvmMetamorphicProbe*,append=true"
+          node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs
+          unset JAVA_TOOL_OPTIONS
+          mkdir "$RUNNER_TEMP/generic-jvm-classes"
+          javac -d "$RUNNER_TEMP/generic-jvm-classes" packages/family-hunter/GenericJvmMetamorphicProbe.java
+          java -jar "$cli" report "$RUNNER_TEMP/generic-jvm.exec" \
+            --classfiles "$RUNNER_TEMP/generic-jvm-classes" --sourcefiles packages/family-hunter \
+            --xml "$RUNNER_TEMP/generic-jvm-coverage.xml" >/dev/null
+          python3 - "$RUNNER_TEMP/generic-jvm-coverage.xml" <<'PY'
+          import sys,xml.etree.ElementTree as ET
+          source=ET.parse(sys.argv[1]).find('.//sourcefile[@name="GenericJvmMetamorphicProbe.java"]')
+          if source is None: raise SystemExit('COVERAGE_SOURCE_MISSING')
+          for kind in ('LINE','BRANCH'):
+              item=source.find(f"counter[@type='{kind}']")
+              if item is None: raise SystemExit('COVERAGE_COUNTER_MISSING')
+              hit,miss=int(item.get('covered')),int(item.get('missed'))
+              if hit+miss==0 or hit/(hit+miss)<.90: raise SystemExit(f'{kind}_COVERAGE_BELOW_90:{hit}/{hit+miss}')
+              print(f'{kind}_COVERAGE={hit}/{hit+miss}')
+          PY
+      - name: Fetch and authenticate Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-generic"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-generic"
+      - name: Checkout pinned original GameHub
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/gamehub-ultra
+          ref: e4ca122422f1cb591d407db3fb21fb00fd78b022
+          path: original-gamehub
+          persist-credentials: false
+      - name: Require Bubblewrap and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Require real adversarial namespace probe
+        run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Replay generic discovery and independent original Kotlin oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash tests/fixtures/jvm-metamorphic/reproduce.sh "$GITHUB_WORKSPACE/original-gamehub" \
+            "$RUNNER_TEMP/kotlin-generic/kotlinc" "$GITHUB_WORKSPACE" | tee "$RUNNER_TEMP/generic-jvm-replay.log"
+          grep -Fxq 'GENERIC_METAMORPHIC_ORIGINAL_JVM_RED_GREEN_VETO_PASS' "$RUNNER_TEMP/generic-jvm-replay.log"
+          grep -Fxq 'GENERIC_METAMORPHIC_DEVELOPMENT_REPLAY_PASS' "$RUNNER_TEMP/generic-jvm-replay.log"
+      - name: Publish bounded development receipt
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-generic-jvm-metamorphic-development
+          path: ${{ runner.temp }}/generic-jvm-replay.log
+          retention-days: 30
+          if-no-files-found: error
