@@ -1,0 +1,80 @@
+{
+  "schema": "ultra-sentinel-phase2-block25b-prospective-metadata-v1",
+  "block": "2.5b-metadata-precommit",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "version": "HUNTER_V3_CANCELLATION_STRUCTURAL_ADVISORY",
+    "commitSha": "49235f854c61c29d55a0307ce4a0348553b2ee1f",
+    "treeSha": "411a9f24a07a57d21e918c022d1ec8442456537a",
+    "predecessors": [
+      "3668a4ff860c49c5aaf69a594efc4fa48d94def3",
+      "34679a71aed54abbc3ecbffbf29299cfb25f65b8"
+    ],
+    "successorMayNotRetuneOnCohort": true
+  },
+  "cohort": {
+    "repository": "Kotlin/kotlinx-datetime",
+    "commitSha": "77c95cc8125015f83ea8fd900404c295fba7276e",
+    "rootTreeSha": "110430b9981a688a703a7b8026a4f33bc5fee8ce",
+    "scope": "core/common/src/internal",
+    "scopeTreeSha": "11043b57ab92ce5198202de539c67a4690e6561a",
+    "selection": "LEXICOGRAPHIC_FIRST_DIRECTORY_UNDER_core/common/src_WITH_4_TO_8_DIRECT_DOT_KT_BLOBS_EACH_50_TO_12000_BYTES",
+    "files": [
+      {
+        "path": "core/common/src/internal/BinaryDataReader.kt",
+        "blobSha": "774f2902510b8f7e324cb2e1bd5b00ee851072c5",
+        "sizeBytes": 2133
+      },
+      {
+        "path": "core/common/src/internal/MyJvmDefaultWithoutCompatibility.kt",
+        "blobSha": "b189944a09c471c4e6f99b8b809ea08624134839",
+        "sizeBytes": 340
+      },
+      {
+        "path": "core/common/src/internal/dateCalculations.kt",
+        "blobSha": "aca8dc196bdf754aebf27ac92e271c4291d35426",
+        "sizeBytes": 1507
+      },
+      {
+        "path": "core/common/src/internal/math.kt",
+        "blobSha": "142cc278b5da31822dd535b791c4b1cc99efbbdd",
+        "sizeBytes": 9921
+      },
+      {
+        "path": "core/common/src/internal/toKotlinCode.kt",
+        "blobSha": "2cfeec290200546bf062ff0874466cb56729991a",
+        "sizeBytes": 709
+      },
+      {
+        "path": "core/common/src/internal/util.kt",
+        "blobSha": "4da9f94aae235d1506331f0a16de977c8a37ddc1",
+        "sizeBytes": 2762
+      }
+    ]
+  },
+  "protocol": {
+    "sourceBodyReadBeforeMetadataCommit": false,
+    "engineExecutedBeforeMetadataCommit": false,
+    "answerLabelsAvailableBeforeMetadataCommit": false,
+    "engineRetuningPermitted": false,
+    "sourceFilesMayBeRemovedAfterInspection": false,
+    "oracleContractsMustBeCommittedBeforeBlindPredictions": true,
+    "sourceGitObjectsMustBeAuthenticated": true,
+    "realNetworklessIsolationRequired": true,
+    "workersMustNotAccessOracles": true,
+    "allPredictionsMustBeSealedBeforeOracles": true,
+    "unknownTruthMustRemainUnknown": true,
+    "allowedSourcesToReselect": 0,
+    "priorEightCoroutinesReused": false,
+    "priorSixIoReused": false,
+    "fullTruthEstablished": false,
+    "newDefectFound": false,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "remoteWrites": false,
+    "repairAuthorized": false,
+    "mergeAllowed": false
+  },
+  "note": "Selected solely via original Git tree names, types, sizes and SHA IDs, without reading Kotlin source bodies or executing Hunter. Historical model pretraining disjointness is unknown. Oracle authorship will occur only after this commit is recorded. Preserve all six sources even if no cancellation findings or functional positives."
+}
