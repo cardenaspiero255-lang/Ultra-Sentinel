@@ -1,0 +1,106 @@
+name: Ultra Sentinel — Phase 2 Block 2.5 cancellation family TDD and isolation
+on:
+  pull_request:
+    paths:
+      - packages/family-hunter/phase2-cancellation-propagation-hunter.cjs
+      - packages/family-hunter/phase2-blind-cancellation-worker.cjs
+      - tests/fixtures/phase2-block25/**
+      - tests/unit/phase2-block25-cancellation-*.test.cjs
+      - docs/quality/PHASE2-BLOCK25-CANCELLATION-FAMILY.md
+      - .github/workflows/phase2-block25-cancellation-hunter.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  bounded-cancellation-family-and-real-sandbox:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate SHA without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run full architecture tests and original Hunter freeze verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+          node --test tests/unit/phase2-block25-cancellation-hunter.test.cjs tests/unit/phase2-block25-cancellation-worker.test.cjs
+      - name: Install required namespace isolation; no substitute for actual bwrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Prove real no-network source-only namespace and hostile workspace isolation
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Prepare ONLY synthetic training example without any original holdout answers
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/block25-training"
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
+          const src='package synthetic\nsuspend fun task() { try { work() } catch (e: CancellationException) { println(e) } }\n';
+          const raw=Buffer.from(src,'utf8');
+          const hash=crypto.createHash('sha1').update('blob '+raw.length+'\0').update(raw).digest('hex');
+          const inventory={expectedCommitSha:'a'.repeat(40),files:[{
+            path:'module/src/commonMain/kotlin/TrainingOnly.kt',source:src,expectedBlobSha:hash
+          }]};
+          fs.writeFileSync(path.join(process.env.RUNNER_TEMP,'block25-training','inventory.json'),JSON.stringify(inventory),{flag:'wx',mode:0o600});
+          JS
+      - name: Execute cancellation worker in actual disconnected Bubblewrap namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/block25-training/out"
+          bash tests/fixtures/phase2-block25/run-blind-cancellation-hunter.sh \
+            "$RUNNER_TEMP/block25-training/inventory.json" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-cancellation-propagation-hunter.cjs" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-blind-cancellation-worker.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/plain-kotlin-payload.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/novel-kotlin-path-policy.cjs" \
+            "$RUNNER_TEMP/block25-training/out"
+          jq -e '.schema=="ultra-sentinel-cancellation-propagation-hunter/v1" and
+            .status=="CANCELLATION_PROPAGATION_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE" and
+            .filesScanned==1 and (.findings|length)==1 and
+            .findings[0].rule=="CANCELLATION_EXCEPTION_SWALLOWED" and
+            .sourceByteIntegrityVerified==true and
+            .sourceRepositoryAuthenticated==false and
+            .originalFunctionalOracleVerified==false and
+            .compilerTypeResolutionVerified==false and
+            .repairAuthorized==false and .remoteWrites==false and .mergeAllowed==false' \
+            "$RUNNER_TEMP/block25-training/out/discovery.json" >/dev/null
+          echo "TRAINING_ONLY_SANDBOX_PASS_NO_BLIND_ORACLE" > "$RUNNER_TEMP/block25-training/out/status.txt"
+      - name: Upload non-scoring synthetic sandbox evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25-training-only-cancellation-sandbox-no-gold
+          path: ${{ runner.temp }}/block25-training/out/
+          retention-days: 30
+          if-no-files-found: warn
