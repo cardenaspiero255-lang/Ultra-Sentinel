@@ -108,7 +108,14 @@ jobs:
             test "$rc" -eq 1 || { echo "UNEXPECTED_WORKER_EXIT:$kind:$rc" >&2; exit 2; }
             test ! -e "$attempts/$kind/discovery.json" || exit 2
           done
-          node scripts/phase2-block23-evaluation.cjs seal "$attempts" "$RUNNER_TEMP/block23-sealed"
+          if ! node scripts/phase2-block23-evaluation.cjs seal "$attempts" "$RUNNER_TEMP/block23-sealed"; then
+            for kind in numeric codec identity; do
+              echo "DIAGNOSTIC_WORKER=$kind EXIT=$(cat "$attempts/$kind.exit")"
+              head -c 1200 "$attempts/$kind.stderr" | sed -e 's/[[:cntrl:]]/ /g'
+              printf '\n'
+            done
+            exit 2
+          fi
           node scripts/phase2-block23-evaluation.cjs verify "$RUNNER_TEMP/block23-sealed/prediction-seal.json"
       - name: Publish immutable unscored worker abstentions BEFORE running any oracle
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
