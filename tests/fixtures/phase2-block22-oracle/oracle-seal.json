@@ -1,0 +1,83 @@
+{
+  "schema": "ultra-sentinel-phase2-block22-independent-oracle-seal/v1",
+  "phaseBlock": "2.2",
+  "frozenEngineSha": "3668a4ff860c49c5aaf69a594efc4fa48d94def3",
+  "sourceCommitSha": "ead082131ceb45b8e4fda027c74471103c1cd09f",
+  "sourceFiles": [
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/Builders.kt",
+      "blobSha": "f91bb30cd97e45a662c3dfe85e920b447a0fc480"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/Channels.kt",
+      "blobSha": "4c14028da365b6d42edc0170fb55974a9d5ab8cc"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/Flow.kt",
+      "blobSha": "aebd9e455b66967924414e2940050ba1ae164e93"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/FlowCollector.kt",
+      "blobSha": "2110a82800f881a537fa5f187b11b350bd621e09"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/Migration.kt",
+      "blobSha": "2f46567f965df3bb881d19685394ce664beb0b17"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/SharedFlow.kt",
+      "blobSha": "80f5a7cfeee722e81436f71f2d3203b3839ceff0"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/SharingStarted.kt",
+      "blobSha": "c95f35e567d311f6470c84ba3c1b32753b0089ee"
+    },
+    {
+      "path": "kotlinx-coroutines-core/common/src/flow/StateFlow.kt",
+      "blobSha": "981b9e5e9423a1099bf8217034e62bfeca7aecb1"
+    }
+  ],
+  "oracleFiles": [
+    {
+      "path": "FlowCollectorContract.kt",
+      "sha256": "f217ae1b1469951f6e1fe031c9861d8ba0d282042d036a01b6f9ca349d0ea2a6"
+    },
+    {
+      "path": "KotlinCoroutineStub.kt",
+      "sha256": "af18de8a9305adda6850e4a552e5a00c219685c2c8d61b24637f631e9afe21bc"
+    },
+    {
+      "path": "KotlinFlowInternalStub.kt",
+      "sha256": "cc86bc025d781101fda1ac96983483ca0142fd366e9c4476b5b3f57930b3dc06"
+    },
+    {
+      "path": "KotlinFlowStub.kt",
+      "sha256": "80fb9c9e4f246956529e2f30bc2fa15c6a9d2eea2c365d4977c4c154657215c4"
+    },
+    {
+      "path": "KotlinInternalStub.kt",
+      "sha256": "3fb6fd0d2988c1d1b70af98cfdfd3bec674d094783183232177f4a6b8da69983"
+    },
+    {
+      "path": "SharingStartedContract.kt",
+      "sha256": "67e9eb0b148252167457e0a86c781d84ddc20587e2e99407fd3e024b459b1bcc"
+    }
+  ],
+  "scopedControls": [
+    {
+      "sourcePath": "kotlinx-coroutines-core/common/src/flow/FlowCollector.kt",
+      "contract": "SCOPED_BENIGN_SUSPEND_SAM_AND_ERROR_PROPAGATION"
+    },
+    {
+      "sourcePath": "kotlinx-coroutines-core/common/src/flow/SharingStarted.kt",
+      "contract": "SCOPED_BENIGN_TIMEOUT_GUARDS_EQUALITY_AND_STRINGS"
+    }
+  ],
+  "positiveOriginalDefectsVerified": false,
+  "completeUniverseLabeled": false,
+  "predictionsExecuted": false,
+  "automatedRepairsVerified": false,
+  "score": null,
+  "independentHumanReview": false,
+  "precommitNote": "Committed prior to any frozen Hunter prediction. Two narrowly scoped independently authored JVM behavioral controls, six original Kotlin files unadjudicated, no positive original defect demonstrated. Shims compile the unmodified original sources but are not evidence of full coroutine runtime behavior. Engine and oracle must be isolated in later steps."
+}
