@@ -5,6 +5,7 @@ on:
       - packages/family-hunter/bounded-kotlin-range-flow.cjs
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
       - tests/unit/phase2-general-numeric-range-flow.test.cjs
+      - tests/fixtures/phase2-numeric-range-flow/**
       - .github/workflows/phase2-general-numeric-range-flow.yml
   push:
     branches: [main]
@@ -33,6 +34,11 @@ jobs:
           node-version: '22'
       - name: Verify all structure, contracts and unit tests
         run: npm run check
+      - name: Use pinned Temurin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: Require 90 percent numeric-range branch and line coverage
         shell: bash
         run: |
@@ -54,11 +60,33 @@ jobs:
           print(f'NUMERIC_RANGE_BRANCH_COVERAGE={branch}')
           if line<90 or branch<90:raise SystemExit('NUMERIC_RANGE_COVERAGE_BELOW_90')
           PY
+      - name: Fetch SHA256 pinned Kotlin 2.0.21 for development oracle
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-range"
+          unzip -q "$zip" -d "$RUNNER_TEMP/kotlin-range"
+      - name: Compile and execute independent Kotlin/JVM scalar behavior controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/kotlin-range/kotlinc/bin/kotlinc" -jvm-target 17 -include-runtime \
+            tests/fixtures/phase2-numeric-range-flow/IndependentScalarBoundaryOracle.kt \
+            -d "$RUNNER_TEMP/numeric-range-oracle.jar"
+          java -jar "$RUNNER_TEMP/numeric-range-oracle.jar" | tee "$RUNNER_TEMP/numeric-range-jvm.log"
+          grep -Fxq 'KOTLIN_GENERAL_NUMERIC_RANGE_DEVELOPMENT_ORACLE_PASS' "$RUNNER_TEMP/numeric-range-jvm.log"
       - name: Publish regression and exact numeric coverage output
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: phase2-development-numeric-range-coverage
-          path: ${{ runner.temp }}/numeric-range-coverage.txt
+          path: |
+            ${{ runner.temp }}/numeric-range-coverage.txt
+            ${{ runner.temp }}/numeric-range-jvm.log
           retention-days: 30
           if-no-files-found: warn
