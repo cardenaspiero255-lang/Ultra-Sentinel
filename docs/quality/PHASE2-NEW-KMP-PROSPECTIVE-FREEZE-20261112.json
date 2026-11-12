@@ -1,0 +1,267 @@
+{
+  "schema": "ultra-sentinel-phase2-kmp-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "ce2c030fde3465ee4c3203022fee2c09c2233f59",
+    "sourceOnlyDetectors": [
+      "phase2-numeric-risk-hunter",
+      "phase2-codec-integrity-hunter",
+      "phase2-identity-delimiter-hunter"
+    ],
+    "dynamicProbe": "GenericJvmMetamorphicProbe.java",
+    "neverRetuneOnThisCohort": true
+  },
+  "cohorts": [
+    {
+      "repository": "Kotlin/kotlinx-atomicfu",
+      "commitSha": "063dd3c8e9b8bd8b7fc2a7e897c3f6eeb2c9a428",
+      "treeSha": "bb8e6d9bf944288bcc54ffe586aa0fe4755752cd",
+      "scopes": [
+        {
+          "scope": "atomicfu/src/commonMain/kotlin",
+          "files": [
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/AtomicFU.common.kt",
+              "blobSha": "721d86023038690cb7feffda049188ce1d2d9979",
+              "sizeBytes": 18480
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/locks/Synchronized.common.kt",
+              "blobSha": "ae0ea685437c061c98ccfd2d6fade06b22258199",
+              "sizeBytes": 557
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/locks/SynchronousMutex.kt",
+              "blobSha": "8de86a013b951a93838d206cbcaf63ba27180b2e",
+              "sizeBytes": 3475
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/MangledJsNames.kt",
+              "blobSha": "8c37d016e4dc075d35f9f9910b354b18976ad0f3",
+              "sizeBytes": 3214
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/OptionalJsName.kt",
+              "blobSha": "d27c84e83bb05240beb3049e5eea97c268ab9a09",
+              "sizeBytes": 603
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/Trace.common.kt",
+              "blobSha": "7105ca2e6fa124364460a12ab2ad6fa30c1b2476",
+              "sizeBytes": 2978
+            },
+            {
+              "path": "atomicfu/src/commonMain/kotlin/kotlinx/atomicfu/TraceFormat.kt",
+              "blobSha": "99969bfa0c250fff7f8aca7105fc27a8cba98a00",
+              "sizeBytes": 946
+            }
+          ]
+        },
+        {
+          "scope": "atomicfu/src/jvmMain/kotlin",
+          "files": [
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/AtomicFU.kt",
+              "blobSha": "118b3cfd1b9c5175d6c49a4405ed0c265fe20ca5",
+              "sizeBytes": 14284
+            },
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/locks/JvmParkingDelegator.kt",
+              "blobSha": "fa5b444f1d1681c992fcb90ddee9bcc65cf625ec",
+              "sizeBytes": 584
+            },
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/locks/ParkingSupport.kt",
+              "blobSha": "05d08bfa0aac7f92df0866d5a526fd72ccbd30c3",
+              "sizeBytes": 774
+            },
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/locks/Synchronized.kt",
+              "blobSha": "bfad1ca5db46579109d5881079d74eaf6e96919f",
+              "sizeBytes": 654
+            },
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/locks/SynchronousMutex.kt",
+              "blobSha": "9d1e270d5875712344f9890ac414751f264ecd1b",
+              "sizeBytes": 505
+            },
+            {
+              "path": "atomicfu/src/jvmMain/kotlin/kotlinx/atomicfu/Trace.kt",
+              "blobSha": "4a1cb5989f6d780c2e220d45d2b71da7631f0f54",
+              "sizeBytes": 3236
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repository": "JetBrains/compose-multiplatform",
+      "commitSha": "8431de3fdab6251ce5a0d7ab07303f5c85b13827",
+      "treeSha": "76dcde92c7349991c03fa9cdccae3d78ef86145d",
+      "scopes": [
+        {
+          "scope": "components/resources/library/src/commonMain/kotlin",
+          "files": [
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/FontResources.kt",
+              "blobSha": "056a2fa973db0830d5c5e7cbe18b01eac2031cef",
+              "sizeBytes": 2520
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageDecoders.kt",
+              "blobSha": "0f67da923b3293963b55e5e454b1401311660103",
+              "sizeBytes": 967
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ImageResources.kt",
+              "blobSha": "97cc61646645ae7c1d7b0a3582aba9110e937aa8",
+              "sizeBytes": 6182
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/CLDRPluralRuleLists.kt",
+              "blobSha": "2424db68f82ca11efcf2b03c0b2b5d6e75e8c676",
+              "sizeBytes": 11727
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralCategory.kt",
+              "blobSha": "6640784432d6b59284133ed7e160c99267489d15",
+              "sizeBytes": 663
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRule.kt",
+              "blobSha": "a5723bab593674e421c935862961ce23e0bff541",
+              "sizeBytes": 14926
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRuleList.kt",
+              "blobSha": "ea785806f08100f6f041ff571ce96ba01543372d",
+              "sizeBytes": 2293
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/PluralStringResources.kt",
+              "blobSha": "97e15201b842d91f0ad7c4c09ef446c8456dbfe0",
+              "sizeBytes": 6796
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Qualifier.kt",
+              "blobSha": "07ea518afdaa6edd1b708caf5bc6b6a132c3bcee",
+              "sizeBytes": 2631
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/Resource.kt",
+              "blobSha": "6c4d4edd75bd4baa1803c0191051bb94ba505724",
+              "sizeBytes": 1529
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceCaches.kt",
+              "blobSha": "0e79ea7be45e654c9536e724c036136a73d25153",
+              "sizeBytes": 1910
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceContentHash.kt",
+              "blobSha": "855ba837ba02b2a77f29baf5434f1920edd1ff48",
+              "sizeBytes": 350
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceEnvironment.kt",
+              "blobSha": "aa4c48e9cd6cc3a969bfd26c742bc19b29219ef8",
+              "sizeBytes": 9730
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceLock.kt",
+              "blobSha": "c90fbd4fabb7de7986cb02ae8b1e1e879c750f90",
+              "sizeBytes": 711
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceReader.kt",
+              "blobSha": "084e9c00508030928cd6c2762333a658f6819311",
+              "sizeBytes": 2114
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/ResourceState.kt",
+              "blobSha": "9e0ebd2e78c6ef760368e1360943b7bb0fc3b647",
+              "sizeBytes": 2389
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/StringArrayResources.kt",
+              "blobSha": "36eb33c1ff02c3a5b1806e56e710a6ad0c37e856",
+              "sizeBytes": 2777
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/StringResources.kt",
+              "blobSha": "bec660e95c3bfd0d90babe977fd0e214ef49417f",
+              "sizeBytes": 4346
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/StringResourcesUtils.kt",
+              "blobSha": "8b55dcd40317bfcfa0c3608857180edbe1961b3f",
+              "sizeBytes": 2113
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/ValueParsers.kt",
+              "blobSha": "cf065f4bfcf02076edcbe3de5bd2f7fe886e3d76",
+              "sizeBytes": 3719
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/Element.kt",
+              "blobSha": "c4a3d03819807b80072e641a880c92d15a0a5c01",
+              "sizeBytes": 236
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/MalformedXMLException.kt",
+              "blobSha": "50c9c221ce1495af87e26c401c469d880b0b2a6f",
+              "sizeBytes": 174
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/Node.kt",
+              "blobSha": "8f663be5f50c57acd44b501962f47e625b99707f",
+              "sizeBytes": 299
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/xmldom/NodeList.kt",
+              "blobSha": "db6a029e1d85754a9534d671e672f6b257b8e9e4",
+              "sizeBytes": 164
+            },
+            {
+              "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/vector/XmlVectorParser.kt",
+              "blobSha": "ed4631ef18daf2dcb30f00d33a90d3185e7ca247",
+              "sizeBytes": 10708
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "truth": {
+    "commitmentSha256": "0e74b367c33f65f01d67c96b35fcda0185f9b49d410f9cfeb00f960bfde4155c",
+    "committedOracleFile": "tests/fixtures/phase2-frozen-kmp-20261112/IndependentPluralOracle.kt",
+    "committedOracleGitBlobSha": "d397f53dad70d33d4f99815bd68e50b9c96f830b",
+    "sourceOriginalCommitSha": "8431de3fdab6251ce5a0d7ab07303f5c85b13827",
+    "scopedPositive": {
+      "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralRule.kt",
+      "sourceBlobSha": "a5723bab593674e421c935862961ce23e0bff541",
+      "line": 136,
+      "independentBehavior": "CLDR n absolute operand must handle Int.MIN_VALUE magnitude using Long; modulo 3 equals 2"
+    },
+    "scopedBenignControl": {
+      "path": "components/resources/library/src/commonMain/kotlin/org/jetbrains/compose/resources/plural/PluralCategory.kt",
+      "sourceBlobSha": "6640784432d6b59284133ed7e160c99267489d15",
+      "line": 20,
+      "independentBehavior": "case-insensitive category mapping and ordinary plural evaluations remain correct"
+    },
+    "independentHumanAdjudication": false,
+    "completePositiveNegativeTruth": false,
+    "oraclePreparedBeforeWorkerPredictions": true
+  },
+  "protocol": {
+    "sourceBodiesReadBeforeFreeze": false,
+    "ruleOrTrainingAdjustmentsAfterUnblindForbidden": true,
+    "allPredictionsSealedBeforeOracle": true,
+    "mustPreserveAbstentions": true,
+    "metricsRequiringCompleteTruthAreNull": true,
+    "scopeSelectionMethod": "Repository Git branch, commit, tree metadata only; select all Kotlin blobs in predefined production source sets, no source bodies or defect hints",
+    "remoteWrites": false,
+    "mergeAllowedFromExperiment": false
+  },
+  "limitations": "No truth committed yet. Do not interpret source-only alert counts as true/false positives, or zero findings as a clean repo. New Kotlin Multiplatform path coverage is an engineering fact, not novel-family detection. Oracle author inspected PluralRule only after freeze to design independent behavioral contract, then SHA256 committed oracle before blind scanning; not independent human labeling; do not assume full-coverage ground truth."
+}
