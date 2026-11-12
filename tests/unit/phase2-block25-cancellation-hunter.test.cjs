@@ -83,3 +83,28 @@ test('proxy and accessor inputs are rejected without triggering user-defined cod
  assert.match(scanCancellationPropagationHypotheses(p).status,/^BLOCKED_/);
  assert.equal(invoked,0);
 });
+
+test('Kotlin templates with nested quoted strings and apostrophes never abort a valid source scan',()=>{
+ const nested='val message = "${if (ok) "can\'t proceed" else "unknown"}"\n';
+ const src='package sample\n'+nested+
+  'suspend fun work() { try { task() } catch (e: CancellationException) { log(e) } }\n';
+ const r=scanCancellationPropagationHypotheses(req(src));
+ assert.equal(r.sourceByteIntegrityVerified,true,JSON.stringify(r));
+ assert.equal(r.findings.length,1,JSON.stringify(r));
+ assert.equal(r.findings[0].line,3);
+});
+
+test('template expressions and nested string templates do not fabricate cancellation findings',()=>{
+ const inside='val message = "${run { try { task() } catch (e: CancellationException) { log(e) } }}"\n';
+ const raw='val raw = """${if (ok) "the word catch (c: CancellationException) { suppressed() }" else "none"}"""\n';
+ const nested='val nested = "${"before ${if (ok) "after" else "none"}"}"\n';
+ const src='package sample\n'+inside+raw+nested;
+ const r=scanCancellationPropagationHypotheses(req(src));
+ assert.equal(r.sourceByteIntegrityVerified,true,JSON.stringify(r));
+ assert.equal(r.findings.length,0,JSON.stringify(r));
+});
+
+test('unterminated Kotlin string-template expression fails closed rather than inventing a verdict',()=>{
+ const src='package sample\nval message = "${if (ok) "yes" else "no"\n';
+ assert.match(scanCancellationPropagationHypotheses(req(src)).status,/^BLOCKED_/);
+});
