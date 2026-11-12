@@ -3,7 +3,7 @@
 // repository authentication. Original oracles are unavailable to this module.
 const {createHash}=require('node:crypto');
 const {snapshotRecord,snapshotArray}=require('../investigation/plain-kotlin-payload.cjs');
-const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
+const {isSafeHunterKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
 const RULE='AMBIGUOUS_DELIMITED_IDENTITY';
 const sha=s=>{const b=Buffer.from(s,'utf8');return createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');};
@@ -81,7 +81,7 @@ function scanIdentityDelimiterHypotheses(options){
   if(typeof r.expectedCommitSha!=='string'||!SHA.test(r.expectedCommitSha))return report('BLOCKED_COMMIT');
   const files=snapshotArray(r.files,['path','source','expectedBlobSha'],300),seen=new Set();
   for(const f of files){
-   if(typeof f.path!=='string'||!isSafeNovelKotlinPath(f.path)||seen.has(f.path)||
+   if(typeof f.path!=='string'||!isSafeHunterKotlinPath(f.path)||seen.has(f.path)||
      typeof f.source!=='string'||f.source.length<10||Buffer.byteLength(f.source,'utf8')>160000||
      f.source.includes('\0')||f.source.includes('\r')||
      Buffer.from(f.source,'utf8').toString('utf8')!==f.source||
