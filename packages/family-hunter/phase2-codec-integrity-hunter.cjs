@@ -3,7 +3,7 @@
 // and a pattern is never proof of a functional defect or production contract.
 const {createHash}=require('node:crypto');
 const {snapshotRecord,snapshotArray}=require('../investigation/plain-kotlin-payload.cjs');
-const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
+const {isSafeHunterKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
 const PATTERN=/\bString\s*\(\s*Base64\s*\.\s*get(?:Url)?Decoder\s*\(\s*\)\s*\.\s*decode\s*\([^)]{0,512}\)\s*,\s*StandardCharsets\s*\.\s*UTF_8\s*\)/g;
 function blob(text){const bytes=Buffer.from(text,'utf8');return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');}
@@ -38,7 +38,7 @@ function scanCodecIntegrityHypotheses(options){
   const files=snapshotArray(root.files,['path','source','expectedBlobSha'],300);
   const unique=new Set();
   for(const f of files){
-   if(typeof f.path!=='string'||!isSafeNovelKotlinPath(f.path)||unique.has(f.path)||
+   if(typeof f.path!=='string'||!isSafeHunterKotlinPath(f.path)||unique.has(f.path)||
      typeof f.source!=='string'||f.source.length<10||Buffer.byteLength(f.source,'utf8')>160000||
      f.source.includes('\r')||f.source.includes('\0')||Buffer.from(f.source,'utf8').toString('utf8')!==f.source||typeof f.expectedBlobSha!=='string'||!SHA.test(f.expectedBlobSha))return report('BLOCKED_SOURCE');
    if(blob(f.source)!==f.expectedBlobSha)return report('BLOCKED_BLOB');
