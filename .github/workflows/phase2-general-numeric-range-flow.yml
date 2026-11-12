@@ -1,0 +1,64 @@
+name: Ultra Sentinel — bounded Kotlin numeric abstract flow
+on:
+  pull_request:
+    paths:
+      - packages/family-hunter/bounded-kotlin-range-flow.cjs
+      - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - tests/unit/phase2-general-numeric-range-flow.test.cjs
+      - .github/workflows/phase2-general-numeric-range-flow.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  bounded-numeric-range-regression:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR head with no credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify all structure, contracts and unit tests
+        run: npm run check
+      - name: Require 90 percent numeric-range branch and line coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --experimental-test-coverage --test \
+            tests/unit/phase2-general-numeric-range-flow.test.cjs \
+            | tee "$RUNNER_TEMP/numeric-range-coverage.txt"
+          python3 - "$RUNNER_TEMP/numeric-range-coverage.txt" <<'PY'
+          import re,sys
+          rows=open(sys.argv[1],encoding='utf8').read().splitlines()
+          hits=[]
+          for line in rows:
+              if 'bounded-kotlin-range-flow.cjs' not in line or '|' not in line: continue
+              m=re.search(r'bounded-kotlin-range-flow\.cjs\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)',line)
+              if m:hits.append((float(m.group(1)),float(m.group(2))))
+          if len(hits)!=1:raise SystemExit(f'NUMERIC_RANGE_COVERAGE_ROW_MISSING_OR_AMBIGUOUS:{hits}')
+          line,branch=hits[0]
+          print(f'NUMERIC_RANGE_LINE_COVERAGE={line}')
+          print(f'NUMERIC_RANGE_BRANCH_COVERAGE={branch}')
+          if line<90 or branch<90:raise SystemExit('NUMERIC_RANGE_COVERAGE_BELOW_90')
+          PY
+      - name: Publish regression and exact numeric coverage output
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-development-numeric-range-coverage
+          path: ${{ runner.temp }}/numeric-range-coverage.txt
+          retention-days: 30
+          if-no-files-found: warn
