@@ -32,7 +32,7 @@ public final class Fixtures {
  public String unsupported(String x) { return x; }
  public int unsupportedArgument(String x) { return x.length(); }
  public int noArguments() { return 1; }
- public int tooMany(int a,int b,int c) { return a+b+c; }
+ public long tooMany(int a,int b,int c) { return (long)a+b+c; }
  public short shortPeak(short x) { return (short)(x==0?0:x==1?17:0); }
  public byte byteValley(byte x) { return (byte)(x==0?3:x==1?0:3); }
  public int boxedShortPeak(Short x) { return x==0?0:x==1?5:0; }
