@@ -23,7 +23,7 @@ function result(status,findings=[],verified=false){
 /* Omit Kotlin comments (including nested blocks), chars, ordinary and raw strings.
  * Preserve source lengths and newlines to retain exact catch line numbers. */
 function maskKotlin(source){
- const out=Array.from(source,c=>c==='\n'?'\n':' ');
+ const out=Array.from({length:source.length},(_,i)=>source[i]==='\n'?'\n':' ');
  let i=0,block=0,line=false,raw=false,quote='';
  while(i<source.length){
   const c=source[i],two=source.slice(i,i+2),three=source.slice(i,i+3);
