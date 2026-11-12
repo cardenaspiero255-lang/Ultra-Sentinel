@@ -1,0 +1,142 @@
+name: Ultra Sentinel — Phase 2 Block 2.4 fresh Kotlin IO precommit
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK24-V2-PROSPECTIVE-IO-FREEZE-20261112.json
+      - scripts/phase2-block24-preflight.cjs
+      - tests/unit/phase2-block24-preregistration.test.cjs
+      - tests/fixtures/phase2-block24-oracle/**
+      - .github/workflows/phase2-block24-io-preregister.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  pinned-engine-source-and-unexecuted-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate SHA with no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full repository contracts and previous frozen engine integrity
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout immutable and already frozen Hunter v2 commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 34679a71aed54abbc3ecbffbf29299cfb25f65b8
+          path: frozen-engine-v2
+          persist-credentials: false
+      - name: Checkout distinct original six-file Kotlin IO cohort
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx-io
+          ref: cf40e5ba7cd99ba812177d597a9f6ce0570545b1
+          path: reserved-io
+          persist-credentials: false
+      - name: Authenticate exact external Git blobs and oracle SHA256 precommit WITHOUT invoking Hunter
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block24-preflight.cjs \
+            "$GITHUB_WORKSPACE/frozen-engine-v2" "$GITHUB_WORKSPACE/reserved-io" \
+            "$RUNNER_TEMP/block24-source-attestation.json"
+          jq -e '.filesAuthenticated==6 and .sourceGitTreeVerified==true and
+            .originalOracleFilesSha256Verified==true and .hunterExecuted==false and
+            .oraclesExecuted==false and .scored==false and .precision==null and
+            .recall==null and .originalPositiveDefectsVerified==false' \
+            "$RUNNER_TEMP/block24-source-attestation.json" >/dev/null
+      - name: JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install and enforce Bubblewrap AppArmor namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch and byte-authenticate pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block24-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block24-kotlin"
+      - name: Compile two untouched original Kotlin JVM contracts in no-network namespace WITHOUT executing oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block24-compiled"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block24-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/reserved-io" /source
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block24-oracle" /oracle
+            --bind "$RUNNER_TEMP/block24-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /source/bytestring/common/src/ByteStringBuilder.kt \
+            /oracle/ByteStringStub.kt /oracle/BuilderOracle.kt -d /out/builder-original.jar
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /source/bytestring/common/src/Random.kt \
+            /oracle/ByteStringStub.kt /oracle/UnsafeByteStringStub.kt \
+            /oracle/RandomOracle.kt -d /out/random-original.jar
+          test -s "$RUNNER_TEMP/block24-compiled/builder-original.jar"
+          test -s "$RUNNER_TEMP/block24-compiled/random-original.jar"
+          ( cd "$RUNNER_TEMP/block24-compiled" && sha256sum *.jar > "$RUNNER_TEMP/block24-compiled-sha256.txt" )
+          printf '%s\n' "TWO_ORIGINAL_IO_ORACLES_COMPILED_NOT_EXECUTED" > "$RUNNER_TEMP/block24-oracle-status.txt"
+      - name: Upload original source authentication and unexecuted oracle precommit evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block24-new-kotlin-io-original-sources-oracles-not-executed
+          path: |
+            ${{ runner.temp }}/block24-source-attestation.json
+            ${{ runner.temp }}/block24-compiled-sha256.txt
+            ${{ runner.temp }}/block24-oracle-status.txt
+          if-no-files-found: warn
+          retention-days: 30

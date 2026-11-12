@@ -1,0 +1,53 @@
+{
+  "schema": "ultra-sentinel-phase2-block24-v2-original-io-oracle-seal/v1",
+  "frozenHunterCommitSha": "34679a71aed54abbc3ecbffbf29299cfb25f65b8",
+  "cohortCommitSha": "cf40e5ba7cd99ba812177d597a9f6ce0570545b1",
+  "cohortTreeSha": "ca3455d638cbb02307b46c8b11106baa58e55d5d",
+  "oracleFiles": [
+    {
+      "path": "BuilderOracle.kt",
+      "sha256": "916d6f46377e74432f372f4dc0c21c5fcef76939734a2de1487dd4290e5c979b",
+      "gitBlobSha": "c0d23f07b186b5b3825d4409898313b0f1abdfa4"
+    },
+    {
+      "path": "ByteStringStub.kt",
+      "sha256": "6f9322a87b9b5eb31f35eb8f08ac788e394e0f5bf1bb91b12a68c03d27b692c1",
+      "gitBlobSha": "3fec7e084c2c06d4e5362b1f3ca7382ca681a514"
+    },
+    {
+      "path": "RandomOracle.kt",
+      "sha256": "1b0befb57403f6f1cd678ccf3d5f3efe8964d2e0f5adeda1d7b4fe0416ebf6c9",
+      "gitBlobSha": "3384dadccac157bef5692085c5ce70e0abe21563"
+    },
+    {
+      "path": "UnsafeByteStringStub.kt",
+      "sha256": "2ade77947fe3f36967efa9c9be523c1bad6e5f49a56db12dd6ed02ad72af0428",
+      "gitBlobSha": "e51398ff8d8dd4b9b64b3403d328ef047745ddf0"
+    }
+  ],
+  "originalSourceControls": [
+    {
+      "path": "bytestring/common/src/ByteStringBuilder.kt",
+      "contract": "BENIGN_BUILDER_APPEND_GROWTH_BOUNDS_ORDER",
+      "expectedMarker": "ORIGINAL_IO_BUILDER_BENIGN_CONTROLS_PASS"
+    },
+    {
+      "path": "bytestring/common/src/Random.kt",
+      "contract": "BENIGN_SEEDED_RANDOM_SIZE_NEGATIVE_REJECTION",
+      "expectedMarker": "ORIGINAL_IO_RANDOM_BENIGN_CONTROLS_PASS"
+    }
+  ],
+  "sourceBodiesReadAfterFrozenEngineAndMetadataCommit": true,
+  "truthCommitmentBeforePrediction": true,
+  "originalDefectPositivesEstablished": false,
+  "allSixFilesFullyLabeled": false,
+  "oraclesExecuted": false,
+  "hunterPredictionsRun": false,
+  "detectorRetunedOnCohort": false,
+  "novelFamilyDiscoveryProven": false,
+  "precision": null,
+  "recall": null,
+  "f1": null,
+  "independentHumanAuditor": false,
+  "limitations": "These two functional Kotlin/JVM controls compile original ByteStringBuilder.kt and Random.kt with narrow independent ByteString/unsafe API shims; success does not certify the full kotlinx-io runtime, any other original file, or absence/presence of hidden defects. Four original Kotlin source files remain without functional truth. This seal is not accessible to frozen Hunter workers."
+}
