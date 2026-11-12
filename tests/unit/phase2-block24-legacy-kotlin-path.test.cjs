@@ -78,3 +78,26 @@ test('all three source scanners and source-only inventory preparers use advisory
  assert.match(recovery,/isSafeNovelKotlinPath/);
  assert.doesNotMatch(recovery,/isSafeHunterKotlinPath/);
 });
+
+test('v2 analyzes authenticated legacy Kotlin blobs through all 3 original advisory scanners',()=>{
+ const {createHash}=require('node:crypto');
+ const {scanKotlinNumericRisks}=require('../../packages/family-hunter/phase2-numeric-risk-hunter.cjs');
+ const {scanCodecIntegrityHypotheses}=require('../../packages/family-hunter/phase2-codec-integrity-hunter.cjs');
+ const {scanIdentityDelimiterHypotheses}=require('../../packages/family-hunter/phase2-identity-delimiter-hunter.cjs');
+ const cases=[
+  {scan:scanKotlinNumericRisks,source:'package example\\nfun f(x: Int): Long = (x * 1000).toLong()\\n',rule:'INT_MULTIPLICATION_BEFORE_WIDENING'},
+  {scan:scanCodecIntegrityHypotheses,source:'package example\\nfun decode(v: ByteArray) = String(Base64.getDecoder().decode(v), StandardCharsets.UTF_8)\\n',rule:'LOSSY_BASE64_UTF8_DECODE'},
+  {scan:scanIdentityDelimiterHypotheses,source:'package example\\nfun stateCacheKey(a: String, b: String) = listOf(a,b).joinToString("|")\\n',rule:'AMBIGUOUS_DELIMITED_IDENTITY'}
+ ];
+ for(const item of cases){
+  const source=item.source.replaceAll('\\n','\n');
+  const bytes=Buffer.from(source,'utf8');
+  const sha=createHash('sha1').update('blob '+bytes.length+'\\0').update(bytes).digest('hex');
+  const result=item.scan({expectedCommitSha:'a'.repeat(40),files:[{path:'legacy-core/common/src/api/Stream.kt',source,expectedBlobSha:sha}]});
+  assert.equal(result.sourceByteIntegrityVerified,true,JSON.stringify(result));
+  assert.ok(result.findings.some(f=>f.rule===item.rule),JSON.stringify(result));
+  const blocked=item.scan({expectedCommitSha:'a'.repeat(40),files:[{path:'legacy-core/common/src/test/Leak.kt',source,expectedBlobSha:sha}]});
+  assert.equal(blocked.sourceByteIntegrityVerified,false);
+  assert.match(blocked.status,/^BLOCKED_/);
+ }
+});
