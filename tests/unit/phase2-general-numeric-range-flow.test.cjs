@@ -112,3 +112,64 @@ test('existing numeric source hypotheses continue working alongside interval ana
  assert.ok(r.findings.some(f=>f.rule==='INT_MULTIPLICATION_BEFORE_WIDENING'));
  assert.equal(r.findings.some(f=>f.rule==='SIGNED_MIN_ABSOLUTE_RANGE_RISK'),false);
 });
+
+test('mixed typed and unknown Kotlin parameters retain provable numeric scalar intervals',()=>{
+ const s=[
+  'package demo',
+  'import kotlin.math.absoluteValue',
+  'fun aggregate(label: String, signal: Int, enabled: Boolean): Int {',
+  ' return signal.absoluteValue',
+  '}',''].join('\n');
+ assert.deepEqual(absFindings(s).map(x=>x.line),[4]);
+});
+test('a guard proven on a numeric source refines immutable aliases, but not unrelated variables',()=>{
+ const s=[
+  'package demo',
+  'import kotlin.math.absoluteValue',
+  'fun aliasGuard(n: Int): Int {',
+  ' val same = n',
+  ' if (n == Int.MIN_VALUE) return 0',
+  ' return same.absoluteValue',
+  '}',
+  'fun distinct(a: Int, b: Int): Int {',
+  ' if (a == Int.MIN_VALUE) return 0',
+  ' return b.absoluteValue',
+  '}',''].join('\n');
+ assert.deepEqual(absFindings(s).map(x=>x.line),[10]);
+});
+test('conditional exits and writes do not incorrectly narrow subsequent guaranteed execution',()=>{
+ const s=[
+  'package demo',
+  'import kotlin.math.absoluteValue',
+  'fun nestedGuard(n: Int): Int {',
+  ' if (n > 0) {',
+  '  if (n == Int.MIN_VALUE) return 0',
+  ' }',
+  ' return n.absoluteValue',
+  '}',
+  'fun nestedWrite(n: Int): Int {',
+  ' var x = n',
+  ' if (n > 0) {',
+  '   x = 7',
+  ' }',
+  ' return x.absoluteValue',
+  '}',
+  'fun nestedInvalidateSafe(n: Int): Int {',
+  ' var x = n.coerceAtLeast(0)',
+  ' if (n > 0) {',
+  '   x = n',
+  ' }',
+  ' return x.absoluteValue',
+  '}',''].join('\n');
+ assert.deepEqual(absFindings(s).map(x=>x.line),[7,14,21]);
+});
+test('a continuation-line absoluteValue remains attached to its typed numeric receiver',()=>{
+ const s=[
+  'package demo',
+  'import kotlin.math.absoluteValue',
+  'fun continued(n: Int): Int {',
+  ' return n',
+  '    .absoluteValue',
+  '}',''].join('\n');
+ assert.deepEqual(absFindings(s).map(x=>x.line),[5]);
+});
