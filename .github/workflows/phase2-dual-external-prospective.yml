@@ -1,0 +1,146 @@
+name: Ultra Sentinel — prospective external frozen Kotlin holdout
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-DOUBLE-EXTERNAL-HOLDOUT-FREEZE-20261111.json
+      - tests/fixtures/phase2-external-dual-20261111/**
+      - scripts/phase2-dual-frozen-capture.sh
+      - .github/workflows/phase2-dual-external-prospective.yml
+      - tests/unit/phase2-dual-external-prospective.test.cjs
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-source-only-before-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact control plane without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run all architecture regression tests
+        run: npm run check
+      - name: Checkout sealed pre-scan Hunter, never PR HEAD
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: ebd87b7690fa2223ab65ee200ccf816359ee1f08
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout sealed original KotlinPoet
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: square/kotlinpoet
+          ref: f4e88d3655b0f5f795186ea8cf3cb5a8ceb6db01
+          path: reserved-kotlinpoet
+          persist-credentials: false
+      - name: Checkout sealed original Android architecture-samples
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: android/architecture-samples
+          ref: ee66e1526b84c026615df032c705842b7d2a521f
+          path: reserved-architecture
+          persist-credentials: false
+      - name: Enforce Bubblewrap and AppArmor for frozen workers
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Mandatory isolated worker adversarial tests
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Scan all eligible original sources using frozen worker SHA without oracle mounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/dual-predictions"
+          bash scripts/phase2-dual-frozen-capture.sh \
+            "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/reserved-kotlinpoet" \
+            "$GITHUB_WORKSPACE/reserved-architecture" "$RUNNER_TEMP/dual-predictions"
+          jq -e '.sourceCount==33 and .unsupportedSourceCount==9 and
+            (.workerReports|length)==3 and .scored==false and
+            .precision==null and .recall==null and .verifiedRepairs==0' \
+            "$RUNNER_TEMP/dual-predictions/sealed-receipt.json" >/dev/null
+          echo "FROZEN_PREDICTIONS_SEALED_BEFORE_ORACLE"
+      - name: Publish raw unscored source-only reports BEFORE truth revelation
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-dual-external-frozen-predictions
+          path: ${{ runner.temp }}/dual-predictions/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Fetch SHA-authenticated Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-dual"
+          unzip -q "$zip" -d "$RUNNER_TEMP/kotlin-dual"
+      - name: Execute byte-committed original JVM oracles ONLY after predictions are published
+        shell: bash
+        run: |
+          set -euo pipefail
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          node_root="$(dirname "$(dirname "$(readlink -f "$(command -v node)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /kotlin/bin:/jdk/bin:/node/bin:/usr/bin:/bin \
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp --setenv RUNNER_TEMP /tmp \
+            ${mounts[@]} --ro-bind "$jdk" /jdk --ro-bind "$node_root" /node \
+            --ro-bind "$RUNNER_TEMP/kotlin-dual/kotlinc" /kotlin \
+            --ro-bind "$GITHUB_WORKSPACE" /sentinel \
+            --bind "$RUNNER_TEMP/dual-predictions" /evidence \
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /sentinel -- \
+            /bin/bash /sentinel/tests/fixtures/phase2-external-dual-20261111/reproduce.sh \
+              /sentinel/reserved-kotlinpoet /sentinel/reserved-architecture /kotlin /sentinel /evidence \
+            | tee "$RUNNER_TEMP/dual-oracle.log"
+          grep -Fxq 'ORIGINAL_JVM_POSITIVE_RED_GREEN_VETO_AND_NEGATIVE_CONTROL_VERIFIED' "$RUNNER_TEMP/dual-oracle.log"
+      - name: Publish separate scoped independent original oracle verdict
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-dual-external-kotlin-oracle-verdict
+          path: |
+            ${{ runner.temp }}/dual-predictions/adjudication.json
+            ${{ runner.temp }}/dual-oracle.log
+          retention-days: 30
+          if-no-files-found: error
