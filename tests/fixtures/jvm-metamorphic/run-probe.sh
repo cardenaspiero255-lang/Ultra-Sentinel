@@ -24,8 +24,21 @@ for mount in /bin /lib /lib64; do
  elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
  else exit 2; fi
 done
+# The JVM's -Xmx is NOT an aggregate memory limit. Untrusted methods can
+# spawn child processes; systemd v2 bounds the entire process tree. A separate
+# kernel cgroup guard must verify the limits before launching the namespace.
+# If sudo, systemd, the cgroup controller or the scopes are unavailable, STOP.
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+guard="$script_dir/assert-cgroup-and-exec.sh"
+[ -f "$guard" ] && [ ! -L "$guard" ] || exit 2
+command -v sudo >/dev/null && command -v systemd-run >/dev/null || exit 2
+[ -r /sys/fs/cgroup/cgroup.controllers ] || exit 2
 umask 077
-if ! (ulimit -f 1024; ulimit -n 128; exec timeout --kill-after=2s 45s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+if ! (ulimit -f 1024; ulimit -n 128; exec timeout --kill-after=2s 45s env -i PATH=/usr/bin:/bin HOME=/tmp \
+ /usr/bin/sudo -n /usr/bin/systemd-run --system --scope --quiet --collect \
+ --uid="$(id -u)" --gid="$(id -g)" --property=MemoryMax=512M \
+ --property=MemorySwapMax=0 --property=TasksMax=32 \
+ /bin/bash "$guard" /usr/bin/bwrap \
  --die-with-parent --unshare-all --new-session --clearenv \
  --setenv PATH /jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
  "${mounts[@]}" --ro-bind "$jdk" /jdk --dir /probe --dir /input \
