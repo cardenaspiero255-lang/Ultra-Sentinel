@@ -12,6 +12,20 @@ test('the JVM probe requires a bounded networkless namespace and does not mount 
  assert.doesNotMatch(source,/--(?:ro-)?bind\s+["']?\$\{?GITHUB_WORKSPACE/);
  assert.doesNotMatch(source,/--(?:ro-)?bind\s+\/\s+\//);
 });
+test('child processes share a strict kernel-enforced aggregate memory and task budget',()=>{
+ const launcher=fs.readFileSync(runner,'utf8');
+ const guardFile=path.join(root,'tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh');
+ assert.ok(fs.existsSync(guardFile),'fail closed: cgroup execution guard must exist');
+ const guard=fs.readFileSync(guardFile,'utf8');
+ assert.equal(spawnSync('bash',['-n',guardFile],{encoding:'utf8'}).status,0);
+ for(const token of ['systemd-run','MemoryMax=','MemorySwapMax=0','TasksMax=',
+  'assert-cgroup-and-exec.sh','--uid','--gid'])
+  assert.ok(launcher.includes(token),'aggregate budget missing: '+token);
+ for(const token of ['/proc/self/cgroup','/sys/fs/cgroup','memory.max','pids.max',
+  'exec "\\$@"'])
+  assert.ok(guard.includes(token),'pre-execution guard missing: '+token);
+ assert.doesNotMatch(launcher,/ulimit -v|--memory-swappiness/);
+});
 test('the real namespace prevents a malicious probe reading host answers or environment',t=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-jvm-blind-'));
  try{
