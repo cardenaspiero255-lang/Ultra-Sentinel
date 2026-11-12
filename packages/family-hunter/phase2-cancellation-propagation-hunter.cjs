@@ -23,36 +23,61 @@ function result(status,findings=[],verified=false){
 /* Omit Kotlin comments (including nested blocks), chars, ordinary and raw strings.
  * Preserve source lengths and newlines to retain exact catch line numbers. */
 function maskKotlin(source){
+ // UTF-16 unit positions are preserved, including for astral characters.
  const out=Array.from({length:source.length},(_,i)=>source[i]==='\n'?'\n':' ');
- let i=0,block=0,line=false,raw=false,quote='';
+ const stack=[{kind:'code'}];
+ let i=0;
+ function push(frame){
+  if(stack.length>=64)throw Error('KOTLIN_TEMPLATE_STACK_BUDGET');
+  stack.push(frame);
+ }
+ const templateOpen=String.fromCharCode(36)+'{';
  while(i<source.length){
+  const top=stack[stack.length-1];
   const c=source[i],two=source.slice(i,i+2),three=source.slice(i,i+3);
-  if(line){
-   if(c==='\n')line=false;
+  if(top.kind==='lineComment'){
+   if(c==='\n')stack.pop();
    i++;continue;
   }
-  if(block){
-   if(two==='/*'){block++;i+=2;continue;}
-   if(two==='*/'){block--;i+=2;continue;}
+  if(top.kind==='blockComment'){
+   if(two==='/*'){top.depth++;if(top.depth>512)throw Error('COMMENT_DEPTH');i+=2;continue;}
+   if(two==='*/'){top.depth--;if(top.depth===0)stack.pop();i+=2;continue;}
    i++;continue;
   }
-  if(raw){
-   if(three==='"""'){raw=false;i+=3;continue;}
-   i++;continue;
-  }
-  if(quote){
+  if(top.kind==='string'){
+   if(top.delimiter==='char'){
+    if(c==='\\'){i+=Math.min(2,source.length-i);continue;}
+    if(c==="'")stack.pop();
+    i++;continue;
+   }
+   if(top.delimiter==='raw'){
+    if(three==='"""'){stack.pop();i+=3;continue;}
+    if(two===templateOpen){push({kind:'template',depth:1});i+=2;continue;}
+    i++;continue;
+   }
    if(c==='\\'){i+=Math.min(2,source.length-i);continue;}
-   if(c===quote)quote='';
+   if(two===templateOpen){push({kind:'template',depth:1});i+=2;continue;}
+   if(c==='"')stack.pop();
    i++;continue;
   }
-  if(two==='//'){line=true;i+=2;continue;}
-  if(two==='/*'){block=1;i+=2;continue;}
-  if(three==='"""'){raw=true;i+=3;continue;}
-  if(c==='"'||c==="'"){quote=c;i++;continue;}
+  // Executable Kotlin code inside a string template is conservatively masked
+  // along with the enclosing string: it is not a top-level finding.
+  if(two==='//'){push({kind:'lineComment'});i+=2;continue;}
+  if(two==='/*'){push({kind:'blockComment',depth:1});i+=2;continue;}
+  if(three==='"""'){push({kind:'string',delimiter:'raw'});i+=3;continue;}
+  if(c==='"'){push({kind:'string',delimiter:'ordinary'});i++;continue;}
+  if(c==="'"){push({kind:'string',delimiter:'char'});i++;continue;}
+  if(top.kind==='template'){
+   if(c==='{'){top.depth++;if(top.depth>512)throw Error('TEMPLATE_BRACE_DEPTH');}
+   else if(c==='}'&&--top.depth===0)stack.pop();
+   i++;continue;
+  }
   out[i]=c;
   i++;
  }
- if(block||raw||quote)throw Error('UNTERMINATED_KOTLIN_LEXEME');
+ // A //-comment may legitimately terminate at EOF.
+ if(stack.length===2&&stack[1].kind==='lineComment')stack.pop();
+ if(stack.length!==1||stack[0].kind!=='code')throw Error('UNTERMINATED_KOTLIN_LEXEME_OR_TEMPLATE');
  return out.join('');
 }
 function closingBrace(code,open){
