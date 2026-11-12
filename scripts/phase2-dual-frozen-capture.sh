@@ -40,7 +40,7 @@ helper="$engine/packages/investigation/plain-kotlin-payload.cjs"
 policy="$engine/packages/investigation/novel-kotlin-path-policy.cjs"
 work=$(mktemp -d "$RUNNER_TEMP/phase2-double-XXXXXX")
 trap 'rm -rf "$work"' EXIT
-for id in poet android; do
+for id in android; do
  if [ "$id" = poet ]; then
   source=$poet; commit=f4e88d3655b0f5f795186ea8cf3cb5a8ceb6db01
   scope=kotlinpoet/src/commonMain/kotlin; count=9
@@ -77,10 +77,11 @@ node - "$root/docs/quality/PHASE2-DOUBLE-EXTERNAL-HOLDOUT-FREEZE-20261111.json" 
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const [file,dir]=process.argv.slice(2),lock=JSON.parse(fs.readFileSync(file,'utf8'));
 const receipt={schema:'ultra-sentinel-phase2-dual-blind-capture/v1',engineSha:lock.engine.commitSha,
- truthCommitmentSha256:lock.protocol.truthCommitmentSha256,sourceCount:42,workerReports:[],
+ truthCommitmentSha256:lock.protocol.truthCommitmentSha256,sourceCount:33,unsupportedSourceCount:9,workerReports:[],
+ scopeStatus:'PARTIAL_COHORT_EXPLICIT_ABSTENTION',
  unverifiedFindings:0,scored:false,precision:null,recall:null,falsePositives:null,
  verifiedRepairs:0};
-for(const [id,cohort] of [['poet',lock.cohorts[0]],['android',lock.cohorts[1]]]){
+for(const [id,cohort] of [['android',lock.cohorts[1]]]){
  const sources=new Map(cohort.files.map(x=>[x.path,x.blobSha]));
  for(const kind of ['numeric','codec','identity']){
   const bytes=fs.readFileSync(path.join(dir,id+'-'+kind+'.json')),r=JSON.parse(bytes);
@@ -100,11 +101,12 @@ for(const [id,cohort] of [['poet',lock.cohorts[0]],['android',lock.cohorts[1]]])
   receipt.unverifiedFindings+=r.findings.length;
  }
 }
-if(receipt.workerReports.length!==6)throw Error('INCOMPLETE_WORKER_UNIVERSE');
+if(receipt.workerReports.length!==3)throw Error('INCOMPLETE_WORKER_UNIVERSE');
 fs.writeFileSync(path.join(dir,'sealed-receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
-console.log('BLIND_SOURCE_COUNT=42');
+console.log('BLIND_SOURCE_COUNT=33');
+console.log('UNSUPPORTED_FROZEN_PATHS=9');
 console.log('BLIND_UNVERIFIED_FINDINGS='+receipt.unverifiedFindings);
 JS
-(cd "$out" && sha256sum poet-*.json android-*.json sealed-receipt.json > SHA256SUMS.txt)
+(cd "$out" && sha256sum android-*.json sealed-receipt.json > SHA256SUMS.txt)
 cat "$out/SHA256SUMS.txt"
 echo 'DUAL_EXTERNAL_PREDICTIONS_SEALED_BEFORE_ORACLES'
