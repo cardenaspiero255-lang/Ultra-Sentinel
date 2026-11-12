@@ -8,7 +8,7 @@ const crypto=require('node:crypto');
 const ORIGINAL_ENGINE='3668a4ff860c49c5aaf69a594efc4fa48d94def3';
 const ORIGINAL_TREE='09b8e8a9e598c4c1184fb0b97617cc3b2ff9c73e';
 const ORIGINAL_SOURCE='ead082131ceb45b8e4fda027c74471103c1cd09f';
-const MARKERS={numeric:'BAD_BLIND_NUMERIC_INVENTORY',codec:'BLIND_CODEC_WORKER_BLOCKED: UNTRUSTED_HUNTER_VERDICT',identity:'BLIND_IDENTITY_HUNTER_BLOCKED: UNTRUSTED_IDENTITY_HUNTER_VERDICT'};
+const MARKERS={numeric:'BAD_BLIND_NUMERIC_INVENTORY',codec:'BLIND_CODEC_WORKER_BLOCKED: UNTRUSTED_HUNTER_VERDICT',identity:'BLIND_IDENTITY_WORKER_BLOCKED: UNTRUSTED_IDENTITY_HUNTER_VERDICT'};
 function block(reason){throw Error('PHASE23_FAIL_CLOSED:'+reason);}
 function git(dir,...args){const out=cp.spawnSync('git',['-C',dir,...args],{encoding:null,timeout:15000,maxBuffer:4*1024*1024,env:{...process.env,GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_OPTIONAL_LOCKS:'0',GIT_TERMINAL_PROMPT:'0'}});if(out.error||out.status!==0)block('GIT_'+args[0]);return out.stdout;}
 const txt=(dir,...args)=>git(dir,...args).toString('utf8').trim();
