@@ -1,0 +1,210 @@
+{
+  "schema": "ultra-sentinel-phase2-external-double-holdout-freeze/v1",
+  "freezeId": "P2-EXTERNAL-KOTLIN-FROZEN-20261111-NOVELTY-V1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "ebd87b7690fa2223ab65ee200ccf816359ee1f08",
+    "mode": "FROZEN_UNMODIFIED_GENERIC_JVM_PLUS_SOURCE_ONLY_RULES"
+  },
+  "cohorts": [
+    {
+      "repository": "square/kotlinpoet",
+      "commitSha": "f4e88d3655b0f5f795186ea8cf3cb5a8ceb6db01",
+      "treeSha": "60bac82d52b6137ec4656c70e88b42a5b716045b",
+      "scope": "kotlinpoet/src/commonMain/kotlin",
+      "files": [
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/CodePoint.kt",
+          "blobSha": "430f9b92d1b07843a8472d98d254559fca56f341"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/DelicateKotlinPoetApi.kt",
+          "blobSha": "f6e70d5059f6d1c962b5fba6b86ec47e5776a3d0"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/ExperimentalKotlinPoetApi.kt",
+          "blobSha": "37522779fd306ec1c490f8d3d57e9ca68e6c111d"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/Import.kt",
+          "blobSha": "8e9eb123e5a89c59f76504862c9c51348b62842e"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/KModifier.kt",
+          "blobSha": "183f38c0ce422dff79db4993c00c197d5db4b626"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/KOperator.kt",
+          "blobSha": "96dd0254f4e546bdf2aba37860bebee047612b41"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/LineWrapper.kt",
+          "blobSha": "53ccdc014edaa09605e62a2623a350bbfc1bde01"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/NameAllocator.kt",
+          "blobSha": "32d4a1e348c23a7369a5dd81fbd71aafb52846a4"
+        },
+        {
+          "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/Util.kt",
+          "blobSha": "998e90cd888baef32fb17098b09a74861cd278cf"
+        }
+      ]
+    },
+    {
+      "repository": "android/architecture-samples",
+      "commitSha": "ee66e1526b84c026615df032c705842b7d2a521f",
+      "treeSha": "19455e693ec8c96c37a56aec55059a220826c5a3",
+      "scope": "app/src/main/java",
+      "files": [
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/addedittask/AddEditTaskScreen.kt",
+          "blobSha": "ef50627b6d04a10b35c5da02f1814c8881a1165a"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/addedittask/AddEditTaskViewModel.kt",
+          "blobSha": "30c90f822011e9efadf61937225e45526481d802"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/DefaultTaskRepository.kt",
+          "blobSha": "7d61755a656ae1d366662c50bc2eceb6b2783100"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/ModelMappingExt.kt",
+          "blobSha": "38b14282fc7ea34a9ccc9b61c551bca6e606ac39"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/local/LocalTask.kt",
+          "blobSha": "9d9b084e44ca0fb63ddfd2fbbc3f0f5ef5264f7d"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/local/TaskDao.kt",
+          "blobSha": "23251efe837a1ba2f8c0b091de8d0b4ff89080e8"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/local/ToDoDatabase.kt",
+          "blobSha": "4f4386af2953339fd7affd72c3d672dfdc5bc5a3"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/network/NetworkDataSource.kt",
+          "blobSha": "f6e298771fe963cdcbdd4b3953cd0ec1aa93fb05"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/network/NetworkTask.kt",
+          "blobSha": "e7168a7ec112f839bbbc053c777c8f6b8abb4990"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/source/network/TaskNetworkDataSource.kt",
+          "blobSha": "8103d65fbc7d065d651999cc8c2b4a8012351465"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/Task.kt",
+          "blobSha": "91377071c9d49deab552fc685a8668a791fae051"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/TaskRepository.kt",
+          "blobSha": "6f0ee0bb525a2def0842cd146d13f66ac30f5bc0"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/di/CoroutinesModule.kt",
+          "blobSha": "4c38330b3e63a22bcc358f101bace484f61a3d7c"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/di/DataModules.kt",
+          "blobSha": "aab699ccdb41efeda6471dd6bafa6f4afcf8bdd7"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/statistics/StatisticsScreen.kt",
+          "blobSha": "4bb2c4ba095fd128b2a352c1cf8b8215eaa387f3"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/statistics/StatisticsUtils.kt",
+          "blobSha": "99942a94c82cc4f584d1519c63f62bf3c698a09d"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/statistics/StatisticsViewModel.kt",
+          "blobSha": "ac575e6297d6bf49509cc7f8c070b4eb421c5c9e"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/taskdetail/TaskDetailScreen.kt",
+          "blobSha": "7720815a939293e2a60bef68aaa9141053bbb41e"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/taskdetail/TaskDetailViewModel.kt",
+          "blobSha": "6297ecf1bb32a5a9ee8ebc786495ffb79c38360d"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/tasks/TasksFilterType.kt",
+          "blobSha": "4de088319617f9fd93585ad9caea94b21aec17ba"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/tasks/TasksScreen.kt",
+          "blobSha": "395865d0a38101f698c8bf280550dc3735ee1f27"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/tasks/TasksViewModel.kt",
+          "blobSha": "f95b2d273f594e0323ff976210d2e3a77cc11723"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/TodoActivity.kt",
+          "blobSha": "241ce065b4d74206cb4bfc6a3d27b9e7dd1bd456"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/TodoApplication.kt",
+          "blobSha": "c8381d922dfd5f377e924b3ac31043bfbab1d532"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/TodoNavGraph.kt",
+          "blobSha": "852256c65007517f77e7663fe2d40535362b3c26"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/TodoNavigation.kt",
+          "blobSha": "ea0bc4a6680071a6f98d8d394f92e3f66dff602e"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/TodoTheme.kt",
+          "blobSha": "e461d959ad75008a46d8b97b52362dc3b61ade8b"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/Async.kt",
+          "blobSha": "004da7e4a05016d99371d2d0bef62579ab1cb5f9"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/ComposeUtils.kt",
+          "blobSha": "84d6417127c03ebdf0ebc4b3a0dd0ad9b8e103da"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/CoroutinesUtils.kt",
+          "blobSha": "318b2c90e25aa445cff68afc09dcbba6f47754e3"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/SimpleCountingIdlingResource.kt",
+          "blobSha": "706756359513724516b231154b68513e52d42422"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TodoDrawer.kt",
+          "blobSha": "16e8fc154d039a6be82bca4baaea0ce7eeba2d63"
+        },
+        {
+          "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/util/TopAppBars.kt",
+          "blobSha": "9e3b11cc0c42c9a3d7f2b4b2df75be23e447c0f7"
+        }
+      ]
+    }
+  ],
+  "protocol": {
+    "sourceBodiesReadBeforeFreeze": false,
+    "oracleAnswersReadBeforeFreeze": false,
+    "workerPredictionsReadBeforeFreeze": false,
+    "truthCommitmentSha256": null,
+    "allowHunterTrainingAfterUnblind": false,
+    "retainNegativeObservations": true,
+    "requiresIndependentOriginalJVMOracle": true,
+    "requiresCompleteLabeledUniverseForMetrics": true,
+    "zeroFindingsNotZeroFalsePositives": true,
+    "retrospectiveTruthCannotBecomeProspective": true,
+    "remoteWrites": false,
+    "mergeAllowedFromExperiment": false
+  },
+  "note": "Selected solely from Git commit and path metadata. These SHA-pinned cohorts are prospective source-only inputs; the independent original Kotlin/JVM oracle, negative truth labels, prediction sealing and evaluation have not been produced. The fully frozen engine must not be trained on either cohort. After any source inspection or oracle disclosure, this holdout is consumed and must never be reused as a fresh blind benchmark."
+}
