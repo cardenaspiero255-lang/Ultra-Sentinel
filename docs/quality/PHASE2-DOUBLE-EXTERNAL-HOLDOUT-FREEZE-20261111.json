@@ -196,7 +196,7 @@
     "sourceBodiesReadBeforeFreeze": false,
     "oracleAnswersReadBeforeFreeze": false,
     "workerPredictionsReadBeforeFreeze": false,
-    "truthCommitmentSha256": null,
+    "truthCommitmentSha256": "aa4743fb6aedcef5c347a6adfc69c407b8c5496124436afa0ef094b09b8cc5b9",
     "allowHunterTrainingAfterUnblind": false,
     "retainNegativeObservations": true,
     "requiresIndependentOriginalJVMOracle": true,
@@ -204,7 +204,20 @@
     "zeroFindingsNotZeroFalsePositives": true,
     "retrospectiveTruthCannotBecomeProspective": true,
     "remoteWrites": false,
-    "mergeAllowedFromExperiment": false
+    "mergeAllowedFromExperiment": false,
+    "truthCommitmentRule": "SHA256(concat(utf8(filename) + NUL + exactBytes) for IndependentNameAllocatorOracle.kt, TestOnlyCodePointSupport.kt, IndependentTaskOracle.kt, in that order)",
+    "oracleLabelsPlanned": [
+      {
+        "repository": "square/kotlinpoet",
+        "path": "kotlinpoet/src/commonMain/kotlin/com/squareup/kotlinpoet/NameAllocator.kt",
+        "outcome": "ORIGINAL_RED_FOR_ABORTED_ALLOCATION_ATOMICITY"
+      },
+      {
+        "repository": "android/architecture-samples",
+        "path": "app/src/main/java/com/example/android/architecture/blueprints/todoapp/data/Task.kt",
+        "outcome": "ORIGINAL_GREEN_BENIGN_VALIDATION"
+      }
+    ]
   },
-  "note": "Selected solely from Git commit and path metadata. These SHA-pinned cohorts are prospective source-only inputs; the independent original Kotlin/JVM oracle, negative truth labels, prediction sealing and evaluation have not been produced. The fully frozen engine must not be trained on either cohort. After any source inspection or oracle disclosure, this holdout is consumed and must never be reused as a fresh blind benchmark."
+  "note": "Selected solely from Git commit and path metadata. These SHA-pinned cohorts are prospective source-only inputs; the independent original Kotlin/JVM oracle, negative truth labels, prediction sealing and evaluation have not been produced. The fully frozen engine must not be trained on either cohort. After any source inspection or oracle disclosure, this holdout is consumed and must never be reused as a fresh blind benchmark. The operator formulated two scoped independent behavioral oracles only AFTER initial Git-only freeze; this commit anchors their bytes before the frozen Hunter run. Source inspection for oracle construction has occurred; no claim of independently human-adjudicated labels or full 42-file truth universe. Oracle files must not be available within blind worker mounts."
 }
