@@ -1,0 +1,133 @@
+name: Ultra Sentinel — Phase 2 Block 2.2 source authentication and oracle precommit
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK22-PLAN.md
+      - scripts/verify-phase2-block22-source.cjs
+      - tests/unit/phase2-block22-source-auth.test.cjs
+      - tests/fixtures/phase2-block22-oracle/**
+      - .github/workflows/phase2-block22-source-oracle-preregister.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  preregister-original-sources-and-unexecuted-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate commit without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify all existing contracts and unmodified frozen Hunter
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout only pinned original coroutine repository into separate directory
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx.coroutines
+          ref: ead082131ceb45b8e4fda027c74471103c1cd09f
+          path: reserved-coroutines
+          persist-credentials: false
+      - name: Independently re-hash original Git trees and all eight source blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/verify-phase2-block22-source.cjs "$GITHUB_WORKSPACE/reserved-coroutines" > "$RUNNER_TEMP/block22-source-attestation.json"
+          jq -e '.sourceTreeAuthenticated==true and .sourceBlobsAuthenticated==true and
+            .originalKotlinFilesAuthenticated==8 and .frozenHunterExecuted==false and
+            .oracleExecuted==false and .globalPrecision==null and .globalRecall==null and
+            .positiveOriginalDefectsVerified==false and .remoteWrites==false' "$RUNNER_TEMP/block22-source-attestation.json" >/dev/null
+      - name: Use pinned Temurin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Bubblewrap and enforce mandatory AppArmor isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch byte-authenticated Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block22-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block22-kotlin"
+      - name: Compile original Kotlin/JVM contracts in a networkless sandbox WITHOUT executing oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block22-compiled"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block22-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/reserved-coroutines" /source
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block22-oracle" /oracle
+            --bind "$RUNNER_TEMP/block22-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          src=/source/kotlinx-coroutines-core/common/src/flow
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            "$src/FlowCollector.kt" /oracle/FlowCollectorContract.kt -d /out/flowcollector-benign.jar
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            "$src/FlowCollector.kt" "$src/SharingStarted.kt" \
+            /oracle/KotlinCoroutineStub.kt /oracle/KotlinFlowStub.kt \
+            /oracle/KotlinInternalStub.kt /oracle/KotlinFlowInternalStub.kt \
+            /oracle/SharingStartedContract.kt -d /out/sharingstarted-scoped.jar
+          test -s "$RUNNER_TEMP/block22-compiled/flowcollector-benign.jar"
+          test -s "$RUNNER_TEMP/block22-compiled/sharingstarted-scoped.jar"
+          ( cd "$RUNNER_TEMP/block22-compiled" && sha256sum *.jar > "$RUNNER_TEMP/block22-oracle-compiled-sha256.txt" )
+          printf '%s\n' 'ORIGINAL_KOTLIN_ORACLES_COMPILED_NOT_EXECUTED' > "$RUNNER_TEMP/block22-oracle-status.txt"
+      - name: Publish authentication receipt and unexecuted oracle compiler digests
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block22-original-kotlin-source-and-committed-oracle-preparation
+          path: |
+            ${{ runner.temp }}/block22-source-attestation.json
+            ${{ runner.temp }}/block22-oracle-compiled-sha256.txt
+            ${{ runner.temp }}/block22-oracle-status.txt
+          retention-days: 30
+          if-no-files-found: warn
