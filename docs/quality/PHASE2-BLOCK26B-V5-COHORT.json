@@ -1,0 +1,104 @@
+{
+  "schema": "ultra-sentinel-phase2-block26b-root-originals/v1",
+  "block": "2.6",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "22a4dfee8e87b62b14501a81a94ca902d8fbca7b",
+    "treeSha": "df5831983bbd610cf3bd7841aadac054e465e8fa",
+    "frozenBeforeSelection": true,
+    "retuningAllowed": false
+  },
+  "cohort": {
+    "repository": "nazmulidris/algorithms-in-kotlin",
+    "commitSha": "498c8a10febe1a97f085a295c1f6b2a818a83f89",
+    "treeSha": "87d62e0b07ef435d4b0f99ce26057d8dca22b17f",
+    "scope": "src/main/kotlin",
+    "selection": "ALL_REGULAR_KT_BLOBS_RECURSIVELY_UNDER_SRC_MAIN_KOTLIN",
+    "files": [
+      {
+        "path": "src/main/kotlin/algorithms/BigO.kt",
+        "blobSha": "0e3767c92e4fa9a30f1e06caab9e00093833ea69",
+        "sizeBytes": 6124
+      },
+      {
+        "path": "src/main/kotlin/algorithms/BinaryTree.kt",
+        "blobSha": "58a3d4dfb5b970afebac864cfda401c192352c7c",
+        "sizeBytes": 8946
+      },
+      {
+        "path": "src/main/kotlin/algorithms/Cache.kt",
+        "blobSha": "b764b3f60b83ac6c75152f3c3d451cd1c109aca7",
+        "sizeBytes": 5492
+      },
+      {
+        "path": "src/main/kotlin/algorithms/Dynamic.kt",
+        "blobSha": "a3aedfd0bc1c6e9d03d19d759ec938046c25de30",
+        "sizeBytes": 5140
+      },
+      {
+        "path": "src/main/kotlin/algorithms/Graphs.kt",
+        "blobSha": "c014ba89cd6c05ecfb4c6139199a6274005829ad",
+        "sizeBytes": 6119
+      },
+      {
+        "path": "src/main/kotlin/algorithms/OrderEnforcer.kt",
+        "blobSha": "522d24f2a8c98b98a5500d7f53528c67a26d8114",
+        "sizeBytes": 2893
+      },
+      {
+        "path": "src/main/kotlin/algorithms/RingBuffer.kt",
+        "blobSha": "5c56b57103978fdbd46bd4f1b9b09cc887e6d200",
+        "sizeBytes": 6770
+      },
+      {
+        "path": "src/main/kotlin/algorithms/Sort.kt",
+        "blobSha": "4f44c8450d8787625ee98472a70057d91111045c",
+        "sizeBytes": 11828
+      },
+      {
+        "path": "src/main/kotlin/algorithms/StacksAndQueues.kt",
+        "blobSha": "81ac15e3095971c9501c9f393748f1184a1f039b",
+        "sizeBytes": 3661
+      },
+      {
+        "path": "src/main/kotlin/algorithms/Strings.kt",
+        "blobSha": "c1192930c3d04ce35839290c0775c8adadcb314b",
+        "sizeBytes": 4388
+      },
+      {
+        "path": "src/main/kotlin/run.kt",
+        "blobSha": "658bc9578f9a5eacad31549a943dd76edcd0ffe2",
+        "sizeBytes": 1211
+      },
+      {
+        "path": "src/main/kotlin/support/Main.kt",
+        "blobSha": "414e99fe3472c392a20a637afda7e64e918b92de",
+        "sizeBytes": 689
+      },
+      {
+        "path": "src/main/kotlin/support/utils.kt",
+        "blobSha": "c23de7eebdcfd62dd74ae26d901f073a5d19d362",
+        "sizeBytes": 3073
+      }
+    ]
+  },
+  "protocol": {
+    "sourceBodiesReadBeforeReservation": false,
+    "oracleExecutedBeforeReservation": false,
+    "hunterExecutedBeforeReservation": false,
+    "oracleMustBePrecommittedBeforePredictions": true,
+    "engineMustRemainFrozen": true,
+    "isolatedWorkersRequired": true,
+    "predictionsSealedBeforeOracle": true,
+    "cohortsPreviouslyEvaluatedReused": false,
+    "unknownTruthCannotBeScored": true
+  },
+  "limitations": {
+    "sourceSelection": "Metadata-defined open-source algorithm repository; not statistically random",
+    "functionalTruthKnown": false,
+    "repairVerified": false,
+    "discoveryDemonstrated": false,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}

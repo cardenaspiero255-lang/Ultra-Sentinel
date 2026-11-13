@@ -1,0 +1,68 @@
+name: Ultra Sentinel — Phase 2 Block 2.6b prospective root Kotlin metadata preflight
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK26B-V5-COHORT.json
+      - scripts/phase2-block26b-v5-preregister.cjs
+      - tests/unit/phase2-block26b-v5-preregister.test.cjs
+      - .github/workflows/phase2-block26b-v5-metadata.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-original-metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact prospective protocol commit without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require complete regression suite and immutable preregistration commit
+        run: |
+          git merge-base --is-ancestor 10cc0c679359fb3966a4563d20bc0b55c0032a87 HEAD
+          npm run check
+      - name: Checkout frozen post-v4 Hunter engine SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 22a4dfee8e87b62b14501a81a94ca902d8fbca7b
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout exact original Git cohort without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nazmulidris/algorithms-in-kotlin
+          ref: 498c8a10febe1a97f085a295c1f6b2a818a83f89
+          path: original-cohort
+          persist-credentials: false
+      - name: Authenticate Git identities and all 13 original blob records using metadata only
+        run: |
+          umask 077
+          node scripts/phase2-block26b-v5-preregister.cjs \
+            "$GITHUB_WORKSPACE/frozen-engine" \
+            "$GITHUB_WORKSPACE/original-cohort" \
+            "$RUNNER_TEMP/block26b-metadata-receipt.json"
+          jq -e '.originalsAuthenticatedByGitTree == 13 and
+            .originalSourceBodiesRead == false and .hunterExecuted == false and
+            .oraclesExecuted == false and .block26Closed == false and
+            .block27Allowed == false' "$RUNNER_TEMP/block26b-metadata-receipt.json" >/dev/null
+      - name: Archive metadata-only attestation with no original source contents
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26b-v5-thirteen-originals-preregistered-no-hunter
+          path: ${{ runner.temp }}/block26b-metadata-receipt.json
+          if-no-files-found: error
+          retention-days: 30
