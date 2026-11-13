@@ -36,8 +36,15 @@ fun main() {
     }
     check(propagated) { "GREEN_ORIGINAL_CANCEL_NOT_PROPAGATED" }
 
-    // Mutation/negative-control: re-introduced swallowing must be rejected.
-    val reintroduced = swallowedCancellation(cancel)
-    check(reintroduced != "PROPAGATED") { "VETO_NEGATIVE_CONTROL_INVALID" }
+    // The same independent propagation oracle MUST reject a reintroduced fault.
+    fun preservesCancellation(operation: (Exception) -> String): Boolean =
+        try {
+            operation(cancel)
+            false
+        } catch (caught: CancellationException) {
+            caught === cancel
+        }
+    check(preservesCancellation(::fixedCancellation)) { "GREEN_FUNCTIONAL_PROPAGATION_FAILED" }
+    check(!preservesCancellation(::swallowedCancellation)) { "VETO_DID_NOT_REJECT_REGRESSION" }
     println("SYNTHETIC_CANCELLATION_CAUSAL_RED_GREEN_VETO_PASS")
 }
