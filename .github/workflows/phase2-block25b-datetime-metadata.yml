@@ -1,0 +1,75 @@
+name: Ultra Sentinel — Phase 2 Block 2.5b frozen v3 new Kotlin Git metadata precommit
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK25B-DATETIME-METADATA-20261112.json
+      - scripts/phase2-block25b-source-attest.cjs
+      - tests/unit/phase2-block25b-source-attest.test.cjs
+      - .github/workflows/phase2-block25b-datetime-metadata.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-v3-new-source-metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact metadata commit without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture regression and unchanged v1 freeze
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout frozen Hunter v3 exactly, no source or oracle generated
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 49235f854c61c29d55a0307ce4a0348553b2ee1f
+          path: frozen-hunter-v3
+          persist-credentials: false
+      - name: Checkout third original Kotlin cohort fixed by Git tree metadata
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx-datetime
+          ref: 77c95cc8125015f83ea8fd900404c295fba7276e
+          path: reserved-kotlin-datetime
+          persist-credentials: false
+      - name: Authenticate frozen engine, source trees and all six unchanged original blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block25b-source-attest.cjs \
+            "$GITHUB_WORKSPACE/frozen-hunter-v3" \
+            "$GITHUB_WORKSPACE/reserved-kotlin-datetime" \
+            "$RUNNER_TEMP/phase25b-metadata-attestation.json"
+          jq -e '.sourceFilesAuthenticated==6 and .completeDirectKotlinInventory==true and
+            .hunterExecuted==false and .oraclesPrepared==false and .oraclesExecuted==false and
+            .originalPositiveDefectsVerified==false and .precision==null and .recall==null and
+            .previousCoroutinesReused==false and .previousKotlinIoReused==false and
+            .remoteWrites==false and .repairAuthorized==false and .mergeAllowed==false' \
+            "$RUNNER_TEMP/phase25b-metadata-attestation.json" >/dev/null
+          echo ORIGINAL_SOURCE_METADATA_ONLY_ORACLE_NOT_EXECUTED
+      - name: Publish source Git identities only, never oracle or source bodies
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25b-third-original-git-source-metadata-only
+          path: ${{ runner.temp }}/phase25b-metadata-attestation.json
+          if-no-files-found: error
+          retention-days: 30
