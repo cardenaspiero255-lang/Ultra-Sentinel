@@ -1,0 +1,41 @@
+{
+  "schema": "ultra-sentinel-phase2-block25d-fourth-ktor-original-oracle-precommit/v1",
+  "frozenV4Sha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+  "frozenV4TreeSha": "db929ca1233215e47de164201ff69d9b4cb1808e",
+  "sourceRepository": "ktorio/ktor",
+  "sourceCommitSha": "599e1340c718e501bf5fba080b0ade00b49a893f",
+  "sourceTreeSha": "af2e96c115bd52230de937928f0231f5a0a76ad7",
+  "sourceScopeTreeSha": "bdb5374433d020116a797102cc9b6cdfceb1c0f7",
+  "oracleFiles": [
+    {
+      "path": "ConnectTimeoutOracle.kt",
+      "gitBlobSha": "ca48ed1e3b719f4257b1ffb06dc62c13eefbd7c8",
+      "sha256": "c460b4a68d856e08fdb8f8c613b83347e37f2781ba0320cc07e2f976cdd249a8"
+    }
+  ],
+  "scopedBenignControls": [
+    {
+      "paths": [
+        "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheUtils.kt"
+      ],
+      "marker": "ORIGINAL_KTOR_APACHE5_CONNECT_TIMEOUT_BENIGN_CONTROL_PASS",
+      "independentReference": "java.net.ConnectException JVM behavioral truth table with true/false/null-message cases"
+    }
+  ],
+  "metadataCommittedBeforeSourceBodiesRead": true,
+  "sourceFileSelectionChangedAfterInspection": false,
+  "hunterPredictionsEverExecutedOnThisCohort": false,
+  "oracleExecuted": false,
+  "oracleCommitBeforePrediction": true,
+  "sourceFilesFullyLabeled": 0,
+  "originalNovelDefectsConfirmed": 0,
+  "originalCancellationDefectsConfirmed": 0,
+  "independentHumanAuditor": false,
+  "precision": null,
+  "recall": null,
+  "f1": null,
+  "repairAuthorized": false,
+  "remoteWrites": false,
+  "mergeAllowed": false,
+  "limitations": "One narrow JDK ConnectException classification behavioral control over a single untouched original file; six other Kotlin source files lack any functional oracle. The oracle is not a complete correctness label, not an oracle for the new cancellation branch hypothesis, and not proof of original root causality or successful automated repair. Do not execute the main() or any Hunter workers prior to the separately sealed prediction artifact."
+}
