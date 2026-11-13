@@ -1,0 +1,54 @@
+{
+  "schema": "ultra-sentinel-phase2-block25b-datetime-independent-oracle-seal/v1",
+  "frozenHunterCommitSha": "49235f854c61c29d55a0307ce4a0348553b2ee1f",
+  "frozenHunterTreeSha": "411a9f24a07a57d21e918c022d1ec8442456537a",
+  "sourceCommitSha": "77c95cc8125015f83ea8fd900404c295fba7276e",
+  "sourceTreeSha": "110430b9981a688a703a7b8026a4f33bc5fee8ce",
+  "sourceScopeTreeSha": "11043b57ab92ce5198202de539c67a4690e6561a",
+  "oracleFiles": [
+    {
+      "path": "BinaryReaderOracle.kt",
+      "gitBlobSha": "9662d99d4bd08800134b77780e649f0dae666507",
+      "sha256": "b1772f5de26a58797f22c96dc94cc9d2358d678565c7af1afb7c7b8c7085886e"
+    },
+    {
+      "path": "CalendarOracle.kt",
+      "gitBlobSha": "97ace72354e5facbe5fe362706b2fb07e0909a48",
+      "sha256": "958271446593f251b03b02f3568d461cc237f28f1b9e8a94f73977eed9bbe8df"
+    }
+  ],
+  "scopedOriginalControls": [
+    {
+      "paths": [
+        "core/common/src/internal/BinaryDataReader.kt"
+      ],
+      "independentReference": "java.nio.ByteBuffer BIG_ENDIAN, Kotlin UTF-8 and bounds",
+      "expectedMarker": "ORIGINAL_DATETIME_BINARY_READER_BENIGN_CONTROLS_PASS"
+    },
+    {
+      "paths": [
+        "core/common/src/internal/dateCalculations.kt",
+        "core/common/src/internal/util.kt"
+      ],
+      "independentReference": "java.time.Year and java.time.LocalDate + Kotlin ASCII/short-date controls",
+      "expectedMarker": "ORIGINAL_DATETIME_CALENDAR_BENIGN_CONTROLS_PASS"
+    }
+  ],
+  "sourceBodiesReadAfterMetadataCommit": true,
+  "sourceSelectionAlteredAfterCodeRead": false,
+  "hunterPredictionsRun": false,
+  "oraclesExecuted": false,
+  "separateOracleProcessFromHunterRequired": true,
+  "truthCommitmentBeforePrediction": true,
+  "originalPositiveDefectsVerified": false,
+  "fullyLabeledOriginalFiles": 0,
+  "independentHumanAuditor": false,
+  "novelCancellationFamilyDiscovered": false,
+  "precision": null,
+  "recall": null,
+  "f1": null,
+  "remoteWrites": false,
+  "repairAuthorized": false,
+  "mergeAllowed": false,
+  "limitations": "Two original Kotlin/JVM scoped benign controls compile unmodified BinaryDataReader/dateCalculations/util against independent JDK references. Three other originals have no controls. No source file has complete truth labels; a known-documented unsafe behavior in other source is not a novel blind discovery or positive here. Do not run either oracle before a later sealed Hunter prediction artifact, and do not expose oracle mounts to isolated source-only workers."
+}
