@@ -68,3 +68,26 @@ test('source-only numeric worker consumes the new rule with exact Git byte ident
  altered.files[0].source+='// edited after seal\n';
  assert.match(runBlindNumericInventory(altered).status,/^BLOCKED_/);
 });
+
+test('masked Kotlin comment and string surfaces cannot spoof class or reset operations',()=>{
+ const prefix='/* ignored /* class Injected { var a=0; var b=0; var c=0 } */ end */\n'+
+  'val noise = """ fun clear() { head = 0; tail = 0 } """\n'+
+  "val quoted = '\\''\n";
+ const s=body().replace('package example', 'package example\n'+prefix);
+ assert.deepEqual(rules(s),['INCOMPLETE_SCALAR_STATE_RESET']);
+ assert.deepEqual(rules(s+'\n/* unfinished'),[]);
+ assert.deepEqual(rules(s+'\nval broken = "unfinished'),[]);
+});
+test('rejects extra close braces and nested classes from contributing state',()=>{
+ assert.deepEqual(rules(body()+'\n}'),[]);
+ assert.deepEqual(rules('class Nested { class Thing { var x=0; var y=0; var z=0; fun clear(){ x=0;y=0} } }'),[]);
+});
+test('supports guarded compound counter changes with qualified this references',()=>{
+ let src=body().replace('capacity++','this.capacity += 1').replace('capacity--','this.capacity -= 1');
+ src=src.replace('var capacity = 0','var capacity: Int = 0');
+ assert.deepEqual(rules(src),['INCOMPLETE_SCALAR_STATE_RESET']);
+});
+test('bounded class inventory fails closed instead of reporting a false clean scan',()=>{
+ const tooMany=Array.from({length:25},(_,i)=>'class C'+i+' {var x=0}\n').join('');
+ assert.throws(()=>scanStateResetHypotheses(wrap(tooMany)),/STATE_CLASS_BUDGET/);
+});
