@@ -1,0 +1,145 @@
+name: Ultra Sentinel — Phase 2 Block 2.5d fourth original Ktor JVM oracle SHA256 precommit
+on:
+  pull_request:
+    paths:
+      - tests/fixtures/phase2-block25d-ktor-oracle/**
+      - scripts/phase2-block25d-ktor-oracle-preflight.cjs
+      - tests/unit/phase2-block25d-ktor-oracle-preflight.test.cjs
+      - docs/quality/PHASE2-BLOCK25D-FOURTH-KTOR-ORACLE.md
+      - .github/workflows/phase2-block25d-ktor-oracle-precommit.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  pinned-v4-source-and-unexecuted-ktor-oracle:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate SHA with no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full repository contracts and previous frozen engine integrity
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout immutable and already frozen Hunter v4 commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 84c824ce6bfe3d260296108e955bbbc4624e6b7e
+          path: frozen-hunter-v4
+          persist-credentials: false
+      - name: Checkout the fourth fixed seven-file original Ktor Kotlin cohort
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ktorio/ktor
+          ref: 599e1340c718e501bf5fba080b0ade00b49a893f
+          path: reserved-ktor
+          persist-credentials: false
+      - name: Authenticate exact external Git blobs and oracle SHA256 precommit WITHOUT invoking Hunter
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block25d-fourth-cohort-attest.cjs \
+            "$GITHUB_WORKSPACE/frozen-hunter-v4" "$GITHUB_WORKSPACE/reserved-ktor" \
+            "$RUNNER_TEMP/block25d-original-source-attestation.json"
+          node scripts/phase2-block25d-ktor-oracle-preflight.cjs \
+            "$GITHUB_WORKSPACE/frozen-hunter-v4" "$GITHUB_WORKSPACE/reserved-ktor" \
+            "$RUNNER_TEMP/block25d-source-attestation.json"
+          jq -e '.authenticOriginalKotlinFiles==7 and .selectedOriginalSourceCount==7 and
+            .scopedIndependentOriginalJvmOracleCount==1 and
+            .originalSourceFilesWithPartialControl==1 and
+            .originalFilesWithoutOracle==6 and .fullTruthEstablished==false and
+            .originalPositiveDefectsVerified==false and
+            .predictionsExecuted==false and .oraclesExecuted==false and
+            .oracleContractSha256Verified==true and
+            .precision==null and .recall==null and
+            .remoteWrites==false and .repairAuthorized==false and .mergeAllowed==false' \
+            "$RUNNER_TEMP/block25d-source-attestation.json" >/dev/null
+      - name: JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install and enforce Bubblewrap AppArmor namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch and byte-authenticate pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block25d-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block25d-kotlin"
+      - name: Compile untouched original Ktor JVM utility with independent precommitted truth table WITHOUT executing oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block25d-compiled"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block25d-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/reserved-ktor" /source
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block25d-ktor-oracle" /oracle
+            --bind "$RUNNER_TEMP/block25d-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /source/ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheUtils.kt \
+            /oracle/ConnectTimeoutOracle.kt -d /out/apache-utils-original.jar
+          test -s "$RUNNER_TEMP/block25d-compiled/apache-utils-original.jar"
+          ( cd "$RUNNER_TEMP/block25d-compiled" && sha256sum *.jar > "$RUNNER_TEMP/block25d-compiled-sha256.txt" )
+          printf '%s\n' "FOURTH_KTOR_JVM_ORACLE_COMPILED_NOT_EXECUTED" > "$RUNNER_TEMP/block25d-oracle-status.txt"
+      - name: Upload original source authentication and unexecuted oracle precommit evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25d-datetime-original-oracles-precommitted-unexecuted
+          path: |
+            ${{ runner.temp }}/block25d-original-source-attestation.json
+            ${{ runner.temp }}/block25d-source-attestation.json
+            ${{ runner.temp }}/block25d-compiled-sha256.txt
+            ${{ runner.temp }}/block25d-oracle-status.txt
+          if-no-files-found: warn
+          retention-days: 30
