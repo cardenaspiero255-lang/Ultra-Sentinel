@@ -1,0 +1,45 @@
+{
+  "schema": "ultra-sentinel-block26-compatible-prospective-cohort/v1",
+  "block": "2.6",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+    "treeSha": "db929ca1233215e47de164201ff69d9b4cb1808e",
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "KashCal/KashCal",
+    "commitSha": "7f8055f4f6ed0dd8b49a14c41dd3511ee119f6e1",
+    "treeSha": "b0b4a5b8039d02217654afa15031916c3dcf41c0",
+    "scope": "icaldav-core/src/main/kotlin/org/onekash/icaldav/util",
+    "selection": "ALL_DIRECT_REGULAR_KOTLIN_FILES_IN_FIXED_DIRECTORY_NO_RESELECTION",
+    "files": [
+      {
+        "path": "icaldav-core/src/main/kotlin/org/onekash/icaldav/util/CalAddress.kt",
+        "blobSha": "53af5c3a49d744766bcfe8557b12ecd263d59838",
+        "sizeBytes": 1614
+      },
+      {
+        "path": "icaldav-core/src/main/kotlin/org/onekash/icaldav/util/DurationUtils.kt",
+        "blobSha": "0f3cda6fe5ca2d959a6c8549132d9fcbd1287bfe",
+        "sizeBytes": 5244
+      }
+    ]
+  },
+  "selectionContext": {
+    "publicDiscoveryQuery": "\"abs\" \"Long\" filename:DurationUtils.kt language:Kotlin",
+    "sourceBodiesRead": false,
+    "hunterExecuted": false,
+    "oracleExecuted": false,
+    "truthKnown": false,
+    "biasedDomainSampling": true,
+    "note": "Whole two-file utility directory selected by metadata after a public source-search metadata result. No defect-conditioned resampling, no claims about unbiased accuracy or novelty relative to global training."
+  },
+  "requirements": {
+    "precommitIndependentOracleBeforePredictions": true,
+    "isolatedSourceOnlyWorkers": true,
+    "predictionSealBeforeOracleExecution": true,
+    "preserveOriginalPathsAndBytes": true,
+    "unverifiedFindingsNeverCountAsDefects": true
+  }
+}
