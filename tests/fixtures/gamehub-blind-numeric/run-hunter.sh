@@ -9,12 +9,15 @@ hunter=$(realpath "$2")
 range_candidate="$(dirname -- "$hunter")/bounded-kotlin-range-flow.cjs"
 [ -f "$range_candidate" ] && [ ! -L "$range_candidate" ] || exit 2
 range_module=$(realpath "$range_candidate")
+state_candidate="$(dirname -- "$hunter")/scalar-state-reset-hunter.cjs"
+[ -f "$state_candidate" ] && [ ! -L "$state_candidate" ] || exit 2
+state_module=$(realpath "$state_candidate")
 worker=$(realpath "$3")
 payload=$(realpath "$4")
 policy=$(realpath "$5")
 output=$(realpath "$6")
 node=$(realpath "$(command -v node)")
-for file in "$inventory" "$hunter" "$range_module" "$worker" "$payload" "$policy" "$node"; do
+for file in "$inventory" "$hunter" "$range_module" "$state_module" "$worker" "$payload" "$policy" "$node"; do
   [ -f "$file" ] && [ ! -L "$file" ] || exit 2
 done
 [ -d "$output" ] && [ -z "$(find "$output" -mindepth 1 -maxdepth 1 -print -quit)" ] || exit 2
@@ -34,6 +37,7 @@ env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
  --dir /modules --dir /modules/family-hunter --dir /modules/investigation \
  --ro-bind "$hunter" /modules/family-hunter/phase2-numeric-risk-hunter.cjs \
  --ro-bind "$range_module" /modules/family-hunter/bounded-kotlin-range-flow.cjs \
+ --ro-bind "$state_module" /modules/family-hunter/scalar-state-reset-hunter.cjs \
  --ro-bind "$worker" /modules/family-hunter/blind-numeric-worker.cjs \
  --ro-bind "$payload" /modules/investigation/plain-kotlin-payload.cjs \
  --ro-bind "$policy" /modules/investigation/novel-kotlin-path-policy.cjs \
