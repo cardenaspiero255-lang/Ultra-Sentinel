@@ -41,6 +41,7 @@ test('v4 sandbox has no oracle mounts, new scanner and frozen v3 worker unchange
  const launcher=fs.readFileSync(path.join(__dirname,'../fixtures/phase2-block25d/run-blind-cancellation-v4.sh'),'utf8');
  assert.match(launcher,/--die-with-parent --unshare-all --new-session --clearenv/);
  assert.match(launcher,/phase2-cancellation-controlflow-v4\.cjs/);
+ assert.match(launcher,/--ro-bind "\$base" \/packages\/family-hunter\/phase2-cancellation-propagation-hunter\.cjs/);
  assert.match(launcher,/phase2-blind-cancellation-v4-worker\.cjs/);
  assert.doesNotMatch(launcher,/\/oracle|\/answers|\/truth/i);
 });
