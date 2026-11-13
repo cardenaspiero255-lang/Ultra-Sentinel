@@ -1,0 +1,82 @@
+{
+  "schema": "ultra-sentinel-phase2-block25d-v4-fourth-original-cohort-metadata/v1",
+  "block": "2.5d-fourth-cohort-prospective-metadata",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "version": "HUNTER_V4_IMPORT_AWARE_BRANCH_RETURNS",
+    "commitSha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+    "treeSha": "db929ca1233215e47de164201ff69d9b4cb1808e",
+    "previousV3Commit": "49235f854c61c29d55a0307ce4a0348553b2ee1f",
+    "retuningOnHoldoutProhibited": true
+  },
+  "cohort": {
+    "repository": "ktorio/ktor",
+    "commitSha": "599e1340c718e501bf5fba080b0ade00b49a893f",
+    "rootTreeSha": "af2e96c115bd52230de937928f0231f5a0a76ad7",
+    "scope": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5",
+    "scopeTreeSha": "bdb5374433d020116a797102cc9b6cdfceb1c0f7",
+    "selection": "LEXICOGRAPHIC_FIRST_KTOR_PRODUCTION_DIRECTORY_WITH_6_TO_8_DIRECT_DOT_KT_BLOBS_EACH_50_TO_12000_BYTES",
+    "files": [
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/Apache5.kt",
+        "blobSha": "16c24d7f9873f3baa8bfefd5642ce3f03681222b",
+        "sizeBytes": 1304
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/Apache5Engine.kt",
+        "blobSha": "5dc1750e493f26558f1e51450a2fe408943b67a2",
+        "sizeBytes": 5428
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/Apache5EngineConfig.kt",
+        "blobSha": "56d11913cd113b894328ae7ebe46870c8ad99f6c",
+        "sizeBytes": 5925
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheHttpRequest.kt",
+        "blobSha": "10f14ebb37908641c4585559566203eeea5d6c6f",
+        "sizeBytes": 3036
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheRequestProducer.kt",
+        "blobSha": "9f34834410b7b5543785eb17c73cb0f22e858704",
+        "sizeBytes": 5551
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheResponseConsumer.kt",
+        "blobSha": "08e4483e057005eb6ef1b40e0a6d4a9368d87a6a",
+        "sizeBytes": 6959
+      },
+      {
+        "path": "ktor-client/ktor-client-apache5/jvm/src/io/ktor/client/engine/apache5/ApacheUtils.kt",
+        "blobSha": "40c2f3060294ad3d0f0d2ebd1ace151ac8fba066",
+        "sizeBytes": 373
+      }
+    ]
+  },
+  "protocol": {
+    "selectionOnlyGitTreeMetadata": true,
+    "sourceBodiesReadAtPreregistration": false,
+    "engineRunAtPreregistration": false,
+    "oracleAnswersKnownAtPreregistration": false,
+    "sourceRetuningAllowed": false,
+    "preserveAllSourceFileIdentities": true,
+    "previousKotlinCoroutinesEightReused": false,
+    "previousKotlinIoSixReused": false,
+    "previousKotlinDatetimeSixReused": false,
+    "allowSourceReselection": 0,
+    "requiresAllOriginalGitBlobAuthentication": true,
+    "requiresIndependentOracleCommitBeforePrediction": true,
+    "requiresRealNoNetworkNamespaces": true,
+    "predictionsSealedBeforeOracleExecution": true,
+    "allOriginalsFullyLabeled": false,
+    "confirmedOriginalNovelDefects": 0,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "remoteWrites": false,
+    "repairAuthorized": false,
+    "mergeAllowed": false
+  },
+  "limitations": "Fourth original-source holdout selected only by immutable Git paths, tree types, byte sizes and SHA hashes after merging/fixing the v4 Hunter engine, before reading any Kotlin file bodies. No guarantee of model pretraining disjointness or novel defect prevalence. v4 remains source-only import/branch inference, not compiler BindingContext. The previous 20 original Kotlin files are permanently exposed and cannot be counted as new evaluation cases."
+}
