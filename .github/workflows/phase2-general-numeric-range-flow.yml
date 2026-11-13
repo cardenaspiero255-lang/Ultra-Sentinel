@@ -83,6 +83,43 @@ jobs:
           print(f'STATE_RESET_BRANCH_COVERAGE={branch}')
           if min(line,branch)<90:raise SystemExit('STATE_RESET_COVERAGE_BELOW_90')
           PY
+      - name: Checkout previously exposed original Kotlin queue regression (NOT BLIND)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nazmulidris/algorithms-in-kotlin
+          ref: 498c8a10febe1a97f085a295c1f6b2a818a83f89
+          path: known-original-queue
+          persist-credentials: false
+      - name: Verify new Hunter hypothesis on authenticated KNOWN original Kotlin source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const assert=require('node:assert/strict');
+          const fs=require('node:fs'),crypto=require('node:crypto'),cp=require('node:child_process');
+          const repo='known-original-queue';
+          const sha=cp.execFileSync('git',['-C',repo,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          assert.equal(sha,'498c8a10febe1a97f085a295c1f6b2a818a83f89');
+          const path='src/main/kotlin/algorithms/RingBuffer.kt';
+          const data=fs.readFileSync(repo+'/'+path);
+          const source=new TextDecoder('utf-8',{fatal:true}).decode(data);
+          assert(Buffer.from(source,'utf8').equals(data));
+          const blob=crypto.createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');
+          assert.equal(blob,'5c56b57103978fdbd46bd4f1b9b09cc887e6d200');
+          const {runBlindNumericInventory}=require('./packages/family-hunter/blind-numeric-worker.cjs');
+          const result=runBlindNumericInventory({expectedCommitSha:sha,
+           files:[{path,source,expectedBlobSha:blob}],skippedOversized:0,skippedNoncanonical:0});
+          assert.equal(result.filesScanned,1);
+          assert.equal(result.sourceByteIntegrityVerified,true);
+          const observed=result.findings.filter(x=>x.rule==='INCOMPLETE_SCALAR_STATE_RESET');
+          assert(observed.length>=1,JSON.stringify(result));
+          const clear=source.slice(0,source.indexOf('fun clear() {')).split('\n').length;
+          assert(observed.some(x=>x.line===clear&&x.expectedBlobSha===blob),JSON.stringify(observed));
+          assert.equal(result.originalOracleVerified,false);
+          assert.equal(result.mergeAllowed,false);
+          console.log('KNOWN_ORIGINAL_STATE_HYPOTHESIS_OBSERVED=1');
+          console.log('THIS_IS_REGRESSION_NOT_NEW_DISCOVERY=1');
+          NODE
       - name: Fetch SHA256 pinned Kotlin 2.0.21 for development oracle
         shell: bash
         env:
