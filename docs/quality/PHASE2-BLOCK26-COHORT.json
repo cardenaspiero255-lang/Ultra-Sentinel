@@ -1,0 +1,163 @@
+{
+  "schema": "ultra-sentinel-phase2-block26-original-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+    "treeSha": "db929ca1233215e47de164201ff69d9b4cb1808e"
+  },
+  "source": {
+    "repository": "TheAlgorithms/Kotlin",
+    "commitSha": "b913c1d85c972fd1e679c5d832d6458b21be8fb0",
+    "treeSha": "02ae862de7f78eb01845bf00f0d034c57f4cd8fa",
+    "selection": "ALL_REGULAR_DOT_KT_BLOBS_RECURSIVELY_UNDER_SRC_MAIN_KOTLIN_NO_RESELECTION",
+    "files": [
+      {
+        "path": "src/main/kotlin/dynamicProgramming/AssemblyLineScheduling.kt",
+        "blobSha": "e292317e1db293e3c644ea6f1bd07e9c313e6d4e",
+        "sizeBytes": 836
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/EditDistance.kt",
+        "blobSha": "bc5f89e4da79b1f53b0764f0d616c27956fad469",
+        "sizeBytes": 894
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/Factorial.kt",
+        "blobSha": "38d97348e5984da0eda6d98502c352937803e28b",
+        "sizeBytes": 427
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/LCS.kt",
+        "blobSha": "7db3edde1f367750b2807928e52942913a4ff4e5",
+        "sizeBytes": 687
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/MatrixChainMultiplication.kt",
+        "blobSha": "aa47061f324435ad83e31f3254ebb74367a7ca1f",
+        "sizeBytes": 1082
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/PalindromePartitioning.kt",
+        "blobSha": "b4dd1f124bab978d182537dc45c31033c41bbbe1",
+        "sizeBytes": 1853
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/RodCuttingProblem.kt",
+        "blobSha": "461cac97b8a3f8bfa35bac845e0d14634a6ff2bf",
+        "sizeBytes": 586
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/UnboundedKnapsack.kt",
+        "blobSha": "448e650cb42ef9a7e3dbf5473f4619c8f845952e",
+        "sizeBytes": 687
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/WeightedJobScheduling.kt",
+        "blobSha": "80f11dadd0b989a852c0d26abee58a3657a6bf9e",
+        "sizeBytes": 1017
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/ZeroOneKnapsackProblem.kt",
+        "blobSha": "54601832873aa729b3cfd05e14d9d643a384dd74",
+        "sizeBytes": 759
+      },
+      {
+        "path": "src/main/kotlin/dynamicProgramming/isPrime.kt",
+        "blobSha": "36a2500e62fbbd4a6bdd6fd57acddfb4c5b38f64",
+        "sizeBytes": 338
+      },
+      {
+        "path": "src/main/kotlin/math/Area.kt",
+        "blobSha": "a318708ca917dda5f7c02071de9e90a002a61fb5",
+        "sizeBytes": 1372
+      },
+      {
+        "path": "src/main/kotlin/math/Average.kt",
+        "blobSha": "eb83badb7092fb7367e286f65f5040d0c95e13ad",
+        "sizeBytes": 580
+      },
+      {
+        "path": "src/main/kotlin/math/Factorial.kt",
+        "blobSha": "e33be00d5d9139b6db1f7d10b6734f16a5dc40fc",
+        "sizeBytes": 604
+      },
+      {
+        "path": "src/main/kotlin/math/Median.kt",
+        "blobSha": "b2da8e6a7e698952560b9309f75bce9c28b22ccb",
+        "sizeBytes": 1024
+      },
+      {
+        "path": "src/main/kotlin/math/TwoSum.kt",
+        "blobSha": "9ca065751ed669cf2074b70f7cc657c166e6c461",
+        "sizeBytes": 700
+      },
+      {
+        "path": "src/main/kotlin/search/BinarySearch.kt",
+        "blobSha": "d3d5c5d15fec8329da3db9dff997bdf4bc8a5c5f",
+        "sizeBytes": 1116
+      },
+      {
+        "path": "src/main/kotlin/search/InterpolationSearch.kt",
+        "blobSha": "e3093340ae9621b34ac6cea42d80b42ac71751f9",
+        "sizeBytes": 996
+      },
+      {
+        "path": "src/main/kotlin/search/LinearSearch.kt",
+        "blobSha": "b82837df0dacafcac21fd26dbce2985050e58df5",
+        "sizeBytes": 890
+      },
+      {
+        "path": "src/main/kotlin/search/TernarySearch.kt",
+        "blobSha": "2d26e6ae4cc7504bb25fcd2942008fee276e1381",
+        "sizeBytes": 558
+      },
+      {
+        "path": "src/main/kotlin/sort/BrickSort.kt",
+        "blobSha": "47c222eb07d670bf72e51bda67828915cbddf903",
+        "sizeBytes": 1034
+      },
+      {
+        "path": "src/main/kotlin/sort/BubbleSort.kt",
+        "blobSha": "c9bc384cf84f7cf1f12fc197b3378efa675b60e6",
+        "sizeBytes": 1027
+      },
+      {
+        "path": "src/main/kotlin/sort/HeapSort.kt",
+        "blobSha": "7f70e65cb6e978d48aeb14643d68c307a918446d",
+        "sizeBytes": 1791
+      },
+      {
+        "path": "src/main/kotlin/sort/InsertionSort.kt",
+        "blobSha": "c3d4f046bac4d7808d8d51449182ed9dbe195a36",
+        "sizeBytes": 697
+      },
+      {
+        "path": "src/main/kotlin/sort/MergeSort.kt",
+        "blobSha": "c99bcf96f55652c7e3084ed2bfe183c213f6d39c",
+        "sizeBytes": 1520
+      },
+      {
+        "path": "src/main/kotlin/sort/QuickSort.kt",
+        "blobSha": "7cb7fa7e993c259577865700a7e456446c4743bc",
+        "sizeBytes": 1300
+      },
+      {
+        "path": "src/main/kotlin/sort/SelectionSort.kt",
+        "blobSha": "ffe0a85b8d486825545776d1250dbf23d0a14db3",
+        "sizeBytes": 667
+      }
+    ]
+  },
+  "protocol": {
+    "sourceBodiesReadAtCommit": false,
+    "hunterExecutedAtCommit": false,
+    "oracleExecutedAtCommit": false,
+    "retuningAllowed": false,
+    "reselectionAllowed": false,
+    "requiresOraclePrecommitBeforePredictions": true,
+    "requiresIsolatedSourceOnlyWorkers": true,
+    "requiresPredictionsSealedBeforeOracle": true,
+    "previousCohortsReused": false
+  },
+  "scope": "Educational algorithm implementations; this sample cannot establish production readiness or global novelty relative to model training. Entire production source subtree selected by Git metadata, no defect-conditioned file sampling."
+}
