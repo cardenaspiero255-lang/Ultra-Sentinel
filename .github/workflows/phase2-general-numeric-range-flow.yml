@@ -4,6 +4,8 @@ on:
     paths:
       - packages/family-hunter/bounded-kotlin-range-flow.cjs
       - packages/family-hunter/phase2-numeric-risk-hunter.cjs
+      - packages/family-hunter/scalar-state-reset-hunter.cjs
+      - tests/unit/phase2-block26-scalar-state-reset.test.cjs
       - tests/unit/phase2-general-numeric-range-flow.test.cjs
       - tests/fixtures/phase2-numeric-range-flow/**
       - .github/workflows/phase2-general-numeric-range-flow.yml
@@ -60,6 +62,27 @@ jobs:
           print(f'NUMERIC_RANGE_BRANCH_COVERAGE={branch}')
           if line<90 or branch<90:raise SystemExit('NUMERIC_RANGE_COVERAGE_BELOW_90')
           PY
+      - name: Require 90 percent new state-reset analyzer branch and line coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --experimental-test-coverage --test \
+            tests/unit/phase2-block26-scalar-state-reset.test.cjs \
+            | tee "$RUNNER_TEMP/state-reset-coverage.txt"
+          python3 - "$RUNNER_TEMP/state-reset-coverage.txt" <<'PY'
+          import re,sys
+          rows=open(sys.argv[1],encoding='utf8').read().splitlines()
+          matches=[]
+          for row in rows:
+              if 'scalar-state-reset-hunter.cjs' not in row or '|' not in row:continue
+              m=re.search(r'scalar-state-reset-hunter\.cjs\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)',row)
+              if m:matches.append((float(m.group(1)),float(m.group(2))))
+          if len(matches)!=1:raise SystemExit('STATE_RESET_COVERAGE_ROW_MISSING_OR_AMBIGUOUS')
+          line,branch=matches[0]
+          print(f'STATE_RESET_LINE_COVERAGE={line}')
+          print(f'STATE_RESET_BRANCH_COVERAGE={branch}')
+          if min(line,branch)<90:raise SystemExit('STATE_RESET_COVERAGE_BELOW_90')
+          PY
       - name: Fetch SHA256 pinned Kotlin 2.0.21 for development oracle
         shell: bash
         env:
@@ -87,6 +110,7 @@ jobs:
           name: phase2-development-numeric-range-coverage
           path: |
             ${{ runner.temp }}/numeric-range-coverage.txt
+            ${{ runner.temp }}/state-reset-coverage.txt
             ${{ runner.temp }}/numeric-range-jvm.log
           retention-days: 30
           if-no-files-found: warn
