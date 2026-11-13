@@ -1,0 +1,153 @@
+name: Ultra Sentinel — Phase 2 Block 2.5d import-aware Hunter v4 and isolated causal synthetic oracle
+on:
+  pull_request:
+    paths:
+      - packages/family-hunter/phase2-cancellation-controlflow-v4.cjs
+      - packages/family-hunter/phase2-blind-cancellation-v4-worker.cjs
+      - tests/fixtures/phase2-block25d/**
+      - tests/unit/phase2-block25d-cancellation-*.test.cjs
+      - docs/quality/PHASE2-BLOCK25D-IMPORT-GUARD-SEMANTICS.md
+      - .github/workflows/phase2-block25d-v4-hunter.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  v4-import-guard-and-synthetic-causal-sandbox:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate SHA without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run full architecture tests and original Hunter freeze verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+          node --test tests/unit/phase2-block25d-cancellation-controlflow-v4.test.cjs tests/unit/phase2-block25d-cancellation-v4-worker.test.cjs
+      - name: Install required namespace isolation; no substitute for actual bwrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Prove real no-network source-only namespace and hostile workspace isolation
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Prepare ONLY synthetic training example without any original holdout answers
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/block25d-training"
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
+          const src='package synthetic\nimport kotlin.coroutines.cancellation.CancellationException\nsuspend fun task(){ try { work() } catch (e: Exception) { if (e is CancellationException) { return }; throw e } }\n';
+          const raw=Buffer.from(src,'utf8');
+          const hash=crypto.createHash('sha1').update('blob '+raw.length+'\0').update(raw).digest('hex');
+          const inventory={expectedCommitSha:'a'.repeat(40),files:[{
+            path:'module/src/commonMain/kotlin/TrainingOnly.kt',source:src,expectedBlobSha:hash
+          }]};
+          fs.writeFileSync(path.join(process.env.RUNNER_TEMP,'block25d-training','inventory.json'),JSON.stringify(inventory),{flag:'wx',mode:0o600});
+          JS
+      - name: Execute cancellation worker in actual disconnected Bubblewrap namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/block25d-training/out"
+          bash tests/fixtures/phase2-block25d/run-blind-cancellation-v4.sh \
+            "$RUNNER_TEMP/block25d-training/inventory.json" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-cancellation-controlflow-v4.cjs" \
+            "$GITHUB_WORKSPACE/packages/family-hunter/phase2-blind-cancellation-v4-worker.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/plain-kotlin-payload.cjs" \
+            "$GITHUB_WORKSPACE/packages/investigation/novel-kotlin-path-policy.cjs" \
+            "$RUNNER_TEMP/block25d-training/out"
+          jq -e '.schema=="ultra-sentinel-cancellation-controlflow-hunter/v2" and
+            .status=="CANCELLATION_CONTROLFLOW_HYPOTHESES_REQUIRE_ORIGINAL_ORACLE" and
+            .filesScanned==1 and (.findings|length)==1 and
+            .findings[0].rule=="GUARDED_CANCELLATION_SWALLOWED" and
+            .sourceByteIntegrityVerified==true and
+            .sourceRepositoryAuthenticated==false and
+            .originalFunctionalOracleVerified==false and
+            .compilerTypeResolutionVerified==false and
+            .repairAuthorized==false and .remoteWrites==false and .mergeAllowed==false' \
+            "$RUNNER_TEMP/block25d-training/out/discovery.json" >/dev/null
+          echo "TRAINING_ONLY_SANDBOX_PASS_NO_BLIND_ORACLE" > "$RUNNER_TEMP/block25d-training/out/status.txt"
+      - name: Acquire immutable Kotlin 2.0.21 compiler for isolated synthetic causal oracle
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block25d-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block25d-kotlin"
+      - name: Run synthetic only RED GREEN VETO in disconnected original-independent JVM sandbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block25d-jvm"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block25d-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block25d" /synthetic
+            --bind "$RUNNER_TEMP/block25d-jvm" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /synthetic/CancellationCausalSyntheticOracle.kt -d /out/causal-synthetic.jar
+          timeout --kill-after=3s 60s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /jdk/bin:/usr/bin:/bin --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk \
+            --ro-bind "$RUNNER_TEMP/block25d-jvm" /jars \
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp -- \
+            /jdk/bin/java -jar /jars/causal-synthetic.jar > "$RUNNER_TEMP/block25d-jvm/causal-synthetic.log"
+          grep -Fx "SYNTHETIC_CANCELLATION_CAUSAL_RED_GREEN_VETO_PASS" "$RUNNER_TEMP/block25d-jvm/causal-synthetic.log"
+          echo 'SYNTHETIC_ONLY_NOT_ORIGINAL_DEFECT_EVIDENCE' > "$RUNNER_TEMP/block25d-jvm/classification.txt"
+      - name: Upload non-scoring synthetic sandbox evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25d-training-only-cancellation-sandbox-no-gold
+          path: ${{ runner.temp }}/block25d-training/out/
+          retention-days: 30
+          if-no-files-found: warn
