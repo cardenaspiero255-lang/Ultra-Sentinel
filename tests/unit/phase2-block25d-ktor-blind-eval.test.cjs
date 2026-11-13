@@ -98,10 +98,10 @@ test('two original JVM controls cannot establish global truth, positive defects 
  assert.equal(out.falsePositives,null);
  assert.throws(()=>adjudicate(seal,['ORIGINAL_KTOR_APACHE5_CONNECT_TIMEOUT_BENIGN_CONTROL_PASS','MISMATCH']));
 });
-test('workflow requires immutable frozen v3 and irrevocable artifact upload before independent oracle job',()=>{
+test('workflow requires immutable frozen v4 and irrevocable artifact upload before independent oracle job',()=>{
  const workflow=fs.readFileSync(path.join(__dirname,'../../.github/workflows/phase2-block25d-ktor-blind.yml'),'utf8');
- assert.ok(workflow.indexOf('frozen-v3-source-only-capture:')<workflow.indexOf('independent-datetime-oracles-after-seal:'));
- assert.match(workflow,/needs: frozen-v3-source-only-capture/);
+ assert.ok(workflow.indexOf('frozen-v4-source-only-capture:')<workflow.indexOf('independent-ktor-oracle-after-seal:'));
+ assert.match(workflow,/needs: frozen-v4-source-only-capture/);
  assert.match(workflow,/ref: 84c824ce6bfe3d260296108e955bbbc4624e6b7e/);
  assert.match(workflow,/ref: 599e1340c718e501bf5fba080b0ade00b49a893f/);
  assert.match(workflow,/run-blind-cancellation-v4.sh/);
