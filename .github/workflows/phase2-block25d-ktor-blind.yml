@@ -43,7 +43,7 @@ jobs:
           ref: 84c824ce6bfe3d260296108e955bbbc4624e6b7e
           path: frozen-engine-v4
           persist-credentials: false
-      - name: Checkout committed original Kotlin datetime cohort
+      - name: Checkout committed fourth original Kotlin Ktor cohort
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: ktorio/ktor
@@ -61,11 +61,11 @@ jobs:
           sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
-      - name: Prove real no-network isolated source workers on the v3 SHA
+      - name: Prove real no-network isolated workers under frozen v4
         run: |
           SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v4/tests/unit/phase2-blind-isolation-boundary.test.cjs
           SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v4/tests/unit/phase2-blind-numeric-isolation.test.cjs
-      - name: Authenticate full six-file original source cohort and prepare source-only inventory
+      - name: Authenticate full seven-file original source cohort and prepare source-only inventory
         shell: bash
         run: |
           set -euo pipefail
@@ -141,7 +141,7 @@ jobs:
         with:
           name: phase2-block25d-ktor-v4-seven-originals-sealed-before-oracle
           path: ${{ runner.temp }}/block25d-consumed-seal
-      - name: Independently verify all three original worker report digests before oracle execution
+      - name: Independently verify all FOUR original worker report digests before oracle execution
         run: |
           node scripts/phase2-block25d-ktor-blind-eval.cjs verify "$RUNNER_TEMP/block25d-consumed-seal"
       - name: Checkout exact immutable Hunter v2 for postseal source authentication
@@ -151,7 +151,7 @@ jobs:
           ref: 84c824ce6bfe3d260296108e955bbbc4624e6b7e
           path: frozen-engine-v4
           persist-credentials: false
-      - name: Checkout previously reserved original Kotlin datetime at exact SHA
+      - name: Checkout previously reserved original Kotlin Ktor at exact SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: ktorio/ktor
