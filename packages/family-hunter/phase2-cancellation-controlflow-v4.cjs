@@ -113,7 +113,10 @@ function scanGuarded(file){
    // Bounded path reasoning: only direct return from the narrowed branch,
    // never a branch that may throw. A downstream throw does not rescue this
    // branch when the branch explicitly exits first.
-   if(!/\breturn\b/.test(target)||/\bthrow\b/.test(target))continue;
+   // A Kotlin return@label exits the named lambda, not necessarily the catch.
+   // Nested braces/lambdas require compiler CFG: abstain rather than infer exit.
+   if(!/\breturn\b/.test(target)||/\breturn\s*@/.test(target)||
+      /\bthrow\b/.test(target)||target.includes('{')||target.includes('}'))continue;
    // Avoid nested lambda non-local return ambiguity; purely conservative.
    if(/\b(?:fun|object|class)\b|->/.test(target))continue;
    findings.push(Object.freeze({
