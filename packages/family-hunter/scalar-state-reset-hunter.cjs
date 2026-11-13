@@ -2,7 +2,7 @@
 // Conservative, source-only summary of scalar class state transitions.
 // This is a hypothesis generator, never a Kotlin compiler or defect oracle.
 function mask(source){
- const out=Array.from(source,ch=>ch==='\n'?'\n':' ');
+ const out=Array.from({length:source.length},(_,i)=>source[i]==='\n'?'\n':' ');
  let i=0,block=0,quote=null;
  while(i<source.length){
   const two=source.slice(i,i+2),three=source.slice(i,i+3);
