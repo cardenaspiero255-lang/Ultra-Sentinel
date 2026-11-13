@@ -49,3 +49,22 @@ test('comments, strings, and unrelated classes cannot manufacture the reset evid
 test('an unbalanced Kotlin block refuses inferences',()=>{
  assert.deepEqual(rules(body().slice(0,-2)),[]);
 });
+
+test('source-only numeric worker consumes the new rule with exact Git byte identity',()=>{
+ const {createHash}=require('node:crypto');
+ const {runBlindNumericInventory}=require('../../packages/family-hunter/blind-numeric-worker.cjs');
+ const source=body(),bytes=Buffer.from(source,'utf8');
+ const expectedBlobSha=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+ const inventory={expectedCommitSha:'b'.repeat(40),files:[{path,source,expectedBlobSha}],
+  skippedOversized:0,skippedNoncanonical:0};
+ const output=runBlindNumericInventory(inventory);
+ assert.equal(output.sourceByteIntegrityVerified,true);
+ assert.equal(output.filesScanned,1);
+ assert.equal(output.status,'NUMERIC_BLIND_HYPOTHESES_UNVERIFIED');
+ assert.deepEqual(output.findings.map(f=>f.rule),['INCOMPLETE_SCALAR_STATE_RESET']);
+ assert.equal(output.findings[0].expectedBlobSha,expectedBlobSha);
+ assert.equal(output.originalOracleVerified,false);
+ const altered=structuredClone(inventory);
+ altered.files[0].source+='// edited after seal\n';
+ assert.match(runBlindNumericInventory(altered).status,/^BLOCKED_/);
+});
