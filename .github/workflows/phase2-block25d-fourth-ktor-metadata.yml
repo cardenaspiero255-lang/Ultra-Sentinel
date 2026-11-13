@@ -1,0 +1,76 @@
+name: Ultra Sentinel — Phase 2 Block 2.5d frozen v4 fourth original Ktor Kotlin metadata precommit
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK25D-KTOR-METADATA-20261112.json
+      - scripts/phase2-block25d-fourth-cohort-attest.cjs
+      - tests/unit/phase2-block25d-fourth-cohort-attest.test.cjs
+      - .github/workflows/phase2-block25d-fourth-ktor-metadata.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-v4-fourth-original-metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact metadata commit without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Full architecture regression and unchanged v1 freeze
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout frozen Hunter v3 exactly, no source or oracle generated
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 84c824ce6bfe3d260296108e955bbbc4624e6b7e
+          path: frozen-hunter-v4
+          persist-credentials: false
+      - name: Checkout third original Kotlin cohort fixed by Git tree metadata
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ktorio/ktor
+          ref: 599e1340c718e501bf5fba080b0ade00b49a893f
+          path: reserved-ktor
+          persist-credentials: false
+      - name: Authenticate frozen engine, source trees and all six unchanged original blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block25d-fourth-cohort-attest.cjs \
+            "$GITHUB_WORKSPACE/frozen-hunter-v4" \
+            "$GITHUB_WORKSPACE/reserved-ktor" \
+            "$RUNNER_TEMP/phase25d-metadata-attestation.json"
+          jq -e '.sourceFilesAuthenticated==7 and .fullLexicographicSelectionVerified==true and
+            .sourceBodiesForwardedToHunter==false and .hunterExecuted==false and
+            .oracleContractsPrepared==false and .oraclesExecuted==false and
+            .confirmedNovelDefects==0 and .precision==null and .recall==null and
+            .previousKotlinCohortsReused==false and
+            .remoteWrites==false and .repairAuthorized==false and .mergeAllowed==false' \
+            "$RUNNER_TEMP/phase25d-metadata-attestation.json" >/dev/null
+          echo FOURTH_KTOR_GIT_COHORT_METADATA_AUTHENTICATED_ONLY
+      - name: Publish source Git identities only, never oracle or source bodies
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25d-fourth-ktor-original-git-source-metadata-only
+          path: ${{ runner.temp }}/phase25d-metadata-attestation.json
+          if-no-files-found: error
+          retention-days: 30
