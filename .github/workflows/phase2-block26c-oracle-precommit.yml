@@ -1,0 +1,127 @@
+name: Ultra Sentinel — Phase 2 Block 2.6c original Kotlin independent JVM oracle precommit
+on:
+  pull_request:
+    paths:
+      - scripts/phase2-block26c-oracle-preflight.cjs
+      - tests/unit/phase2-block26c-oracle-precommit.test.cjs
+      - tests/fixtures/phase2-block26c-ringbuffer/**
+      - .github/workflows/phase2-block26c-oracle-precommit.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify-precommitted-original-oracle-without-executing:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact protocol head without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require original prospective cohort and SHA256 oracle precommit
+        run: |
+          git merge-base --is-ancestor 10cc0c679359fb3966a4563d20bc0b55c0032a87 ded5cb0f15a94a1b5c69a90c11468591ba889b81
+          git merge-base --is-ancestor ded5cb0f15a94a1b5c69a90c11468591ba889b81 HEAD
+          npm run check
+      - name: Checkout frozen engine without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 22a4dfee8e87b62b14501a81a94ca902d8fbca7b
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout all pinned original Kotlin source blobs without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nazmulidris/algorithms-in-kotlin
+          ref: 498c8a10febe1a97f085a295c1f6b2a818a83f89
+          path: original-cohort
+          persist-credentials: false
+      - name: Verify Git trees and precommitted oracle SHA256 before any compiler use
+        run: |
+          umask 077
+          node scripts/phase2-block26c-oracle-preflight.cjs \
+            "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-cohort" \
+            "$RUNNER_TEMP/block26c-oracle-precommit.json"
+          jq -e '.originalsGitAuthenticated == 13 and .oracleFilesAuthenticated == 3 and
+            .oracleExecuted == false and .hunterExecuted == false and
+            .originalFunctionalCounterexample == null and .block26Closed == false' \
+            "$RUNNER_TEMP/block26c-oracle-precommit.json" >/dev/null
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Bubblewrap and require active AppArmor namespace confinement
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Download Kotlin 2.0.21 with pinned SHA256
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/block26c-kotlin.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block26c-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block26c-kotlin"
+      - name: Compile untouched original queue and precommitted independent oracle in isolated JVM without running it
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block26c-compiled"
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            --die-with-parent --unshare-all --new-session --clearenv \
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+            "${mounts[@]}" --ro-bind "$jdk" /jdk \
+            --ro-bind "$RUNNER_TEMP/block26c-kotlin/kotlinc" /kotlin \
+            --ro-bind "$GITHUB_WORKSPACE/original-cohort/src/main/kotlin" /original \
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block26c-ringbuffer" /oracle \
+            --bind "$RUNNER_TEMP/block26c-compiled" /out \
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+              /original/algorithms/RingBuffer.kt /original/support/Main.kt \
+              /oracle/ColorNoop.kt /oracle/SupportNoop.kt /oracle/RingBufferContractOracle.kt \
+              -d /out/original-queue-oracle-unexecuted.jar
+          test -s "$RUNNER_TEMP/block26c-compiled/original-queue-oracle-unexecuted.jar"
+          sha256sum "$RUNNER_TEMP/block26c-compiled/original-queue-oracle-unexecuted.jar" \
+            > "$RUNNER_TEMP/block26c-compiled-sha256.txt"
+      - name: Upload pre-execution seal and compiler artifact digest only
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26c-independent-original-oracle-precommitted-unexecuted
+          path: |
+            ${{ runner.temp }}/block26c-oracle-precommit.json
+            ${{ runner.temp }}/block26c-compiled-sha256.txt
+          if-no-files-found: error
+          retention-days: 30
