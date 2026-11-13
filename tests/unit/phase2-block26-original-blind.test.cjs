@@ -31,8 +31,8 @@ test('independent original numeric counterexamples cannot close discovery withou
  const a=attempts(),s=buildSeal(a);
  const oracle={schema:'ultra-sentinel-block26-original-jvm-observations/v1',
   controls:{sort:8,search:8,factorial:21},
-  numeric:[{id:'median',cases:780,mismatches:10,examples:[{input:[2147483647,2147483647],expected:'2147483647.0',actual:'-1.0'}]},
-           {id:'average',cases:780,mismatches:10,examples:[{input:[2147483647,2147483647],expected:'2147483647',actual:'-1'}]}]};
+  numeric:[{id:'median',cases:780,mismatches:1,examples:[{input:[2147483647,2147483647],expected:'2147483647.0',actual:'-1.0'}]},
+           {id:'average',cases:780,mismatches:1,examples:[{input:[2147483647,2147483647],expected:'2147483647',actual:'-1'}]}]};
  const r=adjudicate(s,a,oracle);
  assert.equal(r.independentCounterexampleFunctions,2);
  assert.equal(r.hunterConfirmedDefects,0);assert.equal(r.functionalFamiliesDiscoveredByHunter,0);
@@ -40,4 +40,14 @@ test('independent original numeric counterexamples cannot close discovery withou
  for(const mutate of [x=>x.numeric[0].mismatches=781,x=>x.numeric[0].examples[0].actual=x.numeric[0].examples[0].expected,x=>x.controls.sort=0,x=>x.numeric[1].id='median']){
   const o=structuredClone(oracle);mutate(o);assert.throws(()=>adjudicate(s,a,o));
  }
+});
+test('CI authenticates prospective commits, invokes original source-only launchers, then runs original JVM contracts in a dependent job',()=>{
+ const y=fs.readFileSync(path.join(__dirname,'../../.github/workflows/phase2-block26-original-blind.yml'),'utf8');
+ assert.match(y,/needs: frozen-source-only/);
+ assert.match(y,/6195048a1d762e4d7d406db459e55df38a68c2ad 01288f49892c8e9242c0a4df8550a2317c2d6faa/);
+ assert.match(y,/for kind in numeric codec identity cancellation/);
+ assert.match(y,/phase2-block25d\/run-blind-cancellation-v4.sh/);
+ assert.match(y,/--unshare-all --new-session --clearenv/);
+ assert(y.indexOf('before-oracle')<y.indexOf('/jdk/bin/java -jar'));
+ assert.doesNotMatch(y,/continue-on-error|if: always/);
 });
