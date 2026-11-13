@@ -7,8 +7,9 @@ worker=$(realpath "$3")
 validator=$(realpath "$4")
 policy=$(realpath "$5")
 output=$(realpath "$6")
+base=$(realpath "$(dirname "$scanner")/phase2-cancellation-propagation-hunter.cjs")
 node=$(realpath "$(command -v node)")
-for file in "$inventory" "$scanner" "$worker" "$validator" "$policy" "$node"; do
+for file in "$inventory" "$scanner" "$worker" "$validator" "$policy" "$base" "$node"; do
   [ -f "$file" ] && [ ! -L "$file" ] || exit 2
 done
 [ -d "$output" ] && [ -z "$(find "$output" -mindepth 1 -maxdepth 1 -print -quit)" ] || exit 2
@@ -28,6 +29,7 @@ env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
   "${mounts[@]}" --dir /runtime --ro-bind "$node" /runtime/node \
   --dir /packages --dir /packages/family-hunter --dir /packages/investigation \
   --ro-bind "$scanner" /packages/family-hunter/phase2-cancellation-controlflow-v4.cjs \
+  --ro-bind "$base" /packages/family-hunter/phase2-cancellation-propagation-hunter.cjs \
   --ro-bind "$worker" /packages/family-hunter/phase2-blind-cancellation-v4-worker.cjs \
   --ro-bind "$validator" /packages/investigation/plain-kotlin-payload.cjs \
   --ro-bind "$policy" /packages/investigation/novel-kotlin-path-policy.cjs \
