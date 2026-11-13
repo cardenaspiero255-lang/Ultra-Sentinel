@@ -1,0 +1,97 @@
+{
+  "schema": "ultra-sentinel-block26-compatible-prospective-cohort/v1",
+  "block": "2.6",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+    "treeSha": "db929ca1233215e47de164201ff69d9b4cb1808e",
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "chrislo27/PolyrhythmMania",
+    "commitSha": "eea17922ad74af858a4fab2016c901ab47fcd98d",
+    "treeSha": "c5e1acead8ad6f79769179b8634875125f5d95cd",
+    "scope": "core/src/main/kotlin/polyrhythmmania/util",
+    "selection": "ALL_DIRECT_REGULAR_KOTLIN_FILES_IN_FIXED_DIRECTORY_NO_RESELECTION",
+    "files": [
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/BounceWave.kt",
+        "blobSha": "b5ecb4b8a03f87f60607440c285850197d2566cd",
+        "sizeBytes": 302
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/Coord2.kt",
+        "blobSha": "34dcab860b073be7c648c0a5fd487ab21352d431",
+        "sizeBytes": 281
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/Coord3.kt",
+        "blobSha": "d322beb80e75b6a13c018fd2f04fc4e2b969029c",
+        "sizeBytes": 85
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/DumpPackedSheets.kt",
+        "blobSha": "4d9b3b77653620fab7e276a961974e473798d75d",
+        "sizeBytes": 801
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/LelandSpecialChars.kt",
+        "blobSha": "faafa8bf704028d5683f690e0f2d28f5581d27e8",
+        "sizeBytes": 857
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/RandomBagIterator.kt",
+        "blobSha": "9fafd570f1df86efb96b103cae8dca0922a0589d",
+        "sizeBytes": 3111
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/RodinSpecialChars.kt",
+        "blobSha": "8680410a79b7edd90781510ec43228c0eaeb8b1d",
+        "sizeBytes": 3224
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/Semitones.kt",
+        "blobSha": "2e35bed3c0ddaa4017754988198ac8e654189275",
+        "sizeBytes": 440
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/TempFileUtils.kt",
+        "blobSha": "3db39d06715e6bcce9f98599f885326bc8019e61",
+        "sizeBytes": 1565
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/TileData.kt",
+        "blobSha": "3060167923ecc8d042fe87d5be10d3381c2c8da2",
+        "sizeBytes": 2869
+      },
+      {
+        "path": "core/src/main/kotlin/polyrhythmmania/util/TimeUtils.kt",
+        "blobSha": "35a35175d98cb153d720d79eda62d9f7bd4079a2",
+        "sizeBytes": 756
+      }
+    ]
+  },
+  "selectionContext": {
+    "publicDiscoveryQuery": "\"kotlin.math.abs\" filename:TimeUtils.kt language:Kotlin",
+    "sourceBodiesRead": false,
+    "hunterExecuted": false,
+    "oracleExecuted": false,
+    "truthKnown": false,
+    "biasedDomainSampling": true,
+    "note": "Small source directory selected by metadata and compatibility with frozen path authority after a public code-search metadata result; not a random sample and not evidence of global training novelty."
+  },
+  "exclusions": {
+    "previousTheAlgorithms27": true,
+    "previousKtor7": true,
+    "previousDatetime6": true,
+    "previousIo6": true,
+    "previousCoroutines8": true
+  },
+  "requirements": {
+    "precommitIndependentOracleBeforePredictions": true,
+    "isolatedSourceOnlyWorkers": true,
+    "predictionSealBeforeOracleExecution": true,
+    "preserveOriginalPathsAndBytes": true,
+    "unverifiedFindingsNeverCountAsDefects": true
+  }
+}
