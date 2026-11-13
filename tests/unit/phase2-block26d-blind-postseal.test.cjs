@@ -39,18 +39,18 @@ test('source-only four-worker seal is pinned to 13 original Git blobs and frozen
 });
 test('source-worker tampering or fabricated functional truth is fail-closed',()=>{
  const base=reports(),seal=buildSeal(base);
- for(const mutate of [
-  x=>x.numeric.filesScanned=12,
-  x=>x.codec.originalFunctionalOracleVerified=true,
-  x=>x.identity.findings=[{path:'src/main/kotlin/evil.kt',line:1,rule:'FAKE',expectedBlobSha:'f'.repeat(40)}],
-  x=>x.cancellation.sourceByteIntegrityVerified=false,
-  x=>x.numeric.skippedNoncanonical=1,
-  x=>x.numeric.findings=[{path:'src/main/kotlin/algorithms/Sort.kt',line:1,rule:'FAKE',expectedBlobSha:'f'.repeat(40)}]
+ for(const [kind,mutate] of [
+  ['numeric',x=>x.filesScanned=12],
+  ['codec',x=>x.originalFunctionalOracleVerified=true],
+  ['identity',x=>x.findings=[{path:'src/main/kotlin/evil.kt',line:1,rule:'FAKE',expectedBlobSha:'f'.repeat(40)}]],
+  ['cancellation',x=>x.sourceByteIntegrityVerified=false],
+  ['numeric',x=>x.skippedNoncanonical=1],
+  ['numeric',x=>x.findings=[{path:'src/main/kotlin/algorithms/Sort.kt',line:1,rule:'FAKE',expectedBlobSha:'f'.repeat(40)}]]
  ]){
-  const modified=reports();const k=Object.keys(modified).find(y=>{
-   const temp=JSON.parse(modified[y].toString());const start=JSON.stringify(temp);mutate(temp);if(JSON.stringify(temp)!==start){modified[y]=Buffer.from(JSON.stringify(temp));return true;}return false;
-  });
-  assert.ok(k);assert.throws(()=>buildSeal(modified));
+  const modified=reports();
+  const data=JSON.parse(modified[kind].toString('utf8'));
+  mutate(data);modified[kind]=Buffer.from(JSON.stringify(data));
+  assert.throws(()=>buildSeal(modified));
  }
  const s=structuredClone(seal);s.block26Closed=true;
  assert.throws(()=>verifySeal(s,base));
