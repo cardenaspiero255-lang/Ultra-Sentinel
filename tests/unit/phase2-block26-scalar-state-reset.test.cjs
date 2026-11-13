@@ -91,3 +91,11 @@ test('bounded class inventory fails closed instead of reporting a false clean sc
  const tooMany=Array.from({length:25},(_,i)=>'class C'+i+' {var x=0}\n').join('');
  assert.throws(()=>scanStateResetHypotheses(wrap(tooMany)),/STATE_CLASS_BUDGET/);
 });
+
+test('astral Unicode in comments preserves exact Kotlin source line numbers',()=>{
+ const comment='/* '+'😀'.repeat(20)+' */\n';
+ const source=body().replace('package example\n','package example\n'+comment);
+ const output=scanStateResetHypotheses(wrap(source));
+ assert.equal(output.length,1);
+ assert.equal(output[0].line,8);
+});
