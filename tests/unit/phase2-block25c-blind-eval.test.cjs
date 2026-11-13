@@ -42,7 +42,7 @@ test('seal all FOUR frozen v3 workers before truth, preserving six original Kotl
  assert.equal(seal.oracleExecutedBeforeSeal,false);
  assert.equal(seal.scored,false);
  assert.equal(seal.precision,null);assert.equal(seal.recall,null);
- assert.equal(seal.positiveOriginalDefectsVerified,false);
+ assert.equal(seal.originalPositiveDefectsVerified,false);
  assert.equal(seal.novelCancellationFamilyVerified,false);
  assert.equal(verifySeal(seal,raw).predictionDigest,seal.predictionDigest);
 });
