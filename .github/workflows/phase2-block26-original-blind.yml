@@ -65,6 +65,7 @@ jobs:
         run: |
           SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v4/tests/unit/phase2-blind-numeric-isolation.test.cjs
           SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v4/tests/unit/phase2-block25d-cancellation-v4-worker.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs tests/unit/generic-jvm-metamorphic-isolation.test.cjs
       - name: Authenticate all 27 untouched Git blobs and preserve their exact paths
         run: |
           node scripts/phase2-block26-original-blind.cjs prepare "$GITHUB_WORKSPACE/frozen-engine-v4" "$GITHUB_WORKSPACE/reserved-originals" "$RUNNER_TEMP/block26-input"
