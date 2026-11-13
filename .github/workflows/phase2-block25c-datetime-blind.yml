@@ -1,0 +1,254 @@
+name: Ultra Sentinel — Phase 2 Block 2.5c frozen v3 datetime source-only before JVM oracles
+on:
+  pull_request:
+    paths:
+      - scripts/phase2-block25c-blind-eval.cjs
+      - tests/unit/phase2-block25c-blind-eval.test.cjs
+      - docs/quality/PHASE2-BLOCK25C-DATETIME-BLIND-VERDICT.md
+      - .github/workflows/phase2-block25c-datetime-blind.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-v3-source-only-capture:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate protocol SHA without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run full architecture, old engine freeze and v3 TDD regression suite
+        run: |
+          npm run check
+          node scripts/verify-phase2-block21-freeze.cjs
+      - name: Checkout immutable v3 Hunter only, never the modified protocol engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 49235f854c61c29d55a0307ce4a0348553b2ee1f
+          path: frozen-engine-v3
+          persist-credentials: false
+      - name: Checkout committed original Kotlin datetime cohort
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx-datetime
+          ref: 77c95cc8125015f83ea8fd900404c295fba7276e
+          path: reserved-datetime
+          persist-credentials: false
+      - name: Enforce Bubblewrap and AppArmor isolation; block if unavailable
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Prove real no-network isolated source workers on the v3 SHA
+        run: |
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v3/tests/unit/phase2-blind-isolation-boundary.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine-v3/tests/unit/phase2-blind-numeric-isolation.test.cjs
+      - name: Authenticate full six-file original source cohort and prepare source-only inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block25c-blind-eval.cjs prepare \
+            "$GITHUB_WORKSPACE/frozen-engine-v3" "$GITHUB_WORKSPACE/reserved-datetime" \
+            "$RUNNER_TEMP/block25c-blind-input"
+      - name: Execute frozen v3 numeric, codec, identity and cancellation workers WITHOUT oracle mounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          engine="$GITHUB_WORKSPACE/frozen-engine-v3"
+          helper="$engine/packages/investigation/plain-kotlin-payload.cjs"
+          policy="$engine/packages/investigation/novel-kotlin-path-policy.cjs"
+          output="$RUNNER_TEMP/block25c-worker-out"
+          mkdir -m 700 "$output"
+          mkdir -m 700 "$output/numeric" "$output/codec" "$output/identity" "$output/cancellation"
+          bash "$engine/tests/fixtures/gamehub-blind-numeric/run-hunter.sh" \
+            "$RUNNER_TEMP/block25c-blind-input/numeric.json" \
+            "$engine/packages/family-hunter/phase2-numeric-risk-hunter.cjs" \
+            "$engine/packages/family-hunter/blind-numeric-worker.cjs" \
+            "$helper" "$policy" "$output/numeric"
+          bash "$engine/tests/fixtures/gamehub-codec/run-blind-codec-hunter.sh" \
+            "$RUNNER_TEMP/block25c-blind-input/source.json" \
+            "$engine/packages/family-hunter/phase2-codec-integrity-hunter.cjs" \
+            "$engine/packages/family-hunter/phase2-blind-codec-worker.cjs" \
+            "$helper" "$policy" "$output/codec"
+          bash "$engine/tests/fixtures/gamehub-identity/run-blind-identity-hunter.sh" \
+            "$RUNNER_TEMP/block25c-blind-input/source.json" \
+            "$engine/packages/family-hunter/phase2-identity-delimiter-hunter.cjs" \
+            "$engine/packages/family-hunter/phase2-blind-identity-worker.cjs" \
+            "$helper" "$policy" "$output/identity"
+          bash "$engine/tests/fixtures/phase2-block25/run-blind-cancellation-hunter.sh" \
+            "$RUNNER_TEMP/block25c-blind-input/source.json" \
+            "$engine/packages/family-hunter/phase2-cancellation-propagation-hunter.cjs" \
+            "$engine/packages/family-hunter/phase2-blind-cancellation-worker.cjs" \
+            "$helper" "$policy" "$output/cancellation"
+          node scripts/phase2-block25c-blind-eval.cjs seal "$output" "$RUNNER_TEMP/block25c-predictions-sealed"
+          node scripts/phase2-block25c-blind-eval.cjs verify "$RUNNER_TEMP/block25c-predictions-sealed"
+          jq -e '.sourceFiles==6 and .sourcePathsSupported==6 and
+            .workerCount==4 and (.reports|length)==4 and .scored==false and
+            .oracleExecutedBeforeSeal==false and
+            .precision==null and .recall==null and .f1==null and
+            .novelCancellationFamilyVerified==false and .remoteWrites==false' \
+            "$RUNNER_TEMP/block25c-predictions-sealed/prediction-seal.json" >/dev/null
+      - name: Publish sealed FOUR worker predictions BEFORE independent oracles
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25c-datetime-v3-four-workers-sealed-before-oracle
+          path: ${{ runner.temp }}/block25c-predictions-sealed/
+          if-no-files-found: error
+          retention-days: 30
+  independent-datetime-oracles-after-seal:
+    needs: frozen-v3-source-only-capture
+    if: >-
+      needs.frozen-v3-source-only-capture.result == 'success' &&
+      github.event.repository.id == 1418338512
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout same exact protocol SHA without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Download only prediction artifact uploaded by the completed blind job
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: phase2-block25c-datetime-v3-four-workers-sealed-before-oracle
+          path: ${{ runner.temp }}/block25c-consumed-seal
+      - name: Independently verify all three original worker report digests before oracle execution
+        run: |
+          node scripts/phase2-block25c-blind-eval.cjs verify "$RUNNER_TEMP/block25c-consumed-seal"
+      - name: Checkout exact immutable Hunter v2 for postseal source authentication
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: cardenaspiero255-lang/Ultra-Sentinel
+          ref: 49235f854c61c29d55a0307ce4a0348553b2ee1f
+          path: frozen-engine-v3
+          persist-credentials: false
+      - name: Checkout previously reserved original Kotlin datetime at exact SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Kotlin/kotlinx-datetime
+          ref: 77c95cc8125015f83ea8fd900404c295fba7276e
+          path: reserved-datetime
+          persist-credentials: false
+      - name: Verify precommitted SHA256 oracles and all original Git blobs after sealing
+        run: |
+          node scripts/phase2-block25b-oracle-preflight.cjs \
+            "$GITHUB_WORKSPACE/frozen-engine-v3" "$GITHUB_WORKSPACE/reserved-datetime" \
+            "$RUNNER_TEMP/block25c-reauthenticated-originals.json"
+      - name: JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Enforce isolated Bubblewrap and AppArmor for both independent Kotlin oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Download and byte-verify Kotlin 2.0.21 toolchain
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/kotlin-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block25c-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block25c-kotlin"
+      - name: Execute two independently precommitted bounded JVM oracles after the seal
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block25c-compiled"
+          mkdir -m 700 "$RUNNER_TEMP/block25c-oracle-logs"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin
+            --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block25c-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/reserved-datetime" /source
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block25b-oracle" /oracle
+            --bind "$RUNNER_TEMP/block25c-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /source/core/common/src/internal/BinaryDataReader.kt \
+            /oracle/BinaryReaderOracle.kt -d /out/binary-original.jar
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+            /source/core/common/src/internal/dateCalculations.kt \
+            /source/core/common/src/internal/util.kt \
+            /oracle/CalendarOracle.kt -d /out/calendar-original.jar
+          for id in binary calendar; do
+            timeout --kill-after=3s 60s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+              --die-with-parent --unshare-all --new-session --clearenv \
+              --setenv PATH /jdk/bin:/usr/bin:/bin --setenv HOME /tmp \
+              "${mounts[@]}" --ro-bind "$jdk" /jdk \
+              --ro-bind "$RUNNER_TEMP/block25c-compiled" /jars \
+              --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp -- \
+              /jdk/bin/java -jar "/jars/$id-original.jar" > "$RUNNER_TEMP/block25c-oracle-logs/$id.log"
+          done
+          node scripts/phase2-block25c-blind-eval.cjs verdict \
+            "$RUNNER_TEMP/block25c-consumed-seal" "$RUNNER_TEMP/block25c-oracle-logs" \
+            "$GITHUB_WORKSPACE/frozen-engine-v3" "$GITHUB_WORKSPACE/reserved-datetime" \
+            "$RUNNER_TEMP/block25c-original-oracle-verdict.json"
+          jq -e '.originalKotlinSourcesScanned==6 and .unsupportedSourceCount==0 and
+            .frozenWorkerCount==4 and .scopedBenignControlsPassed==2 and
+            .originalFilesWithoutOracle==3 and .fullyLabeledOriginalFiles==0 and
+            .originalPositiveDefectsVerified==false and .novelCancellationFamilyVerified==false and
+            .precision==null and .recall==null and .f1==null and .remoteWrites==false' \
+            "$RUNNER_TEMP/block25c-original-oracle-verdict.json" >/dev/null
+      - name: Publish independent original JVM oracle verdict separate from blind predictions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: phase2-block25c-datetime-original-jvm-scoped-verdict-after-seal
+          path: ${{ runner.temp }}/block25c-original-oracle-verdict.json
+          if-no-files-found: warn
+          retention-days: 30
