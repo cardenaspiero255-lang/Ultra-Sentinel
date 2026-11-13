@@ -1,0 +1,42 @@
+{
+  "schema": "ultra-sentinel-phase2-block26e-engine-freeze/v1",
+  "objective": "PROSPECTIVE_UNKNOWN_KOTLIN_SOURCE_ONLY_HUNTER_EVALUATION",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "1f368133be99a87d08e0b605dfa12a8e5124315c",
+    "treeSha": "b4fba52e9d566099ceb42efa444ca86d19bb108b",
+    "changePolicy": "IMMUTABLE_NO_RETUNING_AFTER_COHORT_SELECTION",
+    "scanners": [
+      "numeric-with-cross-method-scalar-state",
+      "codec",
+      "identity",
+      "cancellation"
+    ]
+  },
+  "preregistration": {
+    "sourceRepository": null,
+    "sourceCommitSha": null,
+    "sourceFiles": null,
+    "originalBodiesRead": false,
+    "sourceSelectionPerformed": false,
+    "oracleSourceCommitted": false,
+    "oracleExecuted": false,
+    "hunterExecuted": false,
+    "predictionsSealed": false,
+    "priorCohortsEligibleAsUnknown": false,
+    "expectedResult": "UNKNOWN",
+    "discoveryClaimAllowed": false,
+    "block26Closed": false,
+    "block27Allowed": false
+  },
+  "constraints": [
+    "Authenticate complete original Git blobs and their paths",
+    "Select by Git metadata after this freeze",
+    "Precommit independent oracle source before predictions",
+    "Run only frozen source-only workers without oracle mounts",
+    "Seal prediction reports before independently running JVM oracles",
+    "Never present historical control cases as unknown",
+    "Keep prior frozen experiments unchanged",
+    "Fail closed on sandbox, provenance or digest mismatch"
+  ]
+}
