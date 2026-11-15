@@ -1,0 +1,23 @@
+{
+  "schema": "ultra-sentinel-block26-oracle-precommit/v1",
+  "path": "tests/fixtures/phase2-block26/OriginalContracts.kt",
+  "sha256": "85acabcdf1786a04485d5f652f4ee22beac007c73641c613d9b092555b73134e",
+  "gitBlobSha": "e6a0030a47665dfbf01479ad9e9a5e85934f1b0f",
+  "compiledOriginalPaths": [
+    "src/main/kotlin/math/Average.kt",
+    "src/main/kotlin/math/Median.kt",
+    "src/main/kotlin/math/Factorial.kt",
+    "src/main/kotlin/search/BinarySearch.kt",
+    "src/main/kotlin/sort/BubbleSort.kt"
+  ],
+  "cases": {
+    "sort": 8,
+    "search": 8,
+    "factorial": 21,
+    "median": 780,
+    "average": 780
+  },
+  "executedBeforePredictions": false,
+  "expectedDefectVerdict": null,
+  "hunterMayReadOracle": false
+}

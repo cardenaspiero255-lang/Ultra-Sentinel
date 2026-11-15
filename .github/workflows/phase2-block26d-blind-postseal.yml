@@ -1,0 +1,230 @@
+name: Ultra Sentinel — Phase 2 Block 2.6d blind thirteen Kotlin originals before independent JVM oracle
+on:
+  pull_request:
+    paths:
+      - scripts/phase2-block26d-blind-postseal.cjs
+      - tests/unit/phase2-block26d-blind-postseal.test.cjs
+      - .github/workflows/phase2-block26d-blind-postseal.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-source-only-capture:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact protocol commit with no credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require cohort before oracle, oracle before Hunter, and full regressions
+        run: |
+          git merge-base --is-ancestor 10cc0c679359fb3966a4563d20bc0b55c0032a87 ded5cb0f15a94a1b5c69a90c11468591ba889b81
+          git merge-base --is-ancestor ded5cb0f15a94a1b5c69a90c11468591ba889b81 HEAD
+          npm run check
+      - name: Checkout frozen Hunter v5 before the source cohort was selected
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 22a4dfee8e87b62b14501a81a94ca902d8fbca7b
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout exact unchanged original source commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nazmulidris/algorithms-in-kotlin
+          ref: 498c8a10febe1a97f085a295c1f6b2a818a83f89
+          path: original-cohort
+          persist-credentials: false
+      - name: Enforce Bubblewrap AppArmor and isolated real worker probes
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-blind-numeric-isolation.test.cjs
+          SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/phase2-block25d-cancellation-v4-worker.test.cjs
+      - name: Verify original Git tree and construct ONLY original source inventories
+        run: |
+          node scripts/phase2-block26d-blind-postseal.cjs prepare \
+            "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-cohort" \
+            "$RUNNER_TEMP/block26d-source-inventory"
+      - name: Run four immutable Hunter workers without any oracle mount and seal predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          engine="$GITHUB_WORKSPACE/frozen-engine"
+          output="$RUNNER_TEMP/block26d-worker-outputs"
+          mkdir -m 700 "$output"
+          helper="$engine/packages/investigation/plain-kotlin-payload.cjs"
+          policy="$engine/packages/investigation/novel-kotlin-path-policy.cjs"
+          for kind in numeric codec identity cancellation; do
+            mkdir -m 700 "$output/$kind"
+            inventory="$RUNNER_TEMP/block26d-source-inventory/source.json"
+            case "$kind" in
+              numeric)
+                inventory="$RUNNER_TEMP/block26d-source-inventory/numeric.json"
+                launcher="$engine/tests/fixtures/gamehub-blind-numeric/run-hunter.sh"
+                scanner="$engine/packages/family-hunter/phase2-numeric-risk-hunter.cjs"
+                worker="$engine/packages/family-hunter/blind-numeric-worker.cjs" ;;
+              codec)
+                launcher="$engine/tests/fixtures/gamehub-codec/run-blind-codec-hunter.sh"
+                scanner="$engine/packages/family-hunter/phase2-codec-integrity-hunter.cjs"
+                worker="$engine/packages/family-hunter/phase2-blind-codec-worker.cjs" ;;
+              identity)
+                launcher="$engine/tests/fixtures/gamehub-identity/run-blind-identity-hunter.sh"
+                scanner="$engine/packages/family-hunter/phase2-identity-delimiter-hunter.cjs"
+                worker="$engine/packages/family-hunter/phase2-blind-identity-worker.cjs" ;;
+              cancellation)
+                launcher="$engine/tests/fixtures/phase2-block25d/run-blind-cancellation-v4.sh"
+                scanner="$engine/packages/family-hunter/phase2-cancellation-controlflow-v4.cjs"
+                worker="$engine/packages/family-hunter/phase2-blind-cancellation-v4-worker.cjs" ;;
+            esac
+            bash "$launcher" "$inventory" "$scanner" "$worker" "$helper" "$policy" "$output/$kind"
+          done
+          node scripts/phase2-block26d-blind-postseal.cjs seal \
+            "$output" "$RUNNER_TEMP/block26d-sealed"
+          node scripts/phase2-block26d-blind-postseal.cjs verify "$RUNNER_TEMP/block26d-sealed"
+          jq -e '.sourceFiles == 13 and .workerCount == 4 and
+            .oracleExecutedBeforeSeal == false and .block26Closed == false and
+            .block27Allowed == false and .precision == null' \
+            "$RUNNER_TEMP/block26d-sealed/prediction-seal.json" >/dev/null
+      - name: Upload authenticated sealed source-only predictions BEFORE executing oracle
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26d-thirteen-frozen-source-only-predictions-before-oracle
+          path: ${{ runner.temp }}/block26d-sealed/
+          if-no-files-found: error
+          retention-days: 30
+
+  independent-original-jvm-after-seal:
+    needs: frozen-source-only-capture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout same exact protocol SHA with no credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Download sealed prediction artifact from completed prerequisite job
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26d-thirteen-frozen-source-only-predictions-before-oracle
+          path: ${{ runner.temp }}/block26d-sealed/
+      - name: Authenticate all worker reports and seal BEFORE any independent JVM oracle
+        run: |
+          node scripts/phase2-block26d-blind-postseal.cjs verify "$RUNNER_TEMP/block26d-sealed"
+      - name: Recheckout immutable original cohort and frozen engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 22a4dfee8e87b62b14501a81a94ca902d8fbca7b
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout pinned untouched original Kotlin source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: nazmulidris/algorithms-in-kotlin
+          ref: 498c8a10febe1a97f085a295c1f6b2a818a83f89
+          path: original-cohort
+          persist-credentials: false
+      - name: Verify precommitted original SHA256 oracle against authenticated original Git cohort
+        run: |
+          node scripts/phase2-block26c-oracle-preflight.cjs \
+            "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-cohort" \
+            "$RUNNER_TEMP/block26d-postseal-authenticated.json"
+      - name: Set up JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Require rootless Bubblewrap and enforced AppArmor
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch byte-pinned Kotlin 2.0.21
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="$RUNNER_TEMP/block26d-kotlin.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$zip"
+          test "$(sha256sum "$zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/block26d-kotlin"
+          unzip -q "$zip" -d "$RUNNER_TEMP/block26d-kotlin"
+      - name: Execute independent original Kotlin queue oracle ONLY AFTER sealed Hunter predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          jdk="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          mounts=(--ro-bind /usr /usr)
+          for mount in /bin /lib /lib64; do
+            if [ -L "$mount" ]; then
+              target="$(readlink "$mount")"
+              [[ "$target" != /* && "$target" != *..* ]] || exit 2
+              mounts+=(--symlink "$target" "$mount")
+            elif [ -d "$mount" ]; then mounts+=(--ro-bind "$mount" "$mount")
+            else exit 2; fi
+          done
+          mkdir -m 700 "$RUNNER_TEMP/block26d-compiled"
+          common=(--die-with-parent --unshare-all --new-session --clearenv
+            --setenv PATH /kotlin/bin:/jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp
+            "${mounts[@]}" --ro-bind "$jdk" /jdk
+            --ro-bind "$RUNNER_TEMP/block26d-kotlin/kotlinc" /kotlin
+            --ro-bind "$GITHUB_WORKSPACE/original-cohort/src/main/kotlin" /original
+            --ro-bind "$GITHUB_WORKSPACE/tests/fixtures/phase2-block26c-ringbuffer" /oracle
+            --bind "$RUNNER_TEMP/block26d-compiled" /out
+            --tmpfs /tmp --proc /proc --dev /dev --dir /home --chdir /tmp)
+          timeout --kill-after=3s 180s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            "${common[@]}" -- \
+            /kotlin/bin/kotlinc -jvm-target 17 -include-runtime \
+              /original/algorithms/RingBuffer.kt /original/support/Main.kt \
+              /oracle/ColorNoop.kt /oracle/SupportNoop.kt /oracle/RingBufferContractOracle.kt \
+              -d /out/original-queue-oracle.jar
+          timeout --kill-after=3s 60s env -i PATH=/usr/bin:/bin HOME=/tmp /usr/bin/bwrap \
+            "${common[@]}" -- \
+            /jdk/bin/java -cp /out/original-queue-oracle.jar oracle.RingBufferContractOracleKt \
+            > "$RUNNER_TEMP/block26d-original-observations.json"
+          test -s "$RUNNER_TEMP/block26d-original-observations.json"
+          node scripts/phase2-block26d-blind-postseal.cjs verdict \
+            "$RUNNER_TEMP/block26d-sealed" "$RUNNER_TEMP/block26d-original-observations.json" \
+            "$RUNNER_TEMP/block26d-original-postseal-verdict.json"
+      - name: Upload independently authenticated original JVM observations and sealed prediction digest
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26d-postseal-original-jvm-fifo-verdict
+          path: |
+            ${{ runner.temp }}/block26d-original-observations.json
+            ${{ runner.temp }}/block26d-original-postseal-verdict.json
+            ${{ runner.temp }}/block26d-postseal-authenticated.json
+          if-no-files-found: error
+          retention-days: 30

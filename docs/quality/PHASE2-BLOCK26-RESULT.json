@@ -1,0 +1,116 @@
+{
+  "schema": "ultra-sentinel-block26-primary-ci-receipt/v1",
+  "protocolSha": "b980edc7e391daffdd42c1d15628d48008c83191",
+  "runId": 43357112409,
+  "sourceOnlyJobId": 131661665360,
+  "oracleJobId": 131662209148,
+  "runUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/43357112409",
+  "prUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/pull/395",
+  "frozenEngineSha": "84c824ce6bfe3d260296108e955bbbc4624e6b7e",
+  "cohortMetadataCommit": "6195048a1d762e4d7d406db459e55df38a68c2ad",
+  "unexecutedOracleCommit": "01288f49892c8e9242c0a4df8550a2317c2d6faa",
+  "rawPredictionArtifact": {
+    "id": 14006462646,
+    "digest": "sha256:e4e5b658e687ee12c80e3fa8c495e836a58a8d1fe4f8dc1b18dc7e685a188e94"
+  },
+  "verdict": {
+    "schema": "ultra-sentinel-block26-postseal-original-verdict/v1",
+    "predictionDigest": "952e87f4185c252e88edd453436523f3d0fbf7fcdf170f9dece84d97b2522991",
+    "oracleSourceSha256": "85acabcdf1786a04485d5f652f4ee22beac007c73641c613d9b092555b73134e",
+    "sourceSha": "b913c1d85c972fd1e679c5d832d6458b21be8fb0",
+    "independentCounterexampleFunctions": 2,
+    "independentCounterexampleFamily": "INTEGER_ACCUMULATION_OVERFLOW",
+    "independentObservations": {
+      "schema": "ultra-sentinel-block26-original-jvm-observations/v1",
+      "controls": {
+        "sort": 8,
+        "search": 8,
+        "factorial": 21
+      },
+      "numeric": [
+        {
+          "id": "median",
+          "cases": 780,
+          "mismatches": 124,
+          "examples": [
+            {
+              "input": [
+                -2147483648,
+                -2147483648
+              ],
+              "expected": "-2.147483648E9",
+              "actual": "0.0"
+            },
+            {
+              "input": [
+                -2147483648,
+                -1
+              ],
+              "expected": "-1.0737418245E9",
+              "actual": "1.0737418235E9"
+            },
+            {
+              "input": [
+                -1,
+                -2147483648
+              ],
+              "expected": "-1.0737418245E9",
+              "actual": "1.0737418235E9"
+            }
+          ]
+        },
+        {
+          "id": "average",
+          "cases": 780,
+          "mismatches": 293,
+          "examples": [
+            {
+              "input": [
+                -2147483648,
+                -2147483648
+              ],
+              "expected": "-2147483648",
+              "actual": "0"
+            },
+            {
+              "input": [
+                -2147483648,
+                -1
+              ],
+              "expected": "-1073741824",
+              "actual": "1073741823"
+            },
+            {
+              "input": [
+                -1,
+                -2147483648
+              ],
+              "expected": "-1073741824",
+              "actual": "1073741823"
+            }
+          ]
+        }
+      ]
+    },
+    "originalFilesWithPartialOracle": 5,
+    "originalFilesWithoutOracle": 22,
+    "hunterConfirmedDefects": 0,
+    "functionalFamiliesDiscoveredByHunter": 0,
+    "filesAnalyzed": 0,
+    "abstentions": 27,
+    "block26Closed": false,
+    "block27Allowed": false,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "remoteWrites": false,
+    "repairAuthorized": false
+  },
+  "limitations": [
+    "Frozen v4 rejects all 27 original root src/main/kotlin paths; no rewriting or retuning was performed.",
+    "Five files have partial independent contracts; 22 have no oracle. This is not an exhaustive defect label set.",
+    "Two functions exhibit the same integer accumulation overflow family. Neither is a Hunter discovery; both blocks remain open.",
+    "Cohort source blobs had no matches in the frozen engine Git object history or its prior evaluation metadata; this is not a global model-training novelty claim.",
+    "Subsequent runs of this unchanged cohort and oracle are reproducibility replays, never fresh blind evaluations."
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "ultra-sentinel-phase2-block26c-precommitted-independent-original-oracle/v1",
+  "cohortManifestGitBlobSha": "78bd5f2be91de9f3781a7b358f457b91efb1b6a8",
+  "source": {
+    "repository": "nazmulidris/algorithms-in-kotlin",
+    "commitSha": "498c8a10febe1a97f085a295c1f6b2a818a83f89",
+    "treeSha": "87d62e0b07ef435d4b0f99ce26057d8dca22b17f",
+    "compiledOriginals": [
+      {
+        "path": "src/main/kotlin/algorithms/RingBuffer.kt",
+        "blobSha": "5c56b57103978fdbd46bd4f1b9b09cc887e6d200"
+      },
+      {
+        "path": "src/main/kotlin/support/Main.kt",
+        "blobSha": "414e99fe3472c392a20a637afda7e64e918b92de"
+      }
+    ]
+  },
+  "oracleFiles": [
+    {
+      "path": "tests/fixtures/phase2-block26c-ringbuffer/ColorNoop.kt",
+      "gitBlobSha": "2bee313442476e636440dbdd7b17ca8eadf2797b",
+      "sha256": "3749f3aa2fa82a4996c763dffdffbc3a8de32b4da3baad2d427b070cefb441a6"
+    },
+    {
+      "path": "tests/fixtures/phase2-block26c-ringbuffer/SupportNoop.kt",
+      "gitBlobSha": "e838a14780aac190999f7072dc4c47f955453886",
+      "sha256": "bd1a7577089cbde273005f53aa17258e7704251c1f48a4d1fccb0531af5662d9"
+    },
+    {
+      "path": "tests/fixtures/phase2-block26c-ringbuffer/RingBufferContractOracle.kt",
+      "gitBlobSha": "2f05c988b6e2a147006bce2e830becdd92a86257",
+      "sha256": "7ef3a8953464e485955ff69a93780274efacf7f3bef7034a7679ccac5b851d3d"
+    }
+  ],
+  "protocol": {
+    "precommitBeforeBlindPredictions": true,
+    "originalsUnmodified": true,
+    "oracleExecutedBeforeBlindPredictions": false,
+    "originalOracleResultsKnown": false,
+    "hunterExecuted": false,
+    "scored": false,
+    "precision": null,
+    "recall": null,
+    "block26Closed": false,
+    "block27Allowed": false
+  },
+  "limitations": {
+    "twoOriginalFilesCompiled": true,
+    "otherOriginalFilesWithoutFunctionalOracles": 11,
+    "syntheticPresentationShimsNoAlgorithmReplacement": true
+  }
+}
