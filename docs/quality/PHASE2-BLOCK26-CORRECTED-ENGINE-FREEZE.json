@@ -1,0 +1,92 @@
+{
+  "schema": "ultra-sentinel-block26-corrected-engine-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+    "treeSha": "4ce3798a50d54a74f49b7756b27a3f0951fd823a",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "4b8ff259d701441c150c697afdab73fa117f7471"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe.sh",
+        "blobSha": "cea65e7ba4c26c8d849a0e6386d6fee791329eef"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      }
+    ],
+    "priorMainWorkflowsSucceeded": 58
+  },
+  "protocol": {
+    "cohortSelected": false,
+    "sourceBodiesRead": false,
+    "independentOracleKnown": false,
+    "predictionsExecuted": false,
+    "retuningAllowed": false,
+    "originalSourcesMayBeModified": false,
+    "predictionsMustBeSealedBeforeOracle": true,
+    "block": "2.6",
+    "block27Allowed": false
+  },
+  "selection": {
+    "query": "algorithms language:Kotlin fork:false stars:>=20 size:<20000 archived:false",
+    "sort": "stars",
+    "order": "desc",
+    "policy": "First metadata-eligible repository not previously mentioned, with regular production Kotlin blobs under src/main; no source-content or defect-based filtering. Record rejected metadata candidates.",
+    "maxProductionFiles": 120,
+    "maxProductionBytes": 1048576,
+    "excludedRepositories": [
+      "ActivityWatch/aw-android",
+      "android/architecture-samples",
+      "android/nowinandroid",
+      "ankidroid/Anki-Android",
+      "AntennaPod/AntennaPod",
+      "beemdevelopment/Aegis",
+      "bitwarden/android",
+      "bmaslakov/kotlin-algorithm-club",
+      "cardenaspiero255-lang/gamehub-ultra",
+      "cardenaspiero255-lang/JARVIS",
+      "cardenaspiero255-lang/Ultra-Sentinel",
+      "defexts/defexts",
+      "detekt/detekt",
+      "element-hq/element-x-android",
+      "FossifyOrg/Calendar",
+      "FossifyOrg/Camera",
+      "FossifyOrg/Gallery",
+      "GradleUp/shadow",
+      "home-assistant/android",
+      "JetBrains/compose-multiplatform",
+      "JetBrains/kotlin",
+      "Kotlin/kotlin-swe-bench",
+      "Kotlin/kotlinx-atomicfu",
+      "Kotlin/kotlinx-datetime",
+      "Kotlin/kotlinx-io",
+      "Kotlin/kotlinx.coroutines",
+      "ktlint/ktlint",
+      "ktorio/ktor",
+      "LawnchairLauncher/lawnchair",
+      "nazmulidris/algorithms-in-kotlin",
+      "nextcloud/android",
+      "nextcloud/talk-android",
+      "organicmaps/organicmaps",
+      "rjust/defects4j",
+      "square/kotlinpoet",
+      "StreetComplete/StreetComplete",
+      "tasks/tasks",
+      "TeamNewPipe/NewPipe",
+      "TheAlgorithms/Kotlin",
+      "Thunderbird/thunderbird-android",
+      "wordpress-mobile/WordPress-Android",
+      "zhanghai/MaterialFiles"
+    ]
+  },
+  "acceptance": {
+    "previousLcmCaseReusable": false,
+    "knownCohortsReusableAsUnknown": false,
+    "distinctOriginalDefectRequired": true,
+    "unknownFamilyClaimRequiresAdditionalEvidence": true
+  }
+}
