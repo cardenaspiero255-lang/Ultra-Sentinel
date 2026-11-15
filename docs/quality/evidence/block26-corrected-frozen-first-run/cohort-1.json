@@ -1,0 +1,32 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-eligibility/v1",
+  "filesAuthenticated": 64,
+  "executionEligible": false,
+  "namespaceHeaderScanOnly": true,
+  "packages": [
+    "design_patterns",
+    "other",
+    "search",
+    "sorting",
+    "structures"
+  ],
+  "unsupportedPackages": [
+    "design_patterns",
+    "other",
+    "search",
+    "sorting",
+    "structures"
+  ],
+  "unsupportedPaths": [
+    "src/main/kotlin/design_patterns/Abstract Factory.kt",
+    "src/main/kotlin/design_patterns/Factory Method.kt",
+    "src/main/kotlin/design_patterns/Template Method.kt",
+    "src/main/kotlin/design_patterns/Сhain Of Responsibilities.kt"
+  ],
+  "unresolvedPackageHeaders": [],
+  "prefixes": [],
+  "filesScannedByHunter": 0,
+  "independentDefectTruthKnown": false,
+  "falseNegativeCount": null,
+  "block27Allowed": false
+}

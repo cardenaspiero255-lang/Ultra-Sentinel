@@ -26,7 +26,8 @@ function commitments(){
  for(const f of o.oracleFiles)if(hash(read(path.join(ROOT,f.path)))!==f.sha256)fail();
  return {m,o};
 }
-function parseReport(raw,artifact){
+function parseReport(raw,artifact,prefix='io.uuddlrlrba.ktalgs'){
+ if(typeof prefix!=='string'||! /^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$/.test(prefix))fail();
  if(!Buffer.isBuffer(raw)||raw.length>262144||! /^[a-f0-9]{64}$/.test(artifact))fail();
  const r=JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(raw));
  if(r.schema!=='ultra-sentinel-generic-jvm-metamorphic/v1'||r.artifactSha256!==artifact||
@@ -38,7 +39,7 @@ function parseReport(raw,artifact){
   'nestedClassesSkipped','comparableClasses','comparablePairs','comparableTriples','constructorAbstentions'])
   if(!Number.isSafeInteger(r[key])||r[key]<0||r[key]>250000)fail();
  for(const f of r.findings){
-  if(!f||typeof f.class!=='string'||!/^io\.uuddlrlrba\.ktalgs\.[A-Za-z0-9_.$]+$/.test(f.class)||
+  if(!f||typeof f.class!=='string'||!f.class.startsWith(prefix+'.')||! /^[A-Za-z_][A-Za-z0-9_.$]*$/.test(f.class)||
    f.status!=='HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE')fail();
   if(f.rule===undefined){
    if(typeof f.method!=='string'||f.method.length>500||!Number.isSafeInteger(f.argument)||f.argument<0||f.argument>2||
@@ -105,9 +106,9 @@ function git(root,args){
   timeout:20000,maxBuffer:16*1024*1024,
   env:{PATH:process.env.PATH,GIT_NO_REPLACE_OBJECTS:'1',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_CONFIG_COUNT:'0',GIT_OPTIONAL_LOCKS:'0'}});
 }
-function prepare(engine,source,out){
- const {m}=commitments();
- for(const [root,sha,tree] of [[engine,ENGINE,m.engine.treeSha],[source,SOURCE,m.source.treeSha]]){
+function readCohort(engine,source,m){
+ for(const [root,sha,tree] of [[engine,m.engine.commitSha,m.engine.treeSha],[source,m.source.commitSha,m.source.treeSha]]){
+  if(! /^[a-f0-9]{40}$/.test(sha)||! /^[a-f0-9]{40}$/.test(tree))fail();
   if(git(root,['rev-parse','HEAD']).toString().trim()!==sha||
    git(root,['rev-parse','HEAD^{tree}']).toString().trim()!==tree||git(root,['status','--porcelain']).length)fail();
  }
@@ -115,15 +116,28 @@ function prepare(engine,source,out){
   .map(x=>{const [meta,p]=x.split('\t'),[mode,type,sha,size]=meta.split(/\s+/);return {mode,type,sha,size:Number(size),path:p};})
   .filter(x=>x.path.startsWith('src/main/')&&x.path.endsWith('.kt'));
  if(JSON.stringify(entries.map(x=>({path:x.path,blobSha:x.sha,sizeBytes:x.size})))!==JSON.stringify(m.source.files))fail();
- fs.mkdirSync(out,{mode:0o700});
+ const files=[];
  for(const f of entries){
-  if(f.mode!=='100644'||f.type!=='blob'||!/^src\/main\/[A-Za-z0-9_/]+\.kt$/.test(f.path))fail();
+  // Git-tree audit reads by authenticated blob ID; it never opens this path.
+  // Executable staging below retains its narrower ASCII path contract.
+  if(f.mode!=='100644'||f.type!=='blob'||!f.path.startsWith('src/main/')||!f.path.endsWith('.kt')||/[\x00-\x1f\x7f\\]/.test(f.path)||
+   f.path.split('/').some(x=>!x||x==='.'||x==='..'))fail();
   const bytes=git(source,['cat-file','blob',f.sha]);
   if(bytes.length!==f.size||blob(bytes)!==f.sha)fail();
+  files.push({path:f.path,bytes});
+ }
+ return files;
+}
+function prepareCohort(engine,source,out,m){
+ const files=readCohort(engine,source,m);
+ if(files.some(f=>!/^src\/main\/[A-Za-z0-9_/]+\.kt$/.test(f.path)))fail();
+ fs.mkdirSync(out,{mode:0o700});
+ for(const f of files){
   const dest=path.join(out,f.path);fs.mkdirSync(path.dirname(dest),{recursive:true,mode:0o700});
-  fs.writeFileSync(dest,bytes,{flag:'wx',mode:0o600});
+  fs.writeFileSync(dest,f.bytes,{flag:'wx',mode:0o600});
  }
 }
+function prepare(engine,source,out){return prepareCohort(engine,source,out,commitments().m);}
 function save(p,v){fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n',{flag:'wx',mode:0o600});}
 if(require.main===module){
  try{
@@ -135,4 +149,4 @@ if(require.main===module){
   else fail();
  }catch(e){console.error(e.message);process.exitCode=1;}
 }
-module.exports=Object.freeze({seal,verify,adjudicate,prepare});
+module.exports=Object.freeze({seal,verify,adjudicate,prepare,parseReport,readCohort,prepareCohort});

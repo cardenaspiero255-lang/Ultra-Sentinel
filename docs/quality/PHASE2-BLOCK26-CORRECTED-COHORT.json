@@ -1,0 +1,375 @@
+{
+  "schema": "ultra-sentinel-block26-corrected-frozen-cohort/v1",
+  "freezeCommitSha": "6d1e2a99e262f2493d2ed8de9b53727f6e6c9ea4",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+    "treeSha": "4ce3798a50d54a74f49b7756b27a3f0951fd823a",
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns",
+    "commitSha": "1f89f062a056e24cc289ffdd0c6e23cadf8df887",
+    "treeSha": "b9ce1ff3214cbaa6bb6b26db8384bcb6aebdaece",
+    "scope": "src/main",
+    "selection": "ALL_REGULAR_KT_BLOBS_RECURSIVELY_UNDER_SRC_MAIN_WITHOUT_SOURCE_CONTENT_FILTERING",
+    "files": [
+      {
+        "path": "src/main/kotlin/design_patterns/Abstract Factory.kt",
+        "blobSha": "876330f8276b8f936036a2e091fc9fcbf8d8d3af",
+        "sizeBytes": 797
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Adapter.kt",
+        "blobSha": "0173986fd1800c15856034f2fda244354714680b",
+        "sizeBytes": 668
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Bridge.kt",
+        "blobSha": "88e8e501df0b6057ced05ca709650928e04baa3e",
+        "sizeBytes": 2551
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Builder.kt",
+        "blobSha": "b832598d51371646c1ef1102a73f47b7dc5f71a0",
+        "sizeBytes": 3653
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Command.kt",
+        "blobSha": "d8d6e477dba32de9656e2a7e7c0f88dd1d82d930",
+        "sizeBytes": 3404
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Composite.kt",
+        "blobSha": "2c9a71d99ad938000f44ece035e6afc817d64469",
+        "sizeBytes": 1499
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Decorator.kt",
+        "blobSha": "69011babb475c3c40879c894268f49a184ee5c86",
+        "sizeBytes": 1404
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Facade.kt",
+        "blobSha": "632b1cf298b7815d19bea7e9e1a6c06253d082c7",
+        "sizeBytes": 2555
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Factory Method.kt",
+        "blobSha": "e73d4db4ab01d24eb16df9cda670d565c744543e",
+        "sizeBytes": 2274
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Flyweight.kt",
+        "blobSha": "afb686131d330ac6ca718a1ac318b2102e5dc450",
+        "sizeBytes": 1370
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Interpreter.kt",
+        "blobSha": "dcb4f60d0b79d49577b165b9ed639a6d0a8e9d1a",
+        "sizeBytes": 1900
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Iterator.kt",
+        "blobSha": "8e76c7afb3fd8f2d0e4c1b791941156576a71371",
+        "sizeBytes": 817
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Mediator.kt",
+        "blobSha": "c0d17b85c80ceabd967dddd938daab3ec61e6226",
+        "sizeBytes": 3095
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Memento.kt",
+        "blobSha": "1a2effde10b230078f6c40a8d0fb5c065ab93333",
+        "sizeBytes": 1179
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Observer.kt",
+        "blobSha": "d5c30421cc3881cce3e98f3218d5a4d5f0a3a9d3",
+        "sizeBytes": 1134
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Prototype.kt",
+        "blobSha": "d1e46797b67c347beaf6228345b20427c25e9a39",
+        "sizeBytes": 1879
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Proxy.kt",
+        "blobSha": "d0f3eac3bc87fb797a77581fb0e94eabea7147e1",
+        "sizeBytes": 3016
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Singleton.kt",
+        "blobSha": "64648f3eef243ad641976e879a856baa0db19de0",
+        "sizeBytes": 900
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/State.kt",
+        "blobSha": "12eb14aa09159687f60fe24d5eb6c8e4cd5f6989",
+        "sizeBytes": 2521
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Strategy.kt",
+        "blobSha": "40065ead513f0766cecfae7c4439b679d1390004",
+        "sizeBytes": 2187
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Template Method.kt",
+        "blobSha": "eb69548f818303d6ba99780ebd609f8ccc413a36",
+        "sizeBytes": 1221
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Visitor.kt",
+        "blobSha": "c7352327e4c6fa2c55859cf2139e76a0de38f165",
+        "sizeBytes": 3214
+      },
+      {
+        "path": "src/main/kotlin/design_patterns/Сhain Of Responsibilities.kt",
+        "blobSha": "64536167ee8d5598df8644b4bd8ca7d24225383d",
+        "sizeBytes": 1410
+      },
+      {
+        "path": "src/main/kotlin/other/BinaryDigitsCounter.kt",
+        "blobSha": "a9ed604a8f898abeb52218593a0cfa9a6400c6f6",
+        "sizeBytes": 1499
+      },
+      {
+        "path": "src/main/kotlin/other/EuclidAlgorithm.kt",
+        "blobSha": "a419fac32c64d239da5961c2dd54370e0930af6c",
+        "sizeBytes": 927
+      },
+      {
+        "path": "src/main/kotlin/other/Factorial.kt",
+        "blobSha": "a9c38e77ee8c7050fe7a80fd8e3e97cfcc013e8d",
+        "sizeBytes": 997
+      },
+      {
+        "path": "src/main/kotlin/other/FactorialAdvanced.kt",
+        "blobSha": "647060b96cb716d26352cd1087631d4fac12cf99",
+        "sizeBytes": 5169
+      },
+      {
+        "path": "src/main/kotlin/other/FactorialBigWithCache.kt",
+        "blobSha": "489059d3390d3726093baf4f772ffa64373e8a8b",
+        "sizeBytes": 849
+      },
+      {
+        "path": "src/main/kotlin/other/FactorialWithCache.kt",
+        "blobSha": "009153270637181cc1c5569e225229d3bdf9a045",
+        "sizeBytes": 657
+      },
+      {
+        "path": "src/main/kotlin/other/FizzBuzz.kt",
+        "blobSha": "9f68dc7d6b76df831fc5a30f0ae536b0c7d4b975",
+        "sizeBytes": 721
+      },
+      {
+        "path": "src/main/kotlin/other/KnuthMorrisPrattAlgorithm.kt",
+        "blobSha": "f90b7dc9c68d76ad50d5380a60a5f9771012b28c",
+        "sizeBytes": 1503
+      },
+      {
+        "path": "src/main/kotlin/other/LevenshteinLengthAlgorithm.kt",
+        "blobSha": "405086804fb482ced62b330d68ffd30c28933eed",
+        "sizeBytes": 864
+      },
+      {
+        "path": "src/main/kotlin/other/MaxAlgorithm.kt",
+        "blobSha": "30ca6bc60e33c4c246d6558e695134822458d285",
+        "sizeBytes": 1008
+      },
+      {
+        "path": "src/main/kotlin/other/MinAlgorithm.kt",
+        "blobSha": "e2fc8e99698d085d91d684478e92ce30eaaacc79",
+        "sizeBytes": 931
+      },
+      {
+        "path": "src/main/kotlin/other/PalindromeAlgorithm.kt",
+        "blobSha": "9119efc4f8ab90c8df828ca5047b6e3b43120037",
+        "sizeBytes": 777
+      },
+      {
+        "path": "src/main/kotlin/other/ParenthesisCheckAlgorithm.kt",
+        "blobSha": "c6b3296b61e03f11eeb70b538e570afcd9a44b60",
+        "sizeBytes": 1154
+      },
+      {
+        "path": "src/main/kotlin/other/ReverseArrayAlgorithm.kt",
+        "blobSha": "d0dfab774a737eaed18722fd7e794ab30cbee4b6",
+        "sizeBytes": 399
+      },
+      {
+        "path": "src/main/kotlin/other/SieveOfEratosthenesAlgorithm.kt",
+        "blobSha": "396a87a15b7a1485e9707b5dd2e00c4dcc377cfb",
+        "sizeBytes": 866
+      },
+      {
+        "path": "src/main/kotlin/other/Sqrt.kt",
+        "blobSha": "b2cd6c061f19319706ffdfa8732da18b506316e7",
+        "sizeBytes": 546
+      },
+      {
+        "path": "src/main/kotlin/other/StringEqualsHashAlgorithm.kt",
+        "blobSha": "6100beb994daf85a984beb51457a7d83102a6f7b",
+        "sizeBytes": 1125
+      },
+      {
+        "path": "src/main/kotlin/other/SwapAlgorithm.kt",
+        "blobSha": "356b295cac62c0fdb12d70ccf5edc4ea3bbdb662",
+        "sizeBytes": 1582
+      },
+      {
+        "path": "src/main/kotlin/search/BinarySearch.kt",
+        "blobSha": "f65ad918b014c3d1ff3702208b60ea6e94018e58",
+        "sizeBytes": 2488
+      },
+      {
+        "path": "src/main/kotlin/search/LinearSearch.kt",
+        "blobSha": "c8f5bd3c588c2f6ba043f672e76ed6dbcc623298",
+        "sizeBytes": 412
+      },
+      {
+        "path": "src/main/kotlin/sorting/BubbleSort.kt",
+        "blobSha": "019160426436efa45f9498fae27d89792d4cde1a",
+        "sizeBytes": 1443
+      },
+      {
+        "path": "src/main/kotlin/sorting/CountingSort.kt",
+        "blobSha": "f720824a3deef9eb57375dab8a5aa28623ebbb14",
+        "sizeBytes": 1205
+      },
+      {
+        "path": "src/main/kotlin/sorting/InsertionSort.kt",
+        "blobSha": "be0d77f9b10669938c43171cbdbcf103bb241dee",
+        "sizeBytes": 793
+      },
+      {
+        "path": "src/main/kotlin/sorting/MergeSort.kt",
+        "blobSha": "743ceb835def1c7d4b7ce71e0b06e6bce53e21cc",
+        "sizeBytes": 3302
+      },
+      {
+        "path": "src/main/kotlin/sorting/QuickSort.kt",
+        "blobSha": "4a6fe629695eb18382af67df816ebe043dee64fe",
+        "sizeBytes": 1184
+      },
+      {
+        "path": "src/main/kotlin/sorting/RadixSort.kt",
+        "blobSha": "c1d28a1a75d3d7f1679fd508339d35722ca77d5f",
+        "sizeBytes": 1144
+      },
+      {
+        "path": "src/main/kotlin/sorting/SelectionSort.kt",
+        "blobSha": "1d7ea4d0e17d00e130988d86ab760a7148fee4c5",
+        "sizeBytes": 845
+      },
+      {
+        "path": "src/main/kotlin/sorting/TimSort.kt",
+        "blobSha": "34db046bfa9214f69d69b7a0e6395bf411f346e9",
+        "sizeBytes": 3478
+      },
+      {
+        "path": "src/main/kotlin/structures/BinaryTree.kt",
+        "blobSha": "58fb43558c85384a0699295f1cf648893d8a6690",
+        "sizeBytes": 6609
+      },
+      {
+        "path": "src/main/kotlin/structures/CircularLinkedList.kt",
+        "blobSha": "e628e05d612c68f95f0384ad56b6efb79855e317",
+        "sizeBytes": 5591
+      },
+      {
+        "path": "src/main/kotlin/structures/DoubleLinkedList.kt",
+        "blobSha": "792fc7b9889a45f909f89499db4a8061d27f13fd",
+        "sizeBytes": 5763
+      },
+      {
+        "path": "src/main/kotlin/structures/DynamicArray.kt",
+        "blobSha": "8cbf12a6ebe075154ccb030aa9b08e45ede1bb0b",
+        "sizeBytes": 3134
+      },
+      {
+        "path": "src/main/kotlin/structures/Graph.kt",
+        "blobSha": "0b41618aa071ddc6883da9a0af076efef9a22058",
+        "sizeBytes": 3050
+      },
+      {
+        "path": "src/main/kotlin/structures/GraphWithWeights.kt",
+        "blobSha": "d51df2380658f0f07a9e58b084469155444e00e7",
+        "sizeBytes": 3587
+      },
+      {
+        "path": "src/main/kotlin/structures/Matrix.kt",
+        "blobSha": "56a18153dee088961bf1a7cdef036fa30df9e2ab",
+        "sizeBytes": 4271
+      },
+      {
+        "path": "src/main/kotlin/structures/MaxHeap.kt",
+        "blobSha": "e8fd626f1d8d46de57084a349b5e2d8fb6428188",
+        "sizeBytes": 2913
+      },
+      {
+        "path": "src/main/kotlin/structures/MinHeap.kt",
+        "blobSha": "9fac68274f4751a2758448415cb8aa2628b3073f",
+        "sizeBytes": 2914
+      },
+      {
+        "path": "src/main/kotlin/structures/Queue.kt",
+        "blobSha": "a3599495ddc71c9065c747d3df8c4b7e1c846740",
+        "sizeBytes": 1083
+      },
+      {
+        "path": "src/main/kotlin/structures/SingleLinkedList.kt",
+        "blobSha": "49c958de58652f78347346d959120fedd0d33540",
+        "sizeBytes": 4198
+      },
+      {
+        "path": "src/main/kotlin/structures/Stack1.kt",
+        "blobSha": "c882462e966faad540b18a365db327e56de1f310",
+        "sizeBytes": 1135
+      },
+      {
+        "path": "src/main/kotlin/structures/Stack2.kt",
+        "blobSha": "594ed29597e4da7f23d85b79e2fa32228f7ca92a",
+        "sizeBytes": 1174
+      }
+    ]
+  },
+  "selectionLedger": [
+    {
+      "repository": "TheAlgorithms/Kotlin",
+      "stars": 1642,
+      "branch": "master",
+      "size": 137,
+      "status": "EXCLUDED_PRIOR_CONTEXT"
+    },
+    {
+      "repository": "bmaslakov/kotlin-algorithm-club",
+      "stars": 927,
+      "branch": "master",
+      "size": 791,
+      "status": "EXCLUDED_PRIOR_CONTEXT"
+    },
+    {
+      "repository": "DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns",
+      "stars": 846,
+      "branch": "develop",
+      "size": 7326,
+      "sha": "1f89f062a056e24cc289ffdd0c6e23cadf8df887",
+      "tree": "1f89f062a056e24cc289ffdd0c6e23cadf8df887",
+      "files": 64,
+      "sourceBytes": 127938,
+      "status": "RESERVED_PENDING_COMMIT"
+    }
+  ],
+  "protocol": {
+    "sourceBodiesReadBeforeReservation": false,
+    "oracleExecutedBeforeReservation": false,
+    "hunterExecutedBeforeReservation": false,
+    "oracleMustBeCommittedBeforePredictions": true,
+    "predictionsSealedBeforeIndependentOracle": true,
+    "previousLcmCaseReusable": false,
+    "block27Allowed": false
+  }
+}

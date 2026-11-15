@@ -1,0 +1,17 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-prediction-seal/v1",
+  "engineSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+  "sourceSha": "01cdf7bc88162eec654c95d8f303d8854edb704a",
+  "cohortManifestBlob": "26fa436e36d5b924e71b9a776e729ff5a22ec1ed",
+  "oracleSha256": "f960651779c282397fd45a7a92e31e22e9f14d1d510adbd228ed501d1dd00c5f",
+  "artifactSha256": "34708e6506de8116e7b2c3164d05d6de5c220ac5b7ae394a68b04f60c1b74fd3",
+  "reportSha256": "02da8cc82d31639c2cd88b92dc663d28c3a93ae8e52b5c4f813776934ec6776f",
+  "filesAuthenticated": 10,
+  "methodsProbed": 0,
+  "comparablePairs": 0,
+  "hypotheses": 0,
+  "oracleExecutedBeforeSeal": false,
+  "engineRetuned": false,
+  "remoteWrites": false,
+  "mergeAllowed": false
+}

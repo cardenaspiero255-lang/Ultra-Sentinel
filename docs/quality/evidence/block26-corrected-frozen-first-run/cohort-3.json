@@ -1,0 +1,21 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-eligibility/v1",
+  "filesAuthenticated": 5,
+  "executionEligible": false,
+  "namespaceHeaderScanOnly": true,
+  "packages": [
+    "array",
+    "string"
+  ],
+  "unsupportedPackages": [
+    "array",
+    "string"
+  ],
+  "unsupportedPaths": [],
+  "unresolvedPackageHeaders": [],
+  "prefixes": [],
+  "filesScannedByHunter": 0,
+  "independentDefectTruthKnown": false,
+  "falseNegativeCount": null,
+  "block27Allowed": false
+}

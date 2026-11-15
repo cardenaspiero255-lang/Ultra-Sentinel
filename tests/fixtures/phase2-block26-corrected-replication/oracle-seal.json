@@ -1,0 +1,17 @@
+{
+  "schema": "ultra-sentinel-corrected-replication-oracle-commitment/v1",
+  "engineSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+  "engineFreezeSha": "6d1e2a99e262f2493d2ed8de9b53727f6e6c9ea4",
+  "cohortReservationSha": "ecab417e0bbe3a0bf14b9071b1b7ff3c83889de9",
+  "oracleFiles": [
+    {
+      "path": "tests/fixtures/phase2-block26-corrected-replication/IndependentSplineOracle.kt",
+      "sha256": "f960651779c282397fd45a7a92e31e22e9f14d1d510adbd228ed501d1dd00c5f"
+    }
+  ],
+  "hunterExecuted": false,
+  "oracleExecuted": false,
+  "oracleExcludedFromHunterMounts": true,
+  "scoringRequiresIndependentDefectTruth": true,
+  "block27Allowed": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-eligibility/v1",
+  "filesAuthenticated": 4,
+  "executionEligible": false,
+  "namespaceHeaderScanOnly": true,
+  "packages": [],
+  "unsupportedPackages": [],
+  "unsupportedPaths": [],
+  "unresolvedPackageHeaders": [
+    "src/main/kotlin/Dashboard.kt",
+    "src/main/kotlin/PredictorModel.kt",
+    "src/main/kotlin/TomNeuralNetwork.kt",
+    "src/main/kotlin/Util.kt"
+  ],
+  "prefixes": [],
+  "filesScannedByHunter": 0,
+  "independentDefectTruthKnown": false,
+  "falseNegativeCount": null,
+  "block27Allowed": false
+}
