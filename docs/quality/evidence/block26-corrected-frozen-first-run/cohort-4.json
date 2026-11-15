@@ -1,0 +1,21 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-eligibility/v1",
+  "filesAuthenticated": 10,
+  "executionEligible": true,
+  "namespaceHeaderScanOnly": true,
+  "packages": [
+    "com.github.sanity.pav",
+    "com.github.sanity.pav.examples",
+    "com.github.sanity.pav.spline"
+  ],
+  "unsupportedPackages": [],
+  "unsupportedPaths": [],
+  "unresolvedPackageHeaders": [],
+  "prefixes": [
+    "com.github"
+  ],
+  "filesScannedByHunter": 0,
+  "independentDefectTruthKnown": false,
+  "falseNegativeCount": null,
+  "block27Allowed": false
+}

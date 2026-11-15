@@ -1,0 +1,22 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-replication-verdict/v1",
+  "status": "REPLICATION_NOT_DEMONSTRATED_NO_SUPPORTED_METHODS",
+  "engineSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+  "sourceSha": "01cdf7bc88162eec654c95d8f303d8854edb704a",
+  "reportSha256": "02da8cc82d31639c2cd88b92dc663d28c3a93ae8e52b5c4f813776934ec6776f",
+  "methodsProbed": 0,
+  "comparablePairs": 0,
+  "hypotheses": 0,
+  "verifiedDistinctDefects": 0,
+  "scopedIndependentControls": 84,
+  "precision": null,
+  "recall": null,
+  "falsePositives": null,
+  "falseNegatives": null,
+  "engineRetuned": false,
+  "knownOriginalLcmReused": false,
+  "novelFamilyVerified": false,
+  "block27Allowed": false,
+  "remoteWrites": false,
+  "mergeAllowed": false
+}

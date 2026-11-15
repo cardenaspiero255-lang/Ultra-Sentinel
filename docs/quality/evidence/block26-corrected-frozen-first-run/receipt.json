@@ -1,0 +1,82 @@
+{
+  "schema": "ultra-sentinel-corrected-frozen-first-run-receipt/v1",
+  "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+  "engineSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+  "freezeCommitSha": "6d1e2a99e262f2493d2ed8de9b53727f6e6c9ea4",
+  "oracleCommitmentSha": "698853b5c84295ceb9bf9f2dc555d24f21682290",
+  "protocolSha": "4e2ed48747bef223e633e6b10f65436970096bea",
+  "workflowRunId": 43775990612,
+  "captureJobId": 133002299546,
+  "independentOracleJobId": 133002775867,
+  "predictionsArtifactId": 14186113155,
+  "predictionsPublishedAt": "2026-11-15T23:41:08Z",
+  "independentVerdictAt": "2026-11-15T23:42:06Z",
+  "eligibilityArtifactId": 14186183061,
+  "oracleArtifactId": 14186796104,
+  "archives": [
+    {
+      "artifactId": 14186183061,
+      "sha256": "53c0129eef422c2d91d88d7a4d9d482093075d53f6a2f93081448177716e951f"
+    },
+    {
+      "artifactId": 14186113155,
+      "sha256": "8f7676188d9582d78a433aa4be2d39f39ffb5cbd86385dd309504e581b94b215"
+    },
+    {
+      "artifactId": 14186796104,
+      "sha256": "55c681ecb145b75532c83e611bac27ddfe6fea910131f933f587bee2a565a0cd"
+    }
+  ],
+  "files": [
+    {
+      "path": "cohort-1.json",
+      "sha256": "cec2ffe0213ac6ef2c2bb5292ea5a990cf4cf7777a4affcae83d5cc122fd78eb"
+    },
+    {
+      "path": "cohort-2.json",
+      "sha256": "3af2916de78a590f5182e0f63b4ab632d88d71bb3ef2dc6f9a207864ac142c60"
+    },
+    {
+      "path": "cohort-3.json",
+      "sha256": "546de1f82bc3590435af159c2bf214c0c07d3404ef176735a9df59caba597f9f"
+    },
+    {
+      "path": "cohort-4.json",
+      "sha256": "278430aa026b7f96d9a498aa3009c48fb74253fb7553d8753549ed0a9b220456"
+    },
+    {
+      "path": "discovery.json",
+      "sha256": "02da8cc82d31639c2cd88b92dc663d28c3a93ae8e52b5c4f813776934ec6776f"
+    },
+    {
+      "path": "prediction-seal.json",
+      "sha256": "6f6d53e2b61a374a1345b802989a2c2f478346c8e2a8801488606f64163ec7bd"
+    },
+    {
+      "path": "independent-controls.json",
+      "sha256": "5cf045d9b6e0ac068774530cdad766c0cba5f5937d18322698a2449225b5aa1a"
+    },
+    {
+      "path": "independent-verdict.json",
+      "sha256": "e91f9ce6c18cd8197f3d7dd7aa41e075307113592ce134d33665e10ae19bc25d"
+    }
+  ],
+  "priorFailedAttempt": {
+    "workflowRunId": 43775411184,
+    "protocolSha": "f2c6cc70940db5a660f699b2cc59bfb5ee1db7d8",
+    "captureJobId": 133000470564,
+    "status": "FAILED_BEFORE_PREDICTIONS_READ_ONLY_UNICODE_PATH_AUDIT",
+    "oracleExecuted": false,
+    "detectorRetuned": false
+  },
+  "cohortsConsumedAsUnknown": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "knownLcmCaseReused": false,
+  "replicationDemonstrated": false,
+  "block27Allowed": false,
+  "limitation": "The first three cohorts are authenticated eligibility abstentions; the fourth was compiled and inspected but exercised zero supported methods or object pairs. Independent benign controls do not supply defect truth or a clean cohort label."
+}

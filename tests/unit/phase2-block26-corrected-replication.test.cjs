@@ -68,3 +68,16 @@ test('read-only audit can authenticate an unsupported Unicode Git path while exe
   assert.equal(fs.existsSync(path.join(tmp,'out')),false);
  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 });
+test('real frozen replication artifacts replay without converting uncovered APIs or benign controls to discovery',()=>{
+ const dir=path.resolve(__dirname,'../../docs/quality/evidence/block26-corrected-frozen-first-run');
+ const bytes=name=>fs.readFileSync(path.join(dir,name)),json=name=>JSON.parse(bytes(name));
+ const r=bytes('discovery.json'),s=json('prediction-seal.json');
+ assert.deepEqual(verdict(s,r,json('independent-controls.json')),json('independent-verdict.json'));
+ assert.equal(json('independent-verdict.json').verifiedDistinctDefects,0);
+ assert.equal(json('discovery.json').methodsProbed,0);
+ assert.equal(json('independent-verdict.json').scopedIndependentControls,84);
+ for(const i of [1,2,3])assert.equal(json(`cohort-${i}.json`).executionEligible,false);
+ assert.equal(json('cohort-4.json').executionEligible,true);
+ for(const f of json('receipt.json').files)assert.equal(crypto.createHash('sha256').update(bytes(f.path)).digest('hex'),f.sha256);
+ assert.throws(()=>verify(s,Buffer.concat([r,Buffer.from(' ')])));
+});
