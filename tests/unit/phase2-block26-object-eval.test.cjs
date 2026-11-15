@@ -72,3 +72,18 @@ test('the new original evaluation cannot reveal truth before the immutable predi
   assert.ok(launcher.includes(term),term);
  assert.doesNotMatch(launcher,/--(?:ro-)?bind\s+"?\$GITHUB_WORKSPACE/);
 });
+
+test('preserved first-run evidence replays byte for byte and rejects modified predictions',()=>{
+ const root=path.resolve(__dirname,'../..'),dir=path.join(root,'docs/quality/evidence/block26-object-first-run');
+ const read=name=>fs.readFileSync(path.join(dir,name));
+ const raw=read('discovery.json'),s=JSON.parse(read('prediction-seal.json'));
+ const oracle=JSON.parse(read('independent-observations.json'));
+ assert.deepEqual(adjudicate(s,raw,oracle),JSON.parse(read('independent-verdict.json')));
+ assert.throws(()=>verify(s,Buffer.concat([raw,Buffer.from('\n')])));
+ const receipt=JSON.parse(read('receipt.json'));
+ const crypto=require('node:crypto');
+ for(const f of receipt.files)assert.equal(crypto.createHash('sha256').update(read(f.path)).digest('hex'),f.sha256);
+ const verifyCli=cp.spawnSync(process.execPath,[path.join(root,'scripts/phase2-block26-object-eval.cjs'),'verify',
+  path.join(dir,'prediction-seal.json'),path.join(dir,'discovery.json')],{encoding:'utf8'});
+ assert.equal(verifyCli.status,0,verifyCli.stderr);
+});

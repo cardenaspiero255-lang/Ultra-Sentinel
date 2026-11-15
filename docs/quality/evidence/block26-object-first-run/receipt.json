@@ -1,0 +1,38 @@
+{
+  "schema": "ultra-sentinel-block26-first-original-evaluation-receipt/v1",
+  "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+  "workflowRunId": 43771160768,
+  "protocolSha": "e38718f9bbd2e74f5db8b8e371df375bc7b066dd",
+  "engineSha": "8c246fd285793350a2fa3ccc2dcaa4eeac052750",
+  "reservationSha": "9ebd6ff7378a17858726305f75c9219b7f7880fe",
+  "oracleCommitmentSha": "5c87f5757d2e9ece5474bf4b2751fb7e735734a3",
+  "sourceRepository": "bmaslakov/kotlin-algorithm-club",
+  "sourceSha": "a8fa9edf615d0498bd1d2e8328f72a180d345343",
+  "captureJobId": 132987151561,
+  "independentOracleJobId": 132987513063,
+  "predictionsArtifactId": 14183379782,
+  "independentOracleArtifactId": 14183599303,
+  "predictionsPublishedAt": "2026-11-15T22:47:53Z",
+  "independentVerdictAt": "2026-11-15T22:48:51Z",
+  "files": [
+    {
+      "path": "discovery.json",
+      "sha256": "79ee71421af71ff548428aa105e944f65978b92f3f291a3bfbf5b0d704f201d6"
+    },
+    {
+      "path": "prediction-seal.json",
+      "sha256": "8f47394fb437bc562479e94112d62aeb53a5d862bdf939b5759b988f1ace8974"
+    },
+    {
+      "path": "independent-observations.json",
+      "sha256": "955e0d6eb19c4a9daddf441d5c9faa2033cd211788bd1595c68589685e09c46c"
+    },
+    {
+      "path": "independent-verdict.json",
+      "sha256": "4177c76a1b32ab71c3e69f204190ddad3436bb1dab5dfbae5d888c52e05d8d88"
+    }
+  ],
+  "novelFamilyVerified": false,
+  "block27Allowed": false,
+  "limitation": "Only the first immutable run is a prospective evaluation. Subsequent executions are replays of an exposed cohort. Three hypotheses include two numeric reports for the same independently confirmed LCM defect and one unadjudicated hypothesis; no global accuracy metrics."
+}

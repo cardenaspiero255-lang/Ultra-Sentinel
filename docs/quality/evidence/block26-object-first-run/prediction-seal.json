@@ -1,0 +1,14 @@
+{
+  "schema": "ultra-sentinel-block26-object-prediction-seal/v1",
+  "engineSha": "8c246fd285793350a2fa3ccc2dcaa4eeac052750",
+  "sourceSha": "a8fa9edf615d0498bd1d2e8328f72a180d345343",
+  "manifestBlob": "d092a0c1529454dbfb14ea8c5db18855957686bf",
+  "oracleSha256": "88a4a02335bf8c4dbb59ef08a2a04cd4a4e3fad9d348b28875d425db9ccf3ee4",
+  "sourceFiles": 49,
+  "artifactSha256": "16b6d3cc7376a995dfbbd05e465a0e9ebdb22794693971b2e79e1e615f95cd47",
+  "reportSha256": "79ee71421af71ff548428aa105e944f65978b92f3f291a3bfbf5b0d704f201d6",
+  "hypotheses": 3,
+  "independentOracleExecuted": false,
+  "remoteWrites": false,
+  "mergeAllowed": false
+}

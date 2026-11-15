@@ -285,3 +285,17 @@ test('finds nontransitive order even when every pair is antisymmetric',()=>{
  assert.equal(findings[0].middle.length,1);assert.ok(r.comparableTriples>0);
  assert.equal(r.oracleVerified,false);
 });
+
+test('constructor-generated identity cannot manufacture an ordering-law violation',()=>{
+ const folder=path.join(temp,'order-identity'),dest=path.join(folder,'classes');fs.mkdirSync(dest,{recursive:true});
+ const source=path.join(folder,'Sequence.java'),archive=path.join(folder,'identity.jar');
+ fs.writeFileSync(source,`package sample.identity; public class Sequence implements Comparable<Sequence> {
+  private static long next; private final long id; public Sequence(int ignored){id=next++;}
+  public int compareTo(Sequence other){return Long.compare(id,other.id);}
+ }`);
+ assert.equal(run('javac',['-d',dest,source]).status,0);
+ assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);
+ const result=probe(archive,'sample.identity');assert.equal(result.status,0,result.stderr);
+ const r=JSON.parse(result.stdout);
+ assert.ok(r.comparablePairs>0);assert.deepEqual(r.findings,[]);
+});

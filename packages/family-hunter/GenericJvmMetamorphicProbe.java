@@ -131,12 +131,10 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     @SuppressWarnings("unchecked")
-    private static Integer order(Constructor<?> ctor, Object[] left, Object[] right) {
+    private static Integer order(Object left, Object right) {
         try {
-            Comparable<Object> a = (Comparable<Object>)ctor.newInstance(left);
-            Object b = ctor.newInstance(right);
-            return Integer.signum(a.compareTo(b));
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return Integer.signum(((Comparable<Object>)left).compareTo(right));
+        } catch (RuntimeException | LinkageError e) {
             return null;
         }
     }
@@ -169,14 +167,26 @@ public final class GenericJvmMetamorphicProbe {
                     samples.add(args);
                 }
             }
+            // Ordering laws quantify over the SAME objects, not just matching
+            // constructor arguments. Constructors may assign unique state.
+            List<Object> receivers = new ArrayList<>();
+            for (Object[] args : samples) {
+                try { receivers.add(ctor.newInstance(args)); }
+                catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                    receivers.add(null);
+                    result.constructorAbstentions++;
+                }
+            }
             boolean reported = false;
             Integer[][] signs = new Integer[samples.size()][samples.size()];
             for (int a = 0; a < samples.size() && !reported; a++) {
                 for (int b = a; b < samples.size(); b++) {
                     if (++result.comparablePairs > 50000) throw new IllegalStateException("COMPARABLE_PAIR_BUDGET");
                     Object[] x = samples.get(a), y = samples.get(b);
-                    Integer xy = order(ctor, x, y), yx = order(ctor, y, x);
-                    if (xy == null || yx == null || !xy.equals(order(ctor, x, y)) || !yx.equals(order(ctor, y, x))) {
+                    Object left = receivers.get(a), right = receivers.get(b);
+                    if (left == null || right == null) { result.abstained++; continue; }
+                    Integer xy = order(left, right), yx = order(right, left);
+                    if (xy == null || yx == null || !xy.equals(order(left, right)) || !yx.equals(order(right, left))) {
                         result.abstained++;
                         continue;
                     }
@@ -195,12 +205,12 @@ public final class GenericJvmMetamorphicProbe {
                     }
                 }
             }
-            if (!reported) transitivity(type, ctor, samples, signs, result);
+            if (!reported) transitivity(type, ctor, samples, receivers, signs, result);
         }
     }
 
     private static void transitivity(Class<?> type, Constructor<?> ctor, List<Object[]> samples,
-                                     Integer[][] signs, Result result) {
+                                     List<Object> receivers, Integer[][] signs, Result result) {
         for (int a = 0; a < samples.size(); a++) {
             for (int b = 0; b < samples.size(); b++) {
                 if (signs[a][b] == null || signs[a][b] <= 0) continue;
@@ -208,11 +218,11 @@ public final class GenericJvmMetamorphicProbe {
                     if (++result.comparableTriples > 250000) throw new IllegalStateException("COMPARABLE_TRIPLE_BUDGET");
                     Integer bc = signs[b][c], ac = signs[a][c];
                     if (bc == null || ac == null || bc <= 0 || ac > 0) continue;
-                    // Reconfirm all three edges with fresh receivers. A mutable or
+                    // Reconfirm all three edges on the same triple. A mutable or
                     // nondeterministic relation is an abstention, never a verdict.
-                    if (!signs[a][b].equals(order(ctor, samples.get(a), samples.get(b))) ||
-                        !bc.equals(order(ctor, samples.get(b), samples.get(c))) ||
-                        !ac.equals(order(ctor, samples.get(a), samples.get(c)))) {
+                    if (!signs[a][b].equals(order(receivers.get(a), receivers.get(b))) ||
+                        !bc.equals(order(receivers.get(b), receivers.get(c))) ||
+                        !ac.equals(order(receivers.get(a), receivers.get(c)))) {
                         result.abstained++;
                         continue;
                     }
