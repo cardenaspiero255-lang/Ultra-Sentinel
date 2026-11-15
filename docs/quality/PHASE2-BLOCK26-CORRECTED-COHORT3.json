@@ -1,0 +1,278 @@
+{
+  "schema": "ultra-sentinel-block26-corrected-frozen-cohort/v1",
+  "freezeCommitSha": "6d1e2a99e262f2493d2ed8de9b53727f6e6c9ea4",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "9550170e084505a09e7ee65d2e68eb0e1883d3b2",
+    "treeSha": "4ce3798a50d54a74f49b7756b27a3f0951fd823a",
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "alidehkhodaei/data-structures-and-algorithms",
+    "commitSha": "8d9b0e97d7e345b30e30483209c2fafc77b9c840",
+    "treeSha": "64971b351c261c5c19bf8348b984af81644704d0",
+    "scope": "src/main",
+    "selection": "ALL_REGULAR_KT_BLOBS_RECURSIVELY_UNDER_SRC_MAIN_WITHOUT_SOURCE_CONTENT_FILTERING",
+    "files": [
+      {
+        "path": "src/main/kotlin/array/ArrayLeftRotate.kt",
+        "blobSha": "72685e6a42c9a2364edf1cf5f011010c15d130d6",
+        "sizeBytes": 421
+      },
+      {
+        "path": "src/main/kotlin/array/ArrayMinMax.kt",
+        "blobSha": "88b70dfd95d9ffce84519cedf769a47b54228f0f",
+        "sizeBytes": 643
+      },
+      {
+        "path": "src/main/kotlin/array/ArrayReverse.kt",
+        "blobSha": "8953ac530318abc4dd2bd855e83455764621e0e0",
+        "sizeBytes": 1005
+      },
+      {
+        "path": "src/main/kotlin/array/ArrayRightRotate.kt",
+        "blobSha": "a725c5d1ae0aec6014d9fc0ae857bc1e9754e06a",
+        "sizeBytes": 424
+      },
+      {
+        "path": "src/main/kotlin/string/StringReverse.kt",
+        "blobSha": "9d10d71417678f3a278f9889421f95b0709bec2f",
+        "sizeBytes": 575
+      }
+    ]
+  },
+  "selectionLedger": [
+    {
+      "repository": "TheAlgorithms/Kotlin",
+      "stars": 1642,
+      "branch": "master",
+      "size": 137,
+      "status": "EXCLUDED_PRIOR_CONTEXT"
+    },
+    {
+      "repository": "bmaslakov/kotlin-algorithm-club",
+      "stars": 927,
+      "branch": "master",
+      "size": 791,
+      "status": "EXCLUDED_PRIOR_CONTEXT"
+    },
+    {
+      "repository": "DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns",
+      "stars": 846,
+      "branch": "develop",
+      "size": 7326,
+      "sha": "1f89f062a056e24cc289ffdd0c6e23cadf8df887",
+      "tree": "1f89f062a056e24cc289ffdd0c6e23cadf8df887",
+      "files": 64,
+      "sourceBytes": 127938,
+      "status": "RESERVED_PENDING_COMMIT"
+    },
+    {
+      "repository": "gazolla/Kotlin-Algorithm",
+      "stars": 504,
+      "branch": "master",
+      "size": 160,
+      "sha": "76aee604a45fdbbc3ea0c44d14beb2c66ff14fe1",
+      "tree": "ceead3d44d1142d747e066cb91f597b5225be114",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "PacktPublishing/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "stars": 201,
+      "branch": "master",
+      "size": 271,
+      "sha": "f125372a286a3bf4f0248db109a7427f6bc643a7",
+      "tree": "b2870c38fe6839273cd3154b763770481868b349",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "abdurakhmonoff/data-structures-and-algorithms-kotlin",
+      "stars": 176,
+      "branch": "master",
+      "size": 213,
+      "sha": "cd9746d02b34b54dd0cf8c8dacc2fb91d2a3cc07",
+      "tree": "45b0c15b8d07bb20fec40a46a80cf4c8f5246ecb",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "kodecocodes/dsk-materials",
+      "stars": 160,
+      "branch": "editions/2.0",
+      "size": 267,
+      "sha": "867355cc8386ec540739fd8e6bbc3e13001fbe19",
+      "tree": "06f35835a3d97edf9aca3484888ec02e5ac57e7f",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "jillesvangurp/geogeometry",
+      "stars": 138,
+      "branch": "master",
+      "size": 1646,
+      "sha": "14ce71a028335db28e11fc3dbbeadb2ef6748dd4",
+      "tree": "cb1c6ae2e5f414b3a7729c9ac37b2ab74fad5e12",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "sshpark/LeetCode-Kotlin",
+      "stars": 120,
+      "branch": "master",
+      "size": 2379,
+      "sha": "a0b8917b4d16257d60001a1b6ec57ea7e9997dd1",
+      "tree": "51ba55e0ea2494e4fac75d5312bf7efe73b5f063",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "daolq3012/Kotlin-Algorithms",
+      "stars": 115,
+      "branch": "develop",
+      "size": 3374,
+      "sha": "40e00d0d3f1c7cbb93ad28f4197e7ffa5ea36ef9",
+      "tree": "c538e6fdb00ece606bbe2c3c7faa7358b4200a92",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "idisfkj/daily_algorithm",
+      "stars": 112,
+      "branch": "master",
+      "size": 530,
+      "sha": "f8f42b4e5620a43f9797be737d714a52dcaafedc",
+      "tree": "3f941122abe3fe8620410e5f88c4d7f91c4f8349",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "sshniro/line-segmentation-algorithm-to-gcp-vision",
+      "stars": 96,
+      "branch": "master",
+      "size": 2899,
+      "sha": "791670f44bf2304404f84ce488558eb7c23f34ba",
+      "tree": "1f9945ff5b9ef2391fe83a86475d40a53a2ba5f8",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "realpacific/algorithms",
+      "stars": 95,
+      "branch": "master",
+      "size": 2144,
+      "sha": "22eef528ef1bea9b9831178b64ff2f5b1f61a51f",
+      "tree": "349fed20bb241f012da61ba581fb54575f2fea2d",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "RedMadRobot/PINkman",
+      "stars": 85,
+      "branch": "master",
+      "size": 481,
+      "sha": "f28053676783c00447c16b31e19cf9ca5b6c046b",
+      "tree": "f7018997376f83098e3afb8ef608a533e4845b3c",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "Darkrock-Studios/SymSpellKt",
+      "stars": 73,
+      "branch": "main",
+      "size": 14897,
+      "sha": "83685c87fc6018937ad8cb87f345181e26f7fb21",
+      "tree": "ab282c3592b34da8e3ff944464be09f7b2097ae6",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "javadev/LeetCode-in-Kotlin",
+      "stars": 70,
+      "branch": "main",
+      "size": 8644,
+      "sha": "ab1847acf19d42e1a63023d7614058fbbbdc49ff",
+      "tree": "10d96df3f4c9a27ac7c21acb6c06570aa8f70a0f",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "betulnecanli/Kotlin-Data-Structures-Algorithms",
+      "stars": 68,
+      "branch": "master",
+      "size": 300,
+      "sha": "70a4a311f0c57928a32d7b4d795f98db3bdbeb02",
+      "tree": "5125edb1008b10ee078b8222d35e936e92eac589",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "rifqimfahmi/BetterImageUpload",
+      "stars": 61,
+      "branch": "master",
+      "size": 207,
+      "sha": "97f72b69ef848c8ec2e73c2e2573570b7776fa89",
+      "tree": "b0daecda5a2fc5024dbf7d7761769caf308f715a",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "thomasnield/kotlin-machine-learning-demos",
+      "stars": 57,
+      "branch": "master",
+      "size": 6038,
+      "sha": "429efdbe579f7b9a7c86b1451e11e3beef46a5c5",
+      "tree": "948cdaa39c2191e9946929e551edf79072969df3",
+      "files": 4,
+      "sourceBytes": 49761,
+      "status": "RESERVED_PENDING_COMMIT"
+    },
+    {
+      "repository": "Algo-Phantoms/Algo-Phantoms-Android",
+      "stars": 56,
+      "branch": "main",
+      "size": 576,
+      "sha": "32c1db8d26042b25f0b0a2bbdba09ace0c6c6b9b",
+      "tree": "5d2d0e424669d7ac24185aaa6221ce9562ca1960",
+      "files": 0,
+      "sourceBytes": 0,
+      "status": "REJECTED_METADATA"
+    },
+    {
+      "repository": "alidehkhodaei/data-structures-and-algorithms",
+      "stars": 53,
+      "branch": "main",
+      "size": 388,
+      "sha": "8d9b0e97d7e345b30e30483209c2fafc77b9c840",
+      "tree": "64971b351c261c5c19bf8348b984af81644704d0",
+      "files": 5,
+      "sourceBytes": 3068,
+      "status": "RESERVED_PENDING_COMMIT"
+    }
+  ],
+  "protocol": {
+    "sourceBodiesReadBeforeReservation": false,
+    "oracleExecutedBeforeReservation": false,
+    "hunterExecutedBeforeReservation": false,
+    "oracleMustBeCommittedBeforePredictions": true,
+    "predictionsSealedBeforeIndependentOracle": true,
+    "previousLcmCaseReusable": false,
+    "block27Allowed": false
+  }
+}
