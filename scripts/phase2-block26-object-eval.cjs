@@ -118,7 +118,9 @@ function readCohort(engine,source,m){
  if(JSON.stringify(entries.map(x=>({path:x.path,blobSha:x.sha,sizeBytes:x.size})))!==JSON.stringify(m.source.files))fail();
  const files=[];
  for(const f of entries){
-  if(f.mode!=='100644'||f.type!=='blob'||!/^src\/main\/[A-Za-z0-9_/ .-]+\.kt$/.test(f.path)||
+  // Git-tree audit reads by authenticated blob ID; it never opens this path.
+  // Executable staging below retains its narrower ASCII path contract.
+  if(f.mode!=='100644'||f.type!=='blob'||!f.path.startsWith('src/main/')||!f.path.endsWith('.kt')||/[\x00-\x1f\x7f\\]/.test(f.path)||
    f.path.split('/').some(x=>!x||x==='.'||x==='..'))fail();
   const bytes=git(source,['cat-file','blob',f.sha]);
   if(bytes.length!==f.size||blob(bytes)!==f.sha)fail();
