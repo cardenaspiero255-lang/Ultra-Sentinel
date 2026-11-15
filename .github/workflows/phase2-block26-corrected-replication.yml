@@ -1,0 +1,242 @@
+name: Ultra Sentinel — Block 2.6 corrected frozen Hunter replication on fresh cohorts
+on:
+  pull_request:
+    paths:
+      - packages/family-hunter/GenericJvmMetamorphicProbe.java
+      - scripts/phase2-block26-corrected-replication.cjs
+      - scripts/phase2-block26-object-eval.cjs
+      - tests/unit/phase2-block26-corrected-replication.test.cjs
+      - tests/fixtures/phase2-block26-corrected-replication/**
+      - docs/quality/PHASE2-BLOCK26-CORRECTED-*.json
+      - .github/workflows/phase2-block26-corrected-replication.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  corrected-frozen-predictions:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout frozen candidate without oracle or subsequent protocol changes
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 9550170e084505a09e7ee65d2e68eb0e1883d3b2
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout exact public original source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: sanity/pairAdjacentViolators
+          ref: 01cdf7bc88162eec654c95d8f303d8854edb704a
+          path: original-spline
+          persist-credentials: false
+      - name: Require existing namespace and cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Authenticate pinned Kotlin compiler archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$RUNNER_TEMP/kotlin.zip"
+          test "$(sha256sum "$RUNNER_TEMP/kotlin.zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin"
+          unzip -q "$RUNNER_TEMP/kotlin.zip" -d "$RUNNER_TEMP/kotlin"
+      - name: Require complete regression suite
+        run: npm run check
+      - name: Require actual frozen isolation boundary
+        run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test frozen-engine/tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Checkout reserved abstention cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns
+          ref: 1f89f062a056e24cc289ffdd0c6e23cadf8df887
+          path: abstention-cohort-1
+          persist-credentials: false
+      - name: Checkout reserved abstention cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: thomasnield/kotlin-machine-learning-demos
+          ref: 429efdbe579f7b9a7c86b1451e11e3beef46a5c5
+          path: abstention-cohort-2
+          persist-credentials: false
+      - name: Checkout reserved abstention cohort 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: alidehkhodaei/data-structures-and-algorithms
+          ref: 8d9b0e97d7e345b30e30483209c2fafc77b9c840
+          path: abstention-cohort-3
+          persist-credentials: false
+      - name: Authenticate all reserved sources and retain unsupported cohort audits
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/eligibility"
+          for id in 1 2 3; do
+            node scripts/phase2-block26-corrected-replication.cjs audit "$id" "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/abstention-cohort-$id" "$RUNNER_TEMP/eligibility/cohort-$id.json"
+          done
+          node scripts/phase2-block26-corrected-replication.cjs audit 4 "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-spline" "$RUNNER_TEMP/eligibility/cohort-4.json"
+          node - "$RUNNER_TEMP/eligibility" <<'NODE'
+          const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+          const dir=process.argv[2];
+          for(const id of [1,2,3]){
+           const x=JSON.parse(fs.readFileSync(path.join(dir,`cohort-${id}.json`)));
+           assert.equal(x.executionEligible,false);assert.equal(x.filesScannedByHunter,0);
+           assert.equal(x.falseNegativeCount,null);
+          }
+          const x=JSON.parse(fs.readFileSync(path.join(dir,'cohort-4.json')));
+          assert.equal(x.executionEligible,true);assert.deepEqual(x.prefixes,['com.github']);
+          NODE
+      - name: Publish all eligibility audits including abstentions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-corrected-frozen-eligibility
+          path: ${{ runner.temp }}/eligibility/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Authenticate original blobs and compile inside isolated bounded namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block26-corrected-replication.cjs prepare "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-spline" "$RUNNER_TEMP/source-only"
+          mkdir "$RUNNER_TEMP/compiled" "$RUNNER_TEMP/probe" "$RUNNER_TEMP/predictions"
+          bash tests/fixtures/phase2-block26-object-contracts/run-isolated.sh compile "$RUNNER_TEMP/kotlin/kotlinc" "$RUNNER_TEMP/source-only" "$RUNNER_TEMP/compiled"
+          javac -d "$RUNNER_TEMP/probe" frozen-engine/packages/family-hunter/GenericJvmMetamorphicProbe.java
+      - name: Execute frozen Hunter with original bytecode only and seal predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash frozen-engine/tests/fixtures/jvm-metamorphic/run-probe.sh "$RUNNER_TEMP/compiled/target.jar" "$RUNNER_TEMP/probe" com.github "$RUNNER_TEMP/predictions"
+          node scripts/phase2-block26-corrected-replication.cjs seal "$RUNNER_TEMP/predictions/discovery.json" "$RUNNER_TEMP/compiled/target.jar" "$RUNNER_TEMP/predictions/prediction-seal.json"
+          node scripts/phase2-block26-corrected-replication.cjs verify "$RUNNER_TEMP/predictions/prediction-seal.json" "$RUNNER_TEMP/predictions/discovery.json"
+          cat "$RUNNER_TEMP/predictions/prediction-seal.json"
+      - name: Publish sealed predictions BEFORE independent oracle execution
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-corrected-corrected-frozen-predictions
+          path: ${{ runner.temp }}/predictions/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve compiler and execution failures
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-corrected-capture-diagnostics
+          path: |
+            ${{ runner.temp }}/compiled/diagnostics.log
+            ${{ runner.temp }}/compiled/execution.log
+          if-no-files-found: ignore
+          retention-days: 30
+  corrected-independent-oracle:
+    needs: corrected-frozen-predictions
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout frozen candidate without oracle or subsequent protocol changes
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 9550170e084505a09e7ee65d2e68eb0e1883d3b2
+          path: frozen-engine
+          persist-credentials: false
+      - name: Checkout exact public original source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: sanity/pairAdjacentViolators
+          ref: 01cdf7bc88162eec654c95d8f303d8854edb704a
+          path: original-spline
+          persist-credentials: false
+      - name: Require existing namespace and cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Authenticate pinned Kotlin compiler archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$RUNNER_TEMP/kotlin.zip"
+          test "$(sha256sum "$RUNNER_TEMP/kotlin.zip" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin"
+          unzip -q "$RUNNER_TEMP/kotlin.zip" -d "$RUNNER_TEMP/kotlin"
+      - name: Download prior immutable predictions
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-corrected-corrected-frozen-predictions
+          path: ${{ runner.temp }}/sealed
+      - name: Verify prior predictions then compile and execute independent original oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/phase2-block26-corrected-replication.cjs verify "$RUNNER_TEMP/sealed/prediction-seal.json" "$RUNNER_TEMP/sealed/discovery.json"
+          node scripts/phase2-block26-corrected-replication.cjs prepare "$GITHUB_WORKSPACE/frozen-engine" "$GITHUB_WORKSPACE/original-spline" "$RUNNER_TEMP/independent-input"
+          mkdir "$RUNNER_TEMP/independent-input/oracle" "$RUNNER_TEMP/oracle-compiled" "$RUNNER_TEMP/oracle-output"
+          cp tests/fixtures/phase2-block26-corrected-replication/IndependentSplineOracle.kt "$RUNNER_TEMP/independent-input/oracle/IndependentArithmeticOracle.kt"
+          bash tests/fixtures/phase2-block26-object-contracts/run-isolated.sh compile "$RUNNER_TEMP/kotlin/kotlinc" "$RUNNER_TEMP/independent-input" "$RUNNER_TEMP/oracle-compiled"
+          bash tests/fixtures/phase2-block26-object-contracts/run-isolated.sh oracle "$RUNNER_TEMP/kotlin/kotlinc" "$RUNNER_TEMP/oracle-compiled" "$RUNNER_TEMP/oracle-output"
+          node scripts/phase2-block26-corrected-replication.cjs verdict "$RUNNER_TEMP/sealed/prediction-seal.json" "$RUNNER_TEMP/sealed/discovery.json" "$RUNNER_TEMP/oracle-output/execution.log" "$RUNNER_TEMP/oracle-output/verdict.json"
+      - name: Preserve independent observations and diagnostics, including failures
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-corrected-corrected-independent-oracle
+          path: |
+            ${{ runner.temp }}/oracle-output/
+            ${{ runner.temp }}/oracle-compiled/diagnostics.log
+            ${{ runner.temp }}/oracle-compiled/execution.log
+          if-no-files-found: error
+          retention-days: 30
