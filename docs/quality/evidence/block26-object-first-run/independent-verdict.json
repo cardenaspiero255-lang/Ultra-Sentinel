@@ -1,0 +1,38 @@
+{
+  "schema": "ultra-sentinel-block26-object-independent-verdict/v1",
+  "engineSha": "8c246fd285793350a2fa3ccc2dcaa4eeac052750",
+  "sourceSha": "a8fa9edf615d0498bd1d2e8328f72a180d345343",
+  "reportSha256": "79ee71421af71ff548428aa105e944f65978b92f3f291a3bfbf5b0d704f201d6",
+  "verifiedOriginalDefects": 1,
+  "verifiedWitnesses": [
+    {
+      "class": "io.uuddlrlrba.ktalgs.math.GcdKt",
+      "method": "lcm(int;int;)int",
+      "a": 2147483647,
+      "b": 100,
+      "expected": "214748364700",
+      "actual": -100
+    },
+    {
+      "class": "io.uuddlrlrba.ktalgs.math.GcdKt",
+      "method": "lcm(int;int;)int",
+      "a": 100,
+      "b": 2147483647,
+      "expected": "214748364700",
+      "actual": -100
+    }
+  ],
+  "scopedBenignOrderingControls": 625,
+  "scopedBoundedArithmeticControls": 40,
+  "unverifiedHypotheses": 3,
+  "globalPrecision": null,
+  "globalRecall": null,
+  "falsePositiveCount": null,
+  "falseNegativeCount": null,
+  "novelFamilyVerified": false,
+  "block26Closed": false,
+  "block27Allowed": false,
+  "closureRequiresSuccessfulCiAndMainIntegration": true,
+  "remoteWrites": false,
+  "repairAuthorized": false
+}

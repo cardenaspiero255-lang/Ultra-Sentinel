@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -89,19 +90,152 @@ public final class GenericJvmMetamorphicProbe {
     private static final class Result {
         final List<String> findings = new ArrayList<>();
         int classes, methods, unsupported, abstained, unloadable, nestedSkipped;
+        int comparableClasses, comparablePairs, comparableTriples, constructorAbstentions;
 
         String json(String artifactSha) {
-            String status = methods == 0 ? "INCOMPLETE_NO_SUPPORTED_METHODS" :
-                (abstained > 0 || unloadable > 0 || unsupported > 0 || nestedSkipped > 0 ? "PARTIAL_HYPOTHESES_REQUIRE_ORACLE" :
+            String status = methods == 0 && comparablePairs == 0 ? "INCOMPLETE_NO_SUPPORTED_METHODS" :
+                (abstained > 0 || unloadable > 0 || unsupported > 0 || nestedSkipped > 0 || constructorAbstentions > 0 ? "PARTIAL_HYPOTHESES_REQUIRE_ORACLE" :
                     "HYPOTHESES_REQUIRE_ORACLE");
             return "{\"schema\":\"ultra-sentinel-generic-jvm-metamorphic/v1\"," +
                 "\"status\":" + quoted(status) + ",\"artifactSha256\":" + quoted(artifactSha) +
                 ",\"classesInspected\":" + classes + ",\"methodsProbed\":" + methods +
                 ",\"unsupportedMethods\":" + unsupported + ",\"abstainedProbes\":" + abstained +
                 ",\"unloadableClasses\":" + unloadable + ",\"nestedClassesSkipped\":" + nestedSkipped + ",\"findings\":[" +
-                String.join(",", findings) + "],\"sourceAuthenticated\":false," +
+                String.join(",", findings) + "],\"comparableClasses\":" + comparableClasses +
+                ",\"comparablePairs\":" + comparablePairs + ",\"comparableTriples\":" + comparableTriples +
+                ",\"constructorAbstentions\":" + constructorAbstentions +
+                ",\"sourceAuthenticated\":false," +
                 "\"oracleVerified\":false,\"novelFamilyVerified\":false," +
                 "\"repairAuthorized\":false,\"remoteWrites\":false,\"mergeAllowed\":false}";
+        }
+    }
+
+    // Interface law, independent of a project's names, implementation or oracle:
+    // https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Comparable.html#compareTo(T)
+    // No target constructors or expected answers are supplied by the caller.
+    private static boolean constructible(Class<?> type) {
+        return numeric(type) || type == String.class;
+    }
+
+    private static Object boundary(Class<?> type, int index) {
+        if (type == String.class) return new String[]{"", "a", "b", "\ud83d\ude00", "aa", "z", "\uffff"}[index];
+        long max = type == byte.class || type == Byte.class ? Byte.MAX_VALUE :
+            type == short.class || type == Short.class ? Short.MAX_VALUE :
+            type == int.class || type == Integer.class ? Integer.MAX_VALUE : Long.MAX_VALUE;
+        long n = new long[]{-max - 1, -max, -1, 0, 1, max - 1, max,
+            Math.max(-max - 1, Integer.MIN_VALUE), Math.min(max, Integer.MAX_VALUE)}[index];
+        if (type == byte.class || type == Byte.class) return Byte.valueOf((byte)n);
+        if (type == short.class || type == Short.class) return Short.valueOf((short)n);
+        if (type == int.class || type == Integer.class) return Integer.valueOf((int)n);
+        return Long.valueOf(n);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Integer order(Object left, Object right) {
+        try {
+            return Integer.signum(((Comparable<Object>)left).compareTo(right));
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    private static String vector(Object[] values) {
+        List<String> strings = new ArrayList<>();
+        for (Object item : values) strings.add(quoted(item.toString()));
+        return "[" + String.join(",", strings) + "]";
+    }
+
+    private static void comparable(Class<?> type, Result result) {
+        if (!Comparable.class.isAssignableFrom(type) || type.isInterface() ||
+            Modifier.isAbstract(type.getModifiers())) return;
+        result.comparableClasses++;
+        Constructor<?>[] constructors = type.getConstructors();
+        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
+        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        if (constructors.length == 0) result.constructorAbstentions++;
+        for (Constructor<?> ctor : constructors) {
+            Class<?>[] params = ctor.getParameterTypes();
+            if (params.length < 1 || params.length > 3 || Arrays.stream(params).anyMatch(p -> !constructible(p))) {
+                result.constructorAbstentions++;
+                continue;
+            }
+            List<Object[]> samples = new ArrayList<>();
+            for (int axis = 0; axis < params.length; axis++) {
+                for (int k = 0; k < (params[axis] == String.class ? 7 : 9); k++) {
+                    Object[] args = new Object[params.length];
+                    for (int i = 0; i < params.length; i++) args[i] = boundary(params[i], i == axis ? k : 3);
+                    samples.add(args);
+                }
+            }
+            // Ordering laws quantify over the SAME objects, not just matching
+            // constructor arguments. Constructors may assign unique state.
+            List<Object> receivers = new ArrayList<>();
+            for (Object[] args : samples) {
+                try { receivers.add(ctor.newInstance(args)); }
+                catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                    receivers.add(null);
+                    result.constructorAbstentions++;
+                }
+            }
+            boolean reported = false;
+            Integer[][] signs = new Integer[samples.size()][samples.size()];
+            for (int a = 0; a < samples.size() && !reported; a++) {
+                for (int b = a; b < samples.size(); b++) {
+                    if (++result.comparablePairs > 50000) throw new IllegalStateException("COMPARABLE_PAIR_BUDGET");
+                    Object[] x = samples.get(a), y = samples.get(b);
+                    Object left = receivers.get(a), right = receivers.get(b);
+                    if (left == null || right == null) { result.abstained++; continue; }
+                    Integer xy = order(left, right), yx = order(right, left);
+                    if (xy == null || yx == null || !xy.equals(order(left, right)) || !yx.equals(order(right, left))) {
+                        result.abstained++;
+                        continue;
+                    }
+                    signs[a][b] = xy;
+                    signs[b][a] = yx;
+                    if (xy != -yx) {
+                        if (result.findings.size() >= MAX_FINDINGS) throw new IllegalStateException("FINDING_BUDGET");
+                        result.findings.add("{\"rule\":\"COMPARABLE_ANTISYMMETRY_VIOLATION\",\"class\":" +
+                            quoted(type.getName()) + ",\"constructor\":" +
+                            vector(Arrays.stream(params).map(Class::getName).toArray()) +
+                            ",\"left\":" + vector(x) + ",\"right\":" + vector(y) +
+                            ",\"observedSigns\":[" + xy + "," + yx +
+                            "],\"status\":\"HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE\"}");
+                        reported = true;
+                        break;
+                    }
+                }
+            }
+            if (!reported) transitivity(type, ctor, samples, receivers, signs, result);
+        }
+    }
+
+    private static void transitivity(Class<?> type, Constructor<?> ctor, List<Object[]> samples,
+                                     List<Object> receivers, Integer[][] signs, Result result) {
+        for (int a = 0; a < samples.size(); a++) {
+            for (int b = 0; b < samples.size(); b++) {
+                if (signs[a][b] == null || signs[a][b] <= 0) continue;
+                for (int c = 0; c < samples.size(); c++) {
+                    if (++result.comparableTriples > 250000) throw new IllegalStateException("COMPARABLE_TRIPLE_BUDGET");
+                    Integer bc = signs[b][c], ac = signs[a][c];
+                    if (bc == null || ac == null || bc <= 0 || ac > 0) continue;
+                    // Reconfirm all three edges on the same triple. A mutable or
+                    // nondeterministic relation is an abstention, never a verdict.
+                    if (!signs[a][b].equals(order(receivers.get(a), receivers.get(b))) ||
+                        !bc.equals(order(receivers.get(b), receivers.get(c))) ||
+                        !ac.equals(order(receivers.get(a), receivers.get(c)))) {
+                        result.abstained++;
+                        continue;
+                    }
+                    if (result.findings.size() >= MAX_FINDINGS) throw new IllegalStateException("FINDING_BUDGET");
+                    result.findings.add("{\"rule\":\"COMPARABLE_TRANSITIVITY_VIOLATION\",\"class\":" +
+                        quoted(type.getName()) + ",\"constructor\":" +
+                        vector(Arrays.stream(ctor.getParameterTypes()).map(Class::getName).toArray()) +
+                        ",\"left\":" + vector(samples.get(a)) + ",\"middle\":" + vector(samples.get(b)) +
+                        ",\"right\":" + vector(samples.get(c)) + ",\"observedSigns\":[1," + bc + "," + ac +
+                        "],\"status\":\"HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE\"}");
+                    return;
+                }
+            }
         }
     }
 
@@ -136,6 +270,7 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static void inspect(Class<?> type, Result result) {
+        comparable(type, result);
         Method[] methods;
         try { methods = type.getDeclaredMethods(); }
         catch (LinkageError | SecurityException e) { result.unloadable++; return; }
@@ -183,9 +318,8 @@ public final class GenericJvmMetamorphicProbe {
                     String name = entries.nextElement().getName();
                     if (++visited > 50000) throw new IllegalStateException("ENTRY_BUDGET");
                     if (!name.endsWith(".class") || !name.startsWith(prefix)) continue;
-                    if (name.contains("$")) { result.nestedSkipped++; continue; }
                     String className = name.substring(0, name.length() - 6).replace('/', '.');
-                    if (!className.matches("[A-Za-z_][A-Za-z0-9_.]*")) { result.unloadable++; continue; }
+                    if (!className.matches("[A-Za-z_][A-Za-z0-9_.$]*")) { result.unloadable++; continue; }
                     if (classes.size() >= MAX_CLASSES) throw new IllegalStateException("CLASS_BUDGET");
                     classes.add(className);
                 }
@@ -196,6 +330,7 @@ public final class GenericJvmMetamorphicProbe {
                 for (String name : classes) {
                     try {
                         Class<?> type = Class.forName(name, false, loader);
+                        if (name.contains("$") && !Comparable.class.isAssignableFrom(type)) { result.nestedSkipped++; continue; }
                         result.classes++;
                         inspect(type, result);
                     } catch (ClassNotFoundException | LinkageError | SecurityException e) { result.unloadable++; }
