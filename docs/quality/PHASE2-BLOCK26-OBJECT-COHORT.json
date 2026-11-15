@@ -1,0 +1,276 @@
+{
+  "schema": "ultra-sentinel-block26-object-contract-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "8c246fd285793350a2fa3ccc2dcaa4eeac052750",
+    "treeSha": "66343d599a38a1743b82efc9755838ed7325a437",
+    "frozenBeforeSelection": true,
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "bmaslakov/kotlin-algorithm-club",
+    "commitSha": "a8fa9edf615d0498bd1d2e8328f72a180d345343",
+    "treeSha": "7ef9e4e69337147f5117eb3f7018244cbecde4b5",
+    "selection": "ALL_REGULAR_KT_BLOBS_UNDER_SRC_MAIN_WITHOUT_SOURCE_CONTENT_FILTERING",
+    "files": [
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/Dequeue.kt",
+        "blobSha": "2e0193f8f077a0b436a918e8d84c250b5baa2768",
+        "sizeBytes": 3507
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/DisjointSet.kt",
+        "blobSha": "02b4a5ff35200c8d1b0cc93453e29f4be67819f3",
+        "sizeBytes": 2104
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/ImmutableSet.kt",
+        "blobSha": "b8dd44eba3312964fdf451d0a85f7f5efb19cc78",
+        "sizeBytes": 2133
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/IndexedPriorityQueue.kt",
+        "blobSha": "be7049fc691192349e717e9e57893096a24ea441",
+        "sizeBytes": 7042
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/PriorityQueue.kt",
+        "blobSha": "526d6d81d16bf63232c3fb211d2b320001e8f94a",
+        "sizeBytes": 3979
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/Queue.kt",
+        "blobSha": "f29be09662ae91794d42526a1e78b659c727ea32",
+        "sizeBytes": 2949
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/Stack.kt",
+        "blobSha": "61f937f7530e56743bf9738d2d7b8fb595cc74ac",
+        "sizeBytes": 2764
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/tree/BinarySearchTree.kt",
+        "blobSha": "5d8d4ff389024ea7362cec35dc393f16270277a6",
+        "sizeBytes": 5525
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/tree/BinaryTree.kt",
+        "blobSha": "90acb89067994b3e8069b26aa90be196e5d1b634",
+        "sizeBytes": 2309
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/datastructures/tree/Tree.kt",
+        "blobSha": "8cc2a9fdde399b38ae673cd6ff75c9e8e6a6450d",
+        "sizeBytes": 1520
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/Point.kt",
+        "blobSha": "2c7128ea7c95d84331ef8fc5bcdf3dacbc12c5bb",
+        "sizeBytes": 2788
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/QuadTree.kt",
+        "blobSha": "d456c9d94a873587639355d62e173e41b7f19868",
+        "sizeBytes": 3542
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/Rect.kt",
+        "blobSha": "6abd643680809c324b95005abd862371b343ebc5",
+        "sizeBytes": 2127
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/SierpinskiTriangle.kt",
+        "blobSha": "54a09c2e32adcfd853e7b41220c23bae0708fc1b",
+        "sizeBytes": 2238
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/Voronoi.kt",
+        "blobSha": "56a3158fe207496d7ff433a1737201c5bb11630e",
+        "sizeBytes": 1590
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/convexhull/ConvexHullAlgorithm.kt",
+        "blobSha": "74600db5f1a97bb2a681210c58f2ec545b320bb0",
+        "sizeBytes": 1315
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/convexhull/GiftWrapping.kt",
+        "blobSha": "d3c96d906fb92774f1e7ee6a4852408fc1335fed",
+        "sizeBytes": 2858
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/convexhull/GrahamScan.kt",
+        "blobSha": "162b7cece199f8ab6764530d782ba6caa868b9c1",
+        "sizeBytes": 2803
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/geometry/convexhull/Quickhull.kt",
+        "blobSha": "f4332e3845f9e8855fa43a0065f6f7daa0c44764",
+        "sizeBytes": 2195
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/BFS.kt",
+        "blobSha": "e532ece1afcc9ad86f95a64dd12afc7776616ce3",
+        "sizeBytes": 2093
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/DFS.kt",
+        "blobSha": "41061287fafbbce67f5512242da858653c6b74b1",
+        "sizeBytes": 3290
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/Graph.kt",
+        "blobSha": "1545f586cb38fc2eb6f32cbb7296c50b305b5b65",
+        "sizeBytes": 1337
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/NoSuchPathException.kt",
+        "blobSha": "24a02a5c1aaeb729c0b8af5d4941c23a4e6dc4cb",
+        "sizeBytes": 1252
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/directed/unweighted/DUGraph.kt",
+        "blobSha": "1e17d78bf46a06f6365665bbf34c47a5c1fd0deb",
+        "sizeBytes": 1841
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/directed/weighted/DWGraph.kt",
+        "blobSha": "3f345e6a7d43c6bab75f5ccd6568e933f51f5b83",
+        "sizeBytes": 2245
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/directed/weighted/Dijkstra.kt",
+        "blobSha": "7d95f33d7fd0956eac8796ad3a7e3148b8309ec2",
+        "sizeBytes": 3997
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/unweighted/UUGraph.kt",
+        "blobSha": "94169db55b14d86d7d6d8733e07b6028dc4f35b0",
+        "sizeBytes": 1704
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/weighted/BoruvkaMST.kt",
+        "blobSha": "802c96e8463a45a2cd68a355881a300a62e8baaa",
+        "sizeBytes": 2839
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/weighted/KruskalMST.kt",
+        "blobSha": "1e0a31c4cb39afcbe123201bfed2a356b406cd36",
+        "sizeBytes": 2397
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/weighted/MST.kt",
+        "blobSha": "ce415be83d327176cd784ad6cc87e0b2ac18a381",
+        "sizeBytes": 1630
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/weighted/PrimMST.kt",
+        "blobSha": "47e0dfdbd676bcbaec877b45b07d9574df8a985e",
+        "sizeBytes": 3055
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/graphs/undirected/weighted/UWGraph.kt",
+        "blobSha": "33060fbd703072ce4c2ec5ec636ebf0a55cd329d",
+        "sizeBytes": 2349
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/math/Binomial.kt",
+        "blobSha": "0e0274cf573bdcf407bfa492485846eb99e7a49d",
+        "sizeBytes": 1423
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/math/Gcd.kt",
+        "blobSha": "c6a59285bd934573b1ae578a63b60cd49742452c",
+        "sizeBytes": 1308
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/math/Log2.kt",
+        "blobSha": "5b7842957cffc41e513d7ce583cdc05115cbb46f",
+        "sizeBytes": 102
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/math/NewtonMethod.kt",
+        "blobSha": "5d29cc163b22cd6d291f84de7cd6551f0005c900",
+        "sizeBytes": 1425
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/search/AbstractSearchStrategy.kt",
+        "blobSha": "1775d33e018467f2f4a7fc86ee6ff3db41301d51",
+        "sizeBytes": 1266
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/search/BinarySearch.kt",
+        "blobSha": "bc19586645791bbac6221e336b2c67c28d7dbb25",
+        "sizeBytes": 1609
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/search/LinearSearch.kt",
+        "blobSha": "6d19027bea77c8d3b8de9e68896db25dfa484717",
+        "sizeBytes": 1425
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/AbstractSortStrategy.kt",
+        "blobSha": "5c105ebf7c35af849b20ae4380eb9b19c869b805",
+        "sizeBytes": 1262
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/BubbleSort.kt",
+        "blobSha": "821daddea4518b3a26d185a86287508b0db41c07",
+        "sizeBytes": 2295
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/HeapSort.kt",
+        "blobSha": "8abd6d64ad1fdbbd417c6ab3a048258fcf5ca614",
+        "sizeBytes": 1931
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/InsertionSort.kt",
+        "blobSha": "9aa4d52d96c2b8add141ebffa97878c692e6ca70",
+        "sizeBytes": 1799
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/MergeSort.kt",
+        "blobSha": "745294623fcf5e8ecd6d0fa22fb4d127d63d30a1",
+        "sizeBytes": 2566
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/QuickSort.kt",
+        "blobSha": "92e631b34a62522d7e8a6d0b3dad1c7dae504fc0",
+        "sizeBytes": 2875
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/SelectionSort.kt",
+        "blobSha": "6166d548b7b1a78a380177242e1be45ce3c266b5",
+        "sizeBytes": 2234
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/ShellSort.kt",
+        "blobSha": "b29ba0d35303fefb4f5d5dddae23f69eb78d1f8d",
+        "sizeBytes": 2325
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/sorts/SortUtils.kt",
+        "blobSha": "0e9b2e7797f51fefa560f2545c6adb4717ebf969",
+        "sizeBytes": 1477
+      },
+      {
+        "path": "src/main/io/uuddlrlrba/ktalgs/substring/KMP.kt",
+        "blobSha": "48a8c07d71f0380c012caf33cf32c8b79296197e",
+        "sizeBytes": 1074
+      }
+    ]
+  },
+  "protocol": {
+    "sourceBodiesReadBeforeReservation": false,
+    "hunterExecutedBeforeReservation": false,
+    "oracleExecutedBeforeReservation": false,
+    "oracleCommitmentRequiredBeforePredictions": true,
+    "predictionsSealedBeforeIndependentOracle": true,
+    "previousCohortsReusableAsUnknown": false
+  },
+  "limitations": {
+    "block26Closed": false,
+    "block27Allowed": false,
+    "accuracyMetrics": null
+  }
+}
