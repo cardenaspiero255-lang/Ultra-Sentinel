@@ -191,3 +191,97 @@ test('excess classes abort instead of silently truncating the scan',()=>{
  assert.equal(archive.status,0,archive.stderr);
  const r=probe(large);assert.notEqual(r.status,0);assert.match(r.stderr,/GENERIC_JVM_PROBE_BLOCKED/);
 });
+
+test('derives Comparable counterexamples from public interface laws without target names or answers',()=>{
+ const folder=path.join(temp,'order-contracts'),dest=path.join(folder,'classes');fs.mkdirSync(dest,{recursive:true});
+ const source=path.join(folder,'Cases.java'),archive=path.join(folder,'contracts.jar');
+ fs.writeFileSync(source,`package sample.order; public class Cases {
+  public static class Broken implements Comparable<Broken> {
+   private final int key; public Broken(int key){this.key=key;}
+   public int compareTo(Broken other){return key-other.key;}
+  }
+  public static class Good implements Comparable<Good> {
+   private final int key; public Good(int key){this.key=key;}
+   public int compareTo(Good other){return Integer.compare(key,other.key);}
+  }
+  public static class Text implements Comparable<Text> {
+   private final String key; public Text(String key){this.key=key;}
+   public int compareTo(Text other){return key.compareTo(other.key);}
+  }
+  public static class Two implements Comparable<Two> {
+   private final long key; public Two(Long key,Short unused,Byte ignored){this.key=key;}
+   public int compareTo(Two other){return (int)(key-other.key);}
+  }
+  public static class Reject implements Comparable<Reject> {
+   public Reject(short key){throw new IllegalArgumentException();}
+   public int compareTo(Reject other){return 0;}
+  }
+  public static class Opaque implements Comparable<Opaque> {
+   public Opaque(Object key){} public int compareTo(Opaque other){return 0;}
+  }
+  public abstract static class Abstract implements Comparable<Abstract>{}
+  public static class Private implements Comparable<Private> {
+   private Private(){} public int compareTo(Private other){return 0;}
+  }
+  public static class Zero implements Comparable<Zero> {
+   public Zero(){} public int compareTo(Zero other){return 0;}
+  }
+  public static class ByteKey implements Comparable<ByteKey> {
+   private final byte key; public ByteKey(byte key){this.key=key;}
+   public int compareTo(ByteKey other){return Byte.compare(key,other.key);}
+  }
+  public static class LongKey implements Comparable<LongKey> {
+   private final long key; public LongKey(long key){this.key=key;}
+   public int compareTo(LongKey other){return Long.compare(key,other.key);}
+  }
+  public static class Stateful implements Comparable<Stateful> {
+   private static int calls; public Stateful(Integer key){}
+   public int compareTo(Stateful other){return (++calls % 3)-1;}
+  }
+ }`);
+ assert.equal(run('javac',['-d',dest,source]).status,0);
+ assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);
+ const result=probe(archive,'sample.order');assert.equal(result.status,0,result.stderr);
+ const r=JSON.parse(result.stdout),findings=r.findings.filter(f=>f.rule==='COMPARABLE_ANTISYMMETRY_VIOLATION');
+ assert.equal(r.comparableClasses,11);assert.ok(r.comparablePairs>0);
+ assert.ok(r.constructorAbstentions>=3);assert.ok(r.abstainedProbes>0);
+ assert.deepEqual(findings.map(f=>f.class),['sample.order.Cases$Broken','sample.order.Cases$Two']);
+ const broken=findings[0];
+ assert.deepEqual(broken.constructor,['int']);
+ assert.deepEqual(broken.left,['-2147483648']);assert.deepEqual(broken.right,['0']);
+ assert.deepEqual(broken.observedSigns,[-1,-1]);
+ assert.equal(broken.status,'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE');
+ assert.equal(r.oracleVerified,false);assert.equal(r.mergeAllowed,false);
+ assert.equal(probe(archive,'sample.order').stdout,result.stdout);
+});
+
+test('unsupported Comparable constructors explicitly abstain and never certify clean',()=>{
+ const folder=path.join(temp,'order-unsupported'),dest=path.join(folder,'classes');fs.mkdirSync(dest,{recursive:true});
+ const source=path.join(folder,'Opaque.java'),archive=path.join(folder,'opaque.jar');
+ fs.writeFileSync(source,`package sample.opaque; public class Opaque implements Comparable<Opaque> {
+  public Opaque(Object key){} public int compareTo(Opaque other){return 0;}
+ }`);
+ assert.equal(run('javac',['-d',dest,source]).status,0);
+ assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);
+ const r=JSON.parse(probe(archive,'sample.opaque').stdout);
+ assert.equal(r.status,'INCOMPLETE_NO_SUPPORTED_METHODS');assert.equal(r.comparablePairs,0);
+ assert.equal(r.constructorAbstentions,1);assert.deepEqual(r.findings,[]);
+});
+
+test('finds nontransitive order even when every pair is antisymmetric',()=>{
+ const folder=path.join(temp,'order-cycle'),dest=path.join(folder,'classes');fs.mkdirSync(dest,{recursive:true});
+ const source=path.join(folder,'Cycle.java'),archive=path.join(folder,'cycle.jar');
+ fs.writeFileSync(source,`package sample.cycle; public class Cycle implements Comparable<Cycle> {
+  private final int key; public Cycle(int key){this.key=Math.floorMod(key,3);}
+  public int compareTo(Cycle other){return key==other.key?0:(key+1)%3==other.key?-1:1;}
+ }`);
+ assert.equal(run('javac',['-d',dest,source]).status,0);
+ assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);
+ const r=JSON.parse(probe(archive,'sample.cycle').stdout);
+ assert.equal(r.findings.filter(f=>f.rule==='COMPARABLE_ANTISYMMETRY_VIOLATION').length,0);
+ const findings=r.findings.filter(f=>f.rule==='COMPARABLE_TRANSITIVITY_VIOLATION');
+ assert.equal(findings.length,1,'pairwise consistency must not hide a cyclic order');
+ assert.deepEqual(findings[0].observedSigns,[1,1,-1]);
+ assert.equal(findings[0].middle.length,1);assert.ok(r.comparableTriples>0);
+ assert.equal(r.oracleVerified,false);
+});
