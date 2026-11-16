@@ -1,0 +1,24 @@
+{
+  "schema": "ultra-sentinel-v6-first-abi-admission-receipt/v1",
+  "headSha": "1d43277c068712d9e6bdc39f527f7bc7e21ab3a7",
+  "runId": 43972168768,
+  "jobId": 133666847454,
+  "artifactId": 14279511573,
+  "artifactDigest": "sha256:d389a19f14cdbf796f288ea88566d57d1a8b81dad178657f81787180c707de8d",
+  "artifactCreatedAt": "2026-11-16T22:44:38Z",
+  "files": {
+    "admission.json": "a872230937e2214e243441c32a23be1f198e12abd30bb9025276300d301ec9bf",
+    "admission-seal.json": "4455534cc56550ab52244e6638e0ddc4dc2e2f82efa3cf6b4558fe3398bb3619"
+  },
+  "originalFiles": 37,
+  "compiledCohorts": 5,
+  "callableCandidates": 8,
+  "candidateCohorts": 2,
+  "allReservedCohortsRetained": true,
+  "preflightThresholdMet": true,
+  "expectedFunctionalResultsRead": false,
+  "hunterExecuted": false,
+  "oracleExecuted": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}
