@@ -4018,121 +4018,136 @@
       "index": 45,
       "repository": "evaou/kotlin-algorithm",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 6,
       "repositoryId": "91777770",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 46,
       "repository": "2hyungjin/Algorithm-DataStructure",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 8,
       "repositoryId": "420826628",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 47,
       "repository": "arpanpathak/AdvancedAlgorithmPatterns",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 8,
       "repositoryId": "791609606",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 48,
       "repository": "FunkyMuse/Data-structures-and-algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 9,
       "repositoryId": "279115989",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 49,
       "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 12,
       "repositoryId": "274467314",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 50,
       "repository": "aallam/string-similarity-kotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 15,
       "repositoryId": "597692521",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 51,
       "repository": "wellFoundedDevelopers/Algorithm",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "534926416",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 52,
       "repository": "HanYeop/Algorithm",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "360469252",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 53,
       "repository": "Tmdhoon2/Algorithm",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "625044125",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 54,
       "repository": "YuYangWoo/Algorithm",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "297927364",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 55,
       "repository": "professorDeveloper/Kotlin-Algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 6,
       "repositoryId": "511878831",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 56,
       "repository": "saechimdaeki/Solving-ALGORITHM",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "167498126",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 57,
       "repository": "kieubaduong/Boka",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 10,
       "repositoryId": "645261171",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 58,
       "repository": "huhx0015/AlgorithmTester",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "93832051",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 59,
       "repository": "WeiLianYang/AlgorithmAnalysis",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "467326442",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 60,
