@@ -1,0 +1,225 @@
+{
+  "schema": "ultra-sentinel-block26-object-v3-prospective-cohort/v1",
+  "freezeCommitSha": "6f8981a9f7225c91e38c0f02be7912d8fb12f441",
+  "selectionPolicyCommitSha": "367659e612159b6d8c89a41b70ca7711f0d7578e",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "31222b3bedb1d48253e9cd4e676250b5841a384f",
+    "treeSha": "a9d021013e4f07f81251f7ef74261253509c092a",
+    "retuningAllowed": false
+  },
+  "source": {
+    "repository": "fractalliter/ktor-postgres-backend",
+    "commitSha": "be52bf27dcbbedc123cbc9433739dcf1284fcd07",
+    "treeSha": "53f6d876ad1c4db8ae3335dfc8050ee6ac704e10",
+    "scope": "src/main",
+    "files": [
+      {
+        "path": "src/main/kotlin/com/personia/Application.kt",
+        "blobSha": "4e00caf01c7ae25d4314e04d3d055295b182a5ff",
+        "sizeBytes": 602
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dao/DatabaseFactory.kt",
+        "blobSha": "02866ea84edd0b520e4a167b0c9f11792b644c05",
+        "sizeBytes": 2054
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dao/node/NodeDaoFacade.kt",
+        "blobSha": "51b81da111c0ccd3c479ae18a8318c331643a319",
+        "sizeBytes": 393
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dao/node/NodeDaoImpl.kt",
+        "blobSha": "df4d676b1c93b11987b2471e5f8ed447ec011c49",
+        "sizeBytes": 1632
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dao/user/UserDaoFacade.kt",
+        "blobSha": "e7c2e9255e6fe5986bfd7418018e948d4f51cd95",
+        "sizeBytes": 190
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dao/user/UserDaoImpl.kt",
+        "blobSha": "95d30ec8920c5395d728f17016e7b35e168b16ed",
+        "sizeBytes": 992
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dto/Exception.kt",
+        "blobSha": "c2795801d46cae5a7c326bbdd6b133ee76db7d70",
+        "sizeBytes": 140
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dto/Node.kt",
+        "blobSha": "1d91683a655c00cef20dbfd2c164516fda12ad46",
+        "sizeBytes": 153
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dto/Token.kt",
+        "blobSha": "257b625704a949b7b32f7fd1bc67ff03f49e1da2",
+        "sizeBytes": 119
+      },
+      {
+        "path": "src/main/kotlin/com/personia/dto/User.kt",
+        "blobSha": "2055028083f5bdcd274c0696136beaa83df42296",
+        "sizeBytes": 160
+      },
+      {
+        "path": "src/main/kotlin/com/personia/models/Node.kt",
+        "blobSha": "fd951ac0a5b99fab8c9bc46ef393af7219c46f16",
+        "sizeBytes": 281
+      },
+      {
+        "path": "src/main/kotlin/com/personia/models/User.kt",
+        "blobSha": "fc5e54ffaa793df7a300c0093a4916a685ada8c6",
+        "sizeBytes": 285
+      },
+      {
+        "path": "src/main/kotlin/com/personia/plugins/Authentication.kt",
+        "blobSha": "426daa90eaf38f359db412203b5cb41297728f43",
+        "sizeBytes": 1322
+      },
+      {
+        "path": "src/main/kotlin/com/personia/plugins/Exception.kt",
+        "blobSha": "f620e1f77566b4c14b109e56702fbed2039275c8",
+        "sizeBytes": 2177
+      },
+      {
+        "path": "src/main/kotlin/com/personia/plugins/Routing.kt",
+        "blobSha": "5618b763a9b9d9072c8cf5ab24ce83b5d7d11a26",
+        "sizeBytes": 644
+      },
+      {
+        "path": "src/main/kotlin/com/personia/plugins/Serialization.kt",
+        "blobSha": "0075f29264a4bd389d3db5162cc9f8ab277868aa",
+        "sizeBytes": 254
+      },
+      {
+        "path": "src/main/kotlin/com/personia/routes/AuthRoutes.kt",
+        "blobSha": "0c189687356a9c76826df5c3a42654efa5d3e3fc",
+        "sizeBytes": 1538
+      },
+      {
+        "path": "src/main/kotlin/com/personia/routes/HierarchyRoutes.kt",
+        "blobSha": "3d9546f4ad3affd710fdf5f575b5ab8339eda08b",
+        "sizeBytes": 1461
+      },
+      {
+        "path": "src/main/kotlin/com/personia/services/HierarchyService.kt",
+        "blobSha": "0a4efcefdbed5243baedb512e1d98bd181d8fce6",
+        "sizeBytes": 1926
+      },
+      {
+        "path": "src/main/kotlin/com/personia/services/UserService.kt",
+        "blobSha": "c60c19475c55be10b7fd852667410fed9e257c3d",
+        "sizeBytes": 937
+      },
+      {
+        "path": "src/main/kotlin/com/personia/utils/Graph.kt",
+        "blobSha": "047d745888d69ea6101481b60060287d11202e8d",
+        "sizeBytes": 4081
+      },
+      {
+        "path": "src/main/kotlin/com/personia/utils/Hasher.kt",
+        "blobSha": "db3f7da3a02aed26bdf6b8cfc2d8d9560a5b0317",
+        "sizeBytes": 443
+      },
+      {
+        "path": "src/main/kotlin/com/personia/utils/RandomString.kt",
+        "blobSha": "99d6924113ed2d3a3258d3376cc0386adf1daf0a",
+        "sizeBytes": 217
+      }
+    ],
+    "selection": "ALL_REGULAR_KOTLIN_PRODUCTION_BLOBS_WITHOUT_SOURCE_CONTENT_FILTER"
+  },
+  "selectionLedger": [
+    {
+      "repository": "jillesvangurp/geogeometry",
+      "stars": 138,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "sshpark/LeetCode-Kotlin",
+      "stars": 120,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "daolq3012/Kotlin-Algorithms",
+      "stars": 115,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "idisfkj/daily_algorithm",
+      "stars": 112,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "sshniro/line-segmentation-algorithm-to-gcp-vision",
+      "stars": 96,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "realpacific/algorithms",
+      "stars": 95,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "RedMadRobot/PINkman",
+      "stars": 85,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "betulnecanli/Kotlin-Data-Structures-Algorithms",
+      "stars": 68,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "rifqimfahmi/BetterImageUpload",
+      "stars": 61,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "Algo-Phantoms/Algo-Phantoms-Android",
+      "stars": 56,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "alidehkhodaei/data-structures-and-algorithms",
+      "stars": 53,
+      "decision": "PREVIOUSLY_EXPOSED"
+    },
+    {
+      "repository": "andrewbailey/Difference",
+      "stars": 53,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "aidin36/simpletextcrypt",
+      "stars": 51,
+      "decision": "NO_SRC_MAIN"
+    },
+    {
+      "repository": "sanity/pairAdjacentViolators",
+      "stars": 51,
+      "decision": "PREVIOUSLY_EXPOSED"
+    },
+    {
+      "repository": "mohamedtamer0/DataStructures-Algorithms-Kotlin",
+      "stars": 46,
+      "decision": "EXCEEDS_50_KOTLIN_FILES"
+    },
+    {
+      "repository": "fractalliter/ktor-postgres-backend",
+      "stars": 42,
+      "decision": "SELECTED_FIRST_METADATA_ELIGIBLE"
+    }
+  ],
+  "queryResultCount": 33,
+  "protocol": {
+    "sourceBodiesReadBeforeReservation": false,
+    "oracleExecutionBeforePredictionSeal": false,
+    "originalSourcesMayBeModified": false,
+    "engineRetuningAllowed": false,
+    "block27Allowed": false
+  }
+}
