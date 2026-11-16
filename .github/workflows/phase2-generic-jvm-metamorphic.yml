@@ -11,6 +11,11 @@ on:
       - docs/quality/evidence/block26-v6-selection/**
       - tests/unit/phase2-block26-v6-reservation.test.cjs
       - scripts/phase2-kotlin-api-v6-eval.cjs
+      - packages/quality-gates/jvm-abi-admission.cjs
+      - scripts/phase2-kotlin-api-v6-preflight.cjs
+      - tests/unit/jvm-abi-admission.test.cjs
+      - tests/fixtures/jvm-abi-admission/**
+      - .github/workflows/phase2-block26-v6-admission.yml
       - tests/fixtures/phase2-kotlin-api-v6/**
       - tests/unit/phase2-block26-v6-evidence-adapter.test.cjs
       - tests/fixtures/jvm-metamorphic/**
