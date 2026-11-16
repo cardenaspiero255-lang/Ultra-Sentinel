@@ -428,28 +428,44 @@
       "repository": "GustavoHGAraujo/kotlin-a-star-algorithm",
       "stars": 8,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "6099a17326aba9bb51c91bd4e56f67ea14685612",
+      "treeSha": "97849b7a5046ac18b06464bf716424cc61ce5abb",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 35,
       "repository": "Hemant-Jain-Author/Data-Structures-and-Algorithms-using-Kotlin",
       "stars": 8,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "f3a1fb24330437fbd745e9fd85de82b5336eec82",
+      "treeSha": "6bb033fd891a89fbb0894084a0d7dd51dd97fe26",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 36,
       "repository": "KonstantinLukaschenko/genetic-algorithm-kotlin",
       "stars": 8,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "e2828542dbb13966d5d473f445b6676f10a9e5a2",
+      "treeSha": "1fcc0418afc10fd71c887c37fc3adf99f4d905f1",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 37,
       "repository": "qiaoyuang/Algorithm",
       "stars": 8,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "3d92b665d899d0ca7d4a7b95be8c30073ab2cdd5",
+      "treeSha": "bfae3b4b94f5319af99cab6d052deacc4d980116",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 38,
