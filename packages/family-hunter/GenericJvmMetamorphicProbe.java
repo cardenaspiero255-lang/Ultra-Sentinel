@@ -349,16 +349,20 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static void instanceProbe(Class<?> type, Method method, Result result) {
-        try {
-            Field field = type.getField("INSTANCE");
-            Object receiver = field.get(null);
-            if (!type.isInstance(receiver)) throw new IllegalAccessException("INVALID_INSTANCE");
+        Field field;
+        try { field = type.getField("INSTANCE"); }
+        catch (NoSuchFieldException absent) { field = null; }
+        if (field != null) {
+            Object receiver;
+            try {
+                receiver = field.get(null);
+                if (!type.isInstance(receiver)) throw new IllegalAccessException("INVALID_INSTANCE");
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                result.abstained++;
+                return;
+            }
+            // Global probe budget failures must escape the receiver lookup.
             probe(method, receiver, null, null, type.getName(), result);
-            return;
-        } catch (NoSuchFieldException absent) {
-            // Ordinary Kotlin class: bounded public constructor recipes below.
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
-            result.abstained++;
             return;
         }
         Constructor<?>[] constructors = type.getConstructors();
@@ -390,7 +394,13 @@ public final class GenericJvmMetamorphicProbe {
         Arrays.sort(methods, (a, b) -> methodKey(a).compareTo(methodKey(b)));
         for (Method method : methods) {
             Class<?>[] params = method.getParameterTypes();
-            Type[] generic = method.getGenericParameterTypes();
+            Type[] generic;
+            try { generic = method.getGenericParameterTypes(); }
+            catch (TypeNotPresentException | java.lang.reflect.MalformedParameterizedTypeException |
+                   java.lang.reflect.GenericSignatureFormatError e) {
+                result.unsupported++;
+                continue;
+            }
             boolean supported = Modifier.isPublic(method.getModifiers()) && !method.isSynthetic() &&
                 numeric(method.getReturnType()) && params.length >= 1 && params.length <= 3;
             for (int i = 0; i < params.length && supported; i++)

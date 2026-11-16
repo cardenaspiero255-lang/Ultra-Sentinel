@@ -22,6 +22,8 @@ for p in /bin /lib /lib64; do
   mounts+=(--symlink "$target" "$p")
  else mounts+=(--ro-bind "$p" "$p"); fi
 done
+locale_env=()
+[ "$mode" != compile-v2 ] || locale_env=(--setenv LANG C.UTF-8 --setenv LC_ALL C.UTF-8)
 case "$mode" in
  compile|compile-v2)
   # All file paths were authenticated against immutable source Git blobs.
@@ -56,7 +58,7 @@ if ! (ulimit -f 32768; ulimit -n 128; exec timeout --kill-after=2s 120s env -i P
  /bin/bash "$guard" "$(id -u)" "$(id -g)" /usr/bin/bwrap \
  --die-with-parent --unshare-all --new-session --clearenv \
  --setenv PATH /jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
- "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$kotlin" /kotlin \
+ "${locale_env[@]}" "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$kotlin" /kotlin \
  --ro-bind "$input" /input --bind "$output" /out --tmpfs /tmp --proc /proc --dev /dev --chdir /tmp -- \
  "${command[@]}") > "$output/execution.log" 2> "$output/diagnostics.log"; then
  printf '%s\n' 'ISOLATED_ORIGINAL_EXECUTION_FAILED' >&2

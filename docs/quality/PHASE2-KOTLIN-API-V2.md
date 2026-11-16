@@ -41,6 +41,14 @@ gate before original bytecode execution. A second positive-size structured band
 `[1,2,3]` also passed RED→GREEN, so an empty-input precondition does not suppress
 coverage of nonempty-only collection APIs.
 
+PR review additionally reproduced RED→GREEN for singleton budget propagation
+and missing generic element metadata. Global budget failures now propagate;
+an unresolvable generic method abstains while other numeric methods continue.
+The v2 namespaces explicitly select `C.UTF-8`: an empty host environment otherwise
+left Java native path/argument decoding in ASCII despite its UTF-8 file encoding.
+This was reproduced with the exact synthetic compiler argfile. Final focused
+coverage is 25/25 tests, 295/305 lines (96.72%) and 403/446 branches (90.36%).
+
 A fresh evaluation must prospectively pin this candidate's commit and detector,
 launcher, compiler/staging and guard blobs before selecting sources. It must
 precommit an independently prepared oracle, publish prediction hashes before

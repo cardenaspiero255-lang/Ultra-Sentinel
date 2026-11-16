@@ -47,6 +47,7 @@ if ! (ulimit -f 1024; ulimit -n 128; exec timeout --kill-after=2s 45s env -i PAT
  /bin/bash "$guard" "$(id -u)" "$(id -g)" /usr/bin/bwrap \
  --die-with-parent --unshare-all --new-session --clearenv \
  --setenv PATH /jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
+ --setenv LANG C.UTF-8 --setenv LC_ALL C.UTF-8 \
  "${mounts[@]}" --ro-bind "$jdk" /jdk --dir /probe --dir /input \
  --ro-bind "$classes/GenericJvmMetamorphicProbe.class" /probe/GenericJvmMetamorphicProbe.class \
  --ro-bind "$classes/GenericJvmMetamorphicProbe\$Result.class" '/probe/GenericJvmMetamorphicProbe$Result.class' \

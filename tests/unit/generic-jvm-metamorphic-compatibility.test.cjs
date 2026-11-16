@@ -159,3 +159,36 @@ test('unsafe scopes remain rejected and a legal unused package remains incomplet
  assert.equal(r.status,'INCOMPLETE_NO_SUPPORTED_METHODS');assert.equal(r.methodsProbed,0);
  assert.deepEqual(r.findings,[]);assert.equal(r.oracleVerified,false);
 });
+
+test('singleton receiver lookup cannot swallow a global finding budget failure',()=>{
+ const folder=path.join(temp,'singleton-budget'),dest=path.join(folder,'classes');
+ fs.mkdirSync(dest,{recursive:true});
+ const file=path.join(folder,'SingletonBudget.java'),archive=path.join(folder,'target.jar');
+ fs.writeFileSync(file,'package sample.singletonbudget; public class SingletonBudget { '+
+  'public static final SingletonBudget INSTANCE=new SingletonBudget();\n'+
+  Array.from({length:257},(_,i)=>`public int m${i}(int x){return x==1?100:0;}`).join('\n')+'\n}');
+ let r=run('javac',['-d',dest,file]);assert.equal(r.status,0,r.stderr);
+ r=run('jar',['cf',archive,'-C',dest,'.']);assert.equal(r.status,0,r.stderr);
+ r=run('java',['-Xmx128m','-cp',bin,'GenericJvmMetamorphicProbe',archive,'sample.singletonbudget']);
+ assert.notEqual(r.status,0,'exhausting the global budget must block the complete scan');
+ assert.match(r.stderr,/GENERIC_JVM_PROBE_BLOCKED/);
+});
+
+test('an unresolved generic element type abstains locally while unrelated numeric methods remain usable',()=>{
+ const folder=path.join(temp,'missing-generic'),dest=path.join(folder,'classes');
+ fs.mkdirSync(dest,{recursive:true});
+ const missing=path.join(folder,'MissingType.java'),input=path.join(folder,'SignatureCases.java');
+ fs.writeFileSync(missing,'package sample.signatures; public class MissingType {}');
+ fs.writeFileSync(input,`package sample.signatures; public class SignatureCases {
+ public static int aMissing(java.util.List<MissingType> xs){return xs.size();}
+ public static int zStable(int x){return x;}
+ }`);
+ let r=run('javac',['-d',dest,missing,input]);assert.equal(r.status,0,r.stderr);
+ fs.rmSync(path.join(dest,'sample/signatures/MissingType.class'));
+ const archive=path.join(folder,'target.jar');r=run('jar',['cf',archive,'-C',dest,'.']);assert.equal(r.status,0,r.stderr);
+ r=run('java',['-Xmx128m','-cp',bin,'GenericJvmMetamorphicProbe',archive,'sample.signatures']);
+ assert.equal(r.status,0,r.stderr);
+ const observed=JSON.parse(r.stdout);
+ assert.equal(observed.methodsProbed,1);assert.equal(observed.unsupportedMethods,1);
+ assert.equal(observed.status,'PARTIAL_HYPOTHESES_REQUIRE_ORACLE');assert.deepEqual(observed.findings,[]);
+});
