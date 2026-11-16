@@ -18,7 +18,15 @@ test('v5 first-run evidence preserves zero effective methods and independently s
  assert.equal(v.scopedIndependentObservations,1);assert.equal(v.falseNegatives,null);
  assert.deepEqual(a,[{cohortId:2,reason:'COMPILATION_ABSTENTION',exitStatus:1}]);
  const p=json('preflight/compile-only-admissions.json');assert.deepEqual(p.admissions.map(x=>x.cohortId),[1,3]);assert.equal(p.oracleExecuted,false);
- assert.equal(json('coverage-note.json').countedAsHunterDiscoveries,false);
+ const coverage=json('coverage-note.json');
+ assert.equal(coverage.sourceFiles,m.cohorts.reduce((n,c)=>n+c.source.files.length,0));
+ assert.equal(coverage.methodsProbed,v.methodsProbed);
+ assert.equal(coverage.hypotheses,v.confirmedHypotheses+v.unadjudicatedHypotheses);
+ assert.equal(coverage.unsupportedControlComparisons,coverage.unsupportedControlLiteralMatches+coverage.unsupportedControlLiteralDisagreements);
+ assert.equal(coverage.unsupportedControlLiteralDisagreements,51);
+ assert.equal(coverage.globalPrecision,null);assert.equal(coverage.globalRecall,null);
+ assert.equal(coverage.falseNegatives,null);assert.equal(coverage.block26Closed,false);assert.equal(coverage.block27Allowed,false);
+ assert.equal(coverage.countedAsHunterDiscoveries,false);
  assert.equal(json('coverage-note.json').unsupportedControlDisagreementsAdjudicatedAsDefects,false);
  assert.throws(()=>verify(m,[{...e[0],raw:Buffer.concat([e[0].raw,Buffer.from(' ')])},...e.slice(1)],a,s));
 });
