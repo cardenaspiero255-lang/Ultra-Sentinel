@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
-const {seal,verify}=require('../../scripts/phase2-kotlin-api-v2-eval.cjs');
+const {seal,verify}=require('../../scripts/phase2-kotlin-api-v6-eval.cjs');
 const root=path.resolve(__dirname,'../..');
 const reservation=require('../../docs/quality/PHASE2-BLOCK26-V6-RESERVATION.json');
 const manifest={engine:reservation.frozenEngine,cohorts:reservation.cohorts,oracles:[],block27Allowed:false};
@@ -51,7 +51,7 @@ test('CLI replays six-cohort prediction index paths on synthetic sealed data wit
    {cohortId:6,scope:'sample',artifactSha256:artifactSha,file:'cohort-6/scope-0/discovery.json'}]));
   fs.writeFileSync(path.join(data,'abstentions.json'),JSON.stringify(m.cohorts.slice(0,5).map(c=>({
    cohortId:c.id,reason:'COMPILATION_ABSTENTION'}))));
-  const r=spawnSync(process.execPath,[path.join(root,'scripts/phase2-kotlin-api-v2-eval.cjs'),
+  const r=spawnSync(process.execPath,[path.join(root,'scripts/phase2-kotlin-api-v6-eval.cjs'),
    'seal',p,data,path.join(tmp,'seal.json')],{encoding:'utf8',timeout:15000});
   assert.ifError(r.error);assert.equal(r.status,0,r.stderr);
   const sealed=JSON.parse(fs.readFileSync(path.join(tmp,'seal.json')));
