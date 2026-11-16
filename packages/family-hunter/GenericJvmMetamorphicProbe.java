@@ -68,6 +68,10 @@ public final class GenericJvmMetamorphicProbe {
         return null;
     }
 
+    // Keep legacy 0/1-leading samples, then admit functions defined only for 2+ items.
+    // Bounded shape observations are advisory and must still pass an independent oracle.
+    private static final int[][] COLLECTION_SHAPES = {{0, 1, 3}, {1, 2, 3}, {2, 3, 4}};
+
     private static Object argument(Class<?> raw, Type generic, int sample, int fixed, int band, boolean varying) {
         if (raw == String.class) {
             if (!varying) return fixed == 100 ? "aa" : "a";
@@ -90,7 +94,7 @@ public final class GenericJvmMetamorphicProbe {
             return value(raw, sample);
         }
         Class<?> item = element(raw, generic);
-        int size = varying ? (band == 0 ? new int[]{0, 1, 3} : new int[]{1, 2, 3})[sample] : 1;
+        int size = varying ? COLLECTION_SHAPES[band][sample] : 1;
         Object array = raw.isArray() ? Array.newInstance(item, size) : null;
         List<Object> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
@@ -475,7 +479,8 @@ public final class GenericJvmMetamorphicProbe {
         Class<?>[] params = method.getParameterTypes();
         Type[] generic = method.getGenericParameterTypes();
         for (int position = 0; position < params.length; position++) {
-            int bands = numeric(params[position]) ? 4 : 2;
+            int bands = numeric(params[position]) ? 4 :
+                (params[position] == String.class ? 2 : COLLECTION_SHAPES.length);
             for (int band = 0; band < bands; band++) {
                 for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
                     Number[] observations = new Number[3];
@@ -489,7 +494,7 @@ public final class GenericJvmMetamorphicProbe {
                         Object input = argument(params[position], generic[position], sample, fixed, band, true);
                         inputs.add(quoted(numeric(params[position]) || params[position] == String.class ?
                             input.toString() :
-                            "size=" + (band == 0 ? new int[]{0, 1, 3} : new int[]{1, 2, 3})[sample] + ";values=0..size-1"));
+                            "size=" + COLLECTION_SHAPES[band][sample] + ";values=0..size-1"));
                     }
                     if (incomplete) { result.abstained++; continue; }
                     result.completedTriples++;
