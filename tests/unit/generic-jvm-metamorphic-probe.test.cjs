@@ -127,7 +127,15 @@ test('unloadable classes and invalid singleton receivers are reported as incompl
  fs.writeFileSync(source,`package sample.partial;
  public class Odd { public static final Object INSTANCE="not an instance"; public int number(int n) { return n; }
  public static int stable(int n) { return n; } }`);
- assert.equal(run('javac',['-d',dest,source]).status,0);
+ // A genuinely invalid Kotlin-style singleton must still abstain.
+ const nullSingleton=path.join(folder,'NullSingleton.java');
+ fs.writeFileSync(nullSingleton,`package sample.partial;
+ public class NullSingleton {
+  public static final NullSingleton INSTANCE = null;
+  private NullSingleton(){}
+  public int number(int n){return n;}
+ }`);
+ assert.equal(run('javac',['-d',dest,source,nullSingleton]).status,0);
  fs.writeFileSync(path.join(dest,'sample/partial/Invalid-Name.class'),'not a class');
  fs.writeFileSync(path.join(dest,'sample/partial/InvalidBytecode.class'),'not a class');
  assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);

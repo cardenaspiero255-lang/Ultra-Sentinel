@@ -352,6 +352,10 @@ public final class GenericJvmMetamorphicProbe {
         Field field;
         try { field = type.getField("INSTANCE"); }
         catch (NoSuchFieldException absent) { field = null; }
+        // An unrelated public INSTANCE field must not mask ordinary receivers.
+        // Kotlin singleton fields are static and have the declaring object type.
+        if (field != null && (!Modifier.isStatic(field.getModifiers()) ||
+            !type.isAssignableFrom(field.getType()))) field = null;
         if (field != null) {
             Object receiver;
             try {

@@ -49,6 +49,21 @@ source('OverloadedReceiver','sample.overloads',`
  public OverloadedReceiver(long seed){}
  public double peak(double x){return x*(1.0-x);}
 `);
+source('NonstaticInstance','sample.receivers',`
+ public final Object INSTANCE = new Object();
+ public NonstaticInstance(){}
+ public int peak(int x){return x==0?0:x==1?100:0;}
+`);
+source('ForeignStaticInstance','sample.receivers',`
+ public static final String INSTANCE = "not a singleton receiver";
+ public ForeignStaticInstance(){}
+ public int peak(int x){return x==0?0:x==1?100:0;}
+`);
+source('ValidStaticInstance','sample.receivers',`
+ public static final ValidStaticInstance INSTANCE = new ValidStaticInstance();
+ private ValidStaticInstance(){}
+ public int peak(int x){return x==0?0:x==1?100:0;}
+`);
 source('Unconstructible','sample.unconstructible',`
  private Unconstructible(){}
  public double peak(double x){return x*(1.0-x);}
@@ -106,6 +121,13 @@ test('ordinary noarg, numeric and string constructors enable instance coverage w
  assert.equal(finds(r,'sequence').length,0,'a call counter must not create a stable-looking turning point');
  assert.ok(!r.findings.some(f=>f.class==='sample.receivers.RejectReceiver'));
  assert.ok(r.abstainedProbes>0||r.constructorAbstentions>0,'throwing constructors must be explicit abstentions');
+});
+
+test('unrelated INSTANCE fields do not suppress ordinary constructors, while a real singleton stays supported',()=>{
+ const r=report('sample.receivers');
+ for(const name of ['NonstaticInstance','ForeignStaticInstance','ValidStaticInstance'])
+  assert.ok(r.findings.some(f=>f.class==='sample.receivers.'+name&&f.method.startsWith('peak(')),
+   name+' was silently skipped because an unrelated INSTANCE field masked its receiver');
 });
 
 test('bounded primitive numeric arrays and proven numeric collection parameters receive fresh shape samples',()=>{
