@@ -65,6 +65,75 @@ test('bounded JVM objects expose equality, symmetry and equal-hash violations on
     public UnstableHash(int key){this.key=key;}
     @Override public boolean equals(Object o){return o instanceof UnstableHash x && x.key==key;}
     @Override public int hashCode(){return ++next;}`,
+
+   ConditionalCtor:`private final int key;
+    public ConditionalCtor(int key){if(key==1)throw new IllegalArgumentException("boundary");this.key=key;}
+    @Override public boolean equals(Object o){return o instanceof ConditionalCtor x && key==x.key;}
+    @Override public int hashCode(){return key;}`,
+   OneSidedHash:`private final int key; private static int next; private final int id=++next;
+    public OneSidedHash(int key){this.key=key;}
+    @Override public boolean equals(Object o){return o instanceof OneSidedHash x && key==x.key;}
+    @Override public int hashCode(){if(id%2==0)throw new IllegalArgumentException("twin");return key;}`,
+   AsymmetricThrow:`private final int key;
+    public AsymmetricThrow(int key){this.key=key;}
+    @Override public boolean equals(Object o){
+      if(!(o instanceof AsymmetricThrow x))return false;
+      if(key==1 && x.key==0)throw new IllegalArgumentException("reverse");
+      return key==x.key;
+    }
+    @Override public int hashCode(){return key;}`,
+   TransientForward:`private static int next;private final int id=++next;private int calls;
+    public TransientForward(int ignored){}
+    @Override public boolean equals(Object o){
+      if(this==o)return true;if(!(o instanceof TransientForward x))return false;
+      if(id%2==1 && x.id==id+1)return ++calls<=2;
+      if(id%2==0 && x.id==id-1)return false;
+      return false;
+    }
+    @Override public int hashCode(){return 0;}`,
+   TransientReverse:`private static int next;private final int id=++next;private int calls;
+    public TransientReverse(int ignored){}
+    @Override public boolean equals(Object o){
+      if(this==o)return true;if(!(o instanceof TransientReverse x))return false;
+      if(id%2==1 && x.id==id+1)return true;
+      if(id%2==0 && x.id==id-1)return ++calls>2;
+      return false;
+    }
+    @Override public int hashCode(){return 0;}`,
+   StageForward:`private final int key;private int calls;
+    public StageForward(int key){this.key=key;}
+    @Override public boolean equals(Object o){
+      if(!(o instanceof StageForward x))return false;
+      if(key==0 && x.key==1)return ++calls<=2;
+      if(key==1 && x.key==0)return false;
+      return key==x.key;
+    }
+    @Override public int hashCode(){return 0;}`,
+   StageReverse:`private final int key;private int calls;
+    public StageReverse(int key){this.key=key;}
+    @Override public boolean equals(Object o){
+      if(!(o instanceof StageReverse x))return false;
+      if(key==0 && x.key==1)return true;
+      if(key==1 && x.key==0)return ++calls>2;
+      return key==x.key;
+    }
+    @Override public int hashCode(){return 0;}`,
+   HashStageForward:`private final int key;private static int next;private final int id=++next;private int calls;
+    public HashStageForward(int key){this.key=key;}
+    @Override public boolean equals(Object o){
+      if(this==o)return true;if(!(o instanceof HashStageForward x)||key!=x.key)return false;
+      if(id%2==1 && x.id==id+1)return ++calls<=2;
+      return true;
+    }
+    @Override public int hashCode(){return id;}`,
+   HashStageReverse:`private final int key;private static int next;private final int id=++next;private int calls;
+    public HashStageReverse(int key){this.key=key;}
+    @Override public boolean equals(Object o){
+      if(this==o)return true;if(!(o instanceof HashStageReverse x)||key!=x.key)return false;
+      if(id%2==0 && x.id==id-1)return ++calls<=2;
+      return true;
+    }
+    @Override public int hashCode(){return id;}`,
    Inherited:`public Inherited(int ignored){}`
   };
   const sources=[];
@@ -82,7 +151,7 @@ test('bounded JVM objects expose equality, symmetry and equal-hash violations on
   assert.ok(match('BrokenHash','OBJECT_EQUALS_HASHCODE_VIOLATION'));
   assert.ok(match('BrokenSymmetry','OBJECT_EQUALS_SYMMETRY_VIOLATION'));
   assert.ok(match('BrokenReflexive','OBJECT_EQUALS_REFLEXIVITY_VIOLATION'));
-  assert.ok(!findings.some(f=>/sample\.objectlaws\.(Good|Stateful|Inherited|NoArg|StringKey|DualKey|UnsupportedCtor|ExcessCtor|ThrowingCtor|ThrowingEquals|ThrowingHash|UnstableHash)$/.test(f.class)));
+  assert.ok(!findings.some(f=>/sample\.objectlaws\.(Good|Stateful|Inherited|NoArg|StringKey|DualKey|UnsupportedCtor|ExcessCtor|ThrowingCtor|ThrowingEquals|ThrowingHash|UnstableHash|ConditionalCtor|OneSidedHash|AsymmetricThrow|TransientForward|TransientReverse|StageForward|StageReverse|HashStageForward|HashStageReverse)$/.test(f.class)));
   assert.ok(report.objectContractPairs>0);
   assert.ok(report.objectContractAbstentions>0,'unstable equality must abstain');
   assert.notEqual(report.status,'INCOMPLETE_NO_SUPPORTED_METHODS');
