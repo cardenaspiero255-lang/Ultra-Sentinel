@@ -145,7 +145,7 @@
     {
       "cohortId": 1,
       "path": "tests/fixtures/phase2-block26-v3/oracle-1.kt",
-      "sha256": "40afc55681eb11487b13a03cad251bc4f5af8cd0cddab961f0ac7ec011625043",
+      "sha256": "9fb232f60fea2a277767a53166dcf57e6e199702e6e68830768655a617be166a",
       "admission": "INDEPENDENT_SORTED_ARRAY_SEARCH"
     }
   ],
