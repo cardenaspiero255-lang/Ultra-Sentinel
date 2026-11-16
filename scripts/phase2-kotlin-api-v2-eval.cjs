@@ -183,7 +183,7 @@ if(require.main===module){try{
   prepareCohort(a[2],a[3],a[4],{engine:m.engine,source:c.source},{extendedKotlinPaths:true});
  }else if(action==='oracle-input'&&a.length===3){
   const m=json(a[0]);checkManifest(m);const o=m.oracles.find(o=>o.cohortId===Number(a[1]));
-  if(!o||!/^tests\/fixtures\/phase2-kotlin-api-v2\/oracle-[1-3]\.kt$/.test(o.path))fail();
+  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3)\/oracle-[1-3]\.kt$/.test(o.path))fail();
   const bytes=read(path.resolve(__dirname,'..',o.path));if(hash(bytes)!==o.sha256)fail();
   const dir=path.join(a[2],'oracle');fs.mkdirSync(dir,{mode:0o700});
   fs.writeFileSync(path.join(dir,'IndependentArithmeticOracle.kt'),bytes,{flag:'wx',mode:0o600});
