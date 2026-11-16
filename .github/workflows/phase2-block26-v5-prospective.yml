@@ -1,0 +1,220 @@
+name: Ultra Sentinel — Block 2.6 v5 fresh frozen JVM admission and independent contracts
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-BLOCK26-V5-RESERVATION.json
+      - docs/quality/PHASE2-BLOCK26-V5-COHORT.json
+      - tests/fixtures/phase2-block26-v5/**
+      - tests/unit/phase2-block26-v5-*.test.cjs
+      - scripts/phase2-kotlin-api-v2-eval.cjs
+      - .github/workflows/phase2-block26-v5-prospective.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  frozen-v5-predictions:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact protocol without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout frozen Hunter before source metadata reservation
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: d059ac1f41f093fca5ecca42964e2d16e0ea2c41
+          path: frozen-v5-engine
+          persist-credentials: false
+      - name: Checkout untouched reserved Kotlin source 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: penemue/keap
+          ref: 8274a8839d74eb87cccd6806a6247ff20b615ef0
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout untouched reserved Kotlin source 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: palasjir/ct-volumetric-rendering
+          ref: c5145a151bcf6dcdac9d4801299d85e7e971e2d3
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout untouched reserved Kotlin source 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: dlew/wordle-solver
+          ref: 73f46bf70178ab9aba6cdb6c2d7aadadf6ef7fa0
+          path: originals/source-3
+          persist-credentials: false
+      - name: Require complete regression suite at exact head
+        run: npm run check
+      - name: Require Bubblewrap, AppArmor and actual cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch SHA256-pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v5"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v5"
+      - name: Compile independently precommitted oracle WITHOUT executing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs docs/quality/PHASE2-BLOCK26-V5-COHORT.json "$GITHUB_WORKSPACE/frozen-v5-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v5/kotlinc" "$RUNNER_TEMP/not-yet-published" "$RUNNER_TEMP/v5-preflight" "$RUNNER_TEMP/v5-admission" compile-only
+          test -s "$RUNNER_TEMP/v5-admission/compile-only-admissions.json"
+      - name: Run unchanged frozen Hunter without oracle files and seal source-bound predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/capture.cjs docs/quality/PHASE2-BLOCK26-V5-COHORT.json "$GITHUB_WORKSPACE/frozen-v5-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v5/kotlinc" "$RUNNER_TEMP/v5-hunter-work" "$RUNNER_TEMP/v5-predictions"
+          test -s "$RUNNER_TEMP/v5-predictions/prediction-seal.json"
+          node scripts/phase2-kotlin-api-v2-eval.cjs verify docs/quality/PHASE2-BLOCK26-V5-COHORT.json "$RUNNER_TEMP/v5-predictions" "$RUNNER_TEMP/v5-predictions/prediction-seal.json"
+      - name: Publish frozen original predictions before running any oracle
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v5-prospective-predictions
+          path: ${{ runner.temp }}/v5-predictions
+          retention-days: 90
+          if-no-files-found: error
+      - name: Preserve scoped oracle compile-only admission and abstentions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v5-preflight-diagnostics
+          path: |
+            ${{ runner.temp }}/v5-admission/
+            ${{ runner.temp }}/v5-predictions/
+          retention-days: 90
+          if-no-files-found: ignore
+  independent-v5-oracle:
+    needs: frozen-v5-predictions
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' &&
+        github.ref == 'refs/heads/main' &&
+        github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact committed protocol, no stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: d059ac1f41f093fca5ecca42964e2d16e0ea2c41
+          path: frozen-v5-engine
+          persist-credentials: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: penemue/keap
+          ref: 8274a8839d74eb87cccd6806a6247ff20b615ef0
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout untouched reserved Kotlin source 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: palasjir/ct-volumetric-rendering
+          ref: c5145a151bcf6dcdac9d4801299d85e7e971e2d3
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout untouched reserved Kotlin source 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: dlew/wordle-solver
+          ref: 73f46bf70178ab9aba6cdb6c2d7aadadf6ef7fa0
+          path: originals/source-3
+          persist-credentials: false
+      - name: Require same isolated Kotlin executor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch same SHA256-pinned Kotlin compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v5"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v5"
+      - name: Download previously published predictions
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-v5-prospective-predictions
+          path: ${{ runner.temp }}/v5-predictions
+      - name: Authenticate prediction seal BEFORE independent oracle executes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-kotlin-api-v2-eval.cjs verify docs/quality/PHASE2-BLOCK26-V5-COHORT.json "$RUNNER_TEMP/v5-predictions" "$RUNNER_TEMP/v5-predictions/prediction-seal.json"
+      - name: Run precommitted independent original-source oracle and record honest verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs docs/quality/PHASE2-BLOCK26-V5-COHORT.json "$GITHUB_WORKSPACE/frozen-v5-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v5/kotlinc" "$RUNNER_TEMP/v5-predictions" "$RUNNER_TEMP/v5-oracle-work" "$RUNNER_TEMP/v5-independent"
+          test -s "$RUNNER_TEMP/v5-independent/independent-verdict.json"
+          cat "$RUNNER_TEMP/v5-independent/independent-verdict.json"
+      - name: Publish independent verdict and all abstentions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v5-independent-original-verdict
+          path: ${{ runner.temp }}/v5-independent/
+          retention-days: 90
+          if-no-files-found: ignore
