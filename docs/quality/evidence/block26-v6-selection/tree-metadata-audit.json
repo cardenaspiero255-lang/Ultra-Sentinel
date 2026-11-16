@@ -811,14 +811,29 @@
       "repository": "Nexters/Algorithm",
       "stars": 5,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "dd103268e8838295cdee4711e0e6d2ef18bc47f3",
+      "treeSha": "0bb68be5b9ea711db67d6beb8cbc6ac243bebed2",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 59,
       "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
       "stars": 5,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "045b7bf6eeee434995b2a3fe9013e4c1564327b7",
+      "treeSha": "06ac1ac4114ae3c752c33e61fa8d6211625f7cc5",
+      "kotlinFiles": 1,
+      "sizeBytes": 715,
+      "files": [
+        {
+          "path": "src/main/kotlin/Main.kt",
+          "blobSha": "e93eac898b20e0983d9c14ed227e8bf3f947ed38",
+          "sizeBytes": 715
+        }
+      ]
     },
     {
       "rank": 60,
@@ -1320,6 +1335,21 @@
             "path": "src/main/kotlin/br/com/luislabs/utils/Utils.kt",
             "blobSha": "b77c8991a85e7b3020b468efda5427c9dfd0b4c3",
             "sizeBytes": 456
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "source": {
+        "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+        "commitSha": "045b7bf6eeee434995b2a3fe9013e4c1564327b7",
+        "treeSha": "06ac1ac4114ae3c752c33e61fa8d6211625f7cc5",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "e93eac898b20e0983d9c14ed227e8bf3f947ed38",
+            "sizeBytes": 715
           }
         ]
       }
