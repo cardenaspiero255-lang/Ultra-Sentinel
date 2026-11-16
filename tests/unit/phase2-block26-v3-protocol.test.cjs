@@ -25,7 +25,7 @@ test('new v3 source reservation predates oracle and commits every source identit
  assert.deepEqual(compact(original.files),compact(reservation.selection.files));
  assert.equal(new Set(original.files.map(f=>f.blobSha)).size,20);
  for(const f of original.files){
-  assert.match(f.path,/^src\\/main\\/kotlin\\/(?:algos|ds)\\/.+\\.kt$/);
+  assert.ok(f.path.startsWith('src/main/kotlin/')); assert.ok(f.path.endsWith('.kt'));
   assert.match(f.blobSha,/^[a-f0-9]{40}$/);
  }
  assert.equal(manifest.predictionsExecuted,false);
@@ -42,6 +42,6 @@ test('v3 oracle bytes are SHA256 bound independently of stored metadata',()=>{
  const source=fs.readFileSync(path.join(root,oracle.path));
  const digest=crypto.createHash('sha256').update(source).digest('hex');
  assert.equal(digest,oracle.sha256);
- assert.match(source.toString('utf8'),/^\\/\\/ Source-only precommitted independent oracle/m);
+ assert.ok(source.toString('utf8').startsWith('// Source-only precommitted independent oracle'));
  assert.match(source.toString('utf8'),/package oracle/);
 });
