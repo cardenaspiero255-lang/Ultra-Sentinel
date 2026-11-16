@@ -1,0 +1,55 @@
+{
+  "schema": "ultra-sentinel-block26-object-v3-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "31222b3bedb1d48253e9cd4e676250b5841a384f",
+    "treeSha": "a9d021013e4f07f81251f7ef74261253509c092a",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "f26f9b9f6623ca2ba3518d8422d84e9ec83908e2"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      }
+    ],
+    "retuningAllowed": false
+  },
+  "protocol": {
+    "block": "2.6",
+    "sourceSelected": false,
+    "sourceBodiesRead": false,
+    "oracleKnown": false,
+    "predictionsExecuted": false,
+    "oracleExecuted": false,
+    "independentOracleMustPrecommit": true,
+    "sealPredictionsBeforeOracle": true,
+    "block27Allowed": false
+  },
+  "scope": {
+    "propertyContracts": [
+      "OBJECT_EQUALS_REFLEXIVITY_VIOLATION",
+      "OBJECT_EQUALS_SYMMETRY_VIOLATION",
+      "OBJECT_EQUALS_HASHCODE_VIOLATION"
+    ],
+    "priorResultsAreDevelopmentOnly": true
+  },
+  "priorExposedRepos": [
+    "DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns",
+    "thomasnield/kotlin-machine-learning-demos",
+    "alidehkhodaei/data-structures-and-algorithms",
+    "sanity/pairAdjacentViolators",
+    "MarcinMoskala/KotlinDiscreteMathToolkit",
+    "Keelar/ExprK",
+    "thelastpickle/tlp-stress"
+  ]
+}
