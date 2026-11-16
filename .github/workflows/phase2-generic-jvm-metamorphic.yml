@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - packages/family-hunter/GenericJvmMetamorphicProbe.java
-      - tests/unit/generic-jvm-metamorphic*.test.cjs
+      - tests/unit/generic-jvm-*.test.cjs
       - tests/fixtures/jvm-metamorphic/**
       - scripts/phase2-block26-object-eval.cjs
       - tests/fixtures/phase2-block26-object-contracts/run-isolated.sh
@@ -52,7 +52,7 @@ jobs:
           test "$(sha256sum "$agent" | cut -d' ' -f1)" = 47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b
           test "$(sha256sum "$cli" | cut -d' ' -f1)" = 8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3
           export JAVA_TOOL_OPTIONS="-javaagent:$agent=destfile=$RUNNER_TEMP/generic-jvm.exec,includes=GenericJvmMetamorphicProbe*,append=true"
-          node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs tests/unit/generic-jvm-metamorphic-compatibility.test.cjs tests/unit/generic-jvm-object-contracts.test.cjs tests/unit/generic-jvm-metamorphic-string.test.cjs tests/unit/generic-jvm-bounded-integral-band.test.cjs
+          node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs tests/unit/generic-jvm-metamorphic-compatibility.test.cjs tests/unit/generic-jvm-object-contracts.test.cjs tests/unit/generic-jvm-metamorphic-string.test.cjs tests/unit/generic-jvm-bounded-integral-band.test.cjs tests/unit/generic-jvm-metamorphic-boxed-arrays.test.cjs tests/unit/generic-jvm-constructor-admission.test.cjs tests/unit/generic-jvm-finite-domains.test.cjs
           unset JAVA_TOOL_OPTIONS
           mkdir "$RUNNER_TEMP/generic-jvm-classes"
           javac -d "$RUNNER_TEMP/generic-jvm-classes" packages/family-hunter/GenericJvmMetamorphicProbe.java
@@ -142,6 +142,18 @@ jobs:
             throw Error('KOTLIN_BOXED_ARRAY_PROBE_COVERAGE_FAILED');
           console.log('KOTLIN_BOXED_NUMERIC_ARRAY_METHODS_PROBED='+r.methodsProbed);
           JS
+      - name: Exercise Kotlin default and named companions with bounded numeric domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture="$GITHUB_WORKSPACE/tests/fixtures/jvm-metamorphic/companion-admission"
+          mkdir "$RUNNER_TEMP/companions-compiled" "$RUNNER_TEMP/companions-probed"
+          bash tests/fixtures/phase2-block26-object-contracts/run-isolated.sh compile-v2 \
+            "$RUNNER_TEMP/kotlin-generic/kotlinc" "$fixture" "$RUNNER_TEMP/companions-compiled"
+          bash tests/fixtures/jvm-metamorphic/run-probe-v2.sh "$RUNNER_TEMP/companions-compiled/target.jar" \
+            "$RUNNER_TEMP/generic-jvm-classes" sample.admission "$RUNNER_TEMP/companions-probed"
+          node "$fixture/verify.cjs" "$RUNNER_TEMP/companions-probed/discovery.json" \
+            | tee "$RUNNER_TEMP/companions-synthetic-receipt.json"
       - name: Replay generic discovery and independent original Kotlin oracle
         shell: bash
         run: |
@@ -160,5 +172,7 @@ jobs:
             ${{ runner.temp }}/api-v2-primary/discovery.json
             ${{ runner.temp }}/api-v2-default/discovery.json
             ${{ runner.temp }}/kotlin-boxed-output/discovery.json
+            ${{ runner.temp }}/companions-probed/discovery.json
+            ${{ runner.temp }}/companions-synthetic-receipt.json
           retention-days: 30
           if-no-files-found: error
