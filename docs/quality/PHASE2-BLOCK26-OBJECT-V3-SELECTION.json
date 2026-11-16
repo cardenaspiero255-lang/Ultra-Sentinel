@@ -3,8 +3,8 @@
   "freezeCommitSha": "6f8981a9f7225c91e38c0f02be7912d8fb12f441",
   "engineSha": "31222b3bedb1d48253e9cd4e676250b5841a384f",
   "query": "algorithms language:Kotlin fork:false archived:false stars:20..150 size:20..5000",
-  "sort": "stars",
-  "order": "desc",
+  "sort": "client-side stars descending among first 100 results returned in GitHub relevance order",
+  "order": "ties by repository full_name ascending",
   "perPage": 100,
   "searchPage": 1,
   "policy": "FIRST_PUBLIC_NONEXPOSED_REPOSITORY_WITH_1_TO_50_REGULAR_KOTLIN_PRODUCTION_FILES_UNDER_SRC_MAIN",
@@ -14,5 +14,7 @@
   "sourceBodiesMayBeReadOnlyAfterCommittedReservation": true,
   "oracleMayExecuteOnlyAfterPredictionArtifactPublished": true,
   "retuningAllowed": false,
-  "block27Allowed": false
+  "block27Allowed": false,
+  "api": "mcp__GitHub__search_repositories",
+  "selectionRule": "FIRST_METADATA_ELIGIBLE_AFTER_DECLARED_CLIENT_SIDE_SORT"
 }
