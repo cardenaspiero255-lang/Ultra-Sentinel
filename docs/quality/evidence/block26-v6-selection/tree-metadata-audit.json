@@ -75,14 +75,22 @@
       "repository": "mohammednawas8/Android-Algorithms-Visualizer",
       "stars": 15,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "fa26155cbd2a15cc6da8430764a5075a0341124b",
+      "treeSha": "931a4030ae4e8ea8341d58f62f2caaa05f4037fd",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 8,
       "repository": "funfunStudy/algorithm",
       "stars": 14,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "a207e4db320e8126169154aa1a7a96a58c71785f",
+      "treeSha": "251629a711090c45e0b44414bbe54e330d55325c",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 9,
@@ -96,21 +104,33 @@
       "repository": "sumeyraozugur/Algorithms",
       "stars": 14,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "974c26d902b8ec6a4cf354220bf8c68be4f7a442",
+      "treeSha": "011e2539740d1a7f7f23748bf5d76a807d5320fe",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 11,
       "repository": "V9vek/Sorting-Visualizer",
       "stars": 14,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "51017f3cc312febb63dcdc028a8c995e8ec9810a",
+      "treeSha": "cce14be01ca9ec656627fa0a950f514abbbc2ea7",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 12,
       "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
       "stars": 12,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "9d27de660c5e96afa5c2a98490e9d50111f005e4",
+      "treeSha": "12061c0f62de53c7fb6f7172b3bd4583b752a080",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 13,
