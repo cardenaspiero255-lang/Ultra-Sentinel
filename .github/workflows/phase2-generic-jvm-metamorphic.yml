@@ -52,7 +52,7 @@ jobs:
           test "$(sha256sum "$agent" | cut -d' ' -f1)" = 47e700ccb0fdb9e27c5241353f8161938f4e53c3561dd35e063c5fe88dc3349b
           test "$(sha256sum "$cli" | cut -d' ' -f1)" = 8f748683833d4dc4d72cea5d6b43f49344687b831e0582c97bcb9b984e3de0a3
           export JAVA_TOOL_OPTIONS="-javaagent:$agent=destfile=$RUNNER_TEMP/generic-jvm.exec,includes=GenericJvmMetamorphicProbe*,append=true"
-          node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs tests/unit/generic-jvm-metamorphic-compatibility.test.cjs
+          node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs tests/unit/generic-jvm-metamorphic-compatibility.test.cjs tests/unit/generic-jvm-object-contracts.test.cjs
           unset JAVA_TOOL_OPTIONS
           mkdir "$RUNNER_TEMP/generic-jvm-classes"
           javac -d "$RUNNER_TEMP/generic-jvm-classes" packages/family-hunter/GenericJvmMetamorphicProbe.java
