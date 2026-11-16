@@ -472,28 +472,44 @@
       "repository": "ShawxingKwok/Kwok-algorithm",
       "stars": 8,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "954d8d1489cbd280e4413b3fbb46660845158ddf",
+      "treeSha": "415396b0d4600d48066c443b668bfad5319596b3",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 39,
       "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
       "stars": 8,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "879885b82ef51d58efe578c9391f04bc54c2531d",
+      "treeSha": "a0d7caf47a61430dbaff4ef4c1922b6fa4132f0a",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 40,
       "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
       "stars": 7,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "6fdf907ae1ef4d52849d29b2775ba1e1ace99596",
+      "treeSha": "155b8b44b82f104508b238c14f7ac92f72342809",
+      "kotlinFiles": 96,
+      "sizeBytes": 101944
     },
     {
       "rank": 41,
       "repository": "elye/demo_android_blur_image",
       "stars": 7,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "9b86931adc30806e31ccb7ac4bed08dfa80e44f7",
+      "treeSha": "49993edbc7f5f8901a0eecf0b3bba37f96a164cd",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 42,
