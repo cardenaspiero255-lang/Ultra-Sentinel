@@ -1,0 +1,60 @@
+{
+  "schema": "ultra-sentinel-block26-string-first-run-receipt/v1",
+  "protocol": {
+    "freezeCommit": "a4110c671416f5cc5ca1c3d507f9013663a762be",
+    "reservationCommit": "46354f03ad5f76eb1f274d7333b082a17d86b108",
+    "oraclesCommittedBeforeHunter": true,
+    "engineSha": "5a6f28499ad0ffd7cf7d5f98bc535bb5205eb1ed",
+    "cohortCount": 2,
+    "originalSourceFiles": 25
+  },
+  "githubActions": {
+    "runId": 43810197101,
+    "runUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/43810197101",
+    "predictionsArtifactId": 14199867578,
+    "predictionsArtifactCreatedAt": "2026-11-16T05:27:26Z",
+    "independentArtifactId": 14200461330,
+    "independentArtifactCreatedAt": "2026-11-16T05:28:29Z"
+  },
+  "sha256": {
+    "predictionZip": "e869c7568ba81b488cf3093b86fbdff4af36692131f899d9c9651751f598d2a9",
+    "independentZip": "94328f5bebcd6c305cc9f72e365010ab611b5267382324722a70e0290d395d7f",
+    "predictionSeal": "3c537f2282b84e878ef957093ba00a0fd3f55dae2aadd4f31d51351fcf150f58",
+    "independentVerdict": "78225b8d1a2c7c3e45241a16f7484dbfeee09c01f8b62af4e385fb278982a7a1",
+    "manifest": "3fe76144b92fc01098e9159c86fd8d990e28a8b84248d9707af130a76eb09540"
+  },
+  "outcome": {
+    "inspectedClasses": 45,
+    "unsupportedMethods": 93,
+    "methodCandidates": 1,
+    "methodsProbed": 0,
+    "completedTriples": 0,
+    "rawHypotheses": 0,
+    "independentObservations": 21,
+    "independentUnsupportedControls": 5,
+    "confirmedDistinctDefects": 0,
+    "executionAbstentions": 0,
+    "partialProbeAbstentions": 1,
+    "novelFamilyVerified": false,
+    "block26Closed": false,
+    "block27Allowed": false,
+    "globalPrecision": null,
+    "globalRecall": null
+  },
+  "independentExcludedControl": {
+    "repository": "esoxjem/Algorithms",
+    "originalClass": "algos.arrays.BinarySearch",
+    "method": "search(java.lang.Integer[];int;)int",
+    "arguments": "[-20,-10,0,3,5], -10",
+    "actual": "-1",
+    "expected": "1",
+    "admittedByFrozenHunter": false,
+    "autonomousDiscovery": false
+  },
+  "warnings": [
+    "No independent mathematical defect matched sealed Hunter predictions.",
+    "Original-source binary-search mismatch is outside eligible numeric probe and cannot count as autonomous discovery.",
+    "No frozen engine or answer was changed after original source reading.",
+    "Any subsequent Actions workflow on this cohort is a replay and not a fresh unknown holdout."
+  ]
+}
