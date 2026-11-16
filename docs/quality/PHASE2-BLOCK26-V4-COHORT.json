@@ -1,0 +1,316 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "a4156d8853f9714346b436d65f18bbd22d464ef0",
+    "treeSha": "f7389ebcd9a4758ecaea785218e2d6b5ed65b068",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "355746a699d90063bc765fe041e7d6330c172dff"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      }
+    ]
+  },
+  "freezeSha": "85d29240c41f6e51a4d54910ca51faf217d38e74",
+  "metadataReservationBlobSha": "7f1ecdea81412fd6d1a88afb66d7a9ea4389e8a9",
+  "cohorts": [
+    {
+      "id": 1,
+      "source": {
+        "repository": "andrewass/kalgos",
+        "commitSha": "bb566af25107ed7afe6447668e67afb02d32968e",
+        "treeSha": "c5d10996356c0ea952663c800998abe9216351d9",
+        "files": [
+          {
+            "path": "src/main/kotlin/algorithms/combinatorics/binomialCoefficient.kt",
+            "blobSha": "8a8071b8fdf134ef78382a5f049ac6bf6527823c",
+            "sizeBytes": 613
+          },
+          {
+            "path": "src/main/kotlin/algorithms/flow/DinicsAlgorithm.kt",
+            "blobSha": "5738f0ac46a520c1882292c530c58118d74fa9b7",
+            "sizeBytes": 2370
+          },
+          {
+            "path": "src/main/kotlin/algorithms/flow/EdmondsKarp.kt",
+            "blobSha": "d879471a43e50cbb529d646a37b22ab9bb0d0030",
+            "sizeBytes": 2711
+          },
+          {
+            "path": "src/main/kotlin/algorithms/flow/FlowEdge.kt",
+            "blobSha": "442313b5ffd8fe112400b5e0a80153840a3054a8",
+            "sizeBytes": 276
+          },
+          {
+            "path": "src/main/kotlin/algorithms/flow/FlowNode.kt",
+            "blobSha": "b2ae24f6954e6db1487e24973ff35043c5b4c2d3",
+            "sizeBytes": 119
+          },
+          {
+            "path": "src/main/kotlin/algorithms/gametheory/nim.kt",
+            "blobSha": "cb3727cfb357e7a35abc836568d526129b2b33c4",
+            "sizeBytes": 2744
+          },
+          {
+            "path": "src/main/kotlin/algorithms/geometry/ClosestPairOfPoints.kt",
+            "blobSha": "2d0dc14178ff656c4cd7d1a2eebc40b284d09980",
+            "sizeBytes": 3970
+          },
+          {
+            "path": "src/main/kotlin/algorithms/geometry/convexHull.kt",
+            "blobSha": "104f98d5eed284b4e2848437bd4fe2465a2c980f",
+            "sizeBytes": 3315
+          },
+          {
+            "path": "src/main/kotlin/algorithms/geometry/pointInPolygon.kt",
+            "blobSha": "398ef052f6f5f9cfa0eb1681b77020f36b24e082",
+            "sizeBytes": 1512
+          },
+          {
+            "path": "src/main/kotlin/algorithms/geometry/polygonArea.kt",
+            "blobSha": "7646da946edea5afd16537e3ec5c6fdde99ca064",
+            "sizeBytes": 635
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/EulerianPathDirGraph.kt",
+            "blobSha": "db0c6984a3e6410304200aa3cffcba7668289444",
+            "sizeBytes": 2747
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/connectedcomponents/ConnectedComponent.kt",
+            "blobSha": "751d039818fe74fd9de7936fd048ae74070a2633",
+            "sizeBytes": 145
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/connectedcomponents/SccTarjan.kt",
+            "blobSha": "34a83d661945d683c9121858d53da2fb1857750e",
+            "sizeBytes": 1937
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/depthFirstSearch.kt",
+            "blobSha": "44f8ef7e9aa96253a37106568ba9800e7fee9887",
+            "sizeBytes": 1435
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/shortestpath/BellmanFordResult.kt",
+            "blobSha": "9b115b235003de8a39ab597a589d0566b9cb1f98",
+            "sizeBytes": 112
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/shortestpath/bellmanFord.kt",
+            "blobSha": "10bc7279e6f6ef28ffc9fd56a70e7e995d68a314",
+            "sizeBytes": 2389
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/shortestpath/dijkstra.kt",
+            "blobSha": "f5a113cef66bb952555a56656fdda2b0ff8f2b93",
+            "sizeBytes": 1105
+          },
+          {
+            "path": "src/main/kotlin/algorithms/graph/shortestpath/floydWarshall.kt",
+            "blobSha": "391788112b0e77a6523eb696daf7bad6f244e8c5",
+            "sizeBytes": 1699
+          },
+          {
+            "path": "src/main/kotlin/algorithms/greedy/IntervalScheduling.kt",
+            "blobSha": "b583a646540b881805b77e7ca665fc459a18a279",
+            "sizeBytes": 2826
+          },
+          {
+            "path": "src/main/kotlin/algorithms/number/chineseRemainderTheorem.kt",
+            "blobSha": "cb7e3225f62ba178c604cf52ae9515b49080601a",
+            "sizeBytes": 904
+          },
+          {
+            "path": "src/main/kotlin/algorithms/number/extendedEuclid.kt",
+            "blobSha": "ebf0ebd15092ffb0cfbfb9769efc1cabce605f4d",
+            "sizeBytes": 561
+          },
+          {
+            "path": "src/main/kotlin/algorithms/number/greatestCommonDivisor.kt",
+            "blobSha": "9e18a6386c8a40a8c12b3d560f715aa99da1b3a4",
+            "sizeBytes": 372
+          },
+          {
+            "path": "src/main/kotlin/algorithms/search/MeetInTheMiddle.kt",
+            "blobSha": "3582e86ac99f94cf44863fc7cc868050c3f0a2a3",
+            "sizeBytes": 2243
+          },
+          {
+            "path": "src/main/kotlin/algorithms/search/longestIncSubSeq.kt",
+            "blobSha": "5b38e569753ad1fdb4d5f36ae163386b09dd184d",
+            "sizeBytes": 1138
+          },
+          {
+            "path": "src/main/kotlin/algorithms/string/AhoCorasick.kt",
+            "blobSha": "a652468f7f0394f21e0a058165847a7b5421d745",
+            "sizeBytes": 4977
+          },
+          {
+            "path": "src/main/kotlin/algorithms/string/HammingDistance.kt",
+            "blobSha": "39b6597199d6ac75ffcd65bebd2147763190e1de",
+            "sizeBytes": 1999
+          },
+          {
+            "path": "src/main/kotlin/algorithms/string/LongestPalindrome.kt",
+            "blobSha": "985822e69275510288d6c4d3e0c5585921e9a522",
+            "sizeBytes": 1514
+          },
+          {
+            "path": "src/main/kotlin/algorithms/string/RabinKarp.kt",
+            "blobSha": "9e48ca2047ad83551da64dafb0fb05754454cfd6",
+            "sizeBytes": 1799
+          },
+          {
+            "path": "src/main/kotlin/algorithms/string/kmp.kt",
+            "blobSha": "6263483f735e0e1d7c67ea176a2144c86d493656",
+            "sizeBytes": 2115
+          },
+          {
+            "path": "src/main/kotlin/algorithms/tree/LcaBinaryLifting.kt",
+            "blobSha": "2ab8bcd52064066dda1685ccd52d6893224e5c19",
+            "sizeBytes": 3611
+          },
+          {
+            "path": "src/main/kotlin/datastructures/rangequery/BinaryIndexedTree.kt",
+            "blobSha": "91e80a967fa00976c5d40fc04c372758a52a63e7",
+            "sizeBytes": 1825
+          },
+          {
+            "path": "src/main/kotlin/datastructures/rangequery/SegmentTreeLazyProp.kt",
+            "blobSha": "9c1f35f8a3d71be0120ee1291f5ed079ac4d8ea0",
+            "sizeBytes": 4372
+          },
+          {
+            "path": "src/main/kotlin/datastructures/set/DisjointSet.kt",
+            "blobSha": "9310be90c1cb1187750f34997fb6611c2f3565c4",
+            "sizeBytes": 2559
+          },
+          {
+            "path": "src/main/kotlin/datastructures/set/SetNode.kt",
+            "blobSha": "e9eaeb7fa91822e2bda8edee48c086d5722dafc9",
+            "sizeBytes": 150
+          },
+          {
+            "path": "src/main/kotlin/datastructures/string/SuffixArray.kt",
+            "blobSha": "fb01d35c29dae05e932f799a045cc6dd31e26669",
+            "sizeBytes": 4169
+          },
+          {
+            "path": "src/main/kotlin/datastructures/string/Trie.kt",
+            "blobSha": "c658e8fd1031697385b5fa9c065b98fa9b0c8994",
+            "sizeBytes": 3801
+          },
+          {
+            "path": "src/main/kotlin/datastructures/string/TrieNode.kt",
+            "blobSha": "3906ee5a31cdf634a5578e17b43da35f0d180a09",
+            "sizeBytes": 156
+          },
+          {
+            "path": "src/main/kotlin/datastructures/tree/BinarySearchTree.kt",
+            "blobSha": "57f922221364afa80f32775b0c59b97478dcd26b",
+            "sizeBytes": 5291
+          },
+          {
+            "path": "src/main/kotlin/datastructures/tree/HuffmanTree.kt",
+            "blobSha": "4d7eda99abbc14dd2d8f6ee3161ef938f9831b71",
+            "sizeBytes": 2783
+          },
+          {
+            "path": "src/main/kotlin/datastructures/tree/Treap.kt",
+            "blobSha": "2ba8adb02e65609c7a0b9776e572500efb783023",
+            "sizeBytes": 5414
+          },
+          {
+            "path": "src/main/kotlin/datastructures/tree/TreapNode.kt",
+            "blobSha": "e0921672a9be56afb5eee9cbcc07d66f730ee4fc",
+            "sizeBytes": 179
+          },
+          {
+            "path": "src/main/kotlin/entities/BinaryTreeNode.kt",
+            "blobSha": "965bdafa59867333b2b959b6fc508d2fb0b46a43",
+            "sizeBytes": 234
+          },
+          {
+            "path": "src/main/kotlin/entities/GraphEdge.kt",
+            "blobSha": "7e4815bf6545f38d0e0b3c6c3fb144ab04a0e47a",
+            "sizeBytes": 122
+          },
+          {
+            "path": "src/main/kotlin/entities/GraphNode.kt",
+            "blobSha": "96a2e707bf403c7be37079aa93a5762c4f9dca4e",
+            "sizeBytes": 541
+          },
+          {
+            "path": "src/main/kotlin/entities/LineSegment.kt",
+            "blobSha": "b754b7fc87381676df2c58d99a2e881bace03b6d",
+            "sizeBytes": 878
+          },
+          {
+            "path": "src/main/kotlin/entities/Point.kt",
+            "blobSha": "f44ae4e45abfde79f7aa6aa39328ab1a4f6d1b65",
+            "sizeBytes": 196
+          },
+          {
+            "path": "src/main/kotlin/entities/TreeNode.kt",
+            "blobSha": "f0bc87f5373ada91fca1b9f79954af1822a0f257",
+            "sizeBytes": 154
+          },
+          {
+            "path": "src/main/kotlin/utils/GeometryUtils.kt",
+            "blobSha": "6e4ee64c0952311ac7b903181333a953dc0045be",
+            "sizeBytes": 271
+          },
+          {
+            "path": "src/main/kotlin/utils/KotlinIo.kt",
+            "blobSha": "808f26b14a3c6ec25aa9a6d926d368057dea6bc2",
+            "sizeBytes": 1596
+          },
+          {
+            "path": "src/main/kotlin/utils/ListUtils.kt",
+            "blobSha": "ec905725660a8c3d94edb44edc3afd2f4840c5cf",
+            "sizeBytes": 365
+          },
+          {
+            "path": "src/main/kotlin/utils/NumberUtils.kt",
+            "blobSha": "29131ddc9a0bcc9b35891d2fc0ec226b449a4c49",
+            "sizeBytes": 1105
+          },
+          {
+            "path": "src/main/kotlin/utils/StringUtils.kt",
+            "blobSha": "a011a810a7ff9ca0007732f49c05a2a9d798847f",
+            "sizeBytes": 319
+          }
+        ]
+      }
+    }
+  ],
+  "oracles": [
+    {
+      "cohortId": 1,
+      "path": "tests/fixtures/phase2-block26-v4/oracle-1.kt",
+      "sha256": "bbbdd99162ea15a18b327c600df3beabf3bf0ba2c7631d5303972eef5874cd76",
+      "admission": "INDEPENDENT_NONNEGATIVE_GCD"
+    }
+  ],
+  "predictionsExecuted": false,
+  "oraclesCommittedBeforeHunter": true,
+  "oracleExcludedFromHunterMounts": true,
+  "block27Allowed": false
+}

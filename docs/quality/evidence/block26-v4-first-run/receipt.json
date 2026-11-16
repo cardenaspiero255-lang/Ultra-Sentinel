@@ -1,0 +1,61 @@
+{
+  "schema": "ultra-sentinel-block26-v4-immutable-first-run/v1",
+  "runId": 43811589616,
+  "protocolSha": "f5bd5dda57cdb61a1447da1d948270b575ab92c9",
+  "engineSha": "a4156d8853f9714346b436d65f18bbd22d464ef0",
+  "predictionArtifactId": 14200049052,
+  "predictionArchiveSha256": "407b8b5c544a3c76be6f9d04710b42389334b1cb20bc0a581d27e834014f7bce",
+  "predictionUploadedAt": "2026-11-16T05:41:28Z",
+  "oracleArtifactId": 14201235621,
+  "oracleArchiveSha256": "71f69075f17b58b45cf89ce2193665362656a99561f5f6e5b24f43853f65badb",
+  "oracleUploadedAt": "2026-11-16T05:42:47Z",
+  "newConfirmedHunterDiscoveries": 0,
+  "knownSourcesMustNotBeReusedAsUnknown": true,
+  "block27Allowed": false,
+  "files": [
+    {
+      "path": "coverage-note.json",
+      "sha256": "d794885b7311447e197ff3f95fd5dc41298d762fa8a31d76e915ae51862ef666"
+    },
+    {
+      "path": "independent/independent-verdict.json",
+      "sha256": "2b028a82210d3eee4490cb99e819c97733905f7979610225cef16ba3d15fbecf"
+    },
+    {
+      "path": "independent/oracle-1.json",
+      "sha256": "61f0536e1950eb9a46649b416848e785cfa2d0907f8489ef51c2ab32ceccf2b8"
+    },
+    {
+      "path": "independent/oracle-abstentions.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "predictions/abstentions.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "predictions/cohort-1/scope-0/discovery.json",
+      "sha256": "123fb2c008ff01101c7aa2b977c31fb64c044ee8e81a8c88f3d7853d12a9eb60"
+    },
+    {
+      "path": "predictions/cohort-1/scope-1/discovery.json",
+      "sha256": "2bcdbadaf4212b1e090565147728f5a6ac49d49bbbd09c270cddb05f533f6d66"
+    },
+    {
+      "path": "predictions/cohort-1/scope-2/discovery.json",
+      "sha256": "e38a87cfe64b454151574d892dda68ba8c630314a58f54d45b46e1cc42097ffa"
+    },
+    {
+      "path": "predictions/cohort-1/scope-3/discovery.json",
+      "sha256": "28616769ac46a5d7d0516b634f0e4f9c228490d332adbd2561f5bca91d9b1436"
+    },
+    {
+      "path": "predictions/index.json",
+      "sha256": "c4d9be5264bd8fa68ff142489906e2f66c63ecdfad32f0752bf0055651a51643"
+    },
+    {
+      "path": "predictions/prediction-seal.json",
+      "sha256": "b86c2b0ed8bbcdef4a5032cd4f9d54337fa55ed31d786a8dcdb60db7201fda9f"
+    }
+  ]
+}
