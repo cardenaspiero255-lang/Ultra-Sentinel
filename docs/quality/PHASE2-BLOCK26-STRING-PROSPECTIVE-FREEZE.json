@@ -1,0 +1,62 @@
+{
+  "schema": "ultra-sentinel-block26-string-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "5a6f28499ad0ffd7cf7d5f98bc535bb5205eb1ed",
+    "treeSha": "d165991c769ca043b83972ca28c696997c08f2e5",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "aff9c222e41705ac8fb58090b68a372e69102d69"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      }
+    ]
+  },
+  "selection": {
+    "query": "kotlin algorithms language:Kotlin stars:5..200 archived:false",
+    "ordered": "GitHub search first page relevance order, metadata only",
+    "candidateLimit": 30,
+    "maximumCohorts": 2,
+    "criterion": "first two previously unused public repositories (in search order) with 3-30 regular .kt Git blobs in src/main/kotlin or src/main/java; each between 50 and 12000 bytes and combined <=80000 bytes",
+    "excludeRepositories": [
+      "bmaslakov/kotlin-algorithm-club",
+      "TheAlgorithms/Kotlin",
+      "Kotlin/kotlinx-datetime",
+      "Kotlin/kotlinx-io",
+      "Kotlin/kotlinx.coroutines",
+      "ktorio/ktor",
+      "nazmulidris/algorithms-in-kotlin",
+      "MarcinMoskala/KotlinDiscreteMathToolkit",
+      "Keelar/ExprK",
+      "thelastpickle/tlp-stress"
+    ],
+    "sourceBodiesReadBeforeReservation": false
+  },
+  "oracle": {
+    "preparedBeforePredictions": true,
+    "independent": true,
+    "compiledBeforePrediction": true,
+    "executeOnlyAfterSealedPrediction": true
+  },
+  "latestKnownFinding": "PR #401 LCM previously exposed; ineligible for new holdout",
+  "claims": {
+    "newDiscovery": false,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}
