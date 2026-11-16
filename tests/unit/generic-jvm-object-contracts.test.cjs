@@ -142,6 +142,10 @@ test('bounded JVM objects expose equality, symmetry and equal-hash violations on
    fs.writeFileSync(file,'package sample.objectlaws;\npublic class '+name+' {\n'+body+'\n}\n');
    sources.push(file);
   }
+  const interfaceFile=path.join(tmp,'InterfaceLaw.java'),abstractFile=path.join(tmp,'AbstractLaw.java');
+  fs.writeFileSync(interfaceFile,'package sample.objectlaws; public interface InterfaceLaw { boolean equals(Object o); }');
+  fs.writeFileSync(abstractFile,'package sample.objectlaws; public abstract class AbstractLaw { @Override public boolean equals(Object o){return this==o;} }');
+  sources.push(interfaceFile,abstractFile);
   run('javac',['-d',binary,path.join(root,'packages/family-hunter/GenericJvmMetamorphicProbe.java')]);
   run('javac',['-d',classes,...sources]);
   run('jar',['cf',jar,'-C',classes,'.']);
