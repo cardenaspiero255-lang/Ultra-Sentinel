@@ -57,10 +57,10 @@ public final class GenericJvmMetamorphicProbe {
         return Long.valueOf(anchor);
     }
 
-    // Only exact, proven numeric element types are admitted. Erased/raw,
-    // wildcard, nested and application-specific containers abstain.
+    // Only exact numeric JVM array elements (primitive or boxed) are admitted.
+    // Erased/raw, wildcard, nested and application-specific containers abstain.
     private static Class<?> element(Class<?> raw, Type generic) {
-        if (raw.isArray() && raw.getComponentType().isPrimitive() && numeric(raw.getComponentType()))
+        if (raw.isArray() && numeric(raw.getComponentType()))
             return raw.getComponentType();
         if ((raw == List.class || raw == Collection.class || raw == Iterable.class) &&
             generic instanceof ParameterizedType p && p.getActualTypeArguments().length == 1 &&
