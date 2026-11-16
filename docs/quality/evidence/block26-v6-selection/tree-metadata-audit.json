@@ -840,7 +840,11 @@
       "repository": "saechimdaeki/Solving-ALGORITHM",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "d11301b54e9aedcaaa75d0f02dcec88da879ae4e",
+      "treeSha": "66ec624568f960248562dbeca3f397e77f784696",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 61,
