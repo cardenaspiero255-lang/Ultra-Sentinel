@@ -4288,121 +4288,136 @@
       "index": 75,
       "repository": "palasjir/ct-volumetric-rendering",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 14,
       "repositoryId": "115330461",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 76,
       "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 8,
       "repositoryId": "833028751",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 77,
       "repository": "IdeoG/android-floodfill-algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "144963569",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 78,
       "repository": "takahirom/jetbrains-academy-algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "282615113",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 79,
       "repository": "nadezhdagub/Algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "384571553",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 80,
       "repository": "Louiixx-h/algorithms",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "805946677",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 81,
       "repository": "samagra14/aima-kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "121018845",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 82,
       "repository": "yangsooplus/Algorithm-Kotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "691493522",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 83,
       "repository": "callmelovevsick/Algorithm-Client",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "1103232731",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 84,
       "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "534963389",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 85,
       "repository": "DuoLa512/AlgorithmDemo",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "211064088",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 86,
       "repository": "danylovolokh/AlgorithmsAnalysis",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "64615662",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 87,
       "repository": "alexandrepiveteau/kotlin-graphs",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 17,
       "repositoryId": "630931403",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 88,
       "repository": "andre-j3sus/algorithms-and-data-structures",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "362243397",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 89,
       "repository": "zitmen/thunderstorm-algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "75238287",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 90,
