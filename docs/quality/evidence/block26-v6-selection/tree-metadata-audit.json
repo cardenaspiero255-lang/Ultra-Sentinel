@@ -17,21 +17,33 @@
       "repository": "mAlaliSy/AlgoLizer-algorithms-visualizer",
       "stars": 18,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "592ff2ed419b9ab455e70426502471bfee52a2b9",
+      "treeSha": "8b282a348d1f5af39cab79cd4cdf298cc93a983e",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 2,
       "repository": "alexandrepiveteau/kotlin-graphs",
       "stars": 17,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "a4fd159f094aed5b6b8920d0ceaa6a9c5fc7679f",
+      "treeSha": "2eedc1df7f847be18cee0a7ea692b5bac81687bf",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 3,
       "repository": "ensody/Kompressor",
       "stars": 17,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "4ed262ae7b5404c50bf116b930e8b4ed1c47588b",
+      "treeSha": "7f8c2cf13945bb7e8dc8a7ad0c8ef3c184625992",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 4,
@@ -52,7 +64,11 @@
       "repository": "aallam/string-similarity-kotlin",
       "stars": 15,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "40cd4eb7543b776c283147e05d12bb840202b6f7",
+      "treeSha": "8d398483c7f92d9b26648b54145d5af4c17b1100",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 7,
