@@ -23,12 +23,22 @@ for p in /bin /lib /lib64; do
  else mounts+=(--ro-bind "$p" "$p"); fi
 done
 case "$mode" in
- compile)
+ compile|compile-v2)
   # All file paths were authenticated against immutable source Git blobs.
   while IFS= read -r -d '' file; do
    relative=${file#"$input/"}
-   [[ "$relative" =~ ^(src/main/|oracle/)[A-Za-z0-9_/]+\.kt$ ]] || exit 2
-   printf '/input/%s\n' "$relative"
+   if [ "$mode" = compile ]; then
+    [[ "$relative" =~ ^(src/main/|oracle/)[A-Za-z0-9_/]+\.kt$ ]] || exit 2
+    printf '/input/%s\n' "$relative"
+   else
+    # Argfile quoting treats spaces, quotes and Unicode as path bytes, never
+    # compiler flags. The source reader authenticated canonical paths first.
+    node - "$relative" <<'JS'
+const p=process.argv[2];
+if(!/^(src\/main\/|oracle\/).+\.kt$/u.test(p)||/[\x00-\x1f\x7f\\]/.test(p)||p.split('/').some(x=>!x||x==='.'||x==='..'))process.exit(2);
+console.log(JSON.stringify('/input/'+p));
+JS
+   fi
   done < <(find "$input" -type f -name '*.kt' -print0 | sort -z) > "$output/sources.txt"
   [ -s "$output/sources.txt" ] || exit 2
   command=(/kotlin/bin/kotlinc -J-Xmx256m -J-XX:ActiveProcessorCount=2 -nowarn @/out/sources.txt -include-runtime -d /out/target.jar)

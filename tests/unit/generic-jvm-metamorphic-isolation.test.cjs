@@ -3,7 +3,8 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
 const {spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'../..');
-const runner=path.join(root,'tests/fixtures/jvm-metamorphic/run-probe.sh');
+const runner=path.join(root,'tests/fixtures/jvm-metamorphic',
+ process.env.SENTINEL_JVM_V2_RUNNER==='1'?'run-probe-v2.sh':'run-probe.sh');
 test('the JVM probe requires a bounded networkless namespace and does not mount the workspace',()=>{
  const source=fs.readFileSync(runner,'utf8');
  const syntax=spawnSync('bash',['-n',runner],{encoding:'utf8'});assert.equal(syntax.status,0,syntax.stderr);
