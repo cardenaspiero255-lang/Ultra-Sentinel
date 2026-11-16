@@ -928,14 +928,29 @@
       "repository": "Kotlin-Polytech/Algorithms-2020",
       "stars": 4,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "a8939b5927808434009fd746fb08dbd02ecf146f",
+      "treeSha": "616514989e6ff2bcc5a282e10d5dd4354d26626c",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 69,
       "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
       "stars": 4,
       "defaultBranch": "develop",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "71ffc18f7c79fe710dc51ba4b58b07e3e81cad74",
+      "treeSha": "b181956daa66ba54ce32f17f02d4b8e91d9d2df4",
+      "kotlinFiles": 1,
+      "sizeBytes": 721,
+      "files": [
+        {
+          "path": "src/main/kotlin/Main.kt",
+          "blobSha": "6f6e87b72bdb120b77bcfda8956fd8fa56b9d141",
+          "sizeBytes": 721
+        }
+      ]
     },
     {
       "rank": 70,
@@ -1385,9 +1400,24 @@
           }
         ]
       }
+    },
+    {
+      "id": 6,
+      "source": {
+        "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
+        "commitSha": "71ffc18f7c79fe710dc51ba4b58b07e3e81cad74",
+        "treeSha": "b181956daa66ba54ce32f17f02d4b8e91d9d2df4",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "6f6e87b72bdb120b77bcfda8956fd8fa56b9d141",
+            "sizeBytes": 721
+          }
+        ]
+      }
     }
   ],
-  "scanComplete": false,
+  "scanComplete": true,
   "sourceBodiesRead": false,
   "oraclesAuthored": false,
   "predictionsExecuted": false
