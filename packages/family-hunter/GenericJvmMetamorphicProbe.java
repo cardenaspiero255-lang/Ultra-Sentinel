@@ -5,6 +5,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -31,10 +35,13 @@ public final class GenericJvmMetamorphicProbe {
 
     private static boolean numeric(Class<?> type) {
         return type == byte.class || type == short.class || type == int.class || type == long.class ||
-            type == Byte.class || type == Short.class || type == Integer.class || type == Long.class;
+            type == Byte.class || type == Short.class || type == Integer.class || type == Long.class ||
+            type == double.class || type == Double.class;
     }
 
     private static Object value(Class<?> type, int variant) {
+        if (type == double.class || type == Double.class)
+            return new double[]{0.0, 1.0, Double.MAX_VALUE}[variant];
         if (type == byte.class || type == Byte.class) return Byte.valueOf((byte) (variant == 2 ? Byte.MAX_VALUE : variant));
         if (type == short.class || type == Short.class) return Short.valueOf((short) (variant == 2 ? Short.MAX_VALUE : variant));
         if (type == int.class || type == Integer.class) return Integer.valueOf(variant == 2 ? Integer.MAX_VALUE : variant);
@@ -42,21 +49,77 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static Object anchor(Class<?> type, int anchor) {
+        if (type == double.class || type == Double.class) return Double.valueOf(anchor);
         if (type == byte.class || type == Byte.class) return Byte.valueOf((byte) anchor);
         if (type == short.class || type == Short.class) return Short.valueOf((short) anchor);
         if (type == int.class || type == Integer.class) return Integer.valueOf(anchor);
         return Long.valueOf(anchor);
     }
 
-    private static Long invoke(Method method, Object receiver, Object[] arguments) {
+    // Only exact, proven numeric element types are admitted. Erased/raw,
+    // wildcard, nested and application-specific containers abstain.
+    private static Class<?> element(Class<?> raw, Type generic) {
+        if (raw.isArray() && raw.getComponentType().isPrimitive() && numeric(raw.getComponentType()))
+            return raw.getComponentType();
+        if ((raw == List.class || raw == Collection.class || raw == Iterable.class) &&
+            generic instanceof ParameterizedType p && p.getActualTypeArguments().length == 1 &&
+            p.getActualTypeArguments()[0] instanceof Class<?> item && numeric(item)) return item;
+        return null;
+    }
+
+    private static Object argument(Class<?> raw, Type generic, int sample, int fixed, int band, boolean varying) {
+        if (numeric(raw)) {
+            if (!varying) return anchor(raw, fixed);
+            if (raw == double.class || raw == Double.class) {
+                return new double[][]{{0, 1, Double.MAX_VALUE}, {0, .5, 1}, {-1, 0, 1}}[band][sample];
+            }
+            return value(raw, sample);
+        }
+        Class<?> item = element(raw, generic);
+        int size = varying ? (band == 0 ? new int[]{0, 1, 3} : new int[]{1, 2, 3})[sample] : 1;
+        Object array = raw.isArray() ? Array.newInstance(item, size) : null;
+        List<Object> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            Object value = anchor(item, i);
+            if (array != null) Array.set(array, i, value); else list.add(value);
+        }
+        return array != null ? array : list;
+    }
+
+    private static Number invoke(Method method, Object receiver, Constructor<?> ctor, Object[] seed,
+                                 int position, int fixed, int band, int sample, Result result) {
+        if (++result.invocations > 80000) throw new IllegalStateException("INVOCATION_BUDGET");
         try {
-            Object result = method.invoke(receiver, arguments);
-            if (result instanceof Byte || result instanceof Short || result instanceof Integer || result instanceof Long)
-                return ((Number) result).longValue();
+            Class<?>[] params = method.getParameterTypes();
+            Type[] generic = method.getGenericParameterTypes();
+            Object[] args = new Object[params.length];
+            for (int i = 0; i < args.length; i++)
+                args[i] = argument(params[i], generic[i], sample, fixed, band, i == position);
+            // Ordinary objects and mutable inputs are recreated for EVERY call.
+            // Singleton methods retain the existing repeated-call stability check.
+            Object target = ctor == null ? receiver : ctor.newInstance(seed);
+            Object value = method.invoke(target, args);
+            if (value instanceof Double d) {
+                if (!Double.isFinite(d)) return null;
+                result.successfulInvocations++;
+                return d;
+            }
+            if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
+                result.successfulInvocations++;
+                return ((Number) value).longValue();
+            }
             return null;
-        } catch (ReflectiveOperationException | IllegalArgumentException | LinkageError e) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             return null;
         }
+    }
+
+    private static int compare(Number left, Number right) {
+        if (left instanceof Double || right instanceof Double) {
+            double a = left.doubleValue(), b = right.doubleValue();
+            return a < b ? -1 : a > b ? 1 : 0;
+        }
+        return Long.compare(left.longValue(), right.longValue());
     }
 
     private static String sha256(File file) throws Exception {
@@ -89,7 +152,8 @@ public final class GenericJvmMetamorphicProbe {
 
     private static final class Result {
         final List<String> findings = new ArrayList<>();
-        int classes, methods, unsupported, abstained, unloadable, nestedSkipped;
+        int classes, methods, unsupported, abstained, unloadable, nestedSkipped, invocations;
+        int candidates, completedTriples, successfulInvocations, doubleMethods, structuredMethods, instanceMethods;
         int comparableClasses, comparablePairs, comparableTriples, constructorAbstentions;
 
         String json(String artifactSha) {
@@ -99,6 +163,9 @@ public final class GenericJvmMetamorphicProbe {
             return "{\"schema\":\"ultra-sentinel-generic-jvm-metamorphic/v1\"," +
                 "\"status\":" + quoted(status) + ",\"artifactSha256\":" + quoted(artifactSha) +
                 ",\"classesInspected\":" + classes + ",\"methodsProbed\":" + methods +
+                ",\"methodCandidates\":" + candidates + ",\"completedTriples\":" + completedTriples +
+                ",\"successfulInvocations\":" + successfulInvocations + ",\"doubleMethodsExercised\":" + doubleMethods +
+                ",\"structuredMethodsExercised\":" + structuredMethods + ",\"instanceMethodsExercised\":" + instanceMethods +
                 ",\"unsupportedMethods\":" + unsupported + ",\"abstainedProbes\":" + abstained +
                 ",\"unloadableClasses\":" + unloadable + ",\"nestedClassesSkipped\":" + nestedSkipped + ",\"findings\":[" +
                 String.join(",", findings) + "],\"comparableClasses\":" + comparableClasses +
@@ -118,6 +185,8 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static Object boundary(Class<?> type, int index) {
+        if (type == double.class || type == Double.class)
+            return new double[]{-Double.MAX_VALUE, -1, -.5, 0, .5, 1, Double.MAX_VALUE, Double.MIN_NORMAL, Double.MIN_VALUE}[index];
         if (type == String.class) return new String[]{"", "a", "b", "\ud83d\ude00", "aa", "z", "\uffff"}[index];
         long max = type == byte.class || type == Byte.class ? Byte.MAX_VALUE :
             type == short.class || type == Short.class ? Short.MAX_VALUE :
@@ -239,34 +308,82 @@ public final class GenericJvmMetamorphicProbe {
         }
     }
 
-    private static void probe(Method method, Object receiver, String className, Result result) {
+    private static void probe(Method method, Object receiver, Constructor<?> ctor, Object[] seed,
+                              String className, Result result) {
         Class<?>[] params = method.getParameterTypes();
+        Type[] generic = method.getGenericParameterTypes();
         for (int position = 0; position < params.length; position++) {
-            for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
-                Long[] observations = new Long[3];
-                boolean incomplete = false;
-                for (int sample = 0; sample < 3; sample++) {
-                    Object[] arguments = new Object[params.length];
-                    for (int i = 0; i < arguments.length; i++) {
-                        arguments[i] = i == position ? value(params[i], sample) : anchor(params[i], fixed);
+            int bands = params[position] == double.class || params[position] == Double.class ? 3 :
+                (numeric(params[position]) ? 1 : 2);
+            for (int band = 0; band < bands; band++) {
+                for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
+                    Number[] observations = new Number[3];
+                    List<String> inputs = new ArrayList<>();
+                    boolean incomplete = false;
+                    for (int sample = 0; sample < 3; sample++) {
+                        Number first = invoke(method, receiver, ctor, seed, position, fixed, band, sample, result);
+                        Number second = invoke(method, receiver, ctor, seed, position, fixed, band, sample, result);
+                        if (first == null || !first.equals(second)) { incomplete = true; break; }
+                        observations[sample] = first;
+                        Object input = argument(params[position], generic[position], sample, fixed, band, true);
+                        inputs.add(quoted(numeric(params[position]) ? input.toString() :
+                            "size=" + (band == 0 ? new int[]{0, 1, 3} : new int[]{1, 2, 3})[sample] + ";values=0..size-1"));
                     }
-                    Long first = invoke(method, receiver, arguments);
-                    Long second = invoke(method, receiver, arguments);
-                    if (first == null || !first.equals(second)) { incomplete = true; break; }
-                    observations[sample] = first;
-                }
-                if (incomplete) { result.abstained++; continue; }
-                long a = observations[0], b = observations[1], c = observations[2];
-                if ((a < b && b > c) || (a > b && b < c)) {
-                    if (result.findings.size() >= MAX_FINDINGS) throw new IllegalStateException("FINDING_BUDGET");
-                    result.findings.add("{\"class\":" + quoted(className) + ",\"method\":" +
-                        quoted(methodKey(method)) + ",\"argument\":" + position + ",\"otherArguments\":" + fixed +
-                        ",\"inputs\":[\"0\",\"1\"," + quoted(value(params[position], 2).toString()) + "]" +
-                        ",\"observed\":[" + quoted(Long.toString(a)) + "," + quoted(Long.toString(b)) +
-                        "," + quoted(Long.toString(c)) + "],\"status\":\"HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE\"}");
+                    if (incomplete) { result.abstained++; continue; }
+                    result.completedTriples++;
+                    int ab = compare(observations[0], observations[1]), bc = compare(observations[1], observations[2]);
+                    if ((ab < 0 && bc > 0) || (ab > 0 && bc < 0)) {
+                        if (result.findings.size() >= MAX_FINDINGS) throw new IllegalStateException("FINDING_BUDGET");
+                        String constructor = ctor == null ? "" : ",\"constructor\":" +
+                            vector(Arrays.stream(ctor.getParameterTypes()).map(Class::getName).toArray()) +
+                            ",\"constructorArguments\":" + vector(seed);
+                        result.findings.add("{\"class\":" + quoted(className) + ",\"method\":" +
+                            quoted(methodKey(method)) + ",\"argument\":" + position + ",\"otherArguments\":" + fixed +
+                            constructor + ",\"inputs\":[" + String.join(",", inputs) + "]" +
+                            ",\"observed\":" + vector(observations) +
+                            ",\"status\":\"HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE\"}");
+                    }
                 }
             }
         }
+    }
+
+    private static void instanceProbe(Class<?> type, Method method, Result result) {
+        Field field;
+        try { field = type.getField("INSTANCE"); }
+        catch (NoSuchFieldException absent) { field = null; }
+        if (field != null) {
+            Object receiver;
+            try {
+                receiver = field.get(null);
+                if (!type.isInstance(receiver)) throw new IllegalAccessException("INVALID_INSTANCE");
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                result.abstained++;
+                return;
+            }
+            // Global probe budget failures must escape the receiver lookup.
+            probe(method, receiver, null, null, type.getName(), result);
+            return;
+        }
+        Constructor<?>[] constructors = type.getConstructors();
+        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
+        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        boolean admitted = false;
+        for (Constructor<?> ctor : constructors) {
+            Class<?>[] types = ctor.getParameterTypes();
+            if (types.length > 3 || Arrays.stream(types).anyMatch(p -> !constructible(p))) {
+                result.constructorAbstentions++;
+                continue;
+            }
+            admitted = true;
+            for (int fixed : types.length == 0 ? new int[]{0} : new int[]{-1, 0, 1, 100}) {
+                Object[] seed = new Object[types.length];
+                for (int i = 0; i < seed.length; i++)
+                    seed[i] = types[i] == String.class ? (fixed == 0 ? "" : "a") : anchor(types[i], fixed);
+                probe(method, null, ctor, seed, type.getName(), result);
+            }
+        }
+        if (!admitted) result.constructorAbstentions++;
     }
 
     private static void inspect(Class<?> type, Result result) {
@@ -277,36 +394,59 @@ public final class GenericJvmMetamorphicProbe {
         Arrays.sort(methods, (a, b) -> methodKey(a).compareTo(methodKey(b)));
         for (Method method : methods) {
             Class<?>[] params = method.getParameterTypes();
-            if (!Modifier.isPublic(method.getModifiers()) || method.isSynthetic() || !numeric(method.getReturnType()) ||
-                params.length < 1 || params.length > 3 || Arrays.stream(params).anyMatch(p -> !numeric(p))) {
+            Type[] generic;
+            try { generic = method.getGenericParameterTypes(); }
+            catch (TypeNotPresentException | java.lang.reflect.MalformedParameterizedTypeException |
+                   java.lang.reflect.GenericSignatureFormatError e) {
                 result.unsupported++;
                 continue;
             }
-            Object receiver = null;
-            if (!Modifier.isStatic(method.getModifiers())) {
-                try {
-                    Field field = type.getField("INSTANCE");
-                    receiver = field.get(null);
-                    if (!type.isInstance(receiver)) throw new IllegalAccessException("INVALID_INSTANCE");
-                } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-                    result.abstained++;
-                    continue;
-                }
+            boolean supported = Modifier.isPublic(method.getModifiers()) && !method.isSynthetic() &&
+                numeric(method.getReturnType()) && params.length >= 1 && params.length <= 3;
+            for (int i = 0; i < params.length && supported; i++)
+                supported = numeric(params[i]) || element(params[i], generic[i]) != null;
+            if (!supported) { result.unsupported++; continue; }
+            if (++result.candidates > MAX_METHODS) throw new IllegalStateException("METHOD_BUDGET");
+            int before = result.completedTriples;
+            if (Modifier.isStatic(method.getModifiers())) probe(method, null, null, null, type.getName(), result);
+            else instanceProbe(type, method, result);
+            if (result.completedTriples > before) {
+                result.methods++;
+                if (!Modifier.isStatic(method.getModifiers())) result.instanceMethods++;
+                if (method.getReturnType() == double.class || method.getReturnType() == Double.class ||
+                    Arrays.stream(params).anyMatch(p -> p == double.class || p == Double.class)) result.doubleMethods++;
+                if (Arrays.stream(params).anyMatch(p -> !numeric(p))) result.structuredMethods++;
             }
-            if (++result.methods > MAX_METHODS) throw new IllegalStateException("METHOD_BUDGET");
-            probe(method, receiver, type.getName(), result);
         }
+    }
+
+    private static boolean identifier(String name) {
+        if (name.isEmpty()) return false;
+        int offset = 0, cp = name.codePointAt(0);
+        if (!Character.isJavaIdentifierStart(cp)) return false;
+        while (offset < name.length()) {
+            cp = name.codePointAt(offset);
+            if (!Character.isJavaIdentifierPart(cp) || Character.isIdentifierIgnorable(cp)) return false;
+            offset += Character.charCount(cp);
+        }
+        return true;
+    }
+
+    private static boolean qualified(String name) {
+        if (name.length() > 500) return false;
+        for (String part : name.split("\\.", -1)) if (!identifier(part)) return false;
+        return true;
     }
 
     public static void main(String[] args) {
         PrintStream output = System.out;
         try {
-            if (args.length != 2 || !args[1].matches("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+"))
+            if (args.length != 2 || !(args[1].equals(".") || qualified(args[1])))
                 throw new IllegalArgumentException("INPUT");
             File jar = new File(args[0]);
             if (Files.isSymbolicLink(jar.toPath()) || !Files.isRegularFile(jar.toPath()) ||
                 jar.length() < 4 || jar.length() > MAX_JAR_BYTES) throw new IllegalArgumentException("JAR");
-            String digest = sha256(jar), prefix = args[1].replace('.', '/') + "/";
+            String digest = sha256(jar), prefix = args[1].equals(".") ? "" : args[1].replace('.', '/') + "/";
             Result result = new Result();
             System.setOut(new PrintStream(OutputStream.nullOutputStream()));
             try (JarFile archive = new JarFile(jar); URLClassLoader loader = new URLClassLoader(
@@ -317,9 +457,9 @@ public final class GenericJvmMetamorphicProbe {
                 while (entries.hasMoreElements()) {
                     String name = entries.nextElement().getName();
                     if (++visited > 50000) throw new IllegalStateException("ENTRY_BUDGET");
-                    if (!name.endsWith(".class") || !name.startsWith(prefix)) continue;
+                    if (!name.endsWith(".class") || !name.startsWith(prefix) || (prefix.isEmpty() && name.contains("/"))) continue;
                     String className = name.substring(0, name.length() - 6).replace('/', '.');
-                    if (!className.matches("[A-Za-z_][A-Za-z0-9_.$]*")) { result.unloadable++; continue; }
+                    if (!qualified(className)) { result.unloadable++; continue; }
                     if (classes.size() >= MAX_CLASSES) throw new IllegalStateException("CLASS_BUDGET");
                     classes.add(className);
                 }

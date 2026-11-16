@@ -22,13 +22,25 @@ for p in /bin /lib /lib64; do
   mounts+=(--symlink "$target" "$p")
  else mounts+=(--ro-bind "$p" "$p"); fi
 done
+locale_env=()
+[ "$mode" != compile-v2 ] || locale_env=(--setenv LANG C.UTF-8 --setenv LC_ALL C.UTF-8)
 case "$mode" in
- compile)
+ compile|compile-v2)
   # All file paths were authenticated against immutable source Git blobs.
   while IFS= read -r -d '' file; do
    relative=${file#"$input/"}
-   [[ "$relative" =~ ^(src/main/|oracle/)[A-Za-z0-9_/]+\.kt$ ]] || exit 2
-   printf '/input/%s\n' "$relative"
+   if [ "$mode" = compile ]; then
+    [[ "$relative" =~ ^(src/main/|oracle/)[A-Za-z0-9_/]+\.kt$ ]] || exit 2
+    printf '/input/%s\n' "$relative"
+   else
+    # Argfile quoting treats spaces, quotes and Unicode as path bytes, never
+    # compiler flags. The source reader authenticated canonical paths first.
+    node - "$relative" <<'JS'
+const p=process.argv[2];
+if(!/^(src\/main\/|oracle\/).+\.kt$/u.test(p)||/[\x00-\x1f\x7f\\]/.test(p)||p.split('/').some(x=>!x||x==='.'||x==='..'))process.exit(2);
+console.log(JSON.stringify('/input/'+p));
+JS
+   fi
   done < <(find "$input" -type f -name '*.kt' -print0 | sort -z) > "$output/sources.txt"
   [ -s "$output/sources.txt" ] || exit 2
   command=(/kotlin/bin/kotlinc -J-Xmx256m -J-XX:ActiveProcessorCount=2 -nowarn @/out/sources.txt -include-runtime -d /out/target.jar)
@@ -46,7 +58,7 @@ if ! (ulimit -f 32768; ulimit -n 128; exec timeout --kill-after=2s 120s env -i P
  /bin/bash "$guard" "$(id -u)" "$(id -g)" /usr/bin/bwrap \
  --die-with-parent --unshare-all --new-session --clearenv \
  --setenv PATH /jdk/bin:/usr/bin:/bin --setenv JAVA_HOME /jdk --setenv HOME /tmp \
- "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$kotlin" /kotlin \
+ "${locale_env[@]}" "${mounts[@]}" --ro-bind "$jdk" /jdk --ro-bind "$kotlin" /kotlin \
  --ro-bind "$input" /input --bind "$output" /out --tmpfs /tmp --proc /proc --dev /dev --chdir /tmp -- \
  "${command[@]}") > "$output/execution.log" 2> "$output/diagnostics.log"; then
  printf '%s\n' 'ISOLATED_ORIGINAL_EXECUTION_FAILED' >&2

@@ -62,7 +62,7 @@ test('reports reproducible turning points as hypotheses and keeps unsupported ca
  assert.equal(report.classesInspected,2);
  assert.ok(report.methodsProbed>=13);
  assert.ok(report.unsupportedMethods>=2);
- assert.ok(report.abstainedProbes>=4);
+ assert.ok(report.abstainedProbes>=3); // Ordinary noarg NoInstance is now exercised.
  assert.ok(report.nestedClassesSkipped>=1);
  const names=report.findings.map(x=>x.method);
  assert.ok(names.some(x=>x.startsWith('peak(')));
@@ -110,7 +110,7 @@ test('a package without supported classes is incomplete, never a clean verdict',
 test('rejects missing, malformed and symlinked artifacts or unsafe package names',()=>{
  const link=path.join(temp,'linked.jar');fs.symlinkSync(jar,link);
  for(const [file,prefix] of [[link,'sample.probes'],[path.join(temp,'absent.jar'),'sample.probes'],
-  [jar,'../bad'],[jar,'sample']]){
+  [jar,'../bad'],[jar,'sample..child']]){
   const r=probe(file,prefix);assert.notEqual(r.status,0);assert.match(r.stderr,/GENERIC_JVM_PROBE_BLOCKED/);
  }
  const wrong=path.join(temp,'bad.jar');fs.writeFileSync(wrong,'invalid archive');

@@ -128,9 +128,13 @@ function readCohort(engine,source,m){
  }
  return files;
 }
-function prepareCohort(engine,source,out,m){
+function prepareCohort(engine,source,out,m,options={}){
  const files=readCohort(engine,source,m);
- if(files.some(f=>!/^src\/main\/[A-Za-z0-9_/]+\.kt$/.test(f.path)))fail();
+ // v1 experiments keep their original admission contract. v2 stages the
+ // canonical Git paths already authenticated by readCohort; no source rewrite.
+ if(options.extendedKotlinPaths===true){
+  if(files.length>120||files.reduce((n,f)=>n+f.bytes.length,0)>1048576)fail();
+ }else if(files.some(f=>!/^src\/main\/[A-Za-z0-9_/]+\.kt$/.test(f.path)))fail();
  fs.mkdirSync(out,{mode:0o700});
  for(const f of files){
   const dest=path.join(out,f.path);fs.mkdirSync(path.dirname(dest),{recursive:true,mode:0o700});

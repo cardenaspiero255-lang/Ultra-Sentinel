@@ -32,13 +32,15 @@ test('truth claims and artifact substitutions cannot pass as fresh predictions',
  assert.throws(()=>seal(raw(),'b'.repeat(64)));
  assert.throws(()=>seal(Buffer.from(JSON.stringify({...JSON.parse(raw()),oracleVerified:true})),'a'.repeat(64)));
 });
-test('corrected detector bytes stay frozen and oracle execution depends on prior published predictions',()=>{
+test('historical corrected detector remains SHA pinned and oracle execution depends on prior published predictions',()=>{
  const root=path.resolve(__dirname,'../..');
  const freeze=require('../../docs/quality/PHASE2-BLOCK26-CORRECTED-ENGINE-FREEZE.json');
- for(const f of freeze.engine.modules){
-  const b=fs.readFileSync(path.join(root,f.path));
-  assert.equal(crypto.createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),f.blobSha);
- }
+ assert.equal(freeze.engine.commitSha,'9550170e084505a09e7ee65d2e68eb0e1883d3b2');
+ assert.deepEqual(freeze.engine.modules.map(f=>f.blobSha),[
+  '4b8ff259d701441c150c697afdab73fa117f7471','cea65e7ba4c26c8d849a0e6386d6fee791329eef',
+  '46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0']);
+ // A new production version is allowed; historical replays checkout this
+ // immutable commit, never the current Java source.
  const w=fs.readFileSync(path.join(root,'.github/workflows/phase2-block26-corrected-replication.yml'),'utf8');
  assert.match(w,/needs: corrected-frozen-predictions/);
  assert.match(w,/ref: 9550170e084505a09e7ee65d2e68eb0e1883d3b2/);
