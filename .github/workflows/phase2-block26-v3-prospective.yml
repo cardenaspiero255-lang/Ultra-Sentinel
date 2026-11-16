@@ -80,7 +80,7 @@ jobs:
         run: |
           set -euo pipefail
           node tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs docs/quality/PHASE2-BLOCK26-V3-COHORT.json "$GITHUB_WORKSPACE/frozen-v3-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v3/kotlinc" "$RUNNER_TEMP/not-yet-published" "$RUNNER_TEMP/v3-preflight" "$RUNNER_TEMP/v3-admission" compile-only
-          grep -Fxq 'V2_COMMITTED_ORACLES_COMPILED_WITHOUT_EXECUTION' <(echo 'V2_COMMITTED_ORACLES_COMPILED_WITHOUT_EXECUTION')
+          test -s "$RUNNER_TEMP/v3-admission/compile-only-admissions.json"
       - name: Run unchanged frozen Hunter without oracle files and seal source-bound predictions
         shell: bash
         run: |
