@@ -164,10 +164,11 @@ public final class GenericJvmMetamorphicProbe {
         int classes, methods, unsupported, abstained, unloadable, nestedSkipped, invocations;
         int candidates, completedTriples, successfulInvocations, doubleMethods, floatMethods, structuredMethods, instanceMethods;
         int comparableClasses, comparablePairs, comparableTriples, constructorAbstentions;
+        int objectContractClasses, objectContractPairs, objectContractAbstentions;
 
         String json(String artifactSha) {
-            String status = methods == 0 && comparablePairs == 0 ? "INCOMPLETE_NO_SUPPORTED_METHODS" :
-                (abstained > 0 || unloadable > 0 || unsupported > 0 || nestedSkipped > 0 || constructorAbstentions > 0 ? "PARTIAL_HYPOTHESES_REQUIRE_ORACLE" :
+            String status = methods == 0 && comparablePairs == 0 && objectContractPairs == 0 ? "INCOMPLETE_NO_SUPPORTED_METHODS" :
+                (abstained > 0 || unloadable > 0 || unsupported > 0 || nestedSkipped > 0 || constructorAbstentions > 0 || objectContractAbstentions > 0 ? "PARTIAL_HYPOTHESES_REQUIRE_ORACLE" :
                     "HYPOTHESES_REQUIRE_ORACLE");
             return "{\"schema\":\"ultra-sentinel-generic-jvm-metamorphic/v1\"," +
                 "\"status\":" + quoted(status) + ",\"artifactSha256\":" + quoted(artifactSha) +
@@ -181,6 +182,9 @@ public final class GenericJvmMetamorphicProbe {
                 String.join(",", findings) + "],\"comparableClasses\":" + comparableClasses +
                 ",\"comparablePairs\":" + comparablePairs + ",\"comparableTriples\":" + comparableTriples +
                 ",\"constructorAbstentions\":" + constructorAbstentions +
+                ",\"objectContractClasses\":" + objectContractClasses +
+                ",\"objectContractPairs\":" + objectContractPairs +
+                ",\"objectContractAbstentions\":" + objectContractAbstentions +
                 ",\"sourceAuthenticated\":false," +
                 "\"oracleVerified\":false,\"novelFamilyVerified\":false," +
                 "\"repairAuthorized\":false,\"remoteWrites\":false,\"mergeAllowed\":false}";
@@ -320,6 +324,130 @@ public final class GenericJvmMetamorphicProbe {
         }
     }
 
+
+    // These JVM equality laws are hypotheses until an independent oracle verifies them.
+    // The probe remains source-agnostic, bounded and sandbox-only.
+    private static Boolean stableEquals(Object left, Object right, Result result) {
+        try {
+            boolean first = left.equals(right), second = left.equals(right);
+            if (first == second) return Boolean.valueOf(first);
+        } catch (RuntimeException | LinkageError ignored) {
+            // Target exceptions cannot become findings.
+        }
+        result.objectContractAbstentions++;
+        return null;
+    }
+
+    private static Integer stableHash(Object receiver, Result result) {
+        try {
+            int first = receiver.hashCode(), second = receiver.hashCode();
+            if (first == second) return Integer.valueOf(first);
+        } catch (RuntimeException | LinkageError ignored) {
+            // A throwing or unstable hash is an abstention.
+        }
+        result.objectContractAbstentions++;
+        return null;
+    }
+
+    private static void objectFinding(Result result, String rule, Class<?> type,
+                                      Constructor<?> ctor, Object[] left, Object[] right, String observed) {
+        if (result.findings.size() >= MAX_FINDINGS) throw new IllegalStateException("FINDING_BUDGET");
+        result.findings.add("{\"rule\":" + quoted(rule) + ",\"class\":" + quoted(type.getName()) +
+            ",\"constructor\":" + vector(Arrays.stream(ctor.getParameterTypes()).map(Class::getName).toArray()) +
+            ",\"left\":" + vector(left) + ",\"right\":" + vector(right) +
+            ",\"observed\":" + observed + ",\"status\":\"HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE\"}");
+    }
+
+    private static void objectContracts(Class<?> type, Result result) {
+        if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) return;
+        try {
+            // Inherited Object.equals is already known to satisfy the interface law.
+            if (type.getMethod("equals", Object.class).getDeclaringClass() == Object.class) return;
+        } catch (NoSuchMethodException | SecurityException e) {
+            result.objectContractAbstentions++;
+            return;
+        }
+        result.objectContractClasses++;
+        Constructor<?>[] constructors = type.getConstructors();
+        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
+        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        boolean[] reported = new boolean[3]; // reflexivity, symmetry, hash
+        for (Constructor<?> ctor : constructors) {
+            Class<?>[] types = ctor.getParameterTypes();
+            if (types.length > 3 || Arrays.stream(types).anyMatch(t -> !constructible(t))) {
+                result.objectContractAbstentions++;
+                continue;
+            }
+            List<Object[]> samples = new ArrayList<>();
+            if (types.length == 0) samples.add(new Object[0]);
+            else for (int axis = 0; axis < types.length; axis++) {
+                for (int index : new int[]{3, 4, 6}) {
+                    Object[] args = new Object[types.length];
+                    for (int i = 0; i < types.length; i++)
+                        args[i] = boundary(types[i], i == axis ? index : 3);
+                    samples.add(args);
+                }
+            }
+            List<Object> receivers = new ArrayList<>(), twins = new ArrayList<>();
+            for (Object[] args : samples) {
+                try {
+                    receivers.add(ctor.newInstance(args));
+                    twins.add(ctor.newInstance(args));
+                } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                    receivers.add(null);
+                    twins.add(null);
+                    result.objectContractAbstentions++;
+                }
+            }
+            for (int a = 0; a < samples.size(); a++) {
+                Object left = receivers.get(a), twin = twins.get(a);
+                if (left == null || twin == null) continue;
+                if (++result.objectContractPairs > 30000) throw new IllegalStateException("OBJECT_PAIR_BUDGET");
+                Boolean reflexive = stableEquals(left, left, result);
+                if (!reported[0] && Boolean.FALSE.equals(reflexive) &&
+                    Boolean.FALSE.equals(stableEquals(left, left, result))) {
+                    objectFinding(result, "OBJECT_EQUALS_REFLEXIVITY_VIOLATION", type, ctor,
+                        samples.get(a), samples.get(a), "[false,false]");
+                    reported[0] = true;
+                }
+                Boolean forward = stableEquals(left, twin, result);
+                Boolean reverse = stableEquals(twin, left, result);
+                if (forward != null && reverse != null) {
+                    if (!reported[1] && !forward.equals(reverse) &&
+                        forward.equals(stableEquals(left, twin, result)) &&
+                        reverse.equals(stableEquals(twin, left, result))) {
+                        objectFinding(result, "OBJECT_EQUALS_SYMMETRY_VIOLATION", type, ctor,
+                            samples.get(a), samples.get(a), "[" + forward + "," + reverse + "]");
+                        reported[1] = true;
+                    } else if (!reported[2] && forward && reverse) {
+                        Integer x = stableHash(left, result), y = stableHash(twin, result);
+                        if (x != null && y != null && !x.equals(y) &&
+                            Boolean.TRUE.equals(stableEquals(left, twin, result)) &&
+                            Boolean.TRUE.equals(stableEquals(twin, left, result))) {
+                            objectFinding(result, "OBJECT_EQUALS_HASHCODE_VIOLATION", type, ctor,
+                                samples.get(a), samples.get(a), "[" + x + "," + y + "]");
+                            reported[2] = true;
+                        }
+                    }
+                }
+                for (int b = a + 1; b < samples.size() && !reported[1]; b++) {
+                    Object right = receivers.get(b);
+                    if (right == null) continue;
+                    if (++result.objectContractPairs > 30000) throw new IllegalStateException("OBJECT_PAIR_BUDGET");
+                    Boolean ab = stableEquals(left, right, result);
+                    Boolean ba = stableEquals(right, left, result);
+                    if (ab != null && ba != null && !ab.equals(ba) &&
+                        ab.equals(stableEquals(left, right, result)) &&
+                        ba.equals(stableEquals(right, left, result))) {
+                        objectFinding(result, "OBJECT_EQUALS_SYMMETRY_VIOLATION", type, ctor,
+                            samples.get(a), samples.get(b), "[" + ab + "," + ba + "]");
+                        reported[1] = true;
+                    }
+                }
+            }
+        }
+    }
+
     private static void probe(Method method, Object receiver, Constructor<?> ctor, Object[] seed,
                               String className, Result result) {
         Class<?>[] params = method.getParameterTypes();
@@ -405,6 +533,7 @@ public final class GenericJvmMetamorphicProbe {
 
     private static void inspect(Class<?> type, Result result) {
         comparable(type, result);
+        objectContracts(type, result);
         Method[] methods;
         try { methods = type.getDeclaredMethods(); }
         catch (LinkageError | SecurityException e) { result.unloadable++; return; }
