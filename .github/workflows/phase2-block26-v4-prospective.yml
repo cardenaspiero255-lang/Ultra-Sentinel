@@ -7,6 +7,9 @@ on:
       - tests/fixtures/phase2-block26-v4/**
       - tests/unit/phase2-block26-v4-*.test.cjs
       - scripts/phase2-kotlin-api-v2-eval.cjs
+      - scripts/phase2-kotlin-api-v6-eval.cjs
+      - tests/fixtures/phase2-kotlin-api-v6/**
+      - tests/unit/phase2-block26-v6-evidence-adapter.test.cjs
       - .github/workflows/phase2-block26-v4-prospective.yml
   push:
     branches: [main, chatgpt/block26-v4-fresh-prospective-20261116]

@@ -4,6 +4,9 @@ on:
     paths:
       - docs/quality/PHASE2-KOTLIN-API-V2-*.json
       - scripts/phase2-kotlin-api-v2-eval.cjs
+      - scripts/phase2-kotlin-api-v6-eval.cjs
+      - tests/fixtures/phase2-kotlin-api-v6/**
+      - tests/unit/phase2-block26-v6-evidence-adapter.test.cjs
       - tests/fixtures/phase2-kotlin-api-v2/**
       - tests/unit/phase2-kotlin-api-v2-eval*.test.cjs
       - .github/workflows/phase2-kotlin-api-v2-blind.yml
