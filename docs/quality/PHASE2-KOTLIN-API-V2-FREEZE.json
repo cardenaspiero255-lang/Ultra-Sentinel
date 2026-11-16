@@ -1,0 +1,126 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0",
+    "treeSha": "13479e402fd5a88da3cdb0df5050b8008e90628a",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "b2a8692d614757b695f683eb76ac8fb937cce41b"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      }
+    ]
+  },
+  "protocol": {
+    "block": "2.6",
+    "block27Allowed": false,
+    "sourceBodiesRead": false,
+    "cohortSelected": false,
+    "oracleKnown": false,
+    "predictionsExecuted": false,
+    "detectorRetuningAllowed": false,
+    "sourceEditsAllowed": false,
+    "predictionsPublishedBeforeOracleRequired": true,
+    "independentOracleAgentCannotReadHunterReports": true
+  },
+  "selection": {
+    "query": "math language:Kotlin fork:false stars:>=5 size:<20000 archived:false",
+    "sort": "stars",
+    "order": "desc",
+    "maxSearchResults": 100,
+    "ranking": "descending stargazers_count then casefold full_name",
+    "cohortSizeRepositories": 3,
+    "policy": "Reserve the first three unmentioned metadata-eligible repositories from the fixed first result page before reading any source bodies. All regular production Kotlin blobs under src/main are included. Missing roots, size excess and nonregular sources are metadata rejections; dependency or runtime failures later are retained abstentions, never replaced with another repository. No source-content, issue, test-answer or defect-based filtering.",
+    "maxProductionFilesPerRepository": 120,
+    "maxProductionBytesPerRepository": 1048576,
+    "excludedRepositories": [
+      "abdurakhmonoff/data-structures-and-algorithms-kotlin",
+      "ActivityWatch/aw-android",
+      "aidin36/simpletextcrypt",
+      "Algo-Phantoms/Algo-Phantoms-Android",
+      "alidehkhodaei/data-structures-and-algorithms",
+      "andrewbailey/Difference",
+      "android/architecture-samples",
+      "android/nowinandroid",
+      "ankidroid/Anki-Android",
+      "AntennaPod/AntennaPod",
+      "beemdevelopment/Aegis",
+      "betulnecanli/Kotlin-Data-Structures-Algorithms",
+      "bitwarden/android",
+      "bmaslakov/kotlin-algorithm-club",
+      "cardenaspiero255-lang/gamehub-ultra",
+      "cardenaspiero255-lang/JARVIS",
+      "cardenaspiero255-lang/Ultra-Sentinel",
+      "daolq3012/Kotlin-Algorithms",
+      "Darkrock-Studios/SymSpellKt",
+      "defexts/defexts",
+      "detekt/detekt",
+      "DmitryTsyvtsyn/Kotlin-Algorithms-and-Design-Patterns",
+      "element-hq/element-x-android",
+      "FossifyOrg/Calendar",
+      "FossifyOrg/Camera",
+      "FossifyOrg/Gallery",
+      "gazolla/Kotlin-Algorithm",
+      "GradleUp/shadow",
+      "home-assistant/android",
+      "idisfkj/daily_algorithm",
+      "javadev/LeetCode-in-Kotlin",
+      "JetBrains/compose-multiplatform",
+      "JetBrains/kotlin",
+      "jillesvangurp/geogeometry",
+      "kodecocodes/dsk-materials",
+      "Kotlin/kotlin-swe-bench",
+      "Kotlin/kotlinx-atomicfu",
+      "Kotlin/kotlinx-datetime",
+      "Kotlin/kotlinx-io",
+      "Kotlin/kotlinx.coroutines",
+      "ktlint/ktlint",
+      "ktorio/ktor",
+      "LawnchairLauncher/lawnchair",
+      "nazmulidris/algorithms-in-kotlin",
+      "nextcloud/android",
+      "nextcloud/talk-android",
+      "organicmaps/organicmaps",
+      "PacktPublishing/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "realpacific/algorithms",
+      "RedMadRobot/PINkman",
+      "rifqimfahmi/BetterImageUpload",
+      "rjust/defects4j",
+      "sanity/pairAdjacentViolators",
+      "square/kotlinpoet",
+      "sshniro/line-segmentation-algorithm-to-gcp-vision",
+      "sshpark/LeetCode-Kotlin",
+      "StreetComplete/StreetComplete",
+      "tasks/tasks",
+      "TeamNewPipe/NewPipe",
+      "TheAlgorithms/Kotlin",
+      "thomasnield/kotlin-machine-learning-demos",
+      "Thunderbird/thunderbird-android",
+      "wordpress-mobile/WordPress-Android",
+      "zhanghai/MaterialFiles"
+    ]
+  },
+  "acceptance": {
+    "previous401402CasesReusableAsUnknown": false,
+    "confirmedDistinctOriginalDefectRequired": true,
+    "nonrepresentableExpectedArithmeticAloneIsNotDefectEvidence": true,
+    "successfulCiAloneIsNotDiscoveryEvidence": true,
+    "novelFamilyClaimAllowed": false
+  }
+}
