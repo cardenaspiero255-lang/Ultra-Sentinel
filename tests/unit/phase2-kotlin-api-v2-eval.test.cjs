@@ -61,3 +61,31 @@ test('structured samples and overloaded constructor identity cannot be joined to
  assert.throws(()=>seal({...manifest,block27Allowed:true},entries,[]));
  assert.throws(()=>seal(manifest,[entries[0],entries[0]],[]));
 });
+
+
+test('bounded numeric String inputs seal and join exact independent multi-argument observations',()=>{
+ const f={...finding,method:'value(java.lang.String;int;)int',argument:0,
+  otherArguments:100,inputs:['','a','aaa'],observed:['0','7','0']};
+ const e=[entry({...report(),findings:[f]})],s=seal(manifest,e,[]);
+ assert.equal(verify(manifest,e,[],s).reports[0].hypotheses,1);
+ const o={...observation('a','7','6'),method:f.method,arguments:['a','100']};
+ const confirmed=adjudicate(manifest,e,[],s,truth([o]));
+ assert.equal(confirmed.confirmedDistinctDefects,1);
+ assert.equal(confirmed.confirmedHypotheses,1);
+ const wrong={...o,arguments:['a','1']};
+ assert.equal(adjudicate(manifest,e,[],s,truth([wrong])).confirmedDistinctDefects,0,
+  'fixed numeric arguments must match the exact executed call');
+ assert.throws(()=>seal(manifest,[entry({...report(),findings:[{...f,method:'value(int;int;)int'}]})],[]),
+  'raw text witnesses must not be accepted for a numeric parameter');
+});
+test('object equality hypotheses remain unadjudicated until a separate independent object oracle exists',()=>{
+ const f={class:'simple.Api',rule:'OBJECT_EQUALS_HASHCODE_VIOLATION',
+  constructor:['int'],left:['0'],right:['0'],observed:['1','2'],
+  status:'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE'};
+ const e=[entry({...report(),findings:[f]})],s=seal(manifest,e,[]);
+ const v=adjudicate(manifest,e,[],s,truth([]));
+ assert.equal(v.unadjudicatedHypotheses,1);
+ assert.equal(v.confirmedDistinctDefects,0);
+ assert.equal(v.novelFamilyVerified,false);
+ assert.equal(v.block27Allowed,false);
+});
