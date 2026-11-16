@@ -411,8 +411,28 @@
       }
     }
   ],
-  "oracles": [],
+  "oracles": [
+    {
+      "cohortId": 1,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-1.kt",
+      "sha256": "ffcc174e53d1a43f12c34cfbed8eedd994db01a83f61b3cea1a3fd0547cfe46f",
+      "admission": "NUMERIC_INDEPENDENT"
+    },
+    {
+      "cohortId": 2,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-2.kt",
+      "sha256": "150e0a4745433290bc202d4dd27996dec7caddd630d02cbeebd492fa889eb2a6",
+      "admission": "CONTROL_ONLY"
+    },
+    {
+      "cohortId": 3,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-3.kt",
+      "sha256": "0f4b91d8051c32f0d22ab5def6ad4e661b6af5173ef0abc73c33d6e1e368cb0f",
+      "admission": "DEPENDENCY_ABSTENTION"
+    }
+  ],
   "predictionsExecuted": false,
-  "independentOracleKnown": false,
-  "block27Allowed": false
+  "block27Allowed": false,
+  "oraclesCommittedBeforeHunter": true,
+  "oracleExcludedFromHunterMounts": true
 }

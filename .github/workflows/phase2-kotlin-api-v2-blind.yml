@@ -1,0 +1,288 @@
+name: Ultra Sentinel — Block 2.6 frozen Kotlin API v2 independent replication
+on:
+  pull_request:
+    paths:
+      - docs/quality/PHASE2-KOTLIN-API-V2-*.json
+      - scripts/phase2-kotlin-api-v2-eval.cjs
+      - tests/fixtures/phase2-kotlin-api-v2/**
+      - tests/unit/phase2-kotlin-api-v2-eval*.test.cjs
+      - .github/workflows/phase2-kotlin-api-v2-blind.yml
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  oracle-v2-compile-preflight:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact protocol without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable corrected v2 detector
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0
+          path: frozen-v2-engine
+          persist-credentials: false
+      - name: Checkout untouched reserved source 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: MarcinMoskala/KotlinDiscreteMathToolkit
+          ref: 17a7329af042c5de232051027ec1155011d57da8
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout untouched reserved source 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Keelar/ExprK
+          ref: 91fdabf44dda509589ef03722ab70d37b316ef02
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout untouched reserved source 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: thelastpickle/tlp-stress
+          ref: 2d4542c27d3f1c0e24899c01247b9a8ee3c9a238
+          path: originals/source-3
+          persist-credentials: false
+      - name: Require kernel isolation and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch SHA256-pinned Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v2"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v2"
+      - name: Compile precommitted independent oracles without executing any original bytecode
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs \
+            docs/quality/PHASE2-KOTLIN-API-V2-COHORT.json "$GITHUB_WORKSPACE/frozen-v2-engine" \
+            "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v2/kotlinc" UNUSED_BEFORE_PREDICTIONS \
+            "$RUNNER_TEMP/v2-preflight-work" "$RUNNER_TEMP/v2-preflight" compile-only
+      - name: Publish compiler admission diagnostics for independent author
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-kotlin-api-v2-oracle-preflight
+          path: ${{ runner.temp }}/v2-preflight
+          retention-days: 90
+          if-no-files-found: error
+  frozen-v2-predictions:
+    needs: oracle-v2-compile-preflight
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact protocol without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable corrected v2 detector
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0
+          path: frozen-v2-engine
+          persist-credentials: false
+      - name: Checkout untouched reserved source 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: MarcinMoskala/KotlinDiscreteMathToolkit
+          ref: 17a7329af042c5de232051027ec1155011d57da8
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout untouched reserved source 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Keelar/ExprK
+          ref: 91fdabf44dda509589ef03722ab70d37b316ef02
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout untouched reserved source 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: thelastpickle/tlp-stress
+          ref: 2d4542c27d3f1c0e24899c01247b9a8ee3c9a238
+          path: originals/source-3
+          persist-credentials: false
+      - name: Require kernel isolation and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch SHA256-pinned Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v2"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v2"
+      - name: Require real adversarial isolation before discovery
+        run: SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Authenticate untouched sources and capture frozen hypotheses without oracle mounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/capture.cjs \
+            docs/quality/PHASE2-KOTLIN-API-V2-COHORT.json "$GITHUB_WORKSPACE/frozen-v2-engine" \
+            "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v2/kotlinc" \
+            "$RUNNER_TEMP/v2-hunter-work" "$RUNNER_TEMP/v2-predictions"
+      - name: Publish immutable predictions before independent oracle job
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-kotlin-api-v2-predictions
+          path: ${{ runner.temp }}/v2-predictions
+          retention-days: 90
+          if-no-files-found: error
+  independent-v2-oracles:
+    needs: frozen-v2-predictions
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+        github.event.pull_request.user.id == 322222186) ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact protocol without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable corrected v2 detector
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0
+          path: frozen-v2-engine
+          persist-credentials: false
+      - name: Checkout untouched reserved source 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: MarcinMoskala/KotlinDiscreteMathToolkit
+          ref: 17a7329af042c5de232051027ec1155011d57da8
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout untouched reserved source 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Keelar/ExprK
+          ref: 91fdabf44dda509589ef03722ab70d37b316ef02
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout untouched reserved source 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: thelastpickle/tlp-stress
+          ref: 2d4542c27d3f1c0e24899c01247b9a8ee3c9a238
+          path: originals/source-3
+          persist-credentials: false
+      - name: Require kernel isolation and enforced AppArmor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Fetch SHA256-pinned Kotlin 2.0.21
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v2"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v2"
+      - name: Download prior published predictions
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-kotlin-api-v2-predictions
+          path: ${{ runner.temp }}/v2-predictions
+      - name: Verify prediction seal before compiling independent oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs \
+            docs/quality/PHASE2-KOTLIN-API-V2-COHORT.json "$GITHUB_WORKSPACE/frozen-v2-engine" \
+            "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v2/kotlinc" "$RUNNER_TEMP/v2-predictions" \
+            "$RUNNER_TEMP/v2-oracle-work" "$RUNNER_TEMP/v2-independent"
+      - name: Publish source-bound independent verdict and coverage abstentions
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-kotlin-api-v2-independent
+          path: ${{ runner.temp }}/v2-independent
+          retention-days: 90
+          if-no-files-found: error
