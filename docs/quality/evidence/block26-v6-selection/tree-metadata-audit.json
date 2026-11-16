@@ -622,21 +622,33 @@
       "repository": "evaou/kotlin-algorithm",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "b5f4f3700854ddceb3e31d5cebb8185eaf047302",
+      "treeSha": "5164fccda1ba4133327d4bd9f534070e6e9f8096",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 47,
       "repository": "Kotlin-Polytech/Algorithms-2019",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "9182022e3faf619f6fa35381da3522f93bd74578",
+      "treeSha": "d76dd53598a295b85a7331fcdb84cba204fa28ac",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 48,
       "repository": "professorDeveloper/Kotlin-Algorithms",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "3dae31c7a0da2042bf593bd44b5cd9c3573797ad",
+      "treeSha": "68a1ba86cb372b6c35f08fb84c2d58623990a8ac",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 49,
