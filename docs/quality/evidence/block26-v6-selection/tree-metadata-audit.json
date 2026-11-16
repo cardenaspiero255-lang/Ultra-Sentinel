@@ -254,35 +254,87 @@
       "repository": "jumaallan/kotlin-data-structures-algorithms",
       "stars": 10,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38",
+      "treeSha": "cbe58cc3384a6f25ffca30f177ed3d82f51d6718",
+      "kotlinFiles": 6,
+      "sizeBytes": 10569,
+      "files": [
+        {
+          "path": "src/main/kotlin/conditional/Conditional.kt",
+          "blobSha": "25cb1c9200d2305da6ab508587db3b02701de662",
+          "sizeBytes": 1286
+        },
+        {
+          "path": "src/main/kotlin/functions/Functions.kt",
+          "blobSha": "547d0f2d042f84ff952667718fd729349e690961",
+          "sizeBytes": 690
+        },
+        {
+          "path": "src/main/kotlin/generics/Generics.kt",
+          "blobSha": "87ce21239b0ae97ba3228afa64ec633cefa7a5bd",
+          "sizeBytes": 2453
+        },
+        {
+          "path": "src/main/kotlin/loops/Loops.kt",
+          "blobSha": "e227a0344cf16b38de0f7826315d7a264b6d10a4",
+          "sizeBytes": 1398
+        },
+        {
+          "path": "src/main/kotlin/nullability/Nullability.kt",
+          "blobSha": "9234dfa907963d50ad67cdf25f694489c7f0cffb",
+          "sizeBytes": 1924
+        },
+        {
+          "path": "src/main/kotlin/stdlib/Variables.kt",
+          "blobSha": "69cd4f281df8a2de197d4b450d2b868885e1f5ba",
+          "sizeBytes": 2818
+        }
+      ]
     },
     {
       "rank": 25,
       "repository": "karloti/concurrent-priority-queue",
       "stars": 10,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "eb788cd9426cf8d6c614da1bc545c2e0e3be82eb",
+      "treeSha": "2599cdf5f7aae3ada74d82ab569b61b4087e4fe5",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 26,
       "repository": "kieubaduong/Boka",
       "stars": 10,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "8d255e065ec9c36b46bb78823408fd236614accc",
+      "treeSha": "9638fcedbbc2d6465b4915539762ac5e4ce561a0",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 27,
       "repository": "andriiginting/algorithm-practice",
       "stars": 9,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "9ccaddabccfb483f56c485a6278150eaac616774",
+      "treeSha": "4364f3175ac0af069bccc42af5ab6e44d23a6f8d",
+      "kotlinFiles": 61,
+      "sizeBytes": 139876
     },
     {
       "rank": 28,
       "repository": "FunkyMuse/Data-structures-and-algorithms",
       "stars": 9,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "6ecf3ac7c7c233ad1c3f44f6c30b04510d121435",
+      "treeSha": "d159665f4e4fa5cd7413bce8f7bb9ad713b774aa",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 29,
@@ -789,7 +841,48 @@
       "status": "UNINSPECTED"
     }
   ],
-  "selectedCohorts": [],
+  "selectedCohorts": [
+    {
+      "id": 1,
+      "source": {
+        "repository": "jumaallan/kotlin-data-structures-algorithms",
+        "commitSha": "1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38",
+        "treeSha": "cbe58cc3384a6f25ffca30f177ed3d82f51d6718",
+        "files": [
+          {
+            "path": "src/main/kotlin/conditional/Conditional.kt",
+            "blobSha": "25cb1c9200d2305da6ab508587db3b02701de662",
+            "sizeBytes": 1286
+          },
+          {
+            "path": "src/main/kotlin/functions/Functions.kt",
+            "blobSha": "547d0f2d042f84ff952667718fd729349e690961",
+            "sizeBytes": 690
+          },
+          {
+            "path": "src/main/kotlin/generics/Generics.kt",
+            "blobSha": "87ce21239b0ae97ba3228afa64ec633cefa7a5bd",
+            "sizeBytes": 2453
+          },
+          {
+            "path": "src/main/kotlin/loops/Loops.kt",
+            "blobSha": "e227a0344cf16b38de0f7826315d7a264b6d10a4",
+            "sizeBytes": 1398
+          },
+          {
+            "path": "src/main/kotlin/nullability/Nullability.kt",
+            "blobSha": "9234dfa907963d50ad67cdf25f694489c7f0cffb",
+            "sizeBytes": 1924
+          },
+          {
+            "path": "src/main/kotlin/stdlib/Variables.kt",
+            "blobSha": "69cd4f281df8a2de197d4b450d2b868885e1f5ba",
+            "sizeBytes": 2818
+          }
+        ]
+      }
+    }
+  ],
   "scanComplete": false,
   "sourceBodiesRead": false,
   "oraclesAuthored": false,
