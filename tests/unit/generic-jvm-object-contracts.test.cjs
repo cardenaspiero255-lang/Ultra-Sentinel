@@ -33,6 +33,38 @@ test('bounded JVM objects expose equality, symmetry and equal-hash violations on
     public Stateful(int ignored){}
     @Override public boolean equals(Object other){next=!next;return next;}
     @Override public int hashCode(){return 0;}`,
+
+   NoArg:`public NoArg(){}
+    @Override public boolean equals(Object o){return this==o;}
+    @Override public int hashCode(){return 1;}`,
+   StringKey:`private final String key;
+    public StringKey(String key){this.key=key;}
+    @Override public boolean equals(Object o){return o instanceof StringKey x && key.equals(x.key);}
+    @Override public int hashCode(){return key.hashCode();}`,
+   DualKey:`private final int number; private final String text;
+    public DualKey(int n,String s){number=n;text=s;}
+    @Override public boolean equals(Object o){return o instanceof DualKey x && number==x.number && text.equals(x.text);}
+    @Override public int hashCode(){return 31*number+text.hashCode();}`,
+   UnsupportedCtor:`public UnsupportedCtor(Object ignored){}
+    @Override public boolean equals(Object o){return o instanceof UnsupportedCtor;}
+    @Override public int hashCode(){return 0;}`,
+   ExcessCtor:`public ExcessCtor(int a,int b,int c,int d){}
+    @Override public boolean equals(Object o){return o instanceof ExcessCtor;}
+    @Override public int hashCode(){return 0;}`,
+   ThrowingCtor:`public ThrowingCtor(int key){throw new IllegalArgumentException("constructor");}
+    @Override public boolean equals(Object o){return o instanceof ThrowingCtor;}
+    @Override public int hashCode(){return 0;}`,
+   ThrowingEquals:`public ThrowingEquals(int key){}
+    @Override public boolean equals(Object o){throw new IllegalArgumentException("equals");}
+    @Override public int hashCode(){return 0;}`,
+   ThrowingHash:`private final int key;
+    public ThrowingHash(int key){this.key=key;}
+    @Override public boolean equals(Object o){return o instanceof ThrowingHash x && x.key==key;}
+    @Override public int hashCode(){throw new IllegalArgumentException("hash");}`,
+   UnstableHash:`private final int key; private int next;
+    public UnstableHash(int key){this.key=key;}
+    @Override public boolean equals(Object o){return o instanceof UnstableHash x && x.key==key;}
+    @Override public int hashCode(){return ++next;}`,
    Inherited:`public Inherited(int ignored){}`
   };
   const sources=[];
@@ -50,7 +82,7 @@ test('bounded JVM objects expose equality, symmetry and equal-hash violations on
   assert.ok(match('BrokenHash','OBJECT_EQUALS_HASHCODE_VIOLATION'));
   assert.ok(match('BrokenSymmetry','OBJECT_EQUALS_SYMMETRY_VIOLATION'));
   assert.ok(match('BrokenReflexive','OBJECT_EQUALS_REFLEXIVITY_VIOLATION'));
-  assert.ok(!findings.some(f=>/sample\.objectlaws\.(Good|Stateful|Inherited)$/.test(f.class)));
+  assert.ok(!findings.some(f=>/sample\.objectlaws\.(Good|Stateful|Inherited|NoArg|StringKey|DualKey|UnsupportedCtor|ExcessCtor|ThrowingCtor|ThrowingEquals|ThrowingHash|UnstableHash)$/.test(f.class)));
   assert.ok(report.objectContractPairs>0);
   assert.ok(report.objectContractAbstentions>0,'unstable equality must abstain');
   assert.notEqual(report.status,'INCOMPLETE_NO_SUPPORTED_METHODS');
