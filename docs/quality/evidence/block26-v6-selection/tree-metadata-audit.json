@@ -341,35 +341,87 @@
       "repository": "Lira-tron/KotlinAlgorithms",
       "stars": 9,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "dac83cdb1f8c7e948294b87ef7d4e749e4c53ac8",
+      "treeSha": "c67dec3da336d2c4f2592eb238e297d86d550e41",
+      "kotlinFiles": 26,
+      "sizeBytes": 27376
     },
     {
       "rank": 30,
       "repository": "qwertukg/Barnes-Hut-N-Body",
       "stars": 9,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17",
+      "treeSha": "7081e24fd884b362c32190a033a36c705c4a2175",
+      "kotlinFiles": 6,
+      "sizeBytes": 77818,
+      "files": [
+        {
+          "path": "src/main/kotlin/BarnesHutAlg.kt",
+          "blobSha": "375ecead80c7dbfe3445f83eda647c9eb96fcffa",
+          "sizeBytes": 25169
+        },
+        {
+          "path": "src/main/kotlin/BodyFactory.kt",
+          "blobSha": "37845e3c5eccf8fabbf5e3895574344fe2a58d55",
+          "sizeBytes": 9402
+        },
+        {
+          "path": "src/main/kotlin/Config.kt",
+          "blobSha": "55b308806748b5a4a610813b92fe9eaadeb33af2",
+          "sizeBytes": 1611
+        },
+        {
+          "path": "src/main/kotlin/Main.kt",
+          "blobSha": "16366d86cb51d5779f1c57cc1ffc5bbb8d63fd6d",
+          "sizeBytes": 1763
+        },
+        {
+          "path": "src/main/kotlin/NBodyPanel.kt",
+          "blobSha": "d3e4fa57cec84af1ad40cfa762af87c01646c4ac",
+          "sizeBytes": 16229
+        },
+        {
+          "path": "src/main/kotlin/gpu/GPU.kt",
+          "blobSha": "cdbf5eff8e9758088e4aaa0d113d4e0e7ea5d354",
+          "sizeBytes": 23644
+        }
+      ]
     },
     {
       "rank": 31,
       "repository": "2hyungjin/Algorithm-DataStructure",
       "stars": 8,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "6093b5ba33f2793eae703cf615146feedfaef000",
+      "treeSha": "b3579b5fb6a74ab849b1fb1d5b071686ae611fbe",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 32,
       "repository": "arpanpathak/AdvancedAlgorithmPatterns",
       "stars": 8,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "ce65a3f0c0b5f72115f84324db2c813a23b7843b",
+      "treeSha": "9256e757261b5e1d6a5aa8299a7db16a25304d0c",
+      "kotlinFiles": 627,
+      "sizeBytes": 719308
     },
     {
       "rank": 33,
       "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
       "stars": 8,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "7500f6f5610f8ff7fa6f07fdfe3c9f35c8f7fd57",
+      "treeSha": "1a433dd3aee0a9c0b83fe686acc8f8946ef4ed13",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 34,
@@ -878,6 +930,46 @@
             "path": "src/main/kotlin/stdlib/Variables.kt",
             "blobSha": "69cd4f281df8a2de197d4b450d2b868885e1f5ba",
             "sizeBytes": 2818
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "source": {
+        "repository": "qwertukg/Barnes-Hut-N-Body",
+        "commitSha": "6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17",
+        "treeSha": "7081e24fd884b362c32190a033a36c705c4a2175",
+        "files": [
+          {
+            "path": "src/main/kotlin/BarnesHutAlg.kt",
+            "blobSha": "375ecead80c7dbfe3445f83eda647c9eb96fcffa",
+            "sizeBytes": 25169
+          },
+          {
+            "path": "src/main/kotlin/BodyFactory.kt",
+            "blobSha": "37845e3c5eccf8fabbf5e3895574344fe2a58d55",
+            "sizeBytes": 9402
+          },
+          {
+            "path": "src/main/kotlin/Config.kt",
+            "blobSha": "55b308806748b5a4a610813b92fe9eaadeb33af2",
+            "sizeBytes": 1611
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "16366d86cb51d5779f1c57cc1ffc5bbb8d63fd6d",
+            "sizeBytes": 1763
+          },
+          {
+            "path": "src/main/kotlin/NBodyPanel.kt",
+            "blobSha": "d3e4fa57cec84af1ad40cfa762af87c01646c4ac",
+            "sizeBytes": 16229
+          },
+          {
+            "path": "src/main/kotlin/gpu/GPU.kt",
+            "blobSha": "cdbf5eff8e9758088e4aaa0d113d4e0e7ea5d354",
+            "sizeBytes": 23644
           }
         ]
       }
