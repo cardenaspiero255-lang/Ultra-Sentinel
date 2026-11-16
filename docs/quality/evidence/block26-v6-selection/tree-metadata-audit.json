@@ -199,35 +199,55 @@
       "repository": "Morfly/kotlin-algorithms",
       "stars": 11,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "69889e11bc0c6a47d5f33cd44ac27f9857708b64",
+      "treeSha": "73e9944efca3939d679f2a849a7d90f78a4ead95",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 20,
       "repository": "abhishek-yadav-random/Pathfinding-visualiser",
       "stars": 10,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "05b43945c2ee2ab751e7661631a0786ab314b402",
+      "treeSha": "7aee92130773e2572d32ecb1c41e98edea3bb247",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 21,
       "repository": "amirreza-lotfi/GraphAlgorithmApplication",
       "stars": 10,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "960efe0aea0ac18aae46fd818374baa18e18013b",
+      "treeSha": "d592726f5b03eca674e0917b2171ecdc714ca462",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 22,
       "repository": "jens-muenker/fuzzywuzzy-kotlin",
       "stars": 10,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "5106ce53733d475a458e30c7175ec2b5ac685d18",
+      "treeSha": "7c2a64ac8316c1dceb4e6ecaac3a19bc9dc2924e",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 23,
       "repository": "JetBrains-Research/hldiff",
       "stars": 10,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "ed184ca90ed62cd1c6ac29972d7ec5f90f130638",
+      "treeSha": "c08a6e2643cf7c640717f1a33ba10ebb25222e78",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 24,
