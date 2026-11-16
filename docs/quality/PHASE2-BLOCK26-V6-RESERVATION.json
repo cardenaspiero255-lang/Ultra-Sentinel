@@ -1,0 +1,315 @@
+{
+  "schema": "ultra-sentinel-block26-v6-metadata-reservation/v1",
+  "frozenEngine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+    "treeSha": "3798689c8c3994dafd1977fb0972d0e607859841",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "6304ae42c3494a20fc721202304e2c20a492f186"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      },
+      {
+        "path": "scripts/phase2-kotlin-api-v2-eval.cjs",
+        "blobSha": "3a3c6cc1e05d501107a3c4d2f504fafde8f81b27"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+        "blobSha": "77610104992b446de457bea59d8faeb679d5bd7a"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+        "blobSha": "ef26ca3897ec2f08b5a03e889101876d07b897d4"
+      }
+    ]
+  },
+  "freezeCommitSha": "2ebf2c2a4498db19fa20cc3763f416167188630b",
+  "freezeFileBlobSha": "9124f7c3c8cec96268979fc4635777cb610e74a4",
+  "metadataPool": {
+    "path": "docs/quality/evidence/block26-v6-selection/repository-metadata-pool.json",
+    "blobSha": "f5d2a686a06738ed1f747bb6c8de468793e7932d"
+  },
+  "treeSelectionAudit": {
+    "path": "docs/quality/evidence/block26-v6-selection/tree-metadata-audit.json",
+    "blobSha": "2e8031b9afbac84d3417ab4ac73a716007eb8975"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V6-EXCLUSIONS.json",
+    "blobSha": "9b44328765f60923b050a1b3297c0a967ddf3963"
+  },
+  "rankedPoolSize": 100,
+  "inspectedPrefixEndRank": 69,
+  "sourceFilesReserved": 37,
+  "cohorts": [
+    {
+      "id": 1,
+      "source": {
+        "repository": "jumaallan/kotlin-data-structures-algorithms",
+        "commitSha": "1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38",
+        "treeSha": "cbe58cc3384a6f25ffca30f177ed3d82f51d6718",
+        "files": [
+          {
+            "path": "src/main/kotlin/conditional/Conditional.kt",
+            "blobSha": "25cb1c9200d2305da6ab508587db3b02701de662",
+            "sizeBytes": 1286
+          },
+          {
+            "path": "src/main/kotlin/functions/Functions.kt",
+            "blobSha": "547d0f2d042f84ff952667718fd729349e690961",
+            "sizeBytes": 690
+          },
+          {
+            "path": "src/main/kotlin/generics/Generics.kt",
+            "blobSha": "87ce21239b0ae97ba3228afa64ec633cefa7a5bd",
+            "sizeBytes": 2453
+          },
+          {
+            "path": "src/main/kotlin/loops/Loops.kt",
+            "blobSha": "e227a0344cf16b38de0f7826315d7a264b6d10a4",
+            "sizeBytes": 1398
+          },
+          {
+            "path": "src/main/kotlin/nullability/Nullability.kt",
+            "blobSha": "9234dfa907963d50ad67cdf25f694489c7f0cffb",
+            "sizeBytes": 1924
+          },
+          {
+            "path": "src/main/kotlin/stdlib/Variables.kt",
+            "blobSha": "69cd4f281df8a2de197d4b450d2b868885e1f5ba",
+            "sizeBytes": 2818
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "source": {
+        "repository": "qwertukg/Barnes-Hut-N-Body",
+        "commitSha": "6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17",
+        "treeSha": "7081e24fd884b362c32190a033a36c705c4a2175",
+        "files": [
+          {
+            "path": "src/main/kotlin/BarnesHutAlg.kt",
+            "blobSha": "375ecead80c7dbfe3445f83eda647c9eb96fcffa",
+            "sizeBytes": 25169
+          },
+          {
+            "path": "src/main/kotlin/BodyFactory.kt",
+            "blobSha": "37845e3c5eccf8fabbf5e3895574344fe2a58d55",
+            "sizeBytes": 9402
+          },
+          {
+            "path": "src/main/kotlin/Config.kt",
+            "blobSha": "55b308806748b5a4a610813b92fe9eaadeb33af2",
+            "sizeBytes": 1611
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "16366d86cb51d5779f1c57cc1ffc5bbb8d63fd6d",
+            "sizeBytes": 1763
+          },
+          {
+            "path": "src/main/kotlin/NBodyPanel.kt",
+            "blobSha": "d3e4fa57cec84af1ad40cfa762af87c01646c4ac",
+            "sizeBytes": 16229
+          },
+          {
+            "path": "src/main/kotlin/gpu/GPU.kt",
+            "blobSha": "cdbf5eff8e9758088e4aaa0d113d4e0e7ea5d354",
+            "sizeBytes": 23644
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "source": {
+        "repository": "Ahmed-Saber-25/grokking_algorithms",
+        "commitSha": "db06014f811890e97abbdedf22ff6b565e4a3c59",
+        "treeSha": "1e74700efdf60ede85806c9fc3bd003bf58cf06f",
+        "files": [
+          {
+            "path": "src/main/kotlin/chapter_1/BinarySearch.kt",
+            "blobSha": "c65b6c614bceef299e6ffa72d00ac94f50031647",
+            "sizeBytes": 621
+          },
+          {
+            "path": "src/main/kotlin/chapter_2/SelectionSortUsingMutableList.kt",
+            "blobSha": "9f7eefc494debee00fd1d38b7ba08654e2a2e2af",
+            "sizeBytes": 704
+          },
+          {
+            "path": "src/main/kotlin/chapter_3/Recursion.kt",
+            "blobSha": "8268d19bb2f2d07bda4420e41eab980c80c8754a",
+            "sizeBytes": 327
+          },
+          {
+            "path": "src/main/kotlin/chapter_4/DevideAndConquer.kt",
+            "blobSha": "34fffb44cc275655ce0a2e8d3e460f5298d698af",
+            "sizeBytes": 805
+          },
+          {
+            "path": "src/main/kotlin/chapter_4/QuickSort.kt",
+            "blobSha": "e232ecd7670297486fb394e1521389a50ee45e99",
+            "sizeBytes": 1062
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/CheckVoters.kt",
+            "blobSha": "715ffce4f688b79ef3a5bce167c514d561cdd4cf",
+            "sizeBytes": 428
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/GetCashedFromServer.kt",
+            "blobSha": "d121d0806d11a15daf5613d3155ddebd97af9d83",
+            "sizeBytes": 627
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/PriceOfGroceries.kt",
+            "blobSha": "9e536258fda4ccae5e5a61241292bdd8104510a8",
+            "sizeBytes": 278
+          },
+          {
+            "path": "src/main/kotlin/chapter_6/BreadthFirstSearch.kt",
+            "blobSha": "78a1a28bc52c6a6d130636b5278def3ac938ece3",
+            "sizeBytes": 1522
+          },
+          {
+            "path": "src/main/kotlin/chapter_7/DijkstraSearchAlgorithm.kt",
+            "blobSha": "3685972292e90cd6ad248e54345f50c6e7dcb807",
+            "sizeBytes": 2382
+          },
+          {
+            "path": "src/main/kotlin/chapter_8/GreedyAlgorithm.kt",
+            "blobSha": "e4e536f0e91cbf994d163c42811caf102ec03e3c",
+            "sizeBytes": 1293
+          },
+          {
+            "path": "src/main/kotlin/chapter_9/LongestCommonSubsequence.kt",
+            "blobSha": "a487f8a978659d9e08ff65881aa6098d7b7ec342",
+            "sizeBytes": 1085
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "source": {
+        "repository": "Louiixx-h/algorithms-and-data-structure",
+        "commitSha": "5f81f04de2227b725cbe002af975fefa803d3f87",
+        "treeSha": "e281837c2fee2356f839db35e21ac990a0cffd28",
+        "files": [
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/recursion/RecursionAlgorithm.kt",
+            "blobSha": "fb247ea907685d5d48e9561ef3f70edd3bde743b",
+            "sizeBytes": 173
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/search/Client.kt",
+            "blobSha": "fe917047260e261e416a35799cc2412c570bb6bb",
+            "sizeBytes": 475
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/search/SearchAlgorithm.kt",
+            "blobSha": "08a689b5b81bfc0b96a84adfb5efaf40824dd20d",
+            "sizeBytes": 785
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/Client.kt",
+            "blobSha": "8c05c83031b1ec16b5ae0a38a0929e4f81f44bf7",
+            "sizeBytes": 475
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/SortAlgorithm.kt",
+            "blobSha": "9a0473d94adf509588e7176b09cc8305e3a90cfb",
+            "sizeBytes": 1097
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Array.kt",
+            "blobSha": "3044ba01925bf17e3bc4dc13e92a16d5e3fc5185",
+            "sizeBytes": 623
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Client.kt",
+            "blobSha": "a247e06cab90d4f851a01ee8419cc6e68bbf4731",
+            "sizeBytes": 123
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/BinaryTree.kt",
+            "blobSha": "89fc951e025ad2bdb30b18b23fc9b3af09ab95de",
+            "sizeBytes": 342
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Client.kt",
+            "blobSha": "93756bb05674ba3362e9fd47f558adbf4c441633",
+            "sizeBytes": 484
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Node.kt",
+            "blobSha": "9453e989e3a7b3d745e5fdf1f5d033c1f9dd7f27",
+            "sizeBytes": 216
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/utils/Utils.kt",
+            "blobSha": "b77c8991a85e7b3020b468efda5427c9dfd0b4c3",
+            "sizeBytes": 456
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "source": {
+        "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+        "commitSha": "045b7bf6eeee434995b2a3fe9013e4c1564327b7",
+        "treeSha": "06ac1ac4114ae3c752c33e61fa8d6211625f7cc5",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "e93eac898b20e0983d9c14ed227e8bf3f947ed38",
+            "sizeBytes": 715
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "source": {
+        "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
+        "commitSha": "71ffc18f7c79fe710dc51ba4b58b07e3e81cad74",
+        "treeSha": "b181956daa66ba54ce32f17f02d4b8e91d9d2df4",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "6f6e87b72bdb120b77bcfda8956fd8fa56b9d141",
+            "sizeBytes": 721
+          }
+        ]
+      }
+    }
+  ],
+  "selectionCompletedBeforeSourceBodiesRead": true,
+  "sourceBodiesRead": false,
+  "oracleExecuted": false,
+  "oraclesCommittedBeforeHunter": false,
+  "predictionsExecuted": false,
+  "oraclePredictionsShared": false,
+  "confirmedNewDefects": 0,
+  "block26Closed": false,
+  "block27Allowed": false
+}
