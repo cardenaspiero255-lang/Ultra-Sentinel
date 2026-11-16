@@ -144,35 +144,55 @@
       "repository": "fiskurgit/DitherKt",
       "stars": 12,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "2359d48a2e471cc3987b5469a2dd8968b3a46a63",
+      "treeSha": "461ba963407fb21817d471027ee96a8a7f1204fc",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 15,
       "repository": "galangriarulhaq/Kotlin-data-structures-and-algorithms",
       "stars": 12,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "9cb20ad572f6a641aedded9c1a9245cbc55492d8",
+      "treeSha": "f7269ff141cccba320ca8fc018b48a1229165a55",
+      "kotlinFiles": 51,
+      "sizeBytes": 85301
     },
     {
       "rank": 16,
       "repository": "Ankursehrawat15/Realtime-chat-app-based-on-Cryptographic-algorithms",
       "stars": 11,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "423e3cd3753f31f5abb002a51fb46028232531f1",
+      "treeSha": "64ec61898b8be44f03da2763d07df8a183bfde26",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 17,
       "repository": "karimelbahi/DataStructure-Algorithms-Kotlin",
       "stars": 11,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "8bf14661be7914ea190a7c31eca59b14fec994fa",
+      "treeSha": "aafd971ce8c9390a8458c67d1c52d8d4e65a0aa2",
+      "kotlinFiles": 36,
+      "sizeBytes": 66268
     },
     {
       "rank": 18,
       "repository": "kodeflap/Algo_Guide",
       "stars": 11,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "c4a7ddba54daecb219a1befa12583e3e8f3fa066",
+      "treeSha": "524a91f887fbd722f49a058f47d415d83e88e8c4",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 19,
