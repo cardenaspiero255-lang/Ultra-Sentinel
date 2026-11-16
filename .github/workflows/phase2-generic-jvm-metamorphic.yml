@@ -122,6 +122,26 @@ jobs:
           node "$fixture/verify.cjs" "$RUNNER_TEMP/api-v2-primary/discovery.json" \
             "$RUNNER_TEMP/api-v2-default/discovery.json" "$RUNNER_TEMP/api-v2-compiled/target.jar" \
             | tee "$RUNNER_TEMP/api-v2-synthetic-receipt.json"
+      - name: Prove Kotlin Array<Int>, Array<Double> and Array<Float> bytecode coverage in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/kotlin-boxed-compiled" "$RUNNER_TEMP/kotlin-boxed-output"
+          bash tests/fixtures/phase2-block26-object-contracts/run-isolated.sh compile-v2 \
+            "$RUNNER_TEMP/kotlin-generic/kotlinc" \
+            "$GITHUB_WORKSPACE/tests/fixtures/jvm-metamorphic/boxed-array-kotlin" \
+            "$RUNNER_TEMP/kotlin-boxed-compiled"
+          bash tests/fixtures/jvm-metamorphic/run-probe-v2.sh \
+            "$RUNNER_TEMP/kotlin-boxed-compiled/target.jar" \
+            "$RUNNER_TEMP/generic-jvm-classes" sample.boxed "$RUNNER_TEMP/kotlin-boxed-output"
+          node - "$RUNNER_TEMP/kotlin-boxed-output/discovery.json" <<'JS'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync(process.argv[2]));
+          if(r.methodsProbed<3 || r.structuredMethodsExercised<3 || r.unsupportedMethods<1 ||
+             r.oracleVerified!==false || r.remoteWrites!==false || r.mergeAllowed!==false)
+            throw Error('KOTLIN_BOXED_ARRAY_PROBE_COVERAGE_FAILED');
+          console.log('KOTLIN_BOXED_NUMERIC_ARRAY_METHODS_PROBED='+r.methodsProbed);
+          JS
       - name: Replay generic discovery and independent original Kotlin oracle
         shell: bash
         run: |
@@ -139,5 +159,6 @@ jobs:
             ${{ runner.temp }}/api-v2-synthetic-receipt.json
             ${{ runner.temp }}/api-v2-primary/discovery.json
             ${{ runner.temp }}/api-v2-default/discovery.json
+            ${{ runner.temp }}/kotlin-boxed-output/discovery.json
           retention-days: 30
           if-no-files-found: error
