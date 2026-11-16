@@ -688,21 +688,33 @@
       "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "4f4e2764587a7d712c1560f0543a2bfe94f3ab20",
+      "treeSha": "e859095c585ffc019ffc0c1087cfc861a32731c8",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 53,
       "repository": "fahime-ghasemi/kotlin-algorithms-interview",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "5ac207b2aa9d640c9f7acb21c9c4e6e49609229e",
+      "treeSha": "2d303e57462ddc55d44513510df9e698b8ac92bc",
+      "kotlinFiles": 26,
+      "sizeBytes": 24148
     },
     {
       "rank": 54,
       "repository": "hartwigmedical/actin",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "ec79e0b0ca4ada456fa433c297271cc56fd290e3",
+      "treeSha": "d9ae338ea2a32c1dc7579f166c0ddeee309f7723",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 55,
