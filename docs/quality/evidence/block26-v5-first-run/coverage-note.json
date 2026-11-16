@@ -1,0 +1,22 @@
+{
+  "methodsProbed": 0,
+  "hypotheses": 0,
+  "numericMethodCandidates": 1,
+  "sourceFiles": 31,
+  "independentEligibleNumericObservations": 1,
+  "unsupportedControlComparisons": 464,
+  "unsupportedControlLiteralMatches": 413,
+  "unsupportedControlLiteralDisagreements": 51,
+  "unsupportedControlDisagreementsAdjudicatedAsDefects": false,
+  "countedAsHunterDiscoveries": false,
+  "coverageBlockers": [
+    "cohort1: no admitted numeric or Comparable API",
+    "cohort2: missing JOGL/JGLM/Commons Math production dependencies; entire cohort compilation abstains",
+    "cohort3: both available collection bands start with size0 or1, giving a nonfinite mean before a complete numeric triple; no project Comparable constructor admitted"
+  ],
+  "globalPrecision": null,
+  "globalRecall": null,
+  "falseNegatives": null,
+  "block26Closed": false,
+  "block27Allowed": false
+}

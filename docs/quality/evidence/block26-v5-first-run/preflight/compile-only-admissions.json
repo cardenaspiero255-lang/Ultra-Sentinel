@@ -1,0 +1,22 @@
+{
+  "admissions": [
+    {
+      "cohortId": 1,
+      "compilationSucceeded": true,
+      "oracleExecuted": false
+    },
+    {
+      "cohortId": 3,
+      "compilationSucceeded": true,
+      "oracleExecuted": false
+    }
+  ],
+  "abstentions": [
+    {
+      "cohortId": 2,
+      "reason": "INDEPENDENT_COMPILATION_ABSTENTION",
+      "exitStatus": 1
+    }
+  ],
+  "oracleExecuted": false
+}

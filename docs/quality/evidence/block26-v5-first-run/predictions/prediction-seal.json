@@ -1,0 +1,35 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-prediction-seal/v1",
+  "engineSha": "d059ac1f41f093fca5ecca42964e2d16e0ea2c41",
+  "manifestSha256": "5ce57f235df273a90d485842d8da744cd10bb20b44903bbb86c06e0118f490a0",
+  "reports": [
+    {
+      "cohortId": 1,
+      "scope": "com",
+      "artifactSha256": "994aed24395f44a1405b9e935a69c44e7dcfa7d61a46a32f1922d7bc0ef13be7",
+      "reportSha256": "53e2c59e0b92266f67529c3e3e25e544d407a361bc760e9bfeacea838e9d3074",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "net",
+      "artifactSha256": "c7f3ae121768ef6f425c1c81feb8aedb442dd18d18c5423b35c3ffb19d371227",
+      "reportSha256": "d762de875220f5e20a0d3a79945837d56279fde41f8a62d8a43e1dfe3aa28612",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    }
+  ],
+  "executionAbstentions": [
+    {
+      "cohortId": 2,
+      "reason": "COMPILATION_ABSTENTION",
+      "exitStatus": 1
+    }
+  ],
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block27Allowed": false
+}
