@@ -63,6 +63,10 @@ jobs:
           import sys,xml.etree.ElementTree as ET
           source=ET.parse(sys.argv[1]).find('.//sourcefile[@name="GenericJvmMetamorphicProbe.java"]')
           if source is None: raise SystemExit('COVERAGE_SOURCE_MISSING')
+          for line in source.findall('line'):
+              missing=int(line.get('mb','0'))
+              if missing:
+                  print(f"MISSING_BRANCH_LINE:{line.get('nr')}:{missing}/{missing+int(line.get('cb','0'))}")
           for kind in ('LINE','BRANCH'):
               item=source.find(f"counter[@type='{kind}']")
               if item is None: raise SystemExit('COVERAGE_COUNTER_MISSING')
