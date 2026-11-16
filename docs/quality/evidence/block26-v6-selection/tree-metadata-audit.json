@@ -1,0 +1,721 @@
+{
+  "schema": "ultra-sentinel-block26-v6-prospective-tree-metadata-audit/v1",
+  "freezeCommitSha": "2ebf2c2a4498db19fa20cc3763f416167188630b",
+  "engineCommitSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+  "metadataPool": {
+    "path": "docs/quality/evidence/block26-v6-selection/repository-metadata-pool.json",
+    "blobSha": "f5d2a686a06738ed1f747bb6c8de468793e7932d"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V6-EXCLUSIONS.json",
+    "blobSha": "9b44328765f60923b050a1b3297c0a967ddf3963"
+  },
+  "selectionPolicy": "first six unexposed pinned default-branch trees with 1..12 regular src/main/**/*.kt blobs, total size <=196608 bytes; stars descending then ASCII case-insensitive full_name ascending",
+  "rankedCandidates": [
+    {
+      "rank": 1,
+      "repository": "mAlaliSy/AlgoLizer-algorithms-visualizer",
+      "stars": 18,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 2,
+      "repository": "alexandrepiveteau/kotlin-graphs",
+      "stars": 17,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 3,
+      "repository": "ensody/Kompressor",
+      "stars": 17,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 4,
+      "repository": "penemue/keap",
+      "stars": 17,
+      "defaultBranch": "master",
+      "status": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 5,
+      "repository": "esoxjem/Algorithms",
+      "stars": 16,
+      "defaultBranch": "master",
+      "status": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 6,
+      "repository": "aallam/string-similarity-kotlin",
+      "stars": 15,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 7,
+      "repository": "mohammednawas8/Android-Algorithms-Visualizer",
+      "stars": 15,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 8,
+      "repository": "funfunStudy/algorithm",
+      "stars": 14,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 9,
+      "repository": "palasjir/ct-volumetric-rendering",
+      "stars": 14,
+      "defaultBranch": "master",
+      "status": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 10,
+      "repository": "sumeyraozugur/Algorithms",
+      "stars": 14,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 11,
+      "repository": "V9vek/Sorting-Visualizer",
+      "stars": 14,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 12,
+      "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
+      "stars": 12,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 13,
+      "repository": "dlew/wordle-solver",
+      "stars": 12,
+      "defaultBranch": "main",
+      "status": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 14,
+      "repository": "fiskurgit/DitherKt",
+      "stars": 12,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 15,
+      "repository": "galangriarulhaq/Kotlin-data-structures-and-algorithms",
+      "stars": 12,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 16,
+      "repository": "Ankursehrawat15/Realtime-chat-app-based-on-Cryptographic-algorithms",
+      "stars": 11,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 17,
+      "repository": "karimelbahi/DataStructure-Algorithms-Kotlin",
+      "stars": 11,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 18,
+      "repository": "kodeflap/Algo_Guide",
+      "stars": 11,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 19,
+      "repository": "Morfly/kotlin-algorithms",
+      "stars": 11,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 20,
+      "repository": "abhishek-yadav-random/Pathfinding-visualiser",
+      "stars": 10,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 21,
+      "repository": "amirreza-lotfi/GraphAlgorithmApplication",
+      "stars": 10,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 22,
+      "repository": "jens-muenker/fuzzywuzzy-kotlin",
+      "stars": 10,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 23,
+      "repository": "JetBrains-Research/hldiff",
+      "stars": 10,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 24,
+      "repository": "jumaallan/kotlin-data-structures-algorithms",
+      "stars": 10,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 25,
+      "repository": "karloti/concurrent-priority-queue",
+      "stars": 10,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 26,
+      "repository": "kieubaduong/Boka",
+      "stars": 10,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 27,
+      "repository": "andriiginting/algorithm-practice",
+      "stars": 9,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 28,
+      "repository": "FunkyMuse/Data-structures-and-algorithms",
+      "stars": 9,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 29,
+      "repository": "Lira-tron/KotlinAlgorithms",
+      "stars": 9,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 30,
+      "repository": "qwertukg/Barnes-Hut-N-Body",
+      "stars": 9,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 31,
+      "repository": "2hyungjin/Algorithm-DataStructure",
+      "stars": 8,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 32,
+      "repository": "arpanpathak/AdvancedAlgorithmPatterns",
+      "stars": 8,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 33,
+      "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "stars": 8,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 34,
+      "repository": "GustavoHGAraujo/kotlin-a-star-algorithm",
+      "stars": 8,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 35,
+      "repository": "Hemant-Jain-Author/Data-Structures-and-Algorithms-using-Kotlin",
+      "stars": 8,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 36,
+      "repository": "KonstantinLukaschenko/genetic-algorithm-kotlin",
+      "stars": 8,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 37,
+      "repository": "qiaoyuang/Algorithm",
+      "stars": 8,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 38,
+      "repository": "ShawxingKwok/Kwok-algorithm",
+      "stars": 8,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 39,
+      "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
+      "stars": 8,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 40,
+      "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
+      "stars": 7,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 41,
+      "repository": "elye/demo_android_blur_image",
+      "stars": 7,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 42,
+      "repository": "mwshubham/DataStructureAndAlgorithm",
+      "stars": 7,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 43,
+      "repository": "PeopleAndService/AlgorithmStudy",
+      "stars": 7,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 44,
+      "repository": "wp529/SkuAlgorithm",
+      "stars": 7,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 45,
+      "repository": "Ahmed-Saber-25/grokking_algorithms",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 46,
+      "repository": "evaou/kotlin-algorithm",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 47,
+      "repository": "Kotlin-Polytech/Algorithms-2019",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 48,
+      "repository": "professorDeveloper/Kotlin-Algorithms",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 49,
+      "repository": "SmartToolFactory/DataStructuresAndAlgorithmsPlayground",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 50,
+      "repository": "vladmelnyk/coinselection",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 51,
+      "repository": "YAPP-Github/21st-Study-Algorithm-2",
+      "stars": 6,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 52,
+      "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 53,
+      "repository": "fahime-ghasemi/kotlin-algorithms-interview",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 54,
+      "repository": "hartwigmedical/actin",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 55,
+      "repository": "KhaledSherifSayed/Algorithms",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 56,
+      "repository": "Louiixx-h/algorithms-and-data-structure",
+      "stars": 5,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 57,
+      "repository": "milos85vasic/Fundamental-Algorithms",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 58,
+      "repository": "Nexters/Algorithm",
+      "stars": 5,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 59,
+      "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+      "stars": 5,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 60,
+      "repository": "saechimdaeki/Solving-ALGORITHM",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 61,
+      "repository": "samagra14/aima-kotlin",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 62,
+      "repository": "StudyFork/AlgorithmStudy",
+      "stars": 5,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 63,
+      "repository": "vivalerievich/kotgll",
+      "stars": 5,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 64,
+      "repository": "andre-j3sus/algorithms-and-data-structures",
+      "stars": 4,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 65,
+      "repository": "daylee28/leetcode-kotlin",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 66,
+      "repository": "IdeoG/android-floodfill-algorithms",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 67,
+      "repository": "jemshit/Algorithms",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 68,
+      "repository": "Kotlin-Polytech/Algorithms-2020",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 69,
+      "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
+      "stars": 4,
+      "defaultBranch": "develop",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 70,
+      "repository": "ProArun/AlgorithmVisualizer",
+      "stars": 4,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 71,
+      "repository": "sibelyiildz/AlgorithmProblems",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 72,
+      "repository": "takahirom/jetbrains-academy-algorithms",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 73,
+      "repository": "tocttou/Algorithms-Kotlin",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 74,
+      "repository": "umair13adil/KotlinAlgorithms",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 75,
+      "repository": "yunshuipiao/rice-noodles",
+      "stars": 4,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 76,
+      "repository": "AliAzaz/InterviewAlgorithms",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 77,
+      "repository": "Alienstemple/Yandex_Algorithms",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 78,
+      "repository": "callmelovevsick/Algorithm-Client",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 79,
+      "repository": "goodkillerchen/DS-for-Kotlin",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 80,
+      "repository": "huhx0015/AlgorithmTester",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 81,
+      "repository": "jrenner/kotlin-algorithms-ds",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 82,
+      "repository": "LeeSeungYun1020/Algorithm",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 83,
+      "repository": "Louiixx-h/algorithms",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 84,
+      "repository": "merttoptas/AlgorithmSolutionsInKotlin",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 85,
+      "repository": "nadezhdagub/Algorithms",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 86,
+      "repository": "olivia-soy/algorithm",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 87,
+      "repository": "savasanamaster/algorithm",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 88,
+      "repository": "thestbar/tunify",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 89,
+      "repository": "WeiLianYang/AlgorithmAnalysis",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 90,
+      "repository": "yangsooplus/Algorithm-Kotlin",
+      "stars": 3,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 91,
+      "repository": "zitmen/thunderstorm-algorithms",
+      "stars": 3,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 92,
+      "repository": "danylovolokh/AlgorithmsAnalysis",
+      "stars": 2,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 93,
+      "repository": "DuoLa512/AlgorithmDemo",
+      "stars": 2,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 94,
+      "repository": "genctasbasi/data-structures-and-algorithms",
+      "stars": 2,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 95,
+      "repository": "HanYeop/Algorithm",
+      "stars": 2,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 96,
+      "repository": "kylecorry31/luna",
+      "stars": 2,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 97,
+      "repository": "Tmdhoon2/Algorithm",
+      "stars": 2,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 98,
+      "repository": "wellFoundedDevelopers/Algorithm",
+      "stars": 2,
+      "defaultBranch": "main",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 99,
+      "repository": "yang0range/MyAlgorithm",
+      "stars": 2,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    },
+    {
+      "rank": 100,
+      "repository": "YuYangWoo/Algorithm",
+      "stars": 2,
+      "defaultBranch": "master",
+      "status": "UNINSPECTED"
+    }
+  ],
+  "selectedCohorts": [],
+  "scanComplete": false,
+  "sourceBodiesRead": false,
+  "oraclesAuthored": false,
+  "predictionsExecuted": false
+}
