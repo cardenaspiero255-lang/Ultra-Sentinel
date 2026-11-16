@@ -1,0 +1,89 @@
+{
+  "schema": "ultra-sentinel-block26-v6-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+    "treeSha": "3798689c8c3994dafd1977fb0972d0e607859841",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "6304ae42c3494a20fc721202304e2c20a492f186"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      },
+      {
+        "path": "scripts/phase2-kotlin-api-v2-eval.cjs",
+        "blobSha": "3a3c6cc1e05d501107a3c4d2f504fafde8f81b27"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+        "blobSha": "77610104992b446de457bea59d8faeb679d5bd7a"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+        "blobSha": "ef26ca3897ec2f08b5a03e889101876d07b897d4"
+      }
+    ]
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V6-EXCLUSIONS.json",
+    "blobSha": "9b44328765f60923b050a1b3297c0a967ddf3963",
+    "repositoryCount": 141,
+    "blobCount": 486
+  },
+  "historicalV5": {
+    "mergedCommitSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+    "cohortOriginalFiles": 31,
+    "confirmedDistinctDefects": 0,
+    "sourceMustRemainExposed": true,
+    "evidencePath": "docs/quality/evidence/block26-v5-first-run"
+  },
+  "selection": {
+    "query": "algorithm language:Kotlin fork:false archived:false stars:2..20",
+    "pool": "first 100 repository metadata results from one page, preserve raw response",
+    "ranking": "stars descending then full_name ASCII case-insensitive ascending",
+    "numberOfCohorts": 6,
+    "admission": "Walk ranked unexposed repositories; admit first six pinned default-branch trees with 1..12 regular tracked src/main/**/*.kt files (total <=196608 bytes), excluding previously exposed repository identities and original blob SHAs; retain full source-file inventory in Git path order",
+    "sourceContentsUsedForSelection": false,
+    "dependencyPolicy": "No dependency injection based on source inspection; compilation limitations are recorded as abstentions and reserved candidates are never retroactively substituted"
+  },
+  "evaluation": {
+    "reuseExistingCapture": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+    "reuseExistingIndependentRunner": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+    "reuseExistingJudge": "scripts/phase2-kotlin-api-v2-eval.cjs",
+    "oraclePolicy": "Independent original-source contracts authored and cryptographically precommitted before Hunter; no oracle or gold answer available to Hunter sandbox",
+    "sequence": [
+      "verify engine source and CI",
+      "freeze engine commit and excluded source identities",
+      "select metadata-only original cohort and commit reservation",
+      "independently commit oracle contracts",
+      "compile-only oracle preflight",
+      "run frozen Hunter isolated without oracle access",
+      "publish source-bound prediction seal",
+      "execute independent oracle after seal",
+      "adjudicate exact witnesses and preserve negative results"
+    ],
+    "noveltyRule": "A finding counts only when a second distinct original Kotlin defect is first predicted blind and later independently verified; hypotheses, uncovered disagreements and synthetic fixtures do not count"
+  },
+  "sourceMetadataSearched": false,
+  "sourceBodiesRead": false,
+  "predictionsExecuted": false,
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}

@@ -4,6 +4,9 @@ on:
     paths:
       - packages/family-hunter/GenericJvmMetamorphicProbe.java
       - tests/unit/generic-jvm-*.test.cjs
+      - docs/quality/PHASE2-BLOCK26-V6-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V6-EXCLUSIONS.json
+      - tests/unit/phase2-block26-v6-freeze.test.cjs
       - tests/fixtures/jvm-metamorphic/**
       - scripts/phase2-block26-object-eval.cjs
       - tests/fixtures/phase2-block26-object-contracts/run-isolated.sh
