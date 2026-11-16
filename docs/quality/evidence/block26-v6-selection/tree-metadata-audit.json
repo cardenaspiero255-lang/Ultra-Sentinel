@@ -721,21 +721,90 @@
       "repository": "KhaledSherifSayed/Algorithms",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "70f8cf4ced54ec886738cd5014b5a005056ae843",
+      "treeSha": "4cf94b797e69ed748897971bc0153f343194c349",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 56,
       "repository": "Louiixx-h/algorithms-and-data-structure",
       "stars": 5,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "5f81f04de2227b725cbe002af975fefa803d3f87",
+      "treeSha": "e281837c2fee2356f839db35e21ac990a0cffd28",
+      "kotlinFiles": 11,
+      "sizeBytes": 5249,
+      "files": [
+        {
+          "path": "src/main/kotlin/br/com/luislabs/algorithms/recursion/RecursionAlgorithm.kt",
+          "blobSha": "fb247ea907685d5d48e9561ef3f70edd3bde743b",
+          "sizeBytes": 173
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/algorithms/search/Client.kt",
+          "blobSha": "fe917047260e261e416a35799cc2412c570bb6bb",
+          "sizeBytes": 475
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/algorithms/search/SearchAlgorithm.kt",
+          "blobSha": "08a689b5b81bfc0b96a84adfb5efaf40824dd20d",
+          "sizeBytes": 785
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/Client.kt",
+          "blobSha": "8c05c83031b1ec16b5ae0a38a0929e4f81f44bf7",
+          "sizeBytes": 475
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/SortAlgorithm.kt",
+          "blobSha": "9a0473d94adf509588e7176b09cc8305e3a90cfb",
+          "sizeBytes": 1097
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Array.kt",
+          "blobSha": "3044ba01925bf17e3bc4dc13e92a16d5e3fc5185",
+          "sizeBytes": 623
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Client.kt",
+          "blobSha": "a247e06cab90d4f851a01ee8419cc6e68bbf4731",
+          "sizeBytes": 123
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/BinaryTree.kt",
+          "blobSha": "89fc951e025ad2bdb30b18b23fc9b3af09ab95de",
+          "sizeBytes": 342
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Client.kt",
+          "blobSha": "93756bb05674ba3362e9fd47f558adbf4c441633",
+          "sizeBytes": 484
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Node.kt",
+          "blobSha": "9453e989e3a7b3d745e5fdf1f5d033c1f9dd7f27",
+          "sizeBytes": 216
+        },
+        {
+          "path": "src/main/kotlin/br/com/luislabs/utils/Utils.kt",
+          "blobSha": "b77c8991a85e7b3020b468efda5427c9dfd0b4c3",
+          "sizeBytes": 456
+        }
+      ]
     },
     {
       "rank": 57,
       "repository": "milos85vasic/Fundamental-Algorithms",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "a2be55959035654463b4855058d07ccfb68ac4a7",
+      "treeSha": "8eaa6b4bcf76b95c0ea99fdbc381aeaf15417f44",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 58,
@@ -1186,6 +1255,71 @@
             "path": "src/main/kotlin/chapter_9/LongestCommonSubsequence.kt",
             "blobSha": "a487f8a978659d9e08ff65881aa6098d7b7ec342",
             "sizeBytes": 1085
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "source": {
+        "repository": "Louiixx-h/algorithms-and-data-structure",
+        "commitSha": "5f81f04de2227b725cbe002af975fefa803d3f87",
+        "treeSha": "e281837c2fee2356f839db35e21ac990a0cffd28",
+        "files": [
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/recursion/RecursionAlgorithm.kt",
+            "blobSha": "fb247ea907685d5d48e9561ef3f70edd3bde743b",
+            "sizeBytes": 173
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/search/Client.kt",
+            "blobSha": "fe917047260e261e416a35799cc2412c570bb6bb",
+            "sizeBytes": 475
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/search/SearchAlgorithm.kt",
+            "blobSha": "08a689b5b81bfc0b96a84adfb5efaf40824dd20d",
+            "sizeBytes": 785
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/Client.kt",
+            "blobSha": "8c05c83031b1ec16b5ae0a38a0929e4f81f44bf7",
+            "sizeBytes": 475
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/algorithms/sort/SortAlgorithm.kt",
+            "blobSha": "9a0473d94adf509588e7176b09cc8305e3a90cfb",
+            "sizeBytes": 1097
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Array.kt",
+            "blobSha": "3044ba01925bf17e3bc4dc13e92a16d5e3fc5185",
+            "sizeBytes": 623
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/arrays/Client.kt",
+            "blobSha": "a247e06cab90d4f851a01ee8419cc6e68bbf4731",
+            "sizeBytes": 123
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/BinaryTree.kt",
+            "blobSha": "89fc951e025ad2bdb30b18b23fc9b3af09ab95de",
+            "sizeBytes": 342
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Client.kt",
+            "blobSha": "93756bb05674ba3362e9fd47f558adbf4c441633",
+            "sizeBytes": 484
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/dataStructure/tree/Node.kt",
+            "blobSha": "9453e989e3a7b3d745e5fdf1f5d033c1f9dd7f27",
+            "sizeBytes": 216
+          },
+          {
+            "path": "src/main/kotlin/br/com/luislabs/utils/Utils.kt",
+            "blobSha": "b77c8991a85e7b3020b468efda5427c9dfd0b4c3",
+            "sizeBytes": 456
           }
         ]
       }
