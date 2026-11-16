@@ -1,0 +1,438 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0",
+    "treeSha": "13479e402fd5a88da3cdb0df5050b8008e90628a",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "b2a8692d614757b695f683eb76ac8fb937cce41b"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      }
+    ]
+  },
+  "freezeSha": "63b0cc26948dbe62f6cb49902c69b37327199a40",
+  "metadataReservationSha256": "7091b3703bda417f943acbda7ceba506fab0b81703d8c6881ad775667dac4727",
+  "cohorts": [
+    {
+      "id": 1,
+      "source": {
+        "repository": "MarcinMoskala/KotlinDiscreteMathToolkit",
+        "commitSha": "17a7329af042c5de232051027ec1155011d57da8",
+        "treeSha": "11b094e2dd8a02921465bacd9ae7a81c1f5251da",
+        "files": [
+          {
+            "path": "src/main/java/com/marcinmoskala/math/CartesianProductExt.kt",
+            "blobSha": "2e8ab4f96f3ff298289c7e616960374e0323763d",
+            "sizeBytes": 1832
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/CombinationsExt.kt",
+            "blobSha": "d70485a2da4af24c8e3f6e1cce10effc406dbaa9",
+            "sizeBytes": 1944
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/FactorialFun.kt",
+            "blobSha": "690f0c6da6f5f4fb800bcdb56f75be3ebd5566a1",
+            "sizeBytes": 133
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/IterableMultiplication.kt",
+            "blobSha": "3a52e5cf6f7db98b7afa7d732914c50ea9085d49",
+            "sizeBytes": 365
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/NumSplitFunc.kt",
+            "blobSha": "dc9e6eac45f2663a264f2c517f262181df69e907",
+            "sizeBytes": 492
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/NumbersDivisible.kt",
+            "blobSha": "df2f5c98d29bed8246264f5d134318978813ab0b",
+            "sizeBytes": 498
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/PermutationsExt.kt",
+            "blobSha": "42d9ebde1a8e4291e0ee2cf514a4212a9fb1e563",
+            "sizeBytes": 1801
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/Power.kt",
+            "blobSha": "62e9a40754f85d0307b8cc10612ca52b8ae619d9",
+            "sizeBytes": 339
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/PowersetExt.kt",
+            "blobSha": "2676d3f7af01bfc2b44101739ae3395c67ebf411",
+            "sizeBytes": 423
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/ProductExt.kt",
+            "blobSha": "ccc4b639d5892c02a4c39a2bbfea2ca7e1ed9120",
+            "sizeBytes": 239
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/SetSplitFunc.kt",
+            "blobSha": "e4074b8fe60ab20ee671d891c2da2de4a61f370d",
+            "sizeBytes": 1626
+          },
+          {
+            "path": "src/main/java/com/marcinmoskala/math/SublistsBySplittersExt.kt",
+            "blobSha": "29bb7bca9774ccdbc2b2874930231d64ed426ad7",
+            "sizeBytes": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "source": {
+        "repository": "Keelar/ExprK",
+        "commitSha": "91fdabf44dda509589ef03722ab70d37b316ef02",
+        "treeSha": "d30aff14a26714a51a85f1ac0e4518e86e841e5e",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/Expressions.kt",
+            "blobSha": "a95342133020106c49a81fa01710cf9f7eee8a43",
+            "sizeBytes": 5963
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Evaluator.kt",
+            "blobSha": "d4ec9ecc69b20e51e5dd34ce137995898515923f",
+            "sizeBytes": 4945
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Expr.kt",
+            "blobSha": "d552ae315112413202e23f9b31c6734f330589f2",
+            "sizeBytes": 2259
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Function.kt",
+            "blobSha": "3d5a5c3e0e4f7ded604b5ad2fa9238b93eb06e16",
+            "sizeBytes": 163
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Parser.kt",
+            "blobSha": "8077f519cc7be56ad51c839a04029e298d39a094",
+            "sizeBytes": 5436
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Scanner.kt",
+            "blobSha": "aa14d72ed354fc8e8e3ab77b05c1f600e5a35114",
+            "sizeBytes": 4120
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/Token.kt",
+            "blobSha": "8a0671e5a7b05498dd5b246381b0ac7eb90cc456",
+            "sizeBytes": 276
+          },
+          {
+            "path": "src/main/kotlin/com/github/keelar/exprk/internal/TokenType.kt",
+            "blobSha": "305fa4f1b0e3134012880f02c0880640e213f292",
+            "sizeBytes": 471
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "source": {
+        "repository": "thelastpickle/tlp-stress",
+        "commitSha": "2d4542c27d3f1c0e24899c01247b9a8ee3c9a238",
+        "treeSha": "61c4a51bed8677a1afee10598aa4fb010fc627f6",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/CommandLineParser.kt",
+            "blobSha": "9f3aa425062893361bf9bd85f0bb28f5fd406c0d",
+            "sizeBytes": 1587
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/CoordinatorHostPredicate.kt",
+            "blobSha": "51f8d7330d984b74800509e8ff13306d42ab6ac0",
+            "sizeBytes": 336
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/DDLStatement.kt",
+            "blobSha": "62e17c5265d6714969a13db76ee4014466af8f0d",
+            "sizeBytes": 282
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/FileReporter.kt",
+            "blobSha": "70bae2c627eff9c86c478b9e6686d546dc7830b4",
+            "sizeBytes": 3126
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/Main.kt",
+            "blobSha": "dee46b17198ad57d81018206f57e36cfb099c94b",
+            "sizeBytes": 617
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/Metrics.kt",
+            "blobSha": "2c3e26d3b522c8434347ec05c705160e9076f7b8",
+            "sizeBytes": 1119
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/OperationCallback.kt",
+            "blobSha": "7e019f5481fd04c5960ad093bde6d75cef920f3f",
+            "sizeBytes": 1372
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/PartitionKey.kt",
+            "blobSha": "a3611de183955e78ae9f833f23dd7c286c4ae75a",
+            "sizeBytes": 249
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/PartitionKeyGenerator.kt",
+            "blobSha": "80eb8228661f784c97f90e3c7463b4e645f84913",
+            "sizeBytes": 2033
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/Plugin.kt",
+            "blobSha": "853cfb4896203e73e61a3a153c37955015138b0f",
+            "sizeBytes": 3427
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/PopulateOption.kt",
+            "blobSha": "87afd3971e676510594cfa01b9fa6b9998e3f0a0",
+            "sizeBytes": 158
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/ProfileRunner.kt",
+            "blobSha": "4d8d8ef713ded0c2536552e6a2eeb860eb46b133",
+            "sizeBytes": 6915
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/RowState.kt",
+            "blobSha": "5b2f43271595287e918e5ea53559cca8891eefa3",
+            "sizeBytes": 206
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/SchemaBuilder.kt",
+            "blobSha": "2e5f9275c27a09636d077e6385af7f5d775f1981",
+            "sizeBytes": 7073
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/SingleLineConsoleReporter.kt",
+            "blobSha": "964f33c85715502c907e0b3c0edf154e032a1a18",
+            "sizeBytes": 4872
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/StressContext.kt",
+            "blobSha": "c7334124f90f97642acc0e6e7ccf80a630342f8f",
+            "sizeBytes": 656
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/Util.kt",
+            "blobSha": "35d6d1492c577c1b1b03395cadc08213566aea2c",
+            "sizeBytes": 513
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/Workload.kt",
+            "blobSha": "387f620fd158d99a367750ccc33268fa7e857811",
+            "sizeBytes": 55
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/WorkloadParameter.kt",
+            "blobSha": "73f34ac3624018777693f1934d7f471d122f6524",
+            "sizeBytes": 96
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Fields.kt",
+            "blobSha": "a8e134f7e96a56d91b58646cdf16fbcc78cb0bdf",
+            "sizeBytes": 423
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/IStressCommand.kt",
+            "blobSha": "3f5cce75c085907479b8ca3c6701792e3db44828",
+            "sizeBytes": 92
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Info.kt",
+            "blobSha": "6cde71a7e09a3ca6b779522f9a377eb8dc66278a",
+            "sizeBytes": 1618
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/ListCommand.kt",
+            "blobSha": "8ae7226608b58226bf24c4a049155abd307aae62",
+            "sizeBytes": 513
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Run.kt",
+            "blobSha": "7234c0cc5d1d0ff6920a90213e1607be71bb9fe8",
+            "sizeBytes": 17477
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/ConsistencyLevelConverter.kt",
+            "blobSha": "cbfe8893306fea898433ddcda5a4a08eb69b7021",
+            "sizeBytes": 331
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/HumanReadableConverter.kt",
+            "blobSha": "39b38fe1291c6ee062e168312c1552eac3d20e79",
+            "sizeBytes": 711
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/HumanReadableTimeConverter.kt",
+            "blobSha": "0bc574c7ff7819813d17baebe4a26cff79196922",
+            "sizeBytes": 1549
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/FieldGenerator.kt",
+            "blobSha": "116ee63773cfc74bfd2ce17bcf9410b9a6fd459c",
+            "sizeBytes": 384
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/Function.kt",
+            "blobSha": "37c3c37aed1e7b36279a73fd18b124bc4c2c42f7",
+            "sizeBytes": 177
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/FunctionLoader.kt",
+            "blobSha": "57605e3c7cb070b517037b8f77c56b260a211370",
+            "sizeBytes": 2101
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/ParsedFieldFunction.kt",
+            "blobSha": "194dc9e47a68149a011a59df2d899cd08cbd2bee",
+            "sizeBytes": 869
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/Registry.kt",
+            "blobSha": "b305f2cf66cbb39908ae063bc86746abd7495283",
+            "sizeBytes": 2923
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Book.kt",
+            "blobSha": "0d4e23f069cba13d020528999a3e74f92933a999",
+            "sizeBytes": 1535
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/FirstName.kt",
+            "blobSha": "2abf89caf6ab7f67a8159ab05abdf184a8ae87c6",
+            "sizeBytes": 1020
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Gaussian.kt",
+            "blobSha": "879e80406497bd9f5a13cf8dd6bb53a702f7ff18",
+            "sizeBytes": 832
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/LastName.kt",
+            "blobSha": "d8ba5671aba795a30310ea4b52779ec7d4f0327b",
+            "sizeBytes": 883
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Random.kt",
+            "blobSha": "c57de8eb3191a06032baf840180a62f450781049",
+            "sizeBytes": 1494
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/USCities.kt",
+            "blobSha": "a7c8792c69f6b0bca54c56be53d1f3aaeb6718e3",
+            "sizeBytes": 1185
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/AllowFiltering.kt",
+            "blobSha": "5f097f1f1b31ddec0fa2d33da97469917db62602",
+            "sizeBytes": 3038
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/BasicTimeSeries.kt",
+            "blobSha": "f7dce4e060de9d2b5361245350d7a398189acd4a",
+            "sizeBytes": 3728
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/CountersWide.kt",
+            "blobSha": "9879fd74369a3ac4c92be59cd3de23356e7e27ec",
+            "sizeBytes": 2868
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/IStressProfile.kt",
+            "blobSha": "9b843f9c16d16f2f80e0312920e9d6044eb253de",
+            "sizeBytes": 3949
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/KeyValue.kt",
+            "blobSha": "1844420f2cce292ef87aa7db69ea1514501a61d2",
+            "sizeBytes": 2330
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/LWT.kt",
+            "blobSha": "59f65a6445bdc79951891e2b2da37edf50bb2214",
+            "sizeBytes": 2923
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Locking.kt",
+            "blobSha": "c576b1401e4bd77a81cf0722c850a740ca413229",
+            "sizeBytes": 3671
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Maps.kt",
+            "blobSha": "b15877e439f86a9abe1b18735bb2a25bda2cb197",
+            "sizeBytes": 1807
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/MaterializedViews.kt",
+            "blobSha": "1ab846809b2f3fa65929013d78f8bb3d03e74f7e",
+            "sizeBytes": 3569
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/RandomPartitionAccess.kt",
+            "blobSha": "4bbd393501814d307cf51f202706daf93ba59bc0",
+            "sizeBytes": 4483
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Sets.kt",
+            "blobSha": "91b964fa6e6782c3bda923b616bd930ddf750b13",
+            "sizeBytes": 2392
+          },
+          {
+            "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/UdtTimeSeries.kt",
+            "blobSha": "90b37e8bcb0f16f0d232f86d4f31ffcb7e74242e",
+            "sizeBytes": 3437
+          }
+        ]
+      }
+    }
+  ],
+  "oracles": [
+    {
+      "cohortId": 1,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-1.kt",
+      "sha256": "ffcc174e53d1a43f12c34cfbed8eedd994db01a83f61b3cea1a3fd0547cfe46f",
+      "admission": "NUMERIC_INDEPENDENT"
+    },
+    {
+      "cohortId": 2,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-2.kt",
+      "sha256": "150e0a4745433290bc202d4dd27996dec7caddd630d02cbeebd492fa889eb2a6",
+      "admission": "CONTROL_ONLY"
+    },
+    {
+      "cohortId": 3,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-3.kt",
+      "sha256": "0f4b91d8051c32f0d22ab5def6ad4e661b6af5173ef0abc73c33d6e1e368cb0f",
+      "admission": "DEPENDENCY_ABSTENTION"
+    }
+  ],
+  "predictionsExecuted": false,
+  "block27Allowed": false,
+  "oraclesCommittedBeforeHunter": true,
+  "oracleExcludedFromHunterMounts": true
+}

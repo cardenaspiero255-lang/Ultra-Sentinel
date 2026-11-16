@@ -1,0 +1,2157 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-blind-reservation/v2",
+  "recordedAt": "2026-11-16T02:55:27.772Z",
+  "freeze": {
+    "commitSha": "63b0cc26948dbe62f6cb49902c69b37327199a40",
+    "engineCommitSha": "7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0",
+    "engineTreeSha": "13479e402fd5a88da3cdb0df5050b8008e90628a"
+  },
+  "blindState": {
+    "sourceBodiesRead": false,
+    "oracleKnown": false,
+    "predictionsRead": false,
+    "predictionsExecutedByEvaluator": false
+  },
+  "search": {
+    "query": "math language:Kotlin fork:false stars:>=5 size:<20000 archived:false",
+    "requestedPage": 1,
+    "requestedPerPage": 100,
+    "returnedCount": 73,
+    "ranking": "descending stargazers_count then casefold full_name",
+    "tool": "mcp__codex_apps__github_search_repositories",
+    "sortAccessLimitation": "Dedicated connector omits sort/order parameters and stargazers_count. Public /search/repositories fetch was rejected. Entire 73-result fixed first page was preserved; repository metadata was fetched for all 73 and locally ranked by stars/name. No second page or alternative query was used.",
+    "resultPage": [
+      {
+        "position": 1,
+        "full_name": "romainguy/kotlin-math",
+        "id": "115212016"
+      },
+      {
+        "position": 2,
+        "full_name": "manuelvicnt/MathCoroutinesFlow",
+        "id": "195480363"
+      },
+      {
+        "position": 3,
+        "full_name": "MarcinMoskala/KotlinDiscreteMathToolkit",
+        "id": "87302297"
+      },
+      {
+        "position": 4,
+        "full_name": "notKamui/Keval",
+        "id": "333832523"
+      },
+      {
+        "position": 5,
+        "full_name": "lingarajsankaravelu/Katex",
+        "id": "86561571"
+      },
+      {
+        "position": 6,
+        "full_name": "EtherTyper/MathLibrary",
+        "id": "114335931"
+      },
+      {
+        "position": 7,
+        "full_name": "jstarczewski/MathView",
+        "id": "158674637"
+      },
+      {
+        "position": 8,
+        "full_name": "thelastpickle/tlp-stress",
+        "id": "129309034"
+      },
+      {
+        "position": 9,
+        "full_name": "derysudrajat/math-view",
+        "id": "386354724"
+      },
+      {
+        "position": 10,
+        "full_name": "vishprometa/Math-Your-Brain",
+        "id": "510369074"
+      },
+      {
+        "position": 11,
+        "full_name": "gciatto/kt-math",
+        "id": "181149634"
+      },
+      {
+        "position": 12,
+        "full_name": "Keelar/ExprK",
+        "id": "115964472"
+      },
+      {
+        "position": 13,
+        "full_name": "emedinaa/math-experiments",
+        "id": "288860060"
+      },
+      {
+        "position": 14,
+        "full_name": "OakAcademy/math-game-according-to-three-game-activity-with-kotlin",
+        "id": "409921831"
+      },
+      {
+        "position": 15,
+        "full_name": "OakAcademy/math-game-with-one-game-activity",
+        "id": "409933651"
+      },
+      {
+        "position": 16,
+        "full_name": "ray-pH/Nabla-TypeMath-android",
+        "id": "387149838"
+      },
+      {
+        "position": 17,
+        "full_name": "Coding-Meet/Math-Quiz-App",
+        "id": "674561343"
+      },
+      {
+        "position": 18,
+        "full_name": "eobermuhlner/kotlin-big-math",
+        "id": "97307166"
+      },
+      {
+        "position": 19,
+        "full_name": "LefalChizzle/X15Symput",
+        "id": "346676805"
+      },
+      {
+        "position": 20,
+        "full_name": "kylecorry31/sol",
+        "id": "294668785"
+      },
+      {
+        "position": 21,
+        "full_name": "javadev/LeetCode-in-Kotlin",
+        "id": "190711550"
+      },
+      {
+        "position": 22,
+        "full_name": "sailab-banik/MathLab",
+        "id": "636960163"
+      },
+      {
+        "position": 23,
+        "full_name": "quantaDot/MathRenderer",
+        "id": "438691255"
+      },
+      {
+        "position": 24,
+        "full_name": "mostafahashim/MathQuestionTask",
+        "id": "360927816"
+      },
+      {
+        "position": 25,
+        "full_name": "gallyamovann/student-s-handbook",
+        "id": "473677866"
+      },
+      {
+        "position": 26,
+        "full_name": "dumitrupetrusca-okta/SymbolMath",
+        "id": "2039287"
+      },
+      {
+        "position": 27,
+        "full_name": "vkochenkov/EquationDisplayer",
+        "id": "502441187"
+      },
+      {
+        "position": 28,
+        "full_name": "murzagalin/multiplatform-expressions-evaluator",
+        "id": "406453824"
+      },
+      {
+        "position": 29,
+        "full_name": "v1tzor/MathCalculator",
+        "id": "608376425"
+      },
+      {
+        "position": 30,
+        "full_name": "manuelvicnt/MathCoroutines",
+        "id": "120395049"
+      },
+      {
+        "position": 31,
+        "full_name": "karmakrafts/KGML",
+        "id": "1265691746"
+      },
+      {
+        "position": 32,
+        "full_name": "Landfathich/mathQuizForKids",
+        "id": "450946006"
+      },
+      {
+        "position": 33,
+        "full_name": "lakshmanroy/Math_Game_for_Kids",
+        "id": "693740599"
+      },
+      {
+        "position": 34,
+        "full_name": "AbdusamidDev/Simple-MathGame2",
+        "id": "510220512"
+      },
+      {
+        "position": 35,
+        "full_name": "plumsoftware/more-math",
+        "id": "874595025"
+      },
+      {
+        "position": 36,
+        "full_name": "pepperonas/brutus",
+        "id": "1204830385"
+      },
+      {
+        "position": 37,
+        "full_name": "a-sit-plus/cidre",
+        "id": "1049716581"
+      },
+      {
+        "position": 38,
+        "full_name": "vittee/kformula",
+        "id": "222684057"
+      },
+      {
+        "position": 39,
+        "full_name": "codeyousef/Materia",
+        "id": "1060414801"
+      },
+      {
+        "position": 40,
+        "full_name": "XayahSuSuSu/Android-HNUDiscreteMathematicsHelper",
+        "id": "357636662"
+      },
+      {
+        "position": 41,
+        "full_name": "vishal2376/curves",
+        "id": "1057371760"
+      },
+      {
+        "position": 42,
+        "full_name": "gergelyvagujhelyi/CalculatorM3",
+        "id": "1184767035"
+      },
+      {
+        "position": 43,
+        "full_name": "Anypodetos/qonvert",
+        "id": "319589050"
+      },
+      {
+        "position": 44,
+        "full_name": "Noxcrew/smp",
+        "id": "794600053"
+      },
+      {
+        "position": 45,
+        "full_name": "AbdusamidDev/Math-Game",
+        "id": "491147196"
+      },
+      {
+        "position": 46,
+        "full_name": "ACM-VIT/AlarmIT",
+        "id": "545933582"
+      },
+      {
+        "position": 47,
+        "full_name": "g4l9/symbol-idea-plugin",
+        "id": "262282487"
+      },
+      {
+        "position": 48,
+        "full_name": "forzzzzz/Calculator-You",
+        "id": "783414650"
+      },
+      {
+        "position": 49,
+        "full_name": "HowXu/FishMath",
+        "id": "822135358"
+      },
+      {
+        "position": 50,
+        "full_name": "Danilo-Araujo-Silva/mathemagika",
+        "id": "271904885"
+      },
+      {
+        "position": 51,
+        "full_name": "micr0-dev/localmathy",
+        "id": "1300043883"
+      },
+      {
+        "position": 52,
+        "full_name": "AxisAngles/KotlinMath3D",
+        "id": "592098459"
+      },
+      {
+        "position": 53,
+        "full_name": "2piradrian/better-with-maths",
+        "id": "816256264"
+      },
+      {
+        "position": 54,
+        "full_name": "eriksencosta/math-percentage",
+        "id": "779097899"
+      },
+      {
+        "position": 55,
+        "full_name": "ParuhParhat/MaxMath",
+        "id": "1324807864"
+      },
+      {
+        "position": 56,
+        "full_name": "healthsgood/common-math-kotlin-multiplatform",
+        "id": "403956235"
+      },
+      {
+        "position": 57,
+        "full_name": "elizarov/LogicDerivation",
+        "id": "863065952"
+      },
+      {
+        "position": 58,
+        "full_name": "KarunarathneRR/Maths-Game-For-Kids",
+        "id": "887116867"
+      },
+      {
+        "position": 59,
+        "full_name": "kotlincook/complex-numbers",
+        "id": "134316324"
+      },
+      {
+        "position": 60,
+        "full_name": "Oremif/kstats",
+        "id": "1170141469"
+      },
+      {
+        "position": 61,
+        "full_name": "vincent-pradeilles/euler-kotlin",
+        "id": "158749615"
+      },
+      {
+        "position": 62,
+        "full_name": "ArsalaBangash/Boltz-Android",
+        "id": "134951919"
+      },
+      {
+        "position": 63,
+        "full_name": "GlideTechonology/CAS-Calculator",
+        "id": "1438968122"
+      },
+      {
+        "position": 64,
+        "full_name": "lounres/Kone",
+        "id": "516842873"
+      },
+      {
+        "position": 65,
+        "full_name": "shahbaz-momi/expression-solver",
+        "id": "87226209"
+      },
+      {
+        "position": 66,
+        "full_name": "TabaquiTheMasterOfTime/YellowStar",
+        "id": "1076186745"
+      },
+      {
+        "position": 67,
+        "full_name": "Abdo-21/CExpr",
+        "id": "872657889"
+      },
+      {
+        "position": 68,
+        "full_name": "techambient/Ambient-Calculator",
+        "id": "1268173783"
+      },
+      {
+        "position": 69,
+        "full_name": "ishantchauhan710/ChatBot",
+        "id": "338089114"
+      },
+      {
+        "position": 70,
+        "full_name": "riyadmondol2006/WakeNudge",
+        "id": "1428166854"
+      },
+      {
+        "position": 71,
+        "full_name": "DeveloprOfThings/Kapacity",
+        "id": "1180878586"
+      },
+      {
+        "position": 72,
+        "full_name": "FooqX/GoldenRatio",
+        "id": "953415762"
+      },
+      {
+        "position": 73,
+        "full_name": "hobby-projects-lab/simple-calculator",
+        "id": "1409501307"
+      }
+    ]
+  },
+  "eligibility": {
+    "productionPathRegex": "^src/main/.*\\.kt$",
+    "requiredProductionFileCountMin": 1,
+    "requiredProductionFileCountMax": 120,
+    "productionByteMaximumPerRepository": 1048576,
+    "regularGitBlobModes": [
+      "100644"
+    ],
+    "exclusionsPath": "/workspace/scratch/9ebb9cafd4bf/prior-repository-exclusions.json",
+    "exclusionsSha256": "94519ddacc107ffe6e4ee755c269b8949dccf0516a03d1d3b8c904d5212d5d6d",
+    "exclusionCount": 64,
+    "dependencyRuntimeFailuresRetainedAsAbstentions": true,
+    "sourceBodiesOrIssueOrTestAnswerFiltering": false
+  },
+  "metadataRanking": [
+    {
+      "full_name": "romainguy/kotlin-math",
+      "id": 115212016,
+      "stargazers_count": 891,
+      "size": 313,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-03-19T22:48:02Z",
+      "searchPagePosition": 1,
+      "rank": 1,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "forzzzzz/Calculator-You",
+      "id": 783414650,
+      "stargazers_count": 332,
+      "size": 19392,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2025-10-23T15:56:00Z",
+      "searchPagePosition": 48,
+      "rank": 2,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "manuelvicnt/MathCoroutinesFlow",
+      "id": 195480363,
+      "stargazers_count": 238,
+      "size": 4459,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2020-05-17T13:43:18Z",
+      "searchPagePosition": 2,
+      "rank": 3,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "MarcinMoskala/KotlinDiscreteMathToolkit",
+      "id": 87302297,
+      "stargazers_count": 191,
+      "size": 160,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2020-07-02T17:43:15Z",
+      "searchPagePosition": 3,
+      "rank": 4,
+      "disposition": "reserved"
+    },
+    {
+      "full_name": "lingarajsankaravelu/Katex",
+      "id": 86561571,
+      "stargazers_count": 174,
+      "size": 3905,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-10-13T05:50:09Z",
+      "searchPagePosition": 5,
+      "rank": 5,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "Keelar/ExprK",
+      "id": 115964472,
+      "stargazers_count": 165,
+      "size": 46,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-08-24T03:21:41Z",
+      "searchPagePosition": 12,
+      "rank": 6,
+      "disposition": "reserved"
+    },
+    {
+      "full_name": "notKamui/Keval",
+      "id": 333832523,
+      "stargazers_count": 152,
+      "size": 812,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-08-04T09:45:01Z",
+      "searchPagePosition": 4,
+      "rank": 7,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "codeyousef/Materia",
+      "id": 1060414801,
+      "stargazers_count": 122,
+      "size": 10168,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-08-20T19:41:03Z",
+      "searchPagePosition": 39,
+      "rank": 8,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "vishal2376/curves",
+      "id": 1057371760,
+      "stargazers_count": 80,
+      "size": 280,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-04-13T19:34:58Z",
+      "searchPagePosition": 41,
+      "rank": 9,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "javadev/LeetCode-in-Kotlin",
+      "id": 190711550,
+      "stargazers_count": 70,
+      "size": 8644,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-10T05:28:16Z",
+      "searchPagePosition": 21,
+      "rank": 10,
+      "disposition": "previously_mentioned_excluded"
+    },
+    {
+      "full_name": "ray-pH/Nabla-TypeMath-android",
+      "id": 387149838,
+      "stargazers_count": 58,
+      "size": 918,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2025-10-28T23:55:32Z",
+      "searchPagePosition": 16,
+      "rank": 11,
+      "disposition": "rejected_no_root_src_main_kotlin"
+    },
+    {
+      "full_name": "thelastpickle/tlp-stress",
+      "id": 129309034,
+      "stargazers_count": 56,
+      "size": 3163,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-12-12T13:44:03Z",
+      "searchPagePosition": 8,
+      "rank": 12,
+      "disposition": "reserved"
+    },
+    {
+      "full_name": "vishprometa/Math-Your-Brain",
+      "id": 510369074,
+      "stargazers_count": 56,
+      "size": 9570,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-07-19T03:57:13Z",
+      "searchPagePosition": 10,
+      "rank": 13,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "murzagalin/multiplatform-expressions-evaluator",
+      "id": 406453824,
+      "stargazers_count": 47,
+      "size": 235,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-05-05T08:51:47Z",
+      "searchPagePosition": 28,
+      "rank": 14,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Oremif/kstats",
+      "id": 1170141469,
+      "stargazers_count": 45,
+      "size": 8152,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-02T11:09:20Z",
+      "searchPagePosition": 60,
+      "rank": 15,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "gciatto/kt-math",
+      "id": 181149634,
+      "stargazers_count": 42,
+      "size": 2402,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-16T02:34:06Z",
+      "searchPagePosition": 11,
+      "rank": 16,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "gergelyvagujhelyi/CalculatorM3",
+      "id": 1184767035,
+      "stargazers_count": 39,
+      "size": 9739,
+      "default_branch": "develop",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-14T23:27:11Z",
+      "searchPagePosition": 42,
+      "rank": 17,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "lakshmanroy/Math_Game_for_Kids",
+      "id": 693740599,
+      "stargazers_count": 34,
+      "size": 31,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-02-03T16:34:51Z",
+      "searchPagePosition": 33,
+      "rank": 18,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "vittee/kformula",
+      "id": 222684057,
+      "stargazers_count": 33,
+      "size": 312,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-05-30T03:51:30Z",
+      "searchPagePosition": 38,
+      "rank": 19,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "jstarczewski/MathView",
+      "id": 158674637,
+      "stargazers_count": 32,
+      "size": 7895,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2019-03-18T18:50:44Z",
+      "searchPagePosition": 7,
+      "rank": 20,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "derysudrajat/math-view",
+      "id": 386354724,
+      "stargazers_count": 31,
+      "size": 233,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-10-08T13:57:12Z",
+      "searchPagePosition": 9,
+      "rank": 21,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "micr0-dev/localmathy",
+      "id": 1300043883,
+      "stargazers_count": 25,
+      "size": 1386,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-07-15T18:48:58Z",
+      "searchPagePosition": 51,
+      "rank": 22,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "a-sit-plus/cidre",
+      "id": 1049716581,
+      "stargazers_count": 23,
+      "size": 645,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-07-01T07:26:58Z",
+      "searchPagePosition": 37,
+      "rank": 23,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "eobermuhlner/kotlin-big-math",
+      "id": 97307166,
+      "stargazers_count": 22,
+      "size": 76,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2020-06-22T14:29:43Z",
+      "searchPagePosition": 18,
+      "rank": 24,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "emedinaa/math-experiments",
+      "id": 288860060,
+      "stargazers_count": 21,
+      "size": 16233,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-08-05T19:36:33Z",
+      "searchPagePosition": 13,
+      "rank": 25,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "karmakrafts/KGML",
+      "id": 1265691746,
+      "stargazers_count": 21,
+      "size": 743,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-04T23:14:46Z",
+      "searchPagePosition": 31,
+      "rank": 26,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "DeveloprOfThings/Kapacity",
+      "id": 1180878586,
+      "stargazers_count": 20,
+      "size": 266,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-03-19T20:50:35Z",
+      "searchPagePosition": 71,
+      "rank": 27,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "plumsoftware/more-math",
+      "id": 874595025,
+      "stargazers_count": 20,
+      "size": 292,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-12-12T05:17:34Z",
+      "searchPagePosition": 35,
+      "rank": 28,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "XayahSuSuSu/Android-HNUDiscreteMathematicsHelper",
+      "id": 357636662,
+      "stargazers_count": 19,
+      "size": 535,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-03-22T00:37:14Z",
+      "searchPagePosition": 40,
+      "rank": 29,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "OakAcademy/math-game-according-to-three-game-activity-with-kotlin",
+      "id": 409921831,
+      "stargazers_count": 18,
+      "size": 782,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-09-24T10:23:08Z",
+      "searchPagePosition": 14,
+      "rank": 30,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Coding-Meet/Math-Quiz-App",
+      "id": 674561343,
+      "stargazers_count": 17,
+      "size": 2932,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2025-01-26T05:49:56Z",
+      "searchPagePosition": 17,
+      "rank": 31,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "vkochenkov/EquationDisplayer",
+      "id": 502441187,
+      "stargazers_count": 17,
+      "size": 138,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-06-23T09:14:19Z",
+      "searchPagePosition": 27,
+      "rank": 32,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "OakAcademy/math-game-with-one-game-activity",
+      "id": 409933651,
+      "stargazers_count": 16,
+      "size": 782,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-09-24T11:09:30Z",
+      "searchPagePosition": 15,
+      "rank": 33,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "v1tzor/MathCalculator",
+      "id": 608376425,
+      "stargazers_count": 14,
+      "size": 7489,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-04-04T12:03:38Z",
+      "searchPagePosition": 29,
+      "rank": 34,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "kylecorry31/sol",
+      "id": 294668785,
+      "stargazers_count": 13,
+      "size": 3340,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-16T01:45:14Z",
+      "searchPagePosition": 20,
+      "rank": 35,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Landfathich/mathQuizForKids",
+      "id": 450946006,
+      "stargazers_count": 13,
+      "size": 1633,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2025-11-25T08:35:56Z",
+      "searchPagePosition": 32,
+      "rank": 36,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Anypodetos/qonvert",
+      "id": 319589050,
+      "stargazers_count": 12,
+      "size": 6215,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-04-30T08:22:35Z",
+      "searchPagePosition": 43,
+      "rank": 37,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "manuelvicnt/MathCoroutines",
+      "id": 120395049,
+      "stargazers_count": 12,
+      "size": 79,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2018-03-14T02:15:13Z",
+      "searchPagePosition": 30,
+      "rank": 38,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "TabaquiTheMasterOfTime/YellowStar",
+      "id": 1076186745,
+      "stargazers_count": 12,
+      "size": 193,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-07-27T17:13:48Z",
+      "searchPagePosition": 66,
+      "rank": 39,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "EtherTyper/MathLibrary",
+      "id": 114335931,
+      "stargazers_count": 11,
+      "size": 219,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-02-16T02:37:36Z",
+      "searchPagePosition": 6,
+      "rank": 40,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "lounres/Kone",
+      "id": 516842873,
+      "stargazers_count": 11,
+      "size": 12800,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-14T13:39:00Z",
+      "searchPagePosition": 64,
+      "rank": 41,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "riyadmondol2006/WakeNudge",
+      "id": 1428166854,
+      "stargazers_count": 11,
+      "size": 4962,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-15T06:55:15Z",
+      "searchPagePosition": 70,
+      "rank": 42,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "techambient/Ambient-Calculator",
+      "id": 1268173783,
+      "stargazers_count": 11,
+      "size": 4225,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-15T03:18:01Z",
+      "searchPagePosition": 68,
+      "rank": 43,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Abdo-21/CExpr",
+      "id": 872657889,
+      "stargazers_count": 10,
+      "size": 143,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-10-14T20:52:39Z",
+      "searchPagePosition": 67,
+      "rank": 44,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "dumitrupetrusca-okta/SymbolMath",
+      "id": 2039287,
+      "stargazers_count": 10,
+      "size": 1320,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-05-26T17:13:40Z",
+      "searchPagePosition": 26,
+      "rank": 45,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "kotlincook/complex-numbers",
+      "id": 134316324,
+      "stargazers_count": 10,
+      "size": 98,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2020-03-15T11:58:29Z",
+      "searchPagePosition": 59,
+      "rank": 46,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "AbdusamidDev/Simple-MathGame2",
+      "id": 510220512,
+      "stargazers_count": 9,
+      "size": 138,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-07-04T05:12:33Z",
+      "searchPagePosition": 34,
+      "rank": 47,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "elizarov/LogicDerivation",
+      "id": 863065952,
+      "stargazers_count": 9,
+      "size": 58,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-10-18T18:39:32Z",
+      "searchPagePosition": 57,
+      "rank": 48,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "AbdusamidDev/Math-Game",
+      "id": 491147196,
+      "stargazers_count": 8,
+      "size": 110,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-05-11T14:30:23Z",
+      "searchPagePosition": 45,
+      "rank": 49,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "ACM-VIT/AlarmIT",
+      "id": 545933582,
+      "stargazers_count": 8,
+      "size": 836,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-10-27T06:19:09Z",
+      "searchPagePosition": 46,
+      "rank": 50,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "g4l9/symbol-idea-plugin",
+      "id": 262282487,
+      "stargazers_count": 8,
+      "size": 791,
+      "default_branch": "trunk",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-08-21T20:32:12Z",
+      "searchPagePosition": 47,
+      "rank": 51,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "ishantchauhan710/ChatBot",
+      "id": 338089114,
+      "stargazers_count": 8,
+      "size": 320,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-02-25T19:14:11Z",
+      "searchPagePosition": 69,
+      "rank": 52,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Noxcrew/smp",
+      "id": 794600053,
+      "stargazers_count": 8,
+      "size": 183,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-08-21T08:58:27Z",
+      "searchPagePosition": 44,
+      "rank": 53,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "shahbaz-momi/expression-solver",
+      "id": 87226209,
+      "stargazers_count": 8,
+      "size": 10,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2017-04-18T14:30:46Z",
+      "searchPagePosition": 65,
+      "rank": 54,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "AxisAngles/KotlinMath3D",
+      "id": 592098459,
+      "stargazers_count": 7,
+      "size": 73,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-02-13T23:11:04Z",
+      "searchPagePosition": 52,
+      "rank": 55,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "FooqX/GoldenRatio",
+      "id": 953415762,
+      "stargazers_count": 7,
+      "size": 5562,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2025-12-17T20:07:41Z",
+      "searchPagePosition": 72,
+      "rank": 56,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "HowXu/FishMath",
+      "id": 822135358,
+      "stargazers_count": 7,
+      "size": 18716,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-07-03T02:37:42Z",
+      "searchPagePosition": 49,
+      "rank": 57,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "LefalChizzle/X15Symput",
+      "id": 346676805,
+      "stargazers_count": 7,
+      "size": 693,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-04-24T22:48:03Z",
+      "searchPagePosition": 19,
+      "rank": 58,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "pepperonas/brutus",
+      "id": 1204830385,
+      "stargazers_count": 7,
+      "size": 7886,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-08T21:08:50Z",
+      "searchPagePosition": 36,
+      "rank": 59,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "vincent-pradeilles/euler-kotlin",
+      "id": 158749615,
+      "stargazers_count": 7,
+      "size": 7,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2018-11-23T18:16:46Z",
+      "searchPagePosition": 61,
+      "rank": 60,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "2piradrian/better-with-maths",
+      "id": 816256264,
+      "stargazers_count": 6,
+      "size": 43,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-05-29T17:16:16Z",
+      "searchPagePosition": 53,
+      "rank": 61,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "gallyamovann/student-s-handbook",
+      "id": 473677866,
+      "stargazers_count": 6,
+      "size": 4725,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-05-18T11:34:05Z",
+      "searchPagePosition": 25,
+      "rank": 62,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "GlideTechonology/CAS-Calculator",
+      "id": 1438968122,
+      "stargazers_count": 6,
+      "size": 3838,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-10-31T09:26:32Z",
+      "searchPagePosition": 63,
+      "rank": 63,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "healthsgood/common-math-kotlin-multiplatform",
+      "id": 403956235,
+      "stargazers_count": 6,
+      "size": 188,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-08-29T05:57:48Z",
+      "searchPagePosition": 56,
+      "rank": 64,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "quantaDot/MathRenderer",
+      "id": 438691255,
+      "stargazers_count": 6,
+      "size": 375,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-12-16T09:55:51Z",
+      "searchPagePosition": 23,
+      "rank": 65,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "sailab-banik/MathLab",
+      "id": 636960163,
+      "stargazers_count": 6,
+      "size": 5812,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-06-15T10:28:50Z",
+      "searchPagePosition": 22,
+      "rank": 66,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "ArsalaBangash/Boltz-Android",
+      "id": 134951919,
+      "stargazers_count": 5,
+      "size": 12079,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2018-06-18T01:06:44Z",
+      "searchPagePosition": 62,
+      "rank": 67,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "Danilo-Araujo-Silva/mathemagika",
+      "id": 271904885,
+      "stargazers_count": 5,
+      "size": 9776,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2022-06-20T22:44:40Z",
+      "searchPagePosition": 50,
+      "rank": 68,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "eriksencosta/math-percentage",
+      "id": 779097899,
+      "stargazers_count": 5,
+      "size": 162,
+      "default_branch": "trunk",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-02-07T23:03:39Z",
+      "searchPagePosition": 54,
+      "rank": 69,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "hobby-projects-lab/simple-calculator",
+      "id": 1409501307,
+      "stargazers_count": 5,
+      "size": 807,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-11-15T22:45:50Z",
+      "searchPagePosition": 73,
+      "rank": 70,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "KarunarathneRR/Maths-Game-For-Kids",
+      "id": 887116867,
+      "stargazers_count": 5,
+      "size": 436,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-11-12T07:49:32Z",
+      "searchPagePosition": 58,
+      "rank": 71,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "mostafahashim/MathQuestionTask",
+      "id": 360927816,
+      "stargazers_count": 5,
+      "size": 3792,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2021-04-24T20:46:29Z",
+      "searchPagePosition": 24,
+      "rank": 72,
+      "disposition": "not_reached_cohort_full"
+    },
+    {
+      "full_name": "ParuhParhat/MaxMath",
+      "id": 1324807864,
+      "stargazers_count": 5,
+      "size": 616,
+      "default_branch": "main",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2026-08-19T03:18:54Z",
+      "searchPagePosition": 55,
+      "rank": 73,
+      "disposition": "not_reached_cohort_full"
+    }
+  ],
+  "metadataRejections": [
+    {
+      "rank": 1,
+      "full_name": "romainguy/kotlin-math",
+      "commit_sha": "0b38bdcc12c52dff4195e653995602cb61dae936",
+      "tree_sha": "ea4bacdba0279a03ece64fd6bc3ee087cbace842",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 0,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 2,
+      "full_name": "forzzzzz/Calculator-You",
+      "commit_sha": "dc0676d2616db9045fe02ee1b0f6f868b67b27eb",
+      "tree_sha": "4eabf7dd41698a6a1a339da2741dbd182baa38e1",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 64,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 3,
+      "full_name": "manuelvicnt/MathCoroutinesFlow",
+      "commit_sha": "fe90919bb75b86231bb955efccc33722ac2f50d6",
+      "tree_sha": "9ddc65344ab77edc02999bcc3dc751d22e682816",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 11,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 5,
+      "full_name": "lingarajsankaravelu/Katex",
+      "commit_sha": "190eacfc120905cf6a19743e1488d41aec78617e",
+      "tree_sha": "eff5f45f2dec7d1aa5340b79e8188fabf1af86be",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 8,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 7,
+      "full_name": "notKamui/Keval",
+      "commit_sha": "01da6c9cbad13f49fdb08aa291a037492b77a1f4",
+      "tree_sha": "a6263910d727417f61f5ec117cadb38e03475c2f",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 0,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 8,
+      "full_name": "codeyousef/Materia",
+      "commit_sha": "ea6af8852a454b9c60c1a195f359d1c49da2ccee",
+      "tree_sha": "cc8d3aff0485e01c235bd96c57833968d8929dad",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 20,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 9,
+      "full_name": "vishal2376/curves",
+      "commit_sha": "8930f6d7a557c1193e4f9cc6c612f9734a2cabb7",
+      "tree_sha": "6ece03d9ffb885000852b34d2ab3598613fe43bf",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 0,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    },
+    {
+      "rank": 11,
+      "full_name": "ray-pH/Nabla-TypeMath-android",
+      "commit_sha": "8c3afbd5402f7e1194c3cf903d357c6ee5bfc367",
+      "tree_sha": "c0f41b171b4d6ed623ea191d71cc6928d52f2eaa",
+      "production_file_count": 0,
+      "production_bytes": 0,
+      "nested_src_main_kotlin_count": 11,
+      "truncated": false,
+      "reason": "No mode100644 Kotlin blobs under ROOT src/main at immutable selected default-branch commit; nested app/module roots are ineligible."
+    }
+  ],
+  "selectedRepositories": [
+    {
+      "full_name": "MarcinMoskala/KotlinDiscreteMathToolkit",
+      "id": 87302297,
+      "stargazers_count": 191,
+      "size": 160,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2020-07-02T17:43:15Z",
+      "searchPagePosition": 3,
+      "commit_sha": "17a7329af042c5de232051027ec1155011d57da8",
+      "tree_sha": "11b094e2dd8a02921465bacd9ae7a81c1f5251da",
+      "truncated": false,
+      "production_files": [
+        {
+          "path": "src/main/java/com/marcinmoskala/math/CartesianProductExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2e8ab4f96f3ff298289c7e616960374e0323763d",
+          "size": 1832
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/CombinationsExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d70485a2da4af24c8e3f6e1cce10effc406dbaa9",
+          "size": 1944
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/FactorialFun.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "690f0c6da6f5f4fb800bcdb56f75be3ebd5566a1",
+          "size": 133
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/IterableMultiplication.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3a52e5cf6f7db98b7afa7d732914c50ea9085d49",
+          "size": 365
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/NumSplitFunc.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "dc9e6eac45f2663a264f2c517f262181df69e907",
+          "size": 492
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/NumbersDivisible.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "df2f5c98d29bed8246264f5d134318978813ab0b",
+          "size": 498
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/PermutationsExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "42d9ebde1a8e4291e0ee2cf514a4212a9fb1e563",
+          "size": 1801
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/Power.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "62e9a40754f85d0307b8cc10612ca52b8ae619d9",
+          "size": 339
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/PowersetExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2676d3f7af01bfc2b44101739ae3395c67ebf411",
+          "size": 423
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/ProductExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ccc4b639d5892c02a4c39a2bbfea2ca7e1ed9120",
+          "size": 239
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/SetSplitFunc.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "e4074b8fe60ab20ee671d891c2da2de4a61f370d",
+          "size": 1626
+        },
+        {
+          "path": "src/main/java/com/marcinmoskala/math/SublistsBySplittersExt.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "29bb7bca9774ccdbc2b2874930231d64ed426ad7",
+          "size": 500
+        }
+      ],
+      "production_file_count": 12,
+      "production_bytes": 10192,
+      "nonregular": []
+    },
+    {
+      "full_name": "Keelar/ExprK",
+      "id": 115964472,
+      "stargazers_count": 165,
+      "size": 46,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2023-08-24T03:21:41Z",
+      "searchPagePosition": 12,
+      "commit_sha": "91fdabf44dda509589ef03722ab70d37b316ef02",
+      "tree_sha": "d30aff14a26714a51a85f1ac0e4518e86e841e5e",
+      "truncated": false,
+      "production_files": [
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/Expressions.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a95342133020106c49a81fa01710cf9f7eee8a43",
+          "size": 5963
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Evaluator.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d4ec9ecc69b20e51e5dd34ce137995898515923f",
+          "size": 4945
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Expr.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d552ae315112413202e23f9b31c6734f330589f2",
+          "size": 2259
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Function.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3d5a5c3e0e4f7ded604b5ad2fa9238b93eb06e16",
+          "size": 163
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Parser.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8077f519cc7be56ad51c839a04029e298d39a094",
+          "size": 5436
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Scanner.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "aa14d72ed354fc8e8e3ab77b05c1f600e5a35114",
+          "size": 4120
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/Token.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8a0671e5a7b05498dd5b246381b0ac7eb90cc456",
+          "size": 276
+        },
+        {
+          "path": "src/main/kotlin/com/github/keelar/exprk/internal/TokenType.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "305fa4f1b0e3134012880f02c0880640e213f292",
+          "size": 471
+        }
+      ],
+      "production_file_count": 8,
+      "production_bytes": 23633,
+      "nonregular": []
+    },
+    {
+      "full_name": "thelastpickle/tlp-stress",
+      "id": 129309034,
+      "stargazers_count": 56,
+      "size": 3163,
+      "default_branch": "master",
+      "archived": false,
+      "fork": false,
+      "language": "Kotlin",
+      "private": false,
+      "pushed_at": "2024-12-12T13:44:03Z",
+      "searchPagePosition": 8,
+      "commit_sha": "2d4542c27d3f1c0e24899c01247b9a8ee3c9a238",
+      "tree_sha": "61c4a51bed8677a1afee10598aa4fb010fc627f6",
+      "truncated": false,
+      "production_files": [
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/CommandLineParser.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9f3aa425062893361bf9bd85f0bb28f5fd406c0d",
+          "size": 1587
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/CoordinatorHostPredicate.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "51f8d7330d984b74800509e8ff13306d42ab6ac0",
+          "size": 336
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/DDLStatement.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "62e17c5265d6714969a13db76ee4014466af8f0d",
+          "size": 282
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/FileReporter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "70bae2c627eff9c86c478b9e6686d546dc7830b4",
+          "size": 3126
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/Main.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "dee46b17198ad57d81018206f57e36cfb099c94b",
+          "size": 617
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/Metrics.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2c3e26d3b522c8434347ec05c705160e9076f7b8",
+          "size": 1119
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/OperationCallback.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "7e019f5481fd04c5960ad093bde6d75cef920f3f",
+          "size": 1372
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/PartitionKey.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a3611de183955e78ae9f833f23dd7c286c4ae75a",
+          "size": 249
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/PartitionKeyGenerator.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "80eb8228661f784c97f90e3c7463b4e645f84913",
+          "size": 2033
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/Plugin.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "853cfb4896203e73e61a3a153c37955015138b0f",
+          "size": 3427
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/PopulateOption.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "87afd3971e676510594cfa01b9fa6b9998e3f0a0",
+          "size": 158
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/ProfileRunner.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4d8d8ef713ded0c2536552e6a2eeb860eb46b133",
+          "size": 6915
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/RowState.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5b2f43271595287e918e5ea53559cca8891eefa3",
+          "size": 206
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/SchemaBuilder.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2e5f9275c27a09636d077e6385af7f5d775f1981",
+          "size": 7073
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/SingleLineConsoleReporter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "964f33c85715502c907e0b3c0edf154e032a1a18",
+          "size": 4872
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/StressContext.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c7334124f90f97642acc0e6e7ccf80a630342f8f",
+          "size": 656
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/Util.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "35d6d1492c577c1b1b03395cadc08213566aea2c",
+          "size": 513
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/Workload.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "387f620fd158d99a367750ccc33268fa7e857811",
+          "size": 55
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/WorkloadParameter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "73f34ac3624018777693f1934d7f471d122f6524",
+          "size": 96
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Fields.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a8e134f7e96a56d91b58646cdf16fbcc78cb0bdf",
+          "size": 423
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/IStressCommand.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3f5cce75c085907479b8ca3c6701792e3db44828",
+          "size": 92
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Info.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "6cde71a7e09a3ca6b779522f9a377eb8dc66278a",
+          "size": 1618
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/ListCommand.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8ae7226608b58226bf24c4a049155abd307aae62",
+          "size": 513
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/commands/Run.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "7234c0cc5d1d0ff6920a90213e1607be71bb9fe8",
+          "size": 17477
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/ConsistencyLevelConverter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "cbfe8893306fea898433ddcda5a4a08eb69b7021",
+          "size": 331
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/HumanReadableConverter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "39b38fe1291c6ee062e168312c1552eac3d20e79",
+          "size": 711
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/converters/HumanReadableTimeConverter.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0bc574c7ff7819813d17baebe4a26cff79196922",
+          "size": 1549
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/FieldGenerator.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "116ee63773cfc74bfd2ce17bcf9410b9a6fd459c",
+          "size": 384
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/Function.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "37c3c37aed1e7b36279a73fd18b124bc4c2c42f7",
+          "size": 177
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/FunctionLoader.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "57605e3c7cb070b517037b8f77c56b260a211370",
+          "size": 2101
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/ParsedFieldFunction.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "194dc9e47a68149a011a59df2d899cd08cbd2bee",
+          "size": 869
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/Registry.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "b305f2cf66cbb39908ae063bc86746abd7495283",
+          "size": 2923
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Book.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "0d4e23f069cba13d020528999a3e74f92933a999",
+          "size": 1535
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/FirstName.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2abf89caf6ab7f67a8159ab05abdf184a8ae87c6",
+          "size": 1020
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Gaussian.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "879e80406497bd9f5a13cf8dd6bb53a702f7ff18",
+          "size": 832
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/LastName.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d8ba5671aba795a30310ea4b52779ec7d4f0327b",
+          "size": 883
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/Random.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c57de8eb3191a06032baf840180a62f450781049",
+          "size": 1494
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/generators/functions/USCities.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a7c8792c69f6b0bca54c56be53d1f3aaeb6718e3",
+          "size": 1185
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/AllowFiltering.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5f097f1f1b31ddec0fa2d33da97469917db62602",
+          "size": 3038
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/BasicTimeSeries.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f7dce4e060de9d2b5361245350d7a398189acd4a",
+          "size": 3728
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/CountersWide.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9879fd74369a3ac4c92be59cd3de23356e7e27ec",
+          "size": 2868
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/IStressProfile.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9b843f9c16d16f2f80e0312920e9d6044eb253de",
+          "size": 3949
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/KeyValue.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1844420f2cce292ef87aa7db69ea1514501a61d2",
+          "size": 2330
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/LWT.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "59f65a6445bdc79951891e2b2da37edf50bb2214",
+          "size": 2923
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Locking.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c576b1401e4bd77a81cf0722c850a740ca413229",
+          "size": 3671
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Maps.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "b15877e439f86a9abe1b18735bb2a25bda2cb197",
+          "size": 1807
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/MaterializedViews.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1ab846809b2f3fa65929013d78f8bb3d03e74f7e",
+          "size": 3569
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/RandomPartitionAccess.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4bbd393501814d307cf51f202706daf93ba59bc0",
+          "size": 4483
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/Sets.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "91b964fa6e6782c3bda923b616bd930ddf750b13",
+          "size": 2392
+        },
+        {
+          "path": "src/main/kotlin/com/thelastpickle/tlpstress/profiles/UdtTimeSeries.kt",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "90b37e8bcb0f16f0d232f86d4f31ffcb7e74242e",
+          "size": 3437
+        }
+      ],
+      "production_file_count": 50,
+      "production_bytes": 109004,
+      "nonregular": []
+    }
+  ],
+  "totals": {
+    "repositories": 3,
+    "productionFiles": 70,
+    "productionBytes": 142829
+  },
+  "supersedesUnpublishedReservation": {
+    "path": "/workspace/scratch/9ebb9cafd4bf/block26-blind-reservation.json",
+    "sha256": "f4fadf2e04f39f293c9dc56ea75ce8a1c1849d32768c8763122a31fed00d4a61",
+    "reason": "Corrected metadata-only path/mode interpretation before any source bodies or oracle preparation: frozen adapter requires ROOT src/main and mode100644."
+  }
+}

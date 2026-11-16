@@ -1,0 +1,14 @@
+[
+  {
+    "cohortId": 1,
+    "scope": "com",
+    "artifactSha256": "1e519ec112dd519466ef2830dcbedb579b4cd7d09a6ca977c203f023c226c4ac",
+    "file": "cohort-1/scope-0/discovery.json"
+  },
+  {
+    "cohortId": 2,
+    "scope": "com",
+    "artifactSha256": "b12944efaaf091a5b6307cae22874ef4c5e4cef3ce2fcc3a5717ec4aa9aa346f",
+    "file": "cohort-2/scope-0/discovery.json"
+  }
+]
