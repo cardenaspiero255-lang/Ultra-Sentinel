@@ -1,0 +1,79 @@
+{
+  "schema": "ultra-sentinel-block26-v5-prospective-freeze/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "d059ac1f41f093fca5ecca42964e2d16e0ea2c41",
+    "treeSha": "f246a52da6fdd8af40c1a43dd0a9d07095233a83",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "5295452ebfc277c03212bfd6dd13106704c7b188"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      },
+      {
+        "path": "scripts/phase2-kotlin-api-v2-eval.cjs",
+        "blobSha": "3a3c6cc1e05d501107a3c4d2f504fafde8f81b27"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+        "blobSha": "77610104992b446de457bea59d8faeb679d5bd7a"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+        "blobSha": "ef26ca3897ec2f08b5a03e889101876d07b897d4"
+      }
+    ]
+  },
+  "selection": {
+    "query": "algorithm language:Kotlin fork:false archived:false stars:2..20",
+    "pool": "first 100 repository metadata results on page 1, returned GitHub relevance order; preserve complete metadata response",
+    "ranking": "stars descending then full_name case-insensitive ASCII ascending within the recorded pool",
+    "numberOfCohorts": 3,
+    "admission": "walk ranked unexposed repositories; first three pinned default-branch trees with 1..120 regular mode 100644 tracked src/main/**/*.kt files, total <=1048576 bytes, no exposed repository or original blob; select every such Kotlin file in Git path order",
+    "sourceContentsUsedForSelection": false,
+    "dependencyPolicy": "compile all selected files with pinned Kotlin/JDK only; compilation or runtime limitations are explicit abstentions, never replace a reserved cohort"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V5-EXCLUSIONS.json",
+    "sha256": "285f79e65024f9c1cc4d0c1afcbf2a104a92ad09445d57df4f6c3a84e2933b25",
+    "repositoryCount": 138,
+    "blobCount": 455
+  },
+  "evaluation": {
+    "existingCapture": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+    "existingIndependentRunner": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+    "oraclePolicy": "independent scoped functional contracts, including applicable Comparable laws, committed by SHA256 before Hunter; no prediction access for oracle author",
+    "sequence": [
+      "verified engine CI",
+      "metadata reservation commit",
+      "independently authored oracle commitment",
+      "compile-only oracle preflight",
+      "isolated original-only Hunter",
+      "published source-bound prediction seal",
+      "independent oracle execution",
+      "exact witness adjudication"
+    ],
+    "controls": "record independently verified benign observations alongside discrepancies; global precision, recall and false negatives remain unknown without whole-cohort truth"
+  },
+  "sourceMetadataSearched": false,
+  "sourceBodiesRead": false,
+  "predictionsExecuted": false,
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block27Allowed": false
+}
