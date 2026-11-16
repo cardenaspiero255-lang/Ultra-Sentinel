@@ -1,0 +1,62 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-first-run-receipt/v1",
+  "protocolSha": "5070241c0e52c2d07cbb933f055e07c303aeb0ea",
+  "engineSha": "7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0",
+  "runId": 43796552964,
+  "predictionJobId": 133066972645,
+  "oracleJobId": 133067345723,
+  "predictionArtifactId": 14195060426,
+  "oracleArtifactId": 14194563117,
+  "predictionArtifactUploadedAt": "2026-11-16T03:12:48Z",
+  "oracleArtifactUploadedAt": "2026-11-16T03:14:07Z",
+  "predictionArchiveSha256": "b4230e798a56f82555b7319c6a435e42bdc9a178d08caa307f66be076151d262",
+  "oracleArchiveSha256": "9016c2a3db21c3bc2cae23f69b98d654d698e650dc85aec0e3d741ebb703ffe2",
+  "replaysAreNotFreshDiscoveries": true,
+  "block27Allowed": false,
+  "files": [
+    {
+      "path": "coverage-note.json",
+      "sha256": "7295b5e76d78d6f6c301d353866ee24b3fac9c25a2e72a5b63e6be83dcf50d87"
+    },
+    {
+      "path": "independent/independent-verdict.json",
+      "sha256": "fc27a27ceb5aeecd98354e4740770ec63e1a3000fb321bfd0b69b48424483dfa"
+    },
+    {
+      "path": "independent/oracle-1.json.gz",
+      "sha256": "5a334fe70b90ffc49f0e9ff7d7daa6f54af56cb7731c738fcf66f0b0d3648416",
+      "rawSha256": "afd153a54920214084dfd5f1d832f1aea1deb0e76cafe50508fe2594e53f1138",
+      "compression": "gzip-lossless"
+    },
+    {
+      "path": "independent/oracle-2.json.gz",
+      "sha256": "41d729924e35ff9d4446788e22781ba30acd1355d15045050b2b8d082fcb31b9",
+      "rawSha256": "3cf4b36e62b417c06a6e3b0d56e5968188b50ec8768c6758d51238cf0680c96a",
+      "compression": "gzip-lossless"
+    },
+    {
+      "path": "independent/oracle-abstentions.json",
+      "sha256": "b41e1d915ec0376407d79518ba9c2140e222b7a1774c4e3a490b3256d64a1e20"
+    },
+    {
+      "path": "predictions/abstentions.json",
+      "sha256": "70b8a5156811ee4f8f653673585b0c19d7dbe1436e398bf7f2044be82b4d398e"
+    },
+    {
+      "path": "predictions/cohort-1/scope-0/discovery.json",
+      "sha256": "8a4229aae7b3b2b298e2c56c6ebe6213dffa12463b276d07d8bb496c7fdc65fa"
+    },
+    {
+      "path": "predictions/cohort-2/scope-0/discovery.json",
+      "sha256": "fb2ed66b8e996250aaf50279d9153ae55206b20c888689aa4d50abbc7eac32ed"
+    },
+    {
+      "path": "predictions/index.json",
+      "sha256": "3d8a68a3bbf0eeee4f116a8dc659f1520060df68834165c383ccb3c5bdf56793"
+    },
+    {
+      "path": "predictions/prediction-seal.json",
+      "sha256": "50c16381a27a357c6d0d606d27faec2f42f9d21158c12a6d8c8dbf2f596d5a84"
+    }
+  ]
+}

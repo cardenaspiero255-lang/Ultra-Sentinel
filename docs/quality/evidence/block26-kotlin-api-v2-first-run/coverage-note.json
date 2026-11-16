@@ -1,0 +1,22 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-scoped-coverage-note/v1",
+  "preregisteredExactJoinConfirmedDefects": 0,
+  "preregisteredExactJoinUnadjudicatedHypotheses": 2,
+  "independentlyObservedBoundaryDefectMissedByHunter": {
+    "class": "com.marcinmoskala.math.DiscreteMath",
+    "method": "splitsNumber(int;int;)int",
+    "arguments": [
+      "0",
+      "1"
+    ],
+    "actual": "1",
+    "expected": "0",
+    "contract": "Number of partitions of n identical objects into exactly k nonempty unordered groups, computed from a generating-function coefficient; the empty partition exists only at n=k=0.",
+    "defectEligible": true
+  },
+  "hunterDiscovery": false,
+  "wholeCohortFalseNegativeCount": null,
+  "postsealContractInterpretation": "The two turning-point hypotheses are mathematically expected for partitions into k nonempty groups. Their complete tuples were not in the preregistered numeric observation table; the immutable exact-join verdict remains unadjudicated.",
+  "knownSourceAfterThisEvaluation": true,
+  "block27Allowed": false
+}

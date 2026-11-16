@@ -1,4 +1,9 @@
-# Block 2.6 — frozen Kotlin API v2 prospective replication
+# Block 2.6 — frozen Kotlin API v2: coverage improved, discovery not replicated
+
+The first run [43796552964](https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/43796552964)
+exercised five original methods, including two structured-argument methods, but
+confirmed **zero new Hunter discoveries**. Two hypotheses remain unadjudicated
+by the exact preregistered observation join. Block 2.6 remains open.
 
 The compatibility implementation is integrated by PR #403. Its final head
 `7c2a7f7068bc5ec85d778a9b474937d0c64bf9e0` passed all seven PR checks;
@@ -43,9 +48,37 @@ not free-text contract wording.
 Protocol validation: 14 focused evidence-integrity tests pass, including five
 independently reproduced RED regressions before correction. The full local
 suite has 1,976 passes, no failures and four explicit platform/namespace skips.
-CI must perform the real namespace tests. No oracle result or original defect
-is claimed by this prospective document. The first published prediction/oracle
-artifacts will be retained with their hashes; subsequent runs are replays.
+CI performed the mandatory real adversarial namespace test successfully. The
+first published prediction/oracle artifacts are retained with their hashes in
+`evidence/block26-kotlin-api-v2-first-run/`; subsequent runs are replays.
+
+## First execution
+
+| Cohort | Executed coverage | Independent result |
+| --- | --- | --- |
+| KotlinDiscreteMathToolkit | 13 classes; five methods with complete stable triples; two structured methods; 12 completed triples; 76 successful calls; two scalar hypotheses | 578 preregistered numeric observations; neither complete hypothesis tuple was covered by the fixed table |
+| ExprK | 19 classes; zero admitted numeric methods; 125 unsupported methods, ten nested classes skipped, one constructor abstention | Explicit `NO_ORACLE_SCOPE`; separate expression controls do not establish Hunter coverage |
+| tlp-stress | Full untouched source compilation failed because dependencies are outside the frozen standard-library build | Recorded compiler abstention; no external service was contacted and no source was rewritten |
+
+Predictions artifact `14195060426` was uploaded at `2026-11-16T03:12:48Z`.
+The dependent original-oracle artifact `14194563117` was uploaded at
+`2026-11-16T03:14:07Z`. Archive and individual-file SHA256 values are in
+`receipt.json`; raw report and envelope bytes are preserved unchanged.
+
+Both hypotheses concern `DiscreteMath.splitsNumber(n,k)` with positive fixed
+`n=1` or `100`, varying `k=0,1,Int.MAX_VALUE`, and results `0,1,0`. The independent
+contract counts partitions into exactly k nonempty unordered groups, for which
+that turning point is expected. This mathematical rejection was explained only
+after sealing; the original numerical observation table did not contain both
+entire reported tuples. The immutable automated verdict therefore stays at
+zero confirmations and two unadjudicated hypotheses, not fabricated exact
+matches or global false-positive/false-negative measurements.
+
+The precommitted and executed oracle also exposed an original boundary defect:
+`splitsNumber(0,1)` returns `1` instead of `0`. Hunter did **not** predict it.
+The evidence retains this missed scoped case explicitly; it is not an autonomous
+discovery, a repair, or a reason to reuse these sources as unknown. Global
+precision, recall and false-negative counts remain null.
 
 Block 2.6 remains open until a distinct original defect is independently
 matched to sealed predictions. Global precision/recall and false negatives
