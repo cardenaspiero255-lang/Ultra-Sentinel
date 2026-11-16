@@ -93,7 +93,7 @@ function parse(entry){
    !Array.isArray(f.observed)||f.observed.length!==3||!f.observed.every(numeric)||
    !f.inputs.every(x=>parameterTypes[f.argument]==='java.lang.String'?
     ['', 'a', 'aa', 'aaa'].includes(x):
-    numeric(x)||/^size=[0-4];values=0\.\.size-1$/.test(x)))fail();
+    numeric(x)||/^size=[0-3];values=0\.\.size-1$/.test(x)))fail();
   if(Object.hasOwn(f,'constructorArguments')!==Object.hasOwn(f,'constructor'))fail();
   if(r.status==='INCOMPLETE_NO_SUPPORTED_METHODS'||r.methodsProbed===0||r.completedTriples===0||r.successfulInvocations<6)fail();
   if(Object.hasOwn(f,'constructor')&&(!Array.isArray(f.constructor)||!Array.isArray(f.constructorArguments)||
@@ -105,11 +105,11 @@ function parse(entry){
  return r;
 }
 function checkManifest(m){
- if(!m||!/^[a-f0-9]{40}$/.test(m.engine?.commitSha)||!Array.isArray(m.cohorts)||!m.cohorts.length||m.cohorts.length>6||
+ if(!m||!/^[a-f0-9]{40}$/.test(m.engine?.commitSha)||!Array.isArray(m.cohorts)||!m.cohorts.length||m.cohorts.length>3||
   !Array.isArray(m.oracles)||m.block27Allowed!==false)fail();
  const ids=new Set();
  for(const c of m.cohorts){
-  if(!Number.isInteger(c.id)||c.id<1||c.id>6||ids.has(c.id)||!/^[a-f0-9]{40}$/.test(c.source?.commitSha)||
+  if(!Number.isInteger(c.id)||c.id<1||c.id>3||ids.has(c.id)||!/^[a-f0-9]{40}$/.test(c.source?.commitSha)||
    !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(c.source?.repository))fail();
   ids.add(c.id);
  }
@@ -226,7 +226,7 @@ function save(p,value){fs.writeFileSync(p,JSON.stringify(value,null,2)+'\n',{fla
 function loadEntries(dir){
  const index=json(path.join(dir,'index.json'));if(!Array.isArray(index)||index.length>90)fail();
  return index.map(e=>{
-  if(!/^cohort-[1-6]\/scope-\d{1,2}\/discovery\.json$/.test(e.file))fail();
+  if(!/^cohort-[1-3]\/scope-\d{1,2}\/discovery\.json$/.test(e.file))fail();
   return {...e,raw:read(path.join(dir,e.file),262144)};
  });
 }
@@ -237,7 +237,7 @@ if(require.main===module){try{
   prepareCohort(a[2],a[3],a[4],{engine:m.engine,source:c.source},{extendedKotlinPaths:true});
  }else if(action==='oracle-input'&&a.length===3){
   const m=json(a[0]);checkManifest(m);const o=m.oracles.find(o=>o.cohortId===Number(a[1]));
-  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3|phase2-block26-v4|phase2-block26-v5|phase2-block26-v6)\/oracle-[1-6]\.kt$/.test(o.path))fail();
+  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3|phase2-block26-v4|phase2-block26-v5)\/oracle-[1-3]\.kt$/.test(o.path))fail();
   const bytes=read(path.resolve(__dirname,'..',o.path));if(hash(bytes)!==o.sha256)fail();
   const dir=path.join(a[2],'oracle');fs.mkdirSync(dir,{mode:0o700});
   fs.writeFileSync(path.join(dir,'IndependentArithmeticOracle.kt'),bytes,{flag:'wx',mode:0o600});
