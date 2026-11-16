@@ -9,7 +9,7 @@ on:
       - scripts/phase2-kotlin-api-v2-eval.cjs
       - .github/workflows/phase2-block26-v3-prospective.yml
   push:
-    branches: [main]
+    branches: [main, chatgpt/block26-v3-fresh-prospective-20261116]
 permissions:
   contents: read
 jobs:
@@ -19,7 +19,9 @@ jobs:
       ((github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
         github.event.pull_request.user.id == 322222186) ||
-       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+       (github.event_name == 'push' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chatgpt/block26-v3-fresh-prospective-20261116') &&
+        github.actor_id == '322222186'))
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -112,7 +114,9 @@ jobs:
       ((github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
         github.event.pull_request.user.id == 322222186) ||
-       (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor_id == '322222186'))
+       (github.event_name == 'push' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chatgpt/block26-v3-fresh-prospective-20261116') &&
+        github.actor_id == '322222186'))
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
