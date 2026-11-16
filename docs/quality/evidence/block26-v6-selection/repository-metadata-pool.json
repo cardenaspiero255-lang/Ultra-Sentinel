@@ -4423,84 +4423,94 @@
       "index": 90,
       "repository": "AliAzaz/InterviewAlgorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "570846637",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 91,
       "repository": "Alienstemple/Yandex_Algorithms",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "1326643797",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 92,
       "repository": "hartwigmedical/actin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "399735416",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 93,
       "repository": "elye/demo_android_blur_image",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 7,
       "repositoryId": "238677330",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 94,
       "repository": "daylee28/leetcode-kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "482598910",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 95,
       "repository": "thestbar/tunify",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "693668391",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 96,
       "repository": "kylecorry31/luna",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 2,
       "repositoryId": "669495317",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 97,
       "repository": "karloti/concurrent-priority-queue",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 10,
       "repositoryId": "1185124949",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 98,
       "repository": "goodkillerchen/DS-for-Kotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "452747451",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 99,
       "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
       "defaultBranch": "develop",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "560373739",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "develop"
     }
   ],
-  "starEnrichmentComplete": false,
+  "starEnrichmentComplete": true,
   "sourceContentsRead": false,
   "predictionsExecuted": false,
   "oracleExecuted": false,
