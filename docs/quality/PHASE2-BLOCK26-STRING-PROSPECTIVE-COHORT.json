@@ -1,0 +1,218 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "5a6f28499ad0ffd7cf7d5f98bc535bb5205eb1ed",
+    "treeSha": "d165991c769ca043b83972ca28c696997c08f2e5",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "aff9c222e41705ac8fb58090b68a372e69102d69"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      }
+    ]
+  },
+  "freezeCommitSha": "a4110c671416f5cc5ca1c3d507f9013663a762be",
+  "searchQuery": "kotlin algorithms language:Kotlin stars:5..200 archived:false",
+  "selectionRanks": [
+    11,
+    14
+  ],
+  "rejectedRanks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13
+  ],
+  "cohorts": [
+    {
+      "id": 1,
+      "rank": 11,
+      "source": {
+        "repository": "alidehkhodaei/data-structures-and-algorithms",
+        "commitSha": "8d9b0e97d7e345b30e30483209c2fafc77b9c840",
+        "treeSha": "64971b351c261c5c19bf8348b984af81644704d0",
+        "files": [
+          {
+            "path": "src/main/kotlin/array/ArrayLeftRotate.kt",
+            "blobSha": "72685e6a42c9a2364edf1cf5f011010c15d130d6",
+            "sizeBytes": 421
+          },
+          {
+            "path": "src/main/kotlin/array/ArrayMinMax.kt",
+            "blobSha": "88b70dfd95d9ffce84519cedf769a47b54228f0f",
+            "sizeBytes": 643
+          },
+          {
+            "path": "src/main/kotlin/array/ArrayReverse.kt",
+            "blobSha": "8953ac530318abc4dd2bd855e83455764621e0e0",
+            "sizeBytes": 1005
+          },
+          {
+            "path": "src/main/kotlin/array/ArrayRightRotate.kt",
+            "blobSha": "a725c5d1ae0aec6014d9fc0ae857bc1e9754e06a",
+            "sizeBytes": 424
+          },
+          {
+            "path": "src/main/kotlin/string/StringReverse.kt",
+            "blobSha": "9d10d71417678f3a278f9889421f95b0709bec2f",
+            "sizeBytes": 575
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "rank": 14,
+      "source": {
+        "repository": "esoxjem/Algorithms",
+        "commitSha": "375097050f4649eeb6cd9d72aae3b5824ca47d91",
+        "treeSha": "ae9fd03eb40f4f3b74890f185d00493f59b299dc",
+        "files": [
+          {
+            "path": "src/main/kotlin/algos/arrays/BinarySearch.kt",
+            "blobSha": "579cd715d6b65bfc9c8664f524da3bb3b2549655",
+            "sizeBytes": 1348
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/CaesarCipher.kt",
+            "blobSha": "77d02a8cfa9b2e3a31c8499185c138a820438d65",
+            "sizeBytes": 1082
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/Fibonacci.kt",
+            "blobSha": "a18d629adff7a7a9012a967bf8e828980180646b",
+            "sizeBytes": 288
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/Palindrome.kt",
+            "blobSha": "5b63ec6a0122113481bbc910a9f1d90379ac64bc",
+            "sizeBytes": 492
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/Pivot.kt",
+            "blobSha": "63a32bd5b2a0e23c6bcc80052f5eb1a541ee7164",
+            "sizeBytes": 1381
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/ProductSum.kt",
+            "blobSha": "7b5231a3f18cfd32e2a308706f5a733957988778",
+            "sizeBytes": 1285
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/SmallestDifference.kt",
+            "blobSha": "97f9c93f7171f011102d6163d60d4dd0db55f54e",
+            "sizeBytes": 1392
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/TheeLargestNumbers.kt",
+            "blobSha": "4ea7fb03374b0fbc5d31b0e21f969ab37ab59d3a",
+            "sizeBytes": 1061
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/TwoNumberSum.kt",
+            "blobSha": "a521134e9f61f7742f42a636821878ac9d424fb8",
+            "sizeBytes": 1217
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/BubbleSort.kt",
+            "blobSha": "be5856f776169d688dd6f2fd79cfeec627f0ddfb",
+            "sizeBytes": 829
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/InsertionSort.kt",
+            "blobSha": "2116ad7b3da77900c41ca40a772c83378417453e",
+            "sizeBytes": 818
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/MergeSort.kt",
+            "blobSha": "820e3b8dda739165c45250950cacababf080794d",
+            "sizeBytes": 1419
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/QuickSort.kt",
+            "blobSha": "546446101fd3a56d53cec9ef6f0ad09cf094a967",
+            "sizeBytes": 1238
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/SelectionSort.kt",
+            "blobSha": "015b1c74e91fb572952e4517fc63511c97cb39b4",
+            "sizeBytes": 832
+          },
+          {
+            "path": "src/main/kotlin/algos/arrays/sorting/ThreeNumberSum.kt",
+            "blobSha": "910509492f6d3c06b8d364a2e14d268561a7f34c",
+            "sizeBytes": 1404
+          },
+          {
+            "path": "src/main/kotlin/algos/graph/DFS.kt",
+            "blobSha": "2c38a2671ac26b591f8fb1f7fa10bd886f29a3f3",
+            "sizeBytes": 1006
+          },
+          {
+            "path": "src/main/kotlin/algos/trees/BranchSum.kt",
+            "blobSha": "e6fb072d11a5cae28eb838132f740deb4ea071e0",
+            "sizeBytes": 1405
+          },
+          {
+            "path": "src/main/kotlin/algos/trees/bst/ClosestValue.kt",
+            "blobSha": "3ea5e79f5bf7e3625da2dabf91f705bc6fcd8f36",
+            "sizeBytes": 2365
+          },
+          {
+            "path": "src/main/kotlin/ds/graph/Tree.kt",
+            "blobSha": "edc1a68e1a3aaf272da05d248cb7b7ca426953ac",
+            "sizeBytes": 331
+          },
+          {
+            "path": "src/main/kotlin/ds/linkedlist/DoublyLinkedList.kt",
+            "blobSha": "8439f5006d8c11013d9c077b4fdd97451f286654",
+            "sizeBytes": 5271
+          }
+        ]
+      }
+    }
+  ],
+  "oracles": [
+    {
+      "cohortId": 1,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-string-holdout-1.kt",
+      "sha256": "a927ab080d98d2f3d16ea23b51eee2143cd208a35a7b27bc038891b36a890a98",
+      "admission": "CONTROL_ONLY"
+    },
+    {
+      "cohortId": 2,
+      "path": "tests/fixtures/phase2-kotlin-api-v2/oracle-string-holdout-2.kt",
+      "sha256": "cced1ed7ed5643aa963e97545657aef4fde07bc5b5548ad856ea1fb0728e9738",
+      "admission": "NUMERIC_INDEPENDENT"
+    }
+  ],
+  "predictionsExecuted": false,
+  "block27Allowed": false,
+  "oraclesCommittedBeforeHunter": true,
+  "oracleExcludedFromHunterMounts": true,
+  "sourceBodiesReadBeforeReservation": false
+}
