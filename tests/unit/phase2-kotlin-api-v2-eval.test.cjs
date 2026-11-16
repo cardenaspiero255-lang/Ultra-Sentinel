@@ -80,9 +80,9 @@ test('bounded numeric String inputs seal and join exact independent multi-argume
 });
 test('object equality hypotheses remain unadjudicated until a separate independent object oracle exists',()=>{
  const f={class:'simple.Api',rule:'OBJECT_EQUALS_HASHCODE_VIOLATION',
-  constructor:['int'],left:['0'],right:['0'],observed:['1','2'],
+  constructor:['int'],left:['0'],right:['0'],observed:[1,2],
   status:'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE'};
- const e=[entry({...report(),findings:[f]})],s=seal(manifest,e,[]);
+ const e=[entry({...report(),objectContractClasses:1,objectContractPairs:1,findings:[f]})],s=seal(manifest,e,[]);
  const v=adjudicate(manifest,e,[],s,truth([]));
  assert.equal(v.unadjudicatedHypotheses,1);
  assert.equal(v.confirmedDistinctDefects,0);

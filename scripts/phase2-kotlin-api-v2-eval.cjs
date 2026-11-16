@@ -34,16 +34,32 @@ function parse(entry){
   'doubleMethodsExercised','structuredMethodsExercised','instanceMethodsExercised','unsupportedMethods','abstainedProbes',
   'unloadableClasses','nestedClassesSkipped','comparableClasses','comparablePairs','comparableTriples','constructorAbstentions'])
   if(!Number.isSafeInteger(r[key])||r[key]<0||r[key]>250000)fail();
+ // Reports frozen before #406/#407 lack these optional counters; do not reject them.
+ for(const key of ['floatMethodsExercised','objectContractClasses','objectContractPairs','objectContractAbstentions'])
+  if(Object.hasOwn(r,key)&&(!Number.isSafeInteger(r[key])||r[key]<0||r[key]>250000))fail();
  if(r.methodsProbed>r.methodCandidates||r.methodsProbed>r.completedTriples)fail();
+ const pairs=r.objectContractPairs??0;
+ if(r.status==='INCOMPLETE_NO_SUPPORTED_METHODS'?(r.methodsProbed>0||r.comparablePairs>0||pairs>0):
+   (r.methodsProbed===0&&r.comparablePairs===0&&pairs===0))fail();
  for(const f of r.findings){
   if(!f||typeof f.class!=='string'||f.class.length>500||
    (entry.scope==='.'?f.class.includes('.'):!f.class.startsWith(entry.scope+'.'))||
    f.status!=='HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE')fail();
   if(f.rule!==undefined){
-   if(!['COMPARABLE_ANTISYMMETRY_VIOLATION','COMPARABLE_TRANSITIVITY_VIOLATION',
-    'OBJECT_EQUALS_REFLEXIVITY_VIOLATION','OBJECT_EQUALS_SYMMETRY_VIOLATION',
-    'OBJECT_EQUALS_HASHCODE_VIOLATION'].includes(f.rule))fail();
-   continue; // Retained as unadjudicated unless a separate ordering oracle covers it.
+   const comparable=['COMPARABLE_ANTISYMMETRY_VIOLATION','COMPARABLE_TRANSITIVITY_VIOLATION'];
+   const objects=['OBJECT_EQUALS_REFLEXIVITY_VIOLATION','OBJECT_EQUALS_SYMMETRY_VIOLATION','OBJECT_EQUALS_HASHCODE_VIOLATION'];
+   if(!comparable.includes(f.rule)&&!objects.includes(f.rule))fail();
+   if(objects.includes(f.rule)){
+    if(pairs<1||!Array.isArray(f.constructor)||f.constructor.length>3||
+      !f.constructor.every(x=>typeof x==='string'&&x.length<=100)||
+      !Array.isArray(f.left)||!Array.isArray(f.right)||
+      f.left.length!==f.constructor.length||f.right.length!==f.constructor.length||
+      ![...f.left,...f.right].every(x=>typeof x==='string'&&x.length<=100)||
+      !Array.isArray(f.observed)||f.observed.length!==2)fail();
+    const bool=x=>typeof x==='boolean',integer=x=>Number.isSafeInteger(x)&&x>=-2147483648&&x<=2147483647;
+    if(f.rule==='OBJECT_EQUALS_HASHCODE_VIOLATION'? !f.observed.every(integer):!f.observed.every(bool))fail();
+   }
+   continue; // Object and Comparable contracts still require a separate independent oracle.
   }
   const parameterTypes=typeof f.method==='string'?
    f.method.slice(f.method.indexOf('(')+1,f.method.lastIndexOf(')')).split(';').filter(Boolean):[];
@@ -57,8 +73,8 @@ function parse(entry){
   if(r.status==='INCOMPLETE_NO_SUPPORTED_METHODS'||r.methodsProbed===0||r.completedTriples===0||r.successfulInvocations<6)fail();
   if(Object.hasOwn(f,'constructor')&&(!Array.isArray(f.constructor)||!Array.isArray(f.constructorArguments)||
    f.constructor.length!==f.constructorArguments.length||f.constructor.length>3||
-   !f.constructor.every(x=>['byte','short','int','long','double','java.lang.Byte','java.lang.Short',
-    'java.lang.Integer','java.lang.Long','java.lang.Double','java.lang.String'].includes(x))||
+   !f.constructor.every(x=>['byte','short','int','long','float','double','java.lang.Byte','java.lang.Short',
+    'java.lang.Integer','java.lang.Long','java.lang.Float','java.lang.Double','java.lang.String'].includes(x))||
    !f.constructorArguments.every(x=>typeof x==='string'&&x.length<=40)))fail();
  }
  return r;
@@ -96,7 +112,7 @@ function argumentMatches(f,o,index){
  if(o.arguments.length!==params.length||f.argument>=params.length)return false;
  for(let j=0;j<params.length;j++){
   const expected=j===f.argument?f.inputs[index]:
-   (['byte','short','int','long','double','java.lang.Byte','java.lang.Short','java.lang.Integer','java.lang.Long','java.lang.Double'].includes(params[j])?
+   (['byte','short','int','long','float','double','java.lang.Byte','java.lang.Short','java.lang.Integer','java.lang.Long','java.lang.Float','java.lang.Double'].includes(params[j])?
     String(f.otherArguments):(params[j]==='java.lang.String'?
      (f.otherArguments===100?'aa':'a'):'size=1;values=0..size-1'));
   if(!same(o.arguments[j],expected))return false;
@@ -172,7 +188,7 @@ if(require.main===module){try{
   prepareCohort(a[2],a[3],a[4],{engine:m.engine,source:c.source},{extendedKotlinPaths:true});
  }else if(action==='oracle-input'&&a.length===3){
   const m=json(a[0]);checkManifest(m);const o=m.oracles.find(o=>o.cohortId===Number(a[1]));
-  if(!o||!/^tests\/fixtures\/phase2-kotlin-api-v2\/oracle-[1-3]\.kt$/.test(o.path))fail();
+  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3)\/oracle-[1-3]\.kt$/.test(o.path))fail();
   const bytes=read(path.resolve(__dirname,'..',o.path));if(hash(bytes)!==o.sha256)fail();
   const dir=path.join(a[2],'oracle');fs.mkdirSync(dir,{mode:0o700});
   fs.writeFileSync(path.join(dir,'IndependentArithmeticOracle.kt'),bytes,{flag:'wx',mode:0o600});
