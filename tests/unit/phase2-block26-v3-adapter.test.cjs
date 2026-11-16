@@ -26,7 +26,8 @@ const base = {
 const entry = r => ({cohortId:1,scope:'algos',artifactSha256:r.artifactSha256,raw:Buffer.from(JSON.stringify(r))});
 const objectFinding = rule => ({
  rule,class:'algos.arrays.BrokenValue',constructor:['int'],left:['0'],right:['0'],
- observed:[false,false],status:'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE'
+ observed:rule==='OBJECT_EQUALS_HASHCODE_VIOLATION'?[0,1]:[false,false],
+ status:'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE'
 });
 test('v3: independent evidence accepts frozen object-law hypotheses as unadjudicated',()=>{
  for (const rule of [
