@@ -10,6 +10,9 @@ on:
       - docs/quality/PHASE2-BLOCK26-V6-RESERVATION.json
       - docs/quality/evidence/block26-v6-selection/**
       - tests/unit/phase2-block26-v6-reservation.test.cjs
+      - scripts/phase2-kotlin-api-v6-eval.cjs
+      - tests/fixtures/phase2-kotlin-api-v6/**
+      - tests/unit/phase2-block26-v6-evidence-adapter.test.cjs
       - tests/fixtures/jvm-metamorphic/**
       - scripts/phase2-block26-object-eval.cjs
       - tests/fixtures/phase2-block26-object-contracts/run-isolated.sh
