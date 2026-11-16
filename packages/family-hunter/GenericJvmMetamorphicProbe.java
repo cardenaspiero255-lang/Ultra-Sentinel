@@ -57,10 +57,10 @@ public final class GenericJvmMetamorphicProbe {
         return Long.valueOf(anchor);
     }
 
-    // Only exact, proven numeric element types are admitted. Erased/raw,
-    // wildcard, nested and application-specific containers abstain.
+    // Only exact numeric JVM array elements (primitive or boxed) are admitted.
+    // Erased/raw, wildcard, nested and application-specific containers abstain.
     private static Class<?> element(Class<?> raw, Type generic) {
-        if (raw.isArray() && raw.getComponentType().isPrimitive() && numeric(raw.getComponentType()))
+        if (raw.isArray() && numeric(raw.getComponentType()))
             return raw.getComponentType();
         if ((raw == List.class || raw == Collection.class || raw == Iterable.class) &&
             generic instanceof ParameterizedType p && p.getActualTypeArguments().length == 1 &&
@@ -82,9 +82,8 @@ public final class GenericJvmMetamorphicProbe {
             if (raw == float.class || raw == Float.class) {
                 return new float[][]{{0f, 1f, Float.MAX_VALUE}, {0f, .5f, 1f}, {-1f, 0f, 1f}}[band][sample];
             }
-            // The original extreme boundary band remains intact. A second
-            // finite 0/1/2 band makes bounded or partial functions observable
-            // even when MAX_VALUE throws or would exceed the method contract.
+            // Original extreme inputs remain available; bounded samples admit
+            // partial numeric functions whose MAX_VALUE behavior must abstain.
             if (band == 1) return anchor(raw, new int[]{0, 1, 2}[sample]);
             return value(raw, sample);
         }
@@ -464,7 +463,7 @@ public final class GenericJvmMetamorphicProbe {
         for (int position = 0; position < params.length; position++) {
             int bands = params[position] == double.class || params[position] == Double.class ||
                 params[position] == float.class || params[position] == Float.class ? 3 :
-                2; // Integral methods get both the existing extreme band and bounded 0/1/2.
+                2; // Integral methods also receive a finite 0/1/2 band.
             for (int band = 0; band < bands; band++) {
                 for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
                     Number[] observations = new Number[3];
