@@ -1,0 +1,256 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-cohort/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "commitSha": "d059ac1f41f093fca5ecca42964e2d16e0ea2c41",
+    "treeSha": "f246a52da6fdd8af40c1a43dd0a9d07095233a83",
+    "modules": [
+      {
+        "path": "packages/family-hunter/GenericJvmMetamorphicProbe.java",
+        "blobSha": "5295452ebfc277c03212bfd6dd13106704c7b188"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      },
+      {
+        "path": "scripts/phase2-kotlin-api-v2-eval.cjs",
+        "blobSha": "3a3c6cc1e05d501107a3c4d2f504fafde8f81b27"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+        "blobSha": "77610104992b446de457bea59d8faeb679d5bd7a"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+        "blobSha": "ef26ca3897ec2f08b5a03e889101876d07b897d4"
+      }
+    ]
+  },
+  "freezeSha": "0cb27a1127f1af75551cf28851ccf786e7e5811d",
+  "metadataReservationCommitSha": "efc1d2f25999322e338ebc1d0be2750a2cf175c0",
+  "metadataReservationBlobSha": "803db9a662289ced0f62f0b33912b22cafed6992",
+  "cohorts": [
+    {
+      "id": 1,
+      "source": {
+        "repository": "penemue/keap",
+        "commitSha": "8274a8839d74eb87cccd6806a6247ff20b615ef0",
+        "treeSha": "5dfec76a3ffaa34ba50e58f3edd2e4cf6c8e6eab",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/github/penemue/keap/PriorityQueue.kt",
+            "blobSha": "94d78a30543f97dbcbd3c365fb699f01f6d121ab",
+            "sizeBytes": 15783
+          },
+          {
+            "path": "src/main/kotlin/com/github/penemue/keap/SortedIterable.kt",
+            "blobSha": "914ba997d47b7ca4010ffc56bffca0e3fe86da0b",
+            "sizeBytes": 1375
+          },
+          {
+            "path": "src/main/kotlin/com/github/penemue/keap/Sorts.kt",
+            "blobSha": "13ac23fbde96d4c8945a4e2ca0ca445862ab0b77",
+            "sizeBytes": 1818
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "source": {
+        "repository": "palasjir/ct-volumetric-rendering",
+        "commitSha": "c5145a151bcf6dcdac9d4801299d85e7e971e2d3",
+        "treeSha": "6c7a156af27750885c70fd9c0fc4b5ea78c539fc",
+        "files": [
+          {
+            "path": "src/main/kotlin/palasjir/kglm/Mat4.kt",
+            "blobSha": "01b9a7a90efd27d2321b07caff6379b4a12681b7",
+            "sizeBytes": 216
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/Main.kt",
+            "blobSha": "16d0a2181c7af177ebd53944b4c05e7faade1bdc",
+            "sizeBytes": 1525
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/coordinates/Camera.kt",
+            "blobSha": "83e7e3a4a8ddfbe01daf51e1fb69e9688e1df480",
+            "sizeBytes": 2551
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/coordinates/GLSphericalCoordinates.kt",
+            "blobSha": "0d7a8855edaa97b3250804d2042d6f9479b4e114",
+            "sizeBytes": 612
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/coordinates/ProjMat.kt",
+            "blobSha": "8dce20dd84a4d3cbdb0be58731d0f0a3aa29b48b",
+            "sizeBytes": 989
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/BoxRenderer.kt",
+            "blobSha": "20ae78a82ddd12a965a09c3f27b7eea8814017d9",
+            "sizeBytes": 1911
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/CubeProgram.kt",
+            "blobSha": "6e189d01b0474f92bafe8b4d7302995738f3a845",
+            "sizeBytes": 948
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/FrameBuffer.kt",
+            "blobSha": "5e1f91946385cd43bb04d5766feac24e5166bd52",
+            "sizeBytes": 2849
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/RaycastingProgram.kt",
+            "blobSha": "f38f06fffd381325f8e76640b00821a8aed72d20",
+            "sizeBytes": 5900
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/ScreenBuffer.kt",
+            "blobSha": "67619daaecf5da8a5363c78aac03b524d234d1d5",
+            "sizeBytes": 789
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/TransferFunction.kt",
+            "blobSha": "8f683d9bd45c656857171db9078d9590e06fc4c1",
+            "sizeBytes": 1698
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/render/UnitCube.kt",
+            "blobSha": "b96d957d4d4d5ce992d966066c8fcfcb44e606fd",
+            "sizeBytes": 939
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/ui/MouseAdapter.kt",
+            "blobSha": "a21ba5048821c275792b3d493598e5aab5ac0430",
+            "sizeBytes": 855
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/ui/VisualizationPanel.kt",
+            "blobSha": "f64966f60ee4ec9dbb5cb4b71d77c314253de8e3",
+            "sizeBytes": 2909
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/utils/ShaderProgramHelper.kt",
+            "blobSha": "2f6f0c2ac64e902fe99e27c74353f26b78da4cb7",
+            "sizeBytes": 1078
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/utils/Utils.kt",
+            "blobSha": "7b7b3b2033beb5f085b98b492a1c1a4b73028e2f",
+            "sizeBytes": 802
+          },
+          {
+            "path": "src/main/kotlin/palasjir/viewer/utils/VolumeData.kt",
+            "blobSha": "dcc5b070bb1c8cd491768a023088a99213761442",
+            "sizeBytes": 3377
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "source": {
+        "repository": "dlew/wordle-solver",
+        "commitSha": "73f46bf70178ab9aba6cdb6c2d7aadadf6ef7fa0",
+        "treeSha": "1928c8538336823f7bbbfbb473ea4f5de8a60047",
+        "files": [
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/GuessResult.kt",
+            "blobSha": "1ffc8ddb37633032f23cc85d55aa5a42f94a1c08",
+            "sizeBytes": 98
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/Hint.kt",
+            "blobSha": "be74db7717c8962aafc43522dfc18cf5e1a7822a",
+            "sizeBytes": 173
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/algorithm/FirstWordSolver.kt",
+            "blobSha": "51b4cef7cd50b90270e7d84757bea678caba7d77",
+            "sizeBytes": 301
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/algorithm/KnuthSolver.kt",
+            "blobSha": "2ed9d92bb32bf019a94ad5b92abd9da2dc18b365",
+            "sizeBytes": 2077
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/algorithm/Solver.kt",
+            "blobSha": "2340ca909be644c428995b5b107efdc294ce9790",
+            "sizeBytes": 412
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/gameRunner.kt",
+            "blobSha": "874584f33fd607d7d8c6c85fedb66970086a1921",
+            "sizeBytes": 2069
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/main.kt",
+            "blobSha": "a554cebd6c7d884a67acdddf278c8dbae71d9c36",
+            "sizeBytes": 1157
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/resourceUtils.kt",
+            "blobSha": "cad8bd9da75888c0173a35002a1379a8f05f8805",
+            "sizeBytes": 236
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/resultLogic.kt",
+            "blobSha": "2fccedae89779f6c8e0ffa8a5679d986f2911592",
+            "sizeBytes": 609
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/solverLogic.kt",
+            "blobSha": "a482d7c95666842f50b23924282942ba6bd34118",
+            "sizeBytes": 1591
+          },
+          {
+            "path": "src/main/kotlin/net/danlew/wordle/wordleLogic.kt",
+            "blobSha": "271ec1cdd593f881fc537247c99dc180fda0f9cf",
+            "sizeBytes": 1827
+          }
+        ]
+      }
+    }
+  ],
+  "oracles": [
+    {
+      "cohortId": 1,
+      "path": "tests/fixtures/phase2-block26-v5/oracle-1.kt",
+      "sha256": "957e45101ac4a44b8f94a48e228381c9c6ab8d3f2117298b2ae69b4afed09561",
+      "admission": "CONTROL_ONLY"
+    },
+    {
+      "cohortId": 2,
+      "path": "tests/fixtures/phase2-block26-v5/oracle-2.kt",
+      "sha256": "218a890006287671e28b6d79e18b899c0c80c2a585a824b91bef079901766bfe",
+      "admission": "DEPENDENCY_ABSTENTION"
+    },
+    {
+      "cohortId": 3,
+      "path": "tests/fixtures/phase2-block26-v5/oracle-3.kt",
+      "sha256": "41f671cb4eec0dd1fd4ad78bda9f3c7cd6286200805603f020bf9c1dd52a596d",
+      "admission": "EXACT_SCOPED_NUMERIC_AND_BENIGN_CONTROLS"
+    }
+  ],
+  "predictionsExecuted": false,
+  "oraclesCommittedBeforeHunter": true,
+  "oracleExcludedFromHunterMounts": true,
+  "block27Allowed": false
+}

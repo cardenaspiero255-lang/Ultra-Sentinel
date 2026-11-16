@@ -1,0 +1,91 @@
+{
+  "schema": "ultra-sentinel-block26-v5-first-run-receipt/v1",
+  "protocolSha": "fef6bc9de40addc8ad590a9c92ee4f64ff806b24",
+  "engineSha": "d059ac1f41f093fca5ecca42964e2d16e0ea2c41",
+  "runId": 43866554390,
+  "predictionArtifact": {
+    "id": 14226281489,
+    "zipSha256": "cb73c9b590d80147f0fb3d9ac3b98d0894f5876759e7dc3d5d83aa88caa20897",
+    "publishedAt": "2026-11-16T12:28:43Z"
+  },
+  "independentArtifact": {
+    "id": 14225478254,
+    "zipSha256": "afc3e233952ab0b40df0912ab0abe1a784fa8ed0fff2d25ed54d1a9e8acd66d0",
+    "publishedAt": "2026-11-16T12:29:51Z"
+  },
+  "preflightArtifact": {
+    "id": 14225303023,
+    "zipSha256": "e893ba83ceebd3532635d4a1e3b0d948697e9975db5ccb2fa0daac93ab4fa09d"
+  },
+  "files": [
+    {
+      "path": "predictions/abstentions.json",
+      "sha256": "f5660bc7f6d79fbc7ab51482e7260100dfd7e73c0182ab0f709ce15a32516f42"
+    },
+    {
+      "path": "predictions/cohort-1/scope-0/discovery.json",
+      "sha256": "53e2c59e0b92266f67529c3e3e25e544d407a361bc760e9bfeacea838e9d3074"
+    },
+    {
+      "path": "predictions/cohort-3/scope-0/discovery.json",
+      "sha256": "d762de875220f5e20a0d3a79945837d56279fde41f8a62d8a43e1dfe3aa28612"
+    },
+    {
+      "path": "predictions/compile-2-diagnostics.log.gz",
+      "sha256": "17f6cbfabe283377495db44a8d27ad6a2020ee6e4e882d38934de178c8e1ce76",
+      "rawSha256": "d0e805fbdae9b5611761e892b852d30013727dbabf009c99e7028ffa10fa662c"
+    },
+    {
+      "path": "predictions/compile-2-execution.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "predictions/index.json",
+      "sha256": "c45c44ce882ff951237593107f27a8d27d492ad4c6d82ab4ec4d17829ea8963b"
+    },
+    {
+      "path": "predictions/prediction-seal.json",
+      "sha256": "40f9ab74a6bf23139357d692e1e5eebd67579b636487bc231a5f174a7f67524a"
+    },
+    {
+      "path": "independent/compile-2-diagnostics.log.gz",
+      "sha256": "f2b598b56c494e24e0b9b1f7014ce26d1a4310491510c4e64bd6c2028405a537",
+      "rawSha256": "142d1b8a206a5bb5c75dc8201d819e0fabb4e832dd71043995afd188c2307f17"
+    },
+    {
+      "path": "independent/compile-2-execution.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "independent/independent-verdict.json",
+      "sha256": "185340f347a69464a33b9cf96df6338d05d981a3e6a5d36340f722c2b28ddfc8"
+    },
+    {
+      "path": "independent/oracle-1.json.gz",
+      "sha256": "d91bb7bf6117f53d0923323745266e4f4530e306a250bbf8b3512df943d9500e",
+      "rawSha256": "565c795d4971847dd119fe110242b9c31fb8e5fb64a325117962f2408e2ff437"
+    },
+    {
+      "path": "independent/oracle-3.json.gz",
+      "sha256": "f5c8ca844a8b583247704db9662915dd2ec19fa499e8bc74665095f2a0206df5",
+      "rawSha256": "e9211bf4bfd4e7da1b773c849ecede06c2ff4e0cfef2452858aaece9aaaab99f"
+    },
+    {
+      "path": "independent/oracle-abstentions.json",
+      "sha256": "a2e3935e808843f1c1d43b749c4a1dd6508ee1c4bd3d28f147b05a1525b33e73"
+    },
+    {
+      "path": "preflight/compile-only-admissions.json",
+      "sha256": "9c1f65b2ef109f703d685fc8e4ac03451cdb6aded31c9453385ad2c7623a78df"
+    },
+    {
+      "path": "coverage-note.json",
+      "sha256": "cfe4a5d3fb932764014a1cffeb661ec5650e2470c320975010fcb71974c74ebf"
+    }
+  ],
+  "confirmedOriginalDiscoveries": 0,
+  "wholeCohortTruth": false,
+  "engineRetuned": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}
