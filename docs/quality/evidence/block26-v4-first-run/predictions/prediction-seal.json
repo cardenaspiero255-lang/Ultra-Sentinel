@@ -1,0 +1,47 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-prediction-seal/v1",
+  "engineSha": "a4156d8853f9714346b436d65f18bbd22d464ef0",
+  "manifestSha256": "a99c10593782e5a34971f51f2d9c62f32bd1cec5a0020bfdfdb783b0b51cdb0a",
+  "reports": [
+    {
+      "cohortId": 1,
+      "scope": "algorithms",
+      "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+      "reportSha256": "123fb2c008ff01101c7aa2b977c31fb64c044ee8e81a8c88f3d7853d12a9eb60",
+      "methodsProbed": 2,
+      "completedTriples": 6,
+      "hypotheses": 2
+    },
+    {
+      "cohortId": 1,
+      "scope": "datastructures",
+      "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+      "reportSha256": "2bcdbadaf4212b1e090565147728f5a6ac49d49bbbd09c270cddb05f533f6d66",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "entities",
+      "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+      "reportSha256": "e38a87cfe64b454151574d892dda68ba8c630314a58f54d45b46e1cc42097ffa",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "utils",
+      "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+      "reportSha256": "28616769ac46a5d7d0516b634f0e4f9c228490d332adbd2561f5bca91d9b1436",
+      "methodsProbed": 2,
+      "completedTriples": 6,
+      "hypotheses": 0
+    }
+  ],
+  "executionAbstentions": [],
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block27Allowed": false
+}

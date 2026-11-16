@@ -1,0 +1,19 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-independent-verdict/v1",
+  "engineSha": "a4156d8853f9714346b436d65f18bbd22d464ef0",
+  "manifestSha256": "a99c10593782e5a34971f51f2d9c62f32bd1cec5a0020bfdfdb783b0b51cdb0a",
+  "confirmedDistinctDefects": 0,
+  "confirmedHypotheses": 0,
+  "scopedFalsePositiveHypotheses": 0,
+  "unadjudicatedHypotheses": 2,
+  "scopedIndependentObservations": 9,
+  "executionAbstentions": [],
+  "methodsProbed": 4,
+  "globalPrecision": null,
+  "globalRecall": null,
+  "falseNegatives": null,
+  "verifiedWitnesses": [],
+  "novelFamilyVerified": false,
+  "engineRetuned": false,
+  "block27Allowed": false
+}

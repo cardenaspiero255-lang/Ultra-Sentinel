@@ -1,0 +1,26 @@
+[
+  {
+    "cohortId": 1,
+    "scope": "algorithms",
+    "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+    "file": "cohort-1/scope-0/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "datastructures",
+    "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+    "file": "cohort-1/scope-1/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "entities",
+    "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+    "file": "cohort-1/scope-2/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "utils",
+    "artifactSha256": "3083a672b27fd51f9120eb20cb9d632299884154a64892aa8c8e861ff5abc6be",
+    "file": "cohort-1/scope-3/discovery.json"
+  }
+]

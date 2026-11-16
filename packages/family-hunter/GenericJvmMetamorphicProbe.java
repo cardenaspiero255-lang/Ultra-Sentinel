@@ -82,6 +82,9 @@ public final class GenericJvmMetamorphicProbe {
             if (raw == float.class || raw == Float.class) {
                 return new float[][]{{0f, 1f, Float.MAX_VALUE}, {0f, .5f, 1f}, {-1f, 0f, 1f}}[band][sample];
             }
+            // Original extreme inputs remain available; bounded samples admit
+            // partial numeric functions whose MAX_VALUE behavior must abstain.
+            if (band == 1) return anchor(raw, new int[]{0, 1, 2}[sample]);
             return value(raw, sample);
         }
         Class<?> item = element(raw, generic);
@@ -460,7 +463,7 @@ public final class GenericJvmMetamorphicProbe {
         for (int position = 0; position < params.length; position++) {
             int bands = params[position] == double.class || params[position] == Double.class ||
                 params[position] == float.class || params[position] == Float.class ? 3 :
-                (numeric(params[position]) ? 1 : 2);
+                2; // Integral methods also receive a finite 0/1/2 band.
             for (int band = 0; band < bands; band++) {
                 for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
                     Number[] observations = new Number[3];

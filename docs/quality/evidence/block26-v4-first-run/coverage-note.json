@@ -1,0 +1,58 @@
+{
+  "schema": "ultra-sentinel-block26-v4-coverage-note/v1",
+  "orderingHypothesesNotInIndependentOracleScope": 2,
+  "preregisteredNumericObservations": 9,
+  "scopedMismatchedNumericObservations": [
+    {
+      "class": "algorithms.number.GreatestCommonDivisorKt",
+      "method": "gcd(long;long;)long",
+      "arguments": [
+        "-1",
+        "0"
+      ],
+      "actual": "-1",
+      "expected": "1",
+      "contract": "greatest common divisor is nonnegative and divides both arguments",
+      "defectEligible": true
+    },
+    {
+      "class": "algorithms.number.GreatestCommonDivisorKt",
+      "method": "gcd(long;long;)long",
+      "arguments": [
+        "12",
+        "-4"
+      ],
+      "actual": "-4",
+      "expected": "4",
+      "contract": "greatest common divisor is nonnegative and divides both arguments",
+      "defectEligible": true
+    },
+    {
+      "class": "algorithms.number.GreatestCommonDivisorKt",
+      "method": "gcd(long;long;)long",
+      "arguments": [
+        "-12",
+        "-4"
+      ],
+      "actual": "-4",
+      "expected": "4",
+      "contract": "greatest common divisor is nonnegative and divides both arguments",
+      "defectEligible": true
+    },
+    {
+      "class": "algorithms.number.GreatestCommonDivisorKt",
+      "method": "gcd(long;long;)long",
+      "arguments": [
+        "0",
+        "-7"
+      ],
+      "actual": "-7",
+      "expected": "7",
+      "contract": "greatest common divisor is nonnegative and divides both arguments",
+      "defectEligible": true
+    }
+  ],
+  "countedAsHunterDiscoveries": false,
+  "globalFalseNegatives": null,
+  "reason": "Frozen Hunter emitted Comparable ordering hypotheses; committed oracle covers only gcd and the historical adjudicator leaves ordering rules unadjudicated. No oracle/model retuning is permitted to rewrite this verdict."
+}
