@@ -61,10 +61,14 @@ function parse(entry){
    }
    continue; // Object and Comparable contracts still require a separate independent oracle.
   }
+  const parameterTypes=typeof f.method==='string'?
+   f.method.slice(f.method.indexOf('(')+1,f.method.lastIndexOf(')')).split(';').filter(Boolean):[];
   if(typeof f.method!=='string'||f.method.length>500||!Number.isInteger(f.argument)||f.argument<0||f.argument>2||
    ![1,100].includes(f.otherArguments)||!Array.isArray(f.inputs)||f.inputs.length!==3||
    !Array.isArray(f.observed)||f.observed.length!==3||!f.observed.every(numeric)||
-   !f.inputs.every(x=>numeric(x)||/^size=[0-3];values=0\.\.size-1$/.test(x)))fail();
+   !f.inputs.every(x=>parameterTypes[f.argument]==='java.lang.String'?
+    ['', 'a', 'aa', 'aaa'].includes(x):
+    numeric(x)||/^size=[0-3];values=0\.\.size-1$/.test(x)))fail();
   if(Object.hasOwn(f,'constructorArguments')!==Object.hasOwn(f,'constructor'))fail();
   if(r.status==='INCOMPLETE_NO_SUPPORTED_METHODS'||r.methodsProbed===0||r.completedTriples===0||r.successfulInvocations<6)fail();
   if(Object.hasOwn(f,'constructor')&&(!Array.isArray(f.constructor)||!Array.isArray(f.constructorArguments)||
@@ -109,7 +113,8 @@ function argumentMatches(f,o,index){
  for(let j=0;j<params.length;j++){
   const expected=j===f.argument?f.inputs[index]:
    (['byte','short','int','long','float','double','java.lang.Byte','java.lang.Short','java.lang.Integer','java.lang.Long','java.lang.Float','java.lang.Double'].includes(params[j])?
-    String(f.otherArguments):'size=1;values=0..size-1');
+    String(f.otherArguments):(params[j]==='java.lang.String'?
+     (f.otherArguments===100?'aa':'a'):'size=1;values=0..size-1'));
   if(!same(o.arguments[j],expected))return false;
  }
  return true;
