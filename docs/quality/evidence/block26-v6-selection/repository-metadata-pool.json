@@ -4153,121 +4153,136 @@
       "index": 60,
       "repository": "mwshubham/DataStructureAndAlgorithm",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 7,
       "repositoryId": "243989952",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 61,
       "repository": "penemue/keap",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 17,
       "repositoryId": "74784525",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 62,
       "repository": "milos85vasic/Fundamental-Algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "80288639",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 63,
       "repository": "jemshit/Algorithms",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "218228240",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 64,
       "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 8,
       "repositoryId": "265536015",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 65,
       "repository": "merttoptas/AlgorithmSolutionsInKotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 3,
       "repositoryId": "438398148",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 66,
       "repository": "dlew/wordle-solver",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 12,
       "repositoryId": "446149485",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 67,
       "repository": "fahime-ghasemi/kotlin-algorithms-interview",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "613933598",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 68,
       "repository": "tocttou/Algorithms-Kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "238662531",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 69,
       "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 7,
       "repositoryId": "288453885",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 70,
       "repository": "qwertukg/Barnes-Hut-N-Body",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 9,
       "repositoryId": "1074714349",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 71,
       "repository": "Louiixx-h/algorithms-and-data-structure",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "360715602",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 72,
       "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 5,
       "repositoryId": "594717015",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 73,
       "repository": "yunshuipiao/rice-noodles",
       "defaultBranch": "master",
-      "stars": null,
+      "stars": 4,
       "repositoryId": "179794004",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "master"
     },
     {
       "index": 74,
       "repository": "jens-muenker/fuzzywuzzy-kotlin",
       "defaultBranch": "main",
-      "stars": null,
+      "stars": 10,
       "repositoryId": "695555771",
-      "archived": false
+      "archived": false,
+      "restDefaultBranch": "main"
     },
     {
       "index": 75,
