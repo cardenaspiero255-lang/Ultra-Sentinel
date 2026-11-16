@@ -21,6 +21,26 @@ const numeric=x=>decimal(x)!==null;
 function same(a,b){const x=decimal(a),y=decimal(b);return x!==null&&y!==null?x===y:a===b;}
 function scopeName(x){return typeof x==='string'&&x.length<=500&&(x==='.'||
  /^[\p{ID_Start}_$][\p{ID_Continue}$]*(?:\.[\p{ID_Start}_$][\p{ID_Continue}$]*)*$/u.test(x));}
+const ORDERING=['COMPARABLE_ANTISYMMETRY_VIOLATION','COMPARABLE_TRANSITIVITY_VIOLATION'];
+const SIMPLE_TYPES=['byte','short','int','long','float','double','java.lang.Byte','java.lang.Short',
+ 'java.lang.Integer','java.lang.Long','java.lang.Float','java.lang.Double','java.lang.String'];
+function orderingShape(o){
+ const trans=o.rule==='COMPARABLE_TRANSITIVITY_VIOLATION';
+ if(!ORDERING.includes(o.rule)||typeof o.class!=='string'||o.class.length>500||
+  !Object.hasOwn(o,'constructor')||!Array.isArray(o.constructor)||o.constructor.length<1||o.constructor.length>3||
+  !o.constructor.every(t=>SIMPLE_TYPES.includes(t))||
+  !Array.isArray(o.observedSigns)||o.observedSigns.length!==(trans?3:2)||
+  !o.observedSigns.every(x=>Number.isInteger(x)&&[-1,0,1].includes(x)))fail();
+ for(const field of trans?['left','middle','right']:['left','right'])
+  if(!Array.isArray(o[field])||o[field].length!==o.constructor.length||
+   !o[field].every(v=>typeof v==='string'&&v.length<=100))fail();
+}
+function orderingViolation(o){
+ const v=o.observedSigns;
+ return o.rule===ORDERING[0]?v[0]!==-v[1]:v[0]===1&&v[1]===1&&v[2]<=0;
+}
+function orderingKey(id,o){return JSON.stringify([id,o.rule,o.class,o.constructor,o.left,
+ o.rule===ORDERING[1]?o.middle:null,o.right]);}
 function parse(entry){
  if(!Number.isInteger(entry.cohortId)||!scopeName(entry.scope)||!Buffer.isBuffer(entry.raw)||
   entry.raw.length>262144||!/^[a-f0-9]{64}$/.test(entry.artifactSha256))fail();
@@ -59,7 +79,12 @@ function parse(entry){
     const bool=x=>typeof x==='boolean',integer=x=>Number.isSafeInteger(x)&&x>=-2147483648&&x<=2147483647;
     if(f.rule==='OBJECT_EQUALS_HASHCODE_VIOLATION'? !f.observed.every(integer):!f.observed.every(bool))fail();
    }
-   continue; // Object and Comparable contracts still require a separate independent oracle.
+   if(comparable.includes(f.rule)){
+    orderingShape(f);
+    if(r.comparableClasses<1||r.comparablePairs<1||
+     (f.rule===ORDERING[1]&&r.comparableTriples<1)||!orderingViolation(f))fail();
+   }
+   continue; // A sealed hypothesis still requires its separately committed independent oracle.
   }
   const parameterTypes=typeof f.method==='string'?
    f.method.slice(f.method.indexOf('(')+1,f.method.lastIndexOf(')')).split(';').filter(Boolean):[];
@@ -121,7 +146,8 @@ function argumentMatches(f,o,index){
 }
 function adjudicate(m,entries,abstentions,s,truths){
  verify(m,entries,abstentions,s);
- const observations=[],seenTruth=new Set(),seenCalls=new Map();
+ const observations=[],ordering=[],seenTruth=new Set(),seenCalls=new Map(),seenOrdering=new Map();
+ let hasOrderingScope=false;
  for(const envelope of truths){
   const cohort=m.cohorts.find(c=>c.id===envelope.cohortId),oracle=m.oracles.find(o=>o.cohortId===envelope.cohortId);
   if(!cohort||!oracle||seenTruth.has(envelope.cohortId)||
@@ -133,6 +159,18 @@ function adjudicate(m,entries,abstentions,s,truths){
   const t=JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(raw));seenTruth.add(envelope.cohortId);
   if(t.schema!=='ultra-sentinel-kotlin-api-v2-independent/v1'||t.wholeCohortTruth!==false||
    !Array.isArray(t.observations)||t.observations.length>50000)fail();
+  if(Object.hasOwn(t,'orderingObservations')){
+   hasOrderingScope=true;
+   if(!Array.isArray(t.orderingObservations)||t.orderingObservations.length>50000)fail();
+   for(const o of t.orderingObservations){
+    orderingShape(o);
+    if(typeof o.expectedLawSatisfied!=='boolean'||typeof o.defectEligible!=='boolean')fail();
+    const key=orderingKey(envelope.cohortId,o),prior=seenOrdering.get(key);
+    if(prior&&(JSON.stringify(prior.observedSigns)!==JSON.stringify(o.observedSigns)||
+     prior.expectedLawSatisfied!==o.expectedLawSatisfied||prior.defectEligible!==o.defectEligible))fail();
+    seenOrdering.set(key,o);ordering.push({cohortId:envelope.cohortId,row:o});
+   }
+  }
   for(const o of t.observations){
    if(typeof o.class!=='string'||typeof o.method!=='string'||!Array.isArray(o.arguments)||
     o.arguments.length>3||!o.arguments.every(x=>typeof x==='string'&&x.length<=100)||
@@ -147,7 +185,17 @@ function adjudicate(m,entries,abstentions,s,truths){
  }
  let confirmed=0,falsePositives=0,unadjudicated=0;const defects=new Set(),witnesses=[];
  for(const entry of entries)for(const f of parse(entry).findings){
-  if(f.rule!==undefined){unadjudicated++;continue;}
+  if(f.rule!==undefined){
+   const match=ORDERING.includes(f.rule)?ordering.find(o=>o.cohortId===entry.cohortId&&
+    orderingKey(o.cohortId,o.row)===orderingKey(entry.cohortId,f)&&
+    JSON.stringify(o.row.observedSigns)===JSON.stringify(f.observedSigns)&&
+    o.row.expectedLawSatisfied&&o.row.defectEligible&&orderingViolation(o.row)):null;
+   if(match){
+    confirmed++;defects.add([entry.cohortId,f.class,'Comparable-ordering'].join(':'));
+    witnesses.push({cohortId:entry.cohortId,finding:f,observation:match.row});
+   }else unadjudicated++;
+   continue;
+  }
   let checked=0,bad=false;
   for(let i=0;i<3;i++){
    const o=observations.find(o=>o.cohortId===entry.cohortId&&o.class===f.class&&o.method===f.method&&
@@ -169,7 +217,8 @@ function adjudicate(m,entries,abstentions,s,truths){
   scopedFalsePositiveHypotheses:falsePositives,unadjudicatedHypotheses:unadjudicated,
   scopedIndependentObservations:observations.length,executionAbstentions:abstentions,
   methodsProbed:s.reports.reduce((n,r)=>n+r.methodsProbed,0),globalPrecision:null,globalRecall:null,
-  falseNegatives:null,verifiedWitnesses:witnesses,novelFamilyVerified:false,engineRetuned:false,block27Allowed:false};
+  falseNegatives:null,verifiedWitnesses:witnesses,novelFamilyVerified:false,engineRetuned:false,block27Allowed:false,
+  ...(hasOrderingScope?{scopedIndependentOrderingObservations:ordering.length}:{})};
 }
 function read(p,max=1048576){const s=fs.lstatSync(p);if(!s.isFile()||s.isSymbolicLink()||s.size>max)fail();return fs.readFileSync(p);}
 const json=p=>JSON.parse(read(p));
@@ -188,7 +237,7 @@ if(require.main===module){try{
   prepareCohort(a[2],a[3],a[4],{engine:m.engine,source:c.source},{extendedKotlinPaths:true});
  }else if(action==='oracle-input'&&a.length===3){
   const m=json(a[0]);checkManifest(m);const o=m.oracles.find(o=>o.cohortId===Number(a[1]));
-  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3|phase2-block26-v4)\/oracle-[1-3]\.kt$/.test(o.path))fail();
+  if(!o||!/^tests\/fixtures\/(?:phase2-kotlin-api-v2|phase2-block26-v3|phase2-block26-v4|phase2-block26-v5)\/oracle-[1-3]\.kt$/.test(o.path))fail();
   const bytes=read(path.resolve(__dirname,'..',o.path));if(hash(bytes)!==o.sha256)fail();
   const dir=path.join(a[2],'oracle');fs.mkdirSync(dir,{mode:0o700});
   fs.writeFileSync(path.join(dir,'IndependentArithmeticOracle.kt'),bytes,{flag:'wx',mode:0o600});

@@ -59,11 +59,11 @@ test('reports reproducible turning points as hypotheses and keeps unsupported ca
  assert.equal(report.schema,'ultra-sentinel-generic-jvm-metamorphic/v1');
  assert.equal(report.artifactSha256,crypto.createHash('sha256').update(fs.readFileSync(jar)).digest('hex'));
  assert.equal(report.status,'PARTIAL_HYPOTHESES_REQUIRE_ORACLE');
- assert.equal(report.classesInspected,2);
+ assert.equal(report.classesInspected,3); // Public static named member is now admitted.
  assert.ok(report.methodsProbed>=13);
  assert.ok(report.unsupportedMethods>=2);
  assert.ok(report.abstainedProbes>=3); // Ordinary noarg NoInstance is now exercised.
- assert.ok(report.nestedClassesSkipped>=1);
+ assert.equal(report.nestedClassesSkipped,0);
  const names=report.findings.map(x=>x.method);
  assert.ok(names.some(x=>x.startsWith('peak(')));
  assert.ok(names.some(x=>x.startsWith('valley(')));
@@ -148,7 +148,7 @@ test('omitted unsupported and nested methods make an otherwise stable scan parti
  fs.mkdirSync(dest);
  fs.writeFileSync(source,`package sample.partialonly; public class Partial {
  public static int stable(int n) { return n; } private int omitted(int n) { return n; }
- public static class Nested { public static int hidden(int n) { return n; } } }`);
+ private static class Nested { public static int hidden(int n) { return n; } } }`);
  assert.equal(run('javac',['-d',dest,source]).status,0);assert.equal(run('jar',['cf',archive,'-C',dest,'.']).status,0);
  const r=probe(archive,'sample.partialonly');assert.equal(r.status,0,r.stderr);
  const report=JSON.parse(r.stdout);assert.equal(report.status,'PARTIAL_HYPOTHESES_REQUIRE_ORACLE');

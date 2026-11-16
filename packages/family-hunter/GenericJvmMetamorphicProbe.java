@@ -77,14 +77,16 @@ public final class GenericJvmMetamorphicProbe {
         if (numeric(raw)) {
             if (!varying) return anchor(raw, fixed);
             if (raw == double.class || raw == Double.class) {
-                return new double[][]{{0, 1, Double.MAX_VALUE}, {0, .5, 1}, {-1, 0, 1}}[band][sample];
+                return new double[][]{{0, 1, Double.MAX_VALUE}, {0, .5, 1}, {-1, 0, 1}, {1, 2, 3}}[band][sample];
             }
             if (raw == float.class || raw == Float.class) {
-                return new float[][]{{0f, 1f, Float.MAX_VALUE}, {0f, .5f, 1f}, {-1f, 0f, 1f}}[band][sample];
+                return new float[][]{{0f, 1f, Float.MAX_VALUE}, {0f, .5f, 1f}, {-1f, 0f, 1f}, {1f, 2f, 3f}}[band][sample];
             }
             // Original extreme inputs remain available; bounded samples admit
             // partial numeric functions whose MAX_VALUE behavior must abstain.
             if (band == 1) return anchor(raw, new int[]{0, 1, 2}[sample]);
+            if (band == 2) return anchor(raw, new int[]{-1, 0, 1}[sample]);
+            if (band == 3) return anchor(raw, new int[]{1, 2, 3}[sample]);
             return value(raw, sample);
         }
         Class<?> item = element(raw, generic);
@@ -238,13 +240,25 @@ public final class GenericJvmMetamorphicProbe {
         return "[" + String.join(",", strings) + "]";
     }
 
+    private static Constructor<?>[] publicConstructors(Class<?> type, Result result) {
+        Constructor<?>[] constructors;
+        try { constructors = type.getConstructors(); }
+        catch (LinkageError | SecurityException unavailable) {
+            result.constructorAbstentions++;
+            return null;
+        }
+        Arrays.sort(constructors, (a,b) -> a.toString().compareTo(b.toString()));
+        // Budget failures stay outside reflection error handling.
+        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        return constructors;
+    }
+
     private static void comparable(Class<?> type, Result result) {
         if (!Comparable.class.isAssignableFrom(type) || type.isInterface() ||
             Modifier.isAbstract(type.getModifiers())) return;
         result.comparableClasses++;
-        Constructor<?>[] constructors = type.getConstructors();
-        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
-        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        Constructor<?>[] constructors = publicConstructors(type,result);
+        if (constructors == null) return;
         if (constructors.length == 0) result.constructorAbstentions++;
         for (Constructor<?> ctor : constructors) {
             Class<?>[] params = ctor.getParameterTypes();
@@ -376,9 +390,8 @@ public final class GenericJvmMetamorphicProbe {
             return;
         }
         result.objectContractClasses++;
-        Constructor<?>[] constructors = type.getConstructors();
-        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
-        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        Constructor<?>[] constructors = publicConstructors(type,result);
+        if (constructors == null) return;
         boolean[] reported = new boolean[3]; // reflexivity, symmetry, hash
         for (Constructor<?> ctor : constructors) {
             Class<?>[] types = ctor.getParameterTypes();
@@ -399,8 +412,9 @@ public final class GenericJvmMetamorphicProbe {
             List<Object> receivers = new ArrayList<>(), twins = new ArrayList<>();
             for (Object[] args : samples) {
                 try {
-                    receivers.add(ctor.newInstance(args));
-                    twins.add(ctor.newInstance(args));
+                    Object receiver = ctor.newInstance(args), twin = ctor.newInstance(args);
+                    receivers.add(receiver);
+                    twins.add(twin);
                 } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
                     receivers.add(null);
                     twins.add(null);
@@ -461,9 +475,7 @@ public final class GenericJvmMetamorphicProbe {
         Class<?>[] params = method.getParameterTypes();
         Type[] generic = method.getGenericParameterTypes();
         for (int position = 0; position < params.length; position++) {
-            int bands = params[position] == double.class || params[position] == Double.class ||
-                params[position] == float.class || params[position] == Float.class ? 3 :
-                2; // Integral methods also receive a finite 0/1/2 band.
+            int bands = numeric(params[position]) ? 4 : 2;
             for (int band = 0; band < bands; band++) {
                 for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
                     Number[] observations = new Number[3];
@@ -499,13 +511,23 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static void instanceProbe(Class<?> type, Method method, Result result) {
-        Field field;
-        try { field = type.getField("INSTANCE"); }
-        catch (NoSuchFieldException absent) { field = null; }
-        // An unrelated public INSTANCE field must not mask ordinary receivers.
-        // Kotlin singleton fields are static and have the declaring object type.
-        if (field != null && (!Modifier.isStatic(field.getModifiers()) ||
-            !type.isAssignableFrom(field.getType()))) field = null;
+        Field field = null;
+        try {
+            try { field = type.getField("INSTANCE"); }
+            catch (NoSuchFieldException absent) { /* ordinary or enclosing singleton below */ }
+            // Preserve ordinary construction when a field merely shares the name.
+            if (field != null && (!Modifier.isStatic(field.getModifiers()) ||
+                !type.isAssignableFrom(field.getType()))) field = null;
+            if (field == null && type.isMemberClass() && Modifier.isStatic(type.getModifiers())) {
+                // Kotlin default/named companions publish their receiver on the owner.
+                try {
+                    Field candidate = type.getEnclosingClass().getField(type.getSimpleName());
+                    int modifiers = candidate.getModifiers();
+                    if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) &&
+                        Modifier.isFinal(modifiers) && candidate.getType() == type) field = candidate;
+                } catch (NoSuchFieldException noCompanion) { /* public constructors below */ }
+            }
+        } catch (LinkageError | RuntimeException unavailable) { result.abstained++;return; }
         if (field != null) {
             Object receiver;
             try {
@@ -515,13 +537,11 @@ public final class GenericJvmMetamorphicProbe {
                 result.abstained++;
                 return;
             }
-            // Global probe budget failures must escape the receiver lookup.
             probe(method, receiver, null, null, type.getName(), result);
             return;
         }
-        Constructor<?>[] constructors = type.getConstructors();
-        Arrays.sort(constructors, (a, b) -> a.toString().compareTo(b.toString()));
-        if (constructors.length > 32) throw new IllegalStateException("CONSTRUCTOR_BUDGET");
+        Constructor<?>[] constructors = publicConstructors(type,result);
+        if (constructors == null) { result.abstained++;return; }
         boolean admitted = false;
         for (Constructor<?> ctor : constructors) {
             Class<?>[] types = ctor.getParameterTypes();
@@ -597,6 +617,17 @@ public final class GenericJvmMetamorphicProbe {
         return true;
     }
 
+    private static boolean admittedClass(Class<?> type) {
+        if (type.isSynthetic() || type.isAnonymousClass() || type.isLocalClass()) return false;
+        if (!type.isMemberClass()) return true;
+        int flags = type.getModifiers();
+        if (!Modifier.isPublic(flags) || !Modifier.isStatic(flags) || Modifier.isAbstract(flags) || type.isInterface())
+            return false;
+        for (Class<?> owner = type.getEnclosingClass(); owner != null; owner = owner.getEnclosingClass())
+            if (!Modifier.isPublic(owner.getModifiers())) return false;
+        return true;
+    }
+
     public static void main(String[] args) {
         PrintStream output = System.out;
         try {
@@ -629,7 +660,7 @@ public final class GenericJvmMetamorphicProbe {
                 for (String name : classes) {
                     try {
                         Class<?> type = Class.forName(name, false, loader);
-                        if (name.contains("$") && !Comparable.class.isAssignableFrom(type)) { result.nestedSkipped++; continue; }
+                        if (!admittedClass(type)) { result.nestedSkipped++; continue; }
                         result.classes++;
                         inspect(type, result);
                     } catch (ClassNotFoundException | LinkageError | SecurityException e) { result.unloadable++; }
