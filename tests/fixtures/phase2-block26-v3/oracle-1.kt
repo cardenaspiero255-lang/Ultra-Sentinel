@@ -1,5 +1,7 @@
 // Source-only precommitted independent oracle: never provided to frozen Hunter.
 // Uses an elementary index scan on distinct sorted inputs, not the target implementation.
+package oracle
+
 import algos.arrays.BinarySearch
 
 private fun record(method: String, target: Int, actual: Int, expected: Int): String =
