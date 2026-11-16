@@ -1,0 +1,1161 @@
+{
+  "schema": "ultra-sentinel-v6-blind-abi-admission/v1",
+  "engineSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+  "reservationSha256": "c6df5bf6a90e4bf08f9c08e42d77c08d212e83d7a41515aa6496bf3d6a928c2c",
+  "threshold": {
+    "minimumCallableCandidates": 3,
+    "minimumCohorts": 2
+  },
+  "cohorts": [
+    {
+      "cohortId": 1,
+      "sourceSha": "1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38",
+      "sourceTreeSha": "cbe58cc3384a6f25ffca30f177ed3d82f51d6718",
+      "originalBlobs": [
+        "25cb1c9200d2305da6ab508587db3b02701de662",
+        "547d0f2d042f84ff952667718fd729349e690961",
+        "87ce21239b0ae97ba3228afa64ec633cefa7a5bd",
+        "e227a0344cf16b38de0f7826315d7a264b6d10a4",
+        "9234dfa907963d50ad67cdf25f694489c7f0cffb",
+        "69cd4f281df8a2de197d4b450d2b868885e1f5ba"
+      ],
+      "originalFiles": 6,
+      "compilationSucceeded": true,
+      "callables": [
+        {
+          "className": "conditional.ConditionalKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "conditional.ConditionalKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "functions.FunctionsKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "functions.FunctionsKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Box",
+          "method": "getContent",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Box",
+          "method": "setContent",
+          "descriptor": "(Ljava/lang/Object;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Box",
+          "method": "put",
+          "descriptor": "(Ljava/lang/Object;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Box",
+          "method": "retrieve",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Box",
+          "method": "isEmpty",
+          "descriptor": "()Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.GenericsKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.GenericsKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Sanduku",
+          "method": "getContent",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Sanduku",
+          "method": "setContent",
+          "descriptor": "(Ljava/lang/Object;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Sanduku",
+          "method": "put",
+          "descriptor": "(Ljava/lang/Object;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Sanduku",
+          "method": "retrieve",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "generics.Sanduku",
+          "method": "isEmpty",
+          "descriptor": "()Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "loops.LoopsKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "loops.LoopsKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "getName",
+          "descriptor": "()Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "getDoors",
+          "descriptor": "()I",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "setDoors",
+          "descriptor": "(I)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "component1",
+          "descriptor": "()Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "component2",
+          "descriptor": "()I",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "copy",
+          "descriptor": "(Ljava/lang/String;I)Lnullability/Car;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "copy$default",
+          "descriptor": "(Lnullability/Car;Ljava/lang/String;IILjava/lang/Object;)Lnullability/Car;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "toString",
+          "descriptor": "()Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "hashCode",
+          "descriptor": "()I",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.Car",
+          "method": "equals",
+          "descriptor": "(Ljava/lang/Object;)Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.NullabilityKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "nullability.NullabilityKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "stdlib.VariablesKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "stdlib.VariablesKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        }
+      ],
+      "abstentions": [
+        {
+          "reason": "NO_SUPPORTED_CALLABLE"
+        }
+      ],
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b"
+    },
+    {
+      "cohortId": 2,
+      "sourceSha": "6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17",
+      "sourceTreeSha": "7081e24fd884b362c32190a033a36c705c4a2175",
+      "originalBlobs": [
+        "375ecead80c7dbfe3445f83eda647c9eb96fcffa",
+        "37845e3c5eccf8fabbf5e3895574344fe2a58d55",
+        "55b308806748b5a4a610813b92fe9eaadeb33af2",
+        "16366d86cb51d5779f1c57cc1ffc5bbb8d63fd6d",
+        "d3e4fa57cec84af1ad40cfa762af87c01646c4ac",
+        "cdbf5eff8e9758088e4aaa0d113d4e0e7ea5d354"
+      ],
+      "originalFiles": 6,
+      "compilationSucceeded": false,
+      "callables": [],
+      "abstentions": [
+        {
+          "reason": "DEPENDENCY_UNRESOLVED",
+          "exitStatus": 1
+        }
+      ]
+    },
+    {
+      "cohortId": 3,
+      "sourceSha": "db06014f811890e97abbdedf22ff6b565e4a3c59",
+      "sourceTreeSha": "1e74700efdf60ede85806c9fc3bd003bf58cf06f",
+      "originalBlobs": [
+        "c65b6c614bceef299e6ffa72d00ac94f50031647",
+        "9f7eefc494debee00fd1d38b7ba08654e2a2e2af",
+        "8268d19bb2f2d07bda4420e41eab980c80c8754a",
+        "34fffb44cc275655ce0a2e8d3e460f5298d698af",
+        "e232ecd7670297486fb394e1521389a50ee45e99",
+        "715ffce4f688b79ef3a5bce167c514d561cdd4cf",
+        "d121d0806d11a15daf5613d3155ddebd97af9d83",
+        "9e536258fda4ccae5e5a61241292bdd8104510a8",
+        "78a1a28bc52c6a6d130636b5278def3ac938ece3",
+        "3685972292e90cd6ad248e54345f50c6e7dcb807",
+        "e4e536f0e91cbf994d163c42811caf102ec03e3c",
+        "a487f8a978659d9e08ff65881aa6098d7b7ec342"
+      ],
+      "originalFiles": 12,
+      "compilationSucceeded": true,
+      "callables": [
+        {
+          "className": "chapter_1.BinarySearchKt",
+          "method": "binarySearch",
+          "descriptor": "(Ljava/util/List;I)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_1.BinarySearchKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_1.BinarySearchKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_2.SelectionSortUsingMutableListKt",
+          "method": "findSmallest",
+          "descriptor": "(Ljava/util/List;)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_2.SelectionSortUsingMutableListKt",
+          "method": "selectionSort",
+          "descriptor": "(Ljava/util/List;)Ljava/util/ArrayList;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_2.SelectionSortUsingMutableListKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_2.SelectionSortUsingMutableListKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_3.RecursionKt",
+          "method": "factorial",
+          "descriptor": "(I)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_3.RecursionKt",
+          "method": "countDown",
+          "descriptor": "(I)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_3.RecursionKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_3.RecursionKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.DevideAndConquerKt",
+          "method": "sumListUsingRecursion",
+          "descriptor": "(Ljava/util/List;)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.DevideAndConquerKt",
+          "method": "countListUsingRecursion",
+          "descriptor": "(Ljava/util/List;)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.DevideAndConquerKt",
+          "method": "maxNumberInList",
+          "descriptor": "(Ljava/util/List;)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.DevideAndConquerKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.DevideAndConquerKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.QuickSortKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_4.QuickSortKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.CheckVotersKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.CheckVotersKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.GetCashedFromServerKt",
+          "method": "getDataFromServer",
+          "descriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.GetCashedFromServerKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.GetCashedFromServerKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.PriceOfGroceriesKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_5.PriceOfGroceriesKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_6.BreadthFirstSearchKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_6.BreadthFirstSearchKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_7.DijkstraSearchAlgorithmKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_7.DijkstraSearchAlgorithmKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_8.GreedyAlgorithmKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_8.GreedyAlgorithmKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_9.LongestCommonSubsequenceKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "chapter_9.LongestCommonSubsequenceKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        }
+      ],
+      "abstentions": [],
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd"
+    },
+    {
+      "cohortId": 4,
+      "sourceSha": "5f81f04de2227b725cbe002af975fefa803d3f87",
+      "sourceTreeSha": "e281837c2fee2356f839db35e21ac990a0cffd28",
+      "originalBlobs": [
+        "fb247ea907685d5d48e9561ef3f70edd3bde743b",
+        "fe917047260e261e416a35799cc2412c570bb6bb",
+        "08a689b5b81bfc0b96a84adfb5efaf40824dd20d",
+        "8c05c83031b1ec16b5ae0a38a0929e4f81f44bf7",
+        "9a0473d94adf509588e7176b09cc8305e3a90cfb",
+        "3044ba01925bf17e3bc4dc13e92a16d5e3fc5185",
+        "a247e06cab90d4f851a01ee8419cc6e68bbf4731",
+        "89fc951e025ad2bdb30b18b23fc9b3af09ab95de",
+        "93756bb05674ba3362e9fd47f558adbf4c441633",
+        "9453e989e3a7b3d745e5fdf1f5d033c1f9dd7f27",
+        "b77c8991a85e7b3020b468efda5427c9dfd0b4c3"
+      ],
+      "originalFiles": 11,
+      "compilationSucceeded": true,
+      "callables": [
+        {
+          "className": "br.com.luislabs.algorithms.recursion.RecursionAlgorithmKt",
+          "method": "fibonacci",
+          "descriptor": "(I)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.search.ClientKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.search.ClientKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.search.SearchAlgorithmKt",
+          "method": "linearSearch",
+          "descriptor": "(Ljava/util/List;Ljava/lang/Object;)Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.search.SearchAlgorithmKt",
+          "method": "binarySearch",
+          "descriptor": "(Ljava/util/List;I)I",
+          "reason": "ADMISSIBLE_ABI_CANDIDATE",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.ClientKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.ClientKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.SortAlgorithmKt",
+          "method": "quickSort",
+          "descriptor": "([III)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.SortAlgorithmKt",
+          "method": "quickSort$default",
+          "descriptor": "([IIIILjava/lang/Object;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.SortAlgorithmKt",
+          "method": "swapArray",
+          "descriptor": "([III)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.algorithms.sort.SortAlgorithmKt",
+          "method": "selectionSort",
+          "descriptor": "(Ljava/util/List;)Ljava/util/List;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "getSize",
+          "descriptor": "()I",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "get",
+          "descriptor": "(I)Ljava/lang/Integer;",
+          "reason": "ABI_UNSUPPORTED_RECEIVER",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "toString",
+          "descriptor": "()Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "get",
+          "descriptor": "(I)Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "indexOf",
+          "descriptor": "(I)I",
+          "reason": "ABI_UNSUPPORTED_RECEIVER",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "indexOf",
+          "descriptor": "(Ljava/lang/Object;)I",
+          "reason": "ABI_UNSUPPORTED_RECEIVER",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "lastIndexOf",
+          "descriptor": "(I)I",
+          "reason": "ABI_UNSUPPORTED_RECEIVER",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "lastIndexOf",
+          "descriptor": "(Ljava/lang/Object;)I",
+          "reason": "ABI_UNSUPPORTED_RECEIVER",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "contains",
+          "descriptor": "(I)Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.Array",
+          "method": "contains",
+          "descriptor": "(Ljava/lang/Object;)Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.ClientKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.arrays.ClientKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.BinaryTree",
+          "method": "getRoot",
+          "descriptor": "()Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.BinaryTree",
+          "method": "setRoot",
+          "descriptor": "(Lbr/com/luislabs/dataStructure/tree/Node;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.BinaryTree",
+          "method": "symmetricTraversal",
+          "descriptor": "(Lbr/com/luislabs/dataStructure/tree/Node;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "CONSTRUCTOR",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.ClientKt",
+          "method": "main",
+          "descriptor": "()V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.ClientKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "getData",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "getLeft",
+          "descriptor": "()Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "setLeft",
+          "descriptor": "(Lbr/com/luislabs/dataStructure/tree/Node;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "getRight",
+          "descriptor": "()Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "setRight",
+          "descriptor": "(Lbr/com/luislabs/dataStructure/tree/Node;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "toString",
+          "descriptor": "()Ljava/lang/String;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "component1",
+          "descriptor": "()Ljava/lang/Object;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "component2",
+          "descriptor": "()Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "component3",
+          "descriptor": "()Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "copy",
+          "descriptor": "(Ljava/lang/Object;Lbr/com/luislabs/dataStructure/tree/Node;Lbr/com/luislabs/dataStructure/tree/Node;)Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "copy$default",
+          "descriptor": "(Lbr/com/luislabs/dataStructure/tree/Node;Ljava/lang/Object;Lbr/com/luislabs/dataStructure/tree/Node;Lbr/com/luislabs/dataStructure/tree/Node;ILjava/lang/Object;)Lbr/com/luislabs/dataStructure/tree/Node;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "hashCode",
+          "descriptor": "()I",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.dataStructure.tree.Node",
+          "method": "equals",
+          "descriptor": "(Ljava/lang/Object;)Z",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "UNSUPPORTED",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.utils.UtilsKt",
+          "method": "printArray",
+          "descriptor": "([I)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.utils.UtilsKt",
+          "method": "printArray",
+          "descriptor": "(Ljava/util/List;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "br.com.luislabs.utils.UtilsKt",
+          "method": "printContent",
+          "descriptor": "([I)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        }
+      ],
+      "abstentions": [],
+      "artifactSha256": "0cea61be7da62b5b9352ca726bec73672b3683a0f2cff80d7f9056d641ae09f1"
+    },
+    {
+      "cohortId": 5,
+      "sourceSha": "045b7bf6eeee434995b2a3fe9013e4c1564327b7",
+      "sourceTreeSha": "06ac1ac4114ae3c752c33e61fa8d6211625f7cc5",
+      "originalBlobs": [
+        "e93eac898b20e0983d9c14ed227e8bf3f947ed38"
+      ],
+      "originalFiles": 1,
+      "compilationSucceeded": true,
+      "callables": [
+        {
+          "className": "MainKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        }
+      ],
+      "abstentions": [
+        {
+          "reason": "NO_SUPPORTED_CALLABLE"
+        }
+      ],
+      "artifactSha256": "7902d13e885f66ddde0b297aaa213ac964248c36ba20c9544c501c1042cadfde"
+    },
+    {
+      "cohortId": 6,
+      "sourceSha": "71ffc18f7c79fe710dc51ba4b58b07e3e81cad74",
+      "sourceTreeSha": "b181956daa66ba54ce32f17f02d4b8e91d9d2df4",
+      "originalBlobs": [
+        "6f6e87b72bdb120b77bcfda8956fd8fa56b9d141"
+      ],
+      "originalFiles": 1,
+      "compilationSucceeded": true,
+      "callables": [
+        {
+          "className": "MainKt",
+          "method": "main",
+          "descriptor": "([Ljava/lang/String;)V",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        },
+        {
+          "className": "MainKt",
+          "method": "quicksort",
+          "descriptor": "(Ljava/util/List;)Ljava/util/List;",
+          "reason": "API_UNSUPPORTED",
+          "receiver": "STATIC",
+          "finiteDomain": "NOT_EVALUATED_BY_ABI",
+          "targetInvoked": false
+        }
+      ],
+      "abstentions": [
+        {
+          "reason": "NO_SUPPORTED_CALLABLE"
+        }
+      ],
+      "artifactSha256": "90b6f0a73610bc268b3901aaeea5c24907ffb6dcd0b4b945a37ca3ebf5cbd6e6"
+    }
+  ],
+  "callableCandidates": 8,
+  "candidateCohorts": 2,
+  "discoveryTechnicallyAdmissible": true,
+  "expectedFunctionalResultsRead": false,
+  "targetInitializersExecuted": false,
+  "targetMethodsInvoked": false,
+  "hunterExecuted": false,
+  "oracleExecuted": false,
+  "finiteDomainsEvaluated": false,
+  "originalFiles": 37,
+  "block26Closed": false,
+  "block27Allowed": false
+}

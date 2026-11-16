@@ -1,0 +1,11 @@
+{
+  "schema": "ultra-sentinel-v6-blind-abi-seal/v1",
+  "admissionSha256": "a872230937e2214e243441c32a23be1f198e12abd30bb9025276300d301ec9bf",
+  "engineSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+  "reservationSha256": "c6df5bf6a90e4bf08f9c08e42d77c08d212e83d7a41515aa6496bf3d6a928c2c",
+  "javaVersion": "openjdk version \"21.0.13\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nOpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)",
+  "nodeVersion": "v22.23.4",
+  "sourceBodiesUsedForSemanticSelection": false,
+  "hunterExecuted": false,
+  "oracleExecuted": false
+}
