@@ -851,49 +851,77 @@
       "repository": "samagra14/aima-kotlin",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "e0f4122c3c1ff848d2a8e69838ed321ff1895e6c",
+      "treeSha": "cb98c0a079002cd74c500cf143115a9c0a2e9762",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 62,
       "repository": "StudyFork/AlgorithmStudy",
       "stars": 5,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "aab9282496fcaf0ca8c6ca713a2f12fcc69a26e2",
+      "treeSha": "3997a558435fa7615ac06b0e2d8ca60a58b877b9",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 63,
       "repository": "vivalerievich/kotgll",
       "stars": 5,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "5b9f3b959af5f361a8078544df631d4a3f5dee28",
+      "treeSha": "4c9b99c7d24eca84692d7023899debebbae3f52b",
+      "kotlinFiles": 72,
+      "sizeBytes": 104559
     },
     {
       "rank": 64,
       "repository": "andre-j3sus/algorithms-and-data-structures",
       "stars": 4,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "901875c8c3ac0ffc7a7fc8a7a61c7fb005dd19a3",
+      "treeSha": "84e8925330c5e75f13eaf320598de08b4c5c89e8",
+      "kotlinFiles": 37,
+      "sizeBytes": 78809
     },
     {
       "rank": 65,
       "repository": "daylee28/leetcode-kotlin",
       "stars": 4,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "79464b56d55fe6717affa3b587af2221b4f8f3d2",
+      "treeSha": "2fc98d079f34012e26ae04e615b4eb299c32f15f",
+      "kotlinFiles": 114,
+      "sizeBytes": 172061
     },
     {
       "rank": 66,
       "repository": "IdeoG/android-floodfill-algorithms",
       "stars": 4,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "d4c373d47947c71584e093bd43f8f57360fb5abc",
+      "treeSha": "aba28dba4715153e06a75b8a8a507fc0dd74de8c",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 67,
       "repository": "jemshit/Algorithms",
       "stars": 4,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "c437baf49b6a145b938ac809ec17d0b36afb7ce0",
+      "treeSha": "f51a8ef6ccab59bcedce7142cc1a2fd710e1e349",
+      "kotlinFiles": 33,
+      "sizeBytes": 52337
     },
     {
       "rank": 68,
