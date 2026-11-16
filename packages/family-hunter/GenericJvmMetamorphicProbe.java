@@ -36,7 +36,7 @@ public final class GenericJvmMetamorphicProbe {
     private static boolean numeric(Class<?> type) {
         return type == byte.class || type == short.class || type == int.class || type == long.class ||
             type == Byte.class || type == Short.class || type == Integer.class || type == Long.class ||
-            type == double.class || type == Double.class;
+            type == double.class || type == Double.class || type == float.class || type == Float.class;
     }
 
     private static Object value(Class<?> type, int variant) {
@@ -50,6 +50,7 @@ public final class GenericJvmMetamorphicProbe {
 
     private static Object anchor(Class<?> type, int anchor) {
         if (type == double.class || type == Double.class) return Double.valueOf(anchor);
+        if (type == float.class || type == Float.class) return Float.valueOf(anchor);
         if (type == byte.class || type == Byte.class) return Byte.valueOf((byte) anchor);
         if (type == short.class || type == Short.class) return Short.valueOf((short) anchor);
         if (type == int.class || type == Integer.class) return Integer.valueOf(anchor);
@@ -72,6 +73,9 @@ public final class GenericJvmMetamorphicProbe {
             if (!varying) return anchor(raw, fixed);
             if (raw == double.class || raw == Double.class) {
                 return new double[][]{{0, 1, Double.MAX_VALUE}, {0, .5, 1}, {-1, 0, 1}}[band][sample];
+            }
+            if (raw == float.class || raw == Float.class) {
+                return new float[][]{{0f, 1f, Float.MAX_VALUE}, {0f, .5f, 1f}, {-1f, 0f, 1f}}[band][sample];
             }
             return value(raw, sample);
         }
@@ -103,6 +107,11 @@ public final class GenericJvmMetamorphicProbe {
                 if (!Double.isFinite(d)) return null;
                 result.successfulInvocations++;
                 return d;
+            }
+            if (value instanceof Float f) {
+                if (!Float.isFinite(f)) return null;
+                result.successfulInvocations++;
+                return Double.valueOf(f.doubleValue());
             }
             if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
                 result.successfulInvocations++;
@@ -153,7 +162,7 @@ public final class GenericJvmMetamorphicProbe {
     private static final class Result {
         final List<String> findings = new ArrayList<>();
         int classes, methods, unsupported, abstained, unloadable, nestedSkipped, invocations;
-        int candidates, completedTriples, successfulInvocations, doubleMethods, structuredMethods, instanceMethods;
+        int candidates, completedTriples, successfulInvocations, doubleMethods, floatMethods, structuredMethods, instanceMethods;
         int comparableClasses, comparablePairs, comparableTriples, constructorAbstentions;
 
         String json(String artifactSha) {
@@ -165,6 +174,7 @@ public final class GenericJvmMetamorphicProbe {
                 ",\"classesInspected\":" + classes + ",\"methodsProbed\":" + methods +
                 ",\"methodCandidates\":" + candidates + ",\"completedTriples\":" + completedTriples +
                 ",\"successfulInvocations\":" + successfulInvocations + ",\"doubleMethodsExercised\":" + doubleMethods +
+                ",\"floatMethodsExercised\":" + floatMethods +
                 ",\"structuredMethodsExercised\":" + structuredMethods + ",\"instanceMethodsExercised\":" + instanceMethods +
                 ",\"unsupportedMethods\":" + unsupported + ",\"abstainedProbes\":" + abstained +
                 ",\"unloadableClasses\":" + unloadable + ",\"nestedClassesSkipped\":" + nestedSkipped + ",\"findings\":[" +
@@ -187,6 +197,8 @@ public final class GenericJvmMetamorphicProbe {
     private static Object boundary(Class<?> type, int index) {
         if (type == double.class || type == Double.class)
             return new double[]{-Double.MAX_VALUE, -1, -.5, 0, .5, 1, Double.MAX_VALUE, Double.MIN_NORMAL, Double.MIN_VALUE}[index];
+        if (type == float.class || type == Float.class)
+            return new float[]{-Float.MAX_VALUE, -1f, -.5f, 0f, .5f, 1f, Float.MAX_VALUE, Float.MIN_NORMAL, Float.MIN_VALUE}[index];
         if (type == String.class) return new String[]{"", "a", "b", "\ud83d\ude00", "aa", "z", "\uffff"}[index];
         long max = type == byte.class || type == Byte.class ? Byte.MAX_VALUE :
             type == short.class || type == Short.class ? Short.MAX_VALUE :
@@ -313,7 +325,8 @@ public final class GenericJvmMetamorphicProbe {
         Class<?>[] params = method.getParameterTypes();
         Type[] generic = method.getGenericParameterTypes();
         for (int position = 0; position < params.length; position++) {
-            int bands = params[position] == double.class || params[position] == Double.class ? 3 :
+            int bands = params[position] == double.class || params[position] == Double.class ||
+                params[position] == float.class || params[position] == Float.class ? 3 :
                 (numeric(params[position]) ? 1 : 2);
             for (int band = 0; band < bands; band++) {
                 for (int fixed : params.length == 1 ? new int[]{1} : new int[]{1, 100}) {
@@ -419,6 +432,9 @@ public final class GenericJvmMetamorphicProbe {
                 if (!Modifier.isStatic(method.getModifiers())) result.instanceMethods++;
                 if (method.getReturnType() == double.class || method.getReturnType() == Double.class ||
                     Arrays.stream(params).anyMatch(p -> p == double.class || p == Double.class)) result.doubleMethods++;
+                if (method.getReturnType() == float.class || method.getReturnType() == Float.class ||
+                    Arrays.stream(params).anyMatch(p -> p == float.class || p == Float.class ||
+                        (p.isArray() && p.getComponentType() == float.class))) result.floatMethods++;
                 if (Arrays.stream(params).anyMatch(p -> !numeric(p))) result.structuredMethods++;
             }
         }
