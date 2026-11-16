@@ -655,21 +655,33 @@
       "repository": "SmartToolFactory/DataStructuresAndAlgorithmsPlayground",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "e66e0c4d27b9eec5b6c0783c18ea307e5123afd1",
+      "treeSha": "e7afaa921fa62d0de18f66b9064f20c19dea077d",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 50,
       "repository": "vladmelnyk/coinselection",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "TOO_MANY_SOURCE_FILES",
+      "commitSha": "32208af4829d1c96c04d166e746bc828dce68c8c",
+      "treeSha": "5d60d4875fe5331d16799502cdd43d5b5f801aa4",
+      "kotlinFiles": 16,
+      "sizeBytes": 15575
     },
     {
       "rank": 51,
       "repository": "YAPP-Github/21st-Study-Algorithm-2",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "d374c0d29f30405e6135f9ab68f7b1c0797f0732",
+      "treeSha": "d353f3f54ecd100f31661a1fc7374f74b285daed",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 52,
