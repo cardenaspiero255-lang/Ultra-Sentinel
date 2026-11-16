@@ -54,3 +54,21 @@ test('v3: object only evidence requires observed object-contract pair counts',()
  assert.throws(()=>seal(manifest,[entry({...base,objectContractPairs:0})],[]),
   'a status claiming tested methods or pairs cannot be accepted when every count is zero');
 });
+
+test('v3: oracle bytes are authenticated and staged without executing them',()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {spawnSync}=require('node:child_process'),crypto=require('node:crypto');
+ const root=path.resolve(__dirname,'../..');
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-v3-oracle-'));
+ try{
+  const manifest=path.join(root,'docs/quality/PHASE2-BLOCK26-V3-COHORT.json');
+  const out=path.join(temp,'staging');
+  fs.mkdirSync(out);
+  const script=path.join(root,'scripts/phase2-kotlin-api-v2-eval.cjs');
+  const run=spawnSync(process.execPath,[script,'oracle-input',manifest,'1',out],{encoding:'utf8',timeout:10000});
+  assert.equal(run.status,0,run.stderr);
+  const bytes=fs.readFileSync(path.join(out,'oracle/IndependentArithmeticOracle.kt'));
+  const expected=JSON.parse(fs.readFileSync(manifest)).oracles[0].sha256;
+  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),expected);
+ }finally{fs.rmSync(temp,{recursive:true,force:true});}
+});
