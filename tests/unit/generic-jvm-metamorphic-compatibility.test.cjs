@@ -16,6 +16,14 @@ function source(name,pkg,body){
  fs.writeFileSync(file,(pkg?'package '+pkg+';\n':'')+'public class '+name+' {\n'+body+'\n}\n');
  files.push(file);
 }
+source('FloatApis','sample.floats',`
+ public static float finitePeak(float x){return x==1f?10f:0f;}
+ public static Float boxedPeak(Float x){return x==.5f?20f:0f;}
+ public static float arrayPeak(float[] xs){return xs.length==1?30f:0f;}
+ public static float listPeak(java.util.List<Float> xs){return xs.size()==1?40f:0f;}
+ public static float monotonic(float x){return x;}
+ public static float nonfinite(float x){return Float.NaN;}
+`);
 source('Floating','sample.floating',`
  public static double fractional(double x){return x*(1.0-x);}
  public static Double boxed(Double x){return x*(1.0-x);}
@@ -96,6 +104,22 @@ test.after(()=>fs.rmSync(temp,{recursive:true,force:true}));
 function probe(prefix){return run('java',['-Xmx128m','-cp',bin,'GenericJvmMetamorphicProbe',jar,prefix]);}
 function report(prefix){const r=probe(prefix);assert.equal(r.status,0,r.stderr);return JSON.parse(r.stdout);}
 function finds(r,name){return r.findings.filter(f=>f.method?.startsWith(name+'('));}
+
+test('finite primitive and boxed Float APIs and typed Float containers produce bounded hypotheses',()=>{
+ const r=report('sample.floats');
+ for(const name of ['finitePeak','boxedPeak','arrayPeak','listPeak'])
+  assert.ok(finds(r,name).length,name+' must have a finite supported Float witness');
+ assert.equal(r.methodsProbed,5,'nonfinite Float outputs cannot count as exercised');
+ assert.equal(r.structuredMethodsExercised,2);
+ assert.equal(r.floatMethodsExercised,5);
+ assert.ok(r.abstainedProbes>0,'nonfinite Float observations must abstain');
+ for(const name of ['monotonic','nonfinite'])assert.equal(finds(r,name).length,0);
+ for(const f of r.findings){
+  assert.equal(f.status,'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE');
+  assert.ok(f.observed.every(s=>Number.isFinite(Number(s))));
+ }
+ assert.equal(r.oracleVerified,false);assert.equal(r.novelFamilyVerified,false);
+});
 
 test('Double fractional operations and boxing are exercised while integral observations remain exact',()=>{
  const r=report('sample.floating');
