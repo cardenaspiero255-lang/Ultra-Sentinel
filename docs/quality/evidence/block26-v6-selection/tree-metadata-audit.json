@@ -516,28 +516,106 @@
       "repository": "mwshubham/DataStructureAndAlgorithm",
       "stars": 7,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "33c1d514d07dac3c8f4091ab6871eee0148071b0",
+      "treeSha": "e36cc70fd84893539f49e2227e2f839a9260c1af",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 43,
       "repository": "PeopleAndService/AlgorithmStudy",
       "stars": 7,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "7f17aca5163b83644c605993d73ef90e82fc5045",
+      "treeSha": "88f65e4f83ea5fbfc7b2ce92d1a0372769c6013a",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 44,
       "repository": "wp529/SkuAlgorithm",
       "stars": 7,
       "defaultBranch": "main",
-      "status": "UNINSPECTED"
+      "status": "NO_ROOT_PRODUCTION_KOTLIN",
+      "commitSha": "9daa548c51ff0acea74551bfc09587c68cccf949",
+      "treeSha": "abd15f0316f22164014f238dd75e69fbe686dab6",
+      "kotlinFiles": 0,
+      "sizeBytes": 0
     },
     {
       "rank": 45,
       "repository": "Ahmed-Saber-25/grokking_algorithms",
       "stars": 6,
       "defaultBranch": "master",
-      "status": "UNINSPECTED"
+      "status": "RESERVED",
+      "commitSha": "db06014f811890e97abbdedf22ff6b565e4a3c59",
+      "treeSha": "1e74700efdf60ede85806c9fc3bd003bf58cf06f",
+      "kotlinFiles": 12,
+      "sizeBytes": 11134,
+      "files": [
+        {
+          "path": "src/main/kotlin/chapter_1/BinarySearch.kt",
+          "blobSha": "c65b6c614bceef299e6ffa72d00ac94f50031647",
+          "sizeBytes": 621
+        },
+        {
+          "path": "src/main/kotlin/chapter_2/SelectionSortUsingMutableList.kt",
+          "blobSha": "9f7eefc494debee00fd1d38b7ba08654e2a2e2af",
+          "sizeBytes": 704
+        },
+        {
+          "path": "src/main/kotlin/chapter_3/Recursion.kt",
+          "blobSha": "8268d19bb2f2d07bda4420e41eab980c80c8754a",
+          "sizeBytes": 327
+        },
+        {
+          "path": "src/main/kotlin/chapter_4/DevideAndConquer.kt",
+          "blobSha": "34fffb44cc275655ce0a2e8d3e460f5298d698af",
+          "sizeBytes": 805
+        },
+        {
+          "path": "src/main/kotlin/chapter_4/QuickSort.kt",
+          "blobSha": "e232ecd7670297486fb394e1521389a50ee45e99",
+          "sizeBytes": 1062
+        },
+        {
+          "path": "src/main/kotlin/chapter_5/CheckVoters.kt",
+          "blobSha": "715ffce4f688b79ef3a5bce167c514d561cdd4cf",
+          "sizeBytes": 428
+        },
+        {
+          "path": "src/main/kotlin/chapter_5/GetCashedFromServer.kt",
+          "blobSha": "d121d0806d11a15daf5613d3155ddebd97af9d83",
+          "sizeBytes": 627
+        },
+        {
+          "path": "src/main/kotlin/chapter_5/PriceOfGroceries.kt",
+          "blobSha": "9e536258fda4ccae5e5a61241292bdd8104510a8",
+          "sizeBytes": 278
+        },
+        {
+          "path": "src/main/kotlin/chapter_6/BreadthFirstSearch.kt",
+          "blobSha": "78a1a28bc52c6a6d130636b5278def3ac938ece3",
+          "sizeBytes": 1522
+        },
+        {
+          "path": "src/main/kotlin/chapter_7/DijkstraSearchAlgorithm.kt",
+          "blobSha": "3685972292e90cd6ad248e54345f50c6e7dcb807",
+          "sizeBytes": 2382
+        },
+        {
+          "path": "src/main/kotlin/chapter_8/GreedyAlgorithm.kt",
+          "blobSha": "e4e536f0e91cbf994d163c42811caf102ec03e3c",
+          "sizeBytes": 1293
+        },
+        {
+          "path": "src/main/kotlin/chapter_9/LongestCommonSubsequence.kt",
+          "blobSha": "a487f8a978659d9e08ff65881aa6098d7b7ec342",
+          "sizeBytes": 1085
+        }
+      ]
     },
     {
       "rank": 46,
@@ -1002,6 +1080,76 @@
             "path": "src/main/kotlin/gpu/GPU.kt",
             "blobSha": "cdbf5eff8e9758088e4aaa0d113d4e0e7ea5d354",
             "sizeBytes": 23644
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "source": {
+        "repository": "Ahmed-Saber-25/grokking_algorithms",
+        "commitSha": "db06014f811890e97abbdedf22ff6b565e4a3c59",
+        "treeSha": "1e74700efdf60ede85806c9fc3bd003bf58cf06f",
+        "files": [
+          {
+            "path": "src/main/kotlin/chapter_1/BinarySearch.kt",
+            "blobSha": "c65b6c614bceef299e6ffa72d00ac94f50031647",
+            "sizeBytes": 621
+          },
+          {
+            "path": "src/main/kotlin/chapter_2/SelectionSortUsingMutableList.kt",
+            "blobSha": "9f7eefc494debee00fd1d38b7ba08654e2a2e2af",
+            "sizeBytes": 704
+          },
+          {
+            "path": "src/main/kotlin/chapter_3/Recursion.kt",
+            "blobSha": "8268d19bb2f2d07bda4420e41eab980c80c8754a",
+            "sizeBytes": 327
+          },
+          {
+            "path": "src/main/kotlin/chapter_4/DevideAndConquer.kt",
+            "blobSha": "34fffb44cc275655ce0a2e8d3e460f5298d698af",
+            "sizeBytes": 805
+          },
+          {
+            "path": "src/main/kotlin/chapter_4/QuickSort.kt",
+            "blobSha": "e232ecd7670297486fb394e1521389a50ee45e99",
+            "sizeBytes": 1062
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/CheckVoters.kt",
+            "blobSha": "715ffce4f688b79ef3a5bce167c514d561cdd4cf",
+            "sizeBytes": 428
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/GetCashedFromServer.kt",
+            "blobSha": "d121d0806d11a15daf5613d3155ddebd97af9d83",
+            "sizeBytes": 627
+          },
+          {
+            "path": "src/main/kotlin/chapter_5/PriceOfGroceries.kt",
+            "blobSha": "9e536258fda4ccae5e5a61241292bdd8104510a8",
+            "sizeBytes": 278
+          },
+          {
+            "path": "src/main/kotlin/chapter_6/BreadthFirstSearch.kt",
+            "blobSha": "78a1a28bc52c6a6d130636b5278def3ac938ece3",
+            "sizeBytes": 1522
+          },
+          {
+            "path": "src/main/kotlin/chapter_7/DijkstraSearchAlgorithm.kt",
+            "blobSha": "3685972292e90cd6ad248e54345f50c6e7dcb807",
+            "sizeBytes": 2382
+          },
+          {
+            "path": "src/main/kotlin/chapter_8/GreedyAlgorithm.kt",
+            "blobSha": "e4e536f0e91cbf994d163c42811caf102ec03e3c",
+            "sizeBytes": 1293
+          },
+          {
+            "path": "src/main/kotlin/chapter_9/LongestCommonSubsequence.kt",
+            "blobSha": "a487f8a978659d9e08ff65881aa6098d7b7ec342",
+            "sizeBytes": 1085
           }
         ]
       }
