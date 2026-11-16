@@ -69,6 +69,11 @@ public final class GenericJvmMetamorphicProbe {
     }
 
     private static Object argument(Class<?> raw, Type generic, int sample, int fixed, int band, boolean varying) {
+        if (raw == String.class) {
+            if (!varying) return fixed == 100 ? "aa" : "a";
+            // Stable, bounded ASCII strings: length and lexical bands are hypotheses, not ground truth.
+            return new String[][]{{"", "a", "aaa"}, {"a", "aa", "aaa"}}[band][sample];
+        }
         if (numeric(raw)) {
             if (!varying) return anchor(raw, fixed);
             if (raw == double.class || raw == Double.class) {
@@ -467,7 +472,8 @@ public final class GenericJvmMetamorphicProbe {
                         if (first == null || !first.equals(second)) { incomplete = true; break; }
                         observations[sample] = first;
                         Object input = argument(params[position], generic[position], sample, fixed, band, true);
-                        inputs.add(quoted(numeric(params[position]) ? input.toString() :
+                        inputs.add(quoted(numeric(params[position]) || params[position] == String.class ?
+                            input.toString() :
                             "size=" + (band == 0 ? new int[]{0, 1, 3} : new int[]{1, 2, 3})[sample] + ";values=0..size-1"));
                     }
                     if (incomplete) { result.abstained++; continue; }
@@ -550,7 +556,8 @@ public final class GenericJvmMetamorphicProbe {
             boolean supported = Modifier.isPublic(method.getModifiers()) && !method.isSynthetic() &&
                 numeric(method.getReturnType()) && params.length >= 1 && params.length <= 3;
             for (int i = 0; i < params.length && supported; i++)
-                supported = numeric(params[i]) || element(params[i], generic[i]) != null;
+                supported = numeric(params[i]) || params[i] == String.class ||
+                    element(params[i], generic[i]) != null;
             if (!supported) { result.unsupported++; continue; }
             if (++result.candidates > MAX_METHODS) throw new IllegalStateException("METHOD_BUDGET");
             int before = result.completedTriples;
