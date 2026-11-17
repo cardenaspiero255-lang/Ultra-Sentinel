@@ -1,8 +1,10 @@
-name: Ultra Sentinel — v6 independent original contract precommit
+name: Ultra Sentinel — v6 frozen blind discovery after independent contract precommit
 on:
   pull_request:
     paths:
       - docs/quality/PHASE2-BLOCK26-V6-COHORT.json
+      - scripts/phase2-kotlin-api-v6-eval.cjs
+      - tests/fixtures/phase2-kotlin-api-v6/**
       - tests/fixtures/phase2-block26-v6/**
       - tests/unit/phase2-block26-v6-protocol.test.cjs
       - .github/workflows/phase2-block26-v6-prospective.yml
@@ -116,5 +118,251 @@ jobs:
             docs/quality/PHASE2-BLOCK26-V6-COHORT.json
             tests/fixtures/phase2-block26-v6/
             ${{ runner.temp }}/v6-oracle-admissions/
+          retention-days: 90
+          if-no-files-found: error
+  frozen-v6-predictions:
+    needs: independent-v6-compile-precommit
+    if: github.event.repository.id == 1418338512 && github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' && github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact host without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout unchanged frozen v6 engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 0aba994cd371651d605985b659c4b32e5c3f2b15
+          path: frozen-v6-engine
+          persist-credentials: false
+      - name: Checkout reserved original cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: jumaallan/kotlin-data-structures-algorithms
+          ref: 1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout reserved original cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: qwertukg/Barnes-Hut-N-Body
+          ref: 6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout reserved original cohort 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Ahmed-Saber-25/grokking_algorithms
+          ref: db06014f811890e97abbdedf22ff6b565e4a3c59
+          path: originals/source-3
+          persist-credentials: false
+      - name: Checkout reserved original cohort 4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Louiixx-h/algorithms-and-data-structure
+          ref: 5f81f04de2227b725cbe002af975fefa803d3f87
+          path: originals/source-4
+          persist-credentials: false
+      - name: Checkout reserved original cohort 5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: parniyan7/BubbleSortAlgorithmWithKotlin
+          ref: 045b7bf6eeee434995b2a3fe9013e4c1564327b7
+          path: originals/source-5
+          persist-credentials: false
+      - name: Checkout reserved original cohort 6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: parniyan7/QuickSortAlgorithmWithKotlin
+          ref: 71ffc18f7c79fe710dc51ba4b58b07e3e81cad74
+          path: originals/source-6
+          persist-credentials: false
+      - name: Require Bubblewrap, AppArmor and actual cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch SHA256-pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v6"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v6"
+      - name: Authenticate the already sealed blind ABI admission threshold
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+          const m=require('./docs/quality/PHASE2-BLOCK26-V6-COHORT.json');
+          const p='docs/quality/evidence/block26-v6-admission/admission.json';
+          const bytes=fs.readFileSync(p),a=JSON.parse(bytes);
+          assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),m.admission.admissionSha256);
+          assert.equal(a.engineSha,m.engine.commitSha);assert.equal(a.hunterExecuted,false);
+          assert.ok(a.discoveryTechnicallyAdmissible);
+          assert.ok(a.callableCandidates>=m.admission.minimumCallableCandidates);
+          assert.ok(a.candidateCohorts>=m.admission.minimumCohorts);
+          assert.deepEqual(a.cohorts.flatMap(c=>c.originalBlobs),m.cohorts.flatMap(c=>c.source.files.map(f=>f.blobSha)));
+          JS
+      - name: Execute only frozen Hunter and seal all original predictions and abstentions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v6/capture.cjs docs/quality/PHASE2-BLOCK26-V6-COHORT.json "$GITHUB_WORKSPACE/frozen-v6-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v6/kotlinc" "$RUNNER_TEMP/v6-hunter-work" "$RUNNER_TEMP/v6-predictions"
+          node scripts/phase2-kotlin-api-v6-eval.cjs verify docs/quality/PHASE2-BLOCK26-V6-COHORT.json "$RUNNER_TEMP/v6-predictions" "$RUNNER_TEMP/v6-predictions/prediction-seal.json"
+          cat "$RUNNER_TEMP/v6-predictions/prediction-seal.json"
+          node - "$RUNNER_TEMP/v6-predictions" <<'JS'
+          const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+          const dir=process.argv[2],index=JSON.parse(fs.readFileSync(path.join(dir,'index.json')));
+          for(const item of index){
+           if(!/^cohort-[1-6]\/scope-\d{1,2}\/discovery\.json$/.test(item.file))throw Error('V6_REPORT_PATH_REFUSED');
+           const bytes=fs.readFileSync(path.join(dir,item.file));
+           console.log('V6_SEALED_REPORT:'+JSON.stringify({file:item.file,rawOutputBase64:bytes.toString('base64'),sha256:crypto.createHash('sha256').update(bytes).digest('hex')}));
+          }
+          JS
+      - name: Publish sealed original predictions BEFORE independent verdicts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v6-frozen-original-predictions
+          path: ${{ runner.temp }}/v6-predictions
+          retention-days: 90
+          if-no-files-found: error
+  independent-v6-oracle:
+    needs: frozen-v6-predictions
+    if: github.event.repository.id == 1418338512 && github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' && github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact host without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout unchanged frozen v6 engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 0aba994cd371651d605985b659c4b32e5c3f2b15
+          path: frozen-v6-engine
+          persist-credentials: false
+      - name: Checkout reserved original cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: jumaallan/kotlin-data-structures-algorithms
+          ref: 1abc7bc2087e50318e8abb35c6ef2f9d5ad00d38
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout reserved original cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: qwertukg/Barnes-Hut-N-Body
+          ref: 6ee77fc861d7bbdd0f73ce5796f9f10d4d8dee17
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout reserved original cohort 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Ahmed-Saber-25/grokking_algorithms
+          ref: db06014f811890e97abbdedf22ff6b565e4a3c59
+          path: originals/source-3
+          persist-credentials: false
+      - name: Checkout reserved original cohort 4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Louiixx-h/algorithms-and-data-structure
+          ref: 5f81f04de2227b725cbe002af975fefa803d3f87
+          path: originals/source-4
+          persist-credentials: false
+      - name: Checkout reserved original cohort 5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: parniyan7/BubbleSortAlgorithmWithKotlin
+          ref: 045b7bf6eeee434995b2a3fe9013e4c1564327b7
+          path: originals/source-5
+          persist-credentials: false
+      - name: Checkout reserved original cohort 6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: parniyan7/QuickSortAlgorithmWithKotlin
+          ref: 71ffc18f7c79fe710dc51ba4b58b07e3e81cad74
+          path: originals/source-6
+          persist-credentials: false
+      - name: Require Bubblewrap, AppArmor and actual cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch SHA256-pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v6"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v6"
+      - name: Download already published and sealed predictions
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-v6-frozen-original-predictions
+          path: ${{ runner.temp }}/v6-predictions
+      - name: Authenticate prediction seal before any independent oracle executes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-kotlin-api-v6-eval.cjs verify docs/quality/PHASE2-BLOCK26-V6-COHORT.json "$RUNNER_TEMP/v6-predictions" "$RUNNER_TEMP/v6-predictions/prediction-seal.json"
+      - name: Recompile unchanged originals and execute the precommitted independent contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/fixtures/phase2-kotlin-api-v6/run-independent.cjs docs/quality/PHASE2-BLOCK26-V6-COHORT.json "$GITHUB_WORKSPACE/frozen-v6-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v6/kotlinc" "$RUNNER_TEMP/v6-predictions" "$RUNNER_TEMP/v6-oracle-work" "$RUNNER_TEMP/v6-independent"
+          cat "$RUNNER_TEMP/v6-independent/independent-verdict.json"
+          for file in "$RUNNER_TEMP"/v6-independent/oracle-*.json; do cat "$file"; done
+      - name: Publish independent original-source verdict and all scope limits
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v6-independent-original-verdict
+          path: ${{ runner.temp }}/v6-independent
           retention-days: 90
           if-no-files-found: error
