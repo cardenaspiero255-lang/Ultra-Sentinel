@@ -1,0 +1,104 @@
+[
+  {
+    "cohortId": 1,
+    "scope": "conditional",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-0/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "functions",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-1/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "generics",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-2/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "loops",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-3/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "nullability",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-4/discovery.json"
+  },
+  {
+    "cohortId": 1,
+    "scope": "stdlib",
+    "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+    "file": "cohort-1/scope-5/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_1",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-0/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_2",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-1/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_3",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-2/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_4",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-3/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_5",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-4/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_6",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-5/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_7",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-6/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_8",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-7/discovery.json"
+  },
+  {
+    "cohortId": 3,
+    "scope": "chapter_9",
+    "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+    "file": "cohort-3/scope-8/discovery.json"
+  },
+  {
+    "cohortId": 5,
+    "scope": ".",
+    "artifactSha256": "7902d13e885f66ddde0b297aaa213ac964248c36ba20c9544c501c1042cadfde",
+    "file": "cohort-5/scope-0/discovery.json"
+  },
+  {
+    "cohortId": 6,
+    "scope": ".",
+    "artifactSha256": "90b6f0a73610bc268b3901aaeea5c24907ffb6dcd0b4b945a37ca3ebf5cbd6e6",
+    "file": "cohort-6/scope-0/discovery.json"
+  }
+]

@@ -1,0 +1,608 @@
+/input/src/main/kotlin/BarnesHutAlg.kt:1:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.Deferred
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:2:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.Dispatchers
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:3:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.async
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:4:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.coroutineScope
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:5:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.launch
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:6:8: error: unresolved reference 'kotlinx'.
+import kotlinx.coroutines.runBlocking
+       ^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:374:62: error: unresolved reference 'coroutineScope'.
+    private suspend fun computeAccelerations(root: BHTree) = coroutineScope {
+                                                             ^^^^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:382:13: error: unresolved reference 'launch'.
+            launch(Dispatchers.Default) {
+            ^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:382:20: error: unresolved reference 'Dispatchers'.
+            launch(Dispatchers.Default) {
+                   ^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:408:9: error: unresolved reference 'runBlocking'.
+        runBlocking { computeAccelerations(root) }
+        ^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:408:21: error: unresolved reference 'coroutineScope'.
+        runBlocking { computeAccelerations(root) }
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:408:23: error: suspend function 'suspend fun computeAccelerations(root: BHTree): <ERROR TYPE REF: Unresolved name: coroutineScope>' should be called only from a coroutine or another suspend function.
+        runBlocking { computeAccelerations(root) }
+                      ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:426:9: error: unresolved reference 'runBlocking'.
+        runBlocking { computeAccelerations(root) }
+        ^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:426:21: error: unresolved reference 'coroutineScope'.
+        runBlocking { computeAccelerations(root) }
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:426:23: error: suspend function 'suspend fun computeAccelerations(root: BHTree): <ERROR TYPE REF: Unresolved name: coroutineScope>' should be called only from a coroutine or another suspend function.
+        runBlocking { computeAccelerations(root) }
+                      ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:482:46: error: unresolved reference 'runBlocking'.
+                    val victims: List<Int> = runBlocking {
+                                             ^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:483:36: error: none of the following candidates is applicable:
+constructor<E>(p0: Int): ArrayList<E>
+constructor<E>(p0: (MutableCollection<out E!>..Collection<out E!>?)): ArrayList<E>
+                        val jobs = ArrayList<Deferred<MutableList<Int>>>(workers)
+                                   ^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:483:46: error: unresolved reference 'Deferred'.
+                        val jobs = ArrayList<Deferred<MutableList<Int>>>(workers)
+                                             ^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:489:37: error: unresolved reference 'async'.
+                            jobs += async(Dispatchers.Default) {
+                                    ^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:489:43: error: unresolved reference 'Dispatchers'.
+                            jobs += async(Dispatchers.Default) {
+                                          ^^^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:509:25: error: cannot infer type for this parameter. Please specify it explicitly.
+                        buildList { for (d in jobs) addAll(d.await()) }
+                        ^^^^^^^^^
+/input/src/main/kotlin/BarnesHutAlg.kt:509:47: error: method 'iterator()' is ambiguous for this expression. Applicable candidates:
+fun <T> Enumeration<T>.iterator(): Iterator<T>
+fun <T> Iterator<T>.iterator(): Iterator<T>
+fun <K, V> Map<out K, V>.iterator(): Iterator<Map.Entry<K, V>>
+fun <K, V> MutableMap<K, V>.iterator(): MutableIterator<MutableMap.MutableEntry<K, V>>
+fun CharSequence.iterator(): CharIterator
+fun BufferedInputStream.iterator(): ByteIterator
+                        buildList { for (d in jobs) addAll(d.await()) }
+                                              ^^^^
+/input/src/main/kotlin/gpu/GPU.kt:4:12: error: unresolved reference 'lwjgl'.
+import org.lwjgl.glfw.GLFW.*
+           ^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:5:12: error: unresolved reference 'lwjgl'.
+import org.lwjgl.glfw.GLFWErrorCallback
+           ^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:6:12: error: unresolved reference 'lwjgl'.
+import org.lwjgl.opengl.GL
+           ^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:7:12: error: unresolved reference 'lwjgl'.
+import org.lwjgl.opengl.GL46.*
+           ^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:8:12: error: unresolved reference 'lwjgl'.
+import org.lwjgl.system.MemoryUtil.*
+           ^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:155:18: error: unresolved reference 'glCreateShader'.
+    val shader = glCreateShader(GL_COMPUTE_SHADER)
+                 ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:155:33: error: unresolved reference 'GL_COMPUTE_SHADER'.
+    val shader = glCreateShader(GL_COMPUTE_SHADER)
+                                ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:156:5: error: unresolved reference 'glShaderSource'.
+    glShaderSource(shader, src)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:157:5: error: unresolved reference 'glCompileShader'.
+    glCompileShader(shader)
+    ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:158:9: error: unresolved reference 'glGetShaderi'.
+    if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:158:30: error: unresolved reference 'GL_COMPILE_STATUS'.
+    if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
+                             ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:158:52: error: unresolved reference 'GL_TRUE'.
+    if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
+                                                   ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:159:19: error: unresolved reference 'glGetShaderInfoLog'.
+        val log = glGetShaderInfoLog(shader)
+                  ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:160:9: error: unresolved reference 'glDeleteShader'.
+        glDeleteShader(shader)
+        ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:163:16: error: unresolved reference 'glCreateProgram'.
+    val prog = glCreateProgram()
+               ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:164:5: error: unresolved reference 'glAttachShader'.
+    glAttachShader(prog, shader)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:165:5: error: unresolved reference 'glLinkProgram'.
+    glLinkProgram(prog)
+    ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:166:9: error: unresolved reference 'glGetProgrami'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+        ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:166:29: error: unresolved reference 'GL_LINK_STATUS'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+                            ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:166:48: error: unresolved reference 'GL_TRUE'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+                                               ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:167:19: error: unresolved reference 'glGetProgramInfoLog'.
+        val log = glGetProgramInfoLog(prog)
+                  ^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:168:9: error: unresolved reference 'glDeleteProgram'.
+        glDeleteProgram(prog)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:169:9: error: unresolved reference 'glDeleteShader'.
+        glDeleteShader(shader)
+        ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:172:5: error: unresolved reference 'glDetachShader'.
+    glDetachShader(prog, shader)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:173:5: error: unresolved reference 'glDeleteShader'.
+    glDeleteShader(shader)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:261:17: error: unresolved reference 'glCreateShader'.
+        val s = glCreateShader(type)
+                ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:262:9: error: unresolved reference 'glShaderSource'.
+        glShaderSource(s, src)
+        ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:263:9: error: unresolved reference 'glCompileShader'.
+        glCompileShader(s)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:264:13: error: unresolved reference 'glGetShaderi'.
+        if (glGetShaderi(s, GL_COMPILE_STATUS) != GL_TRUE) {
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:264:29: error: unresolved reference 'GL_COMPILE_STATUS'.
+        if (glGetShaderi(s, GL_COMPILE_STATUS) != GL_TRUE) {
+                            ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:264:51: error: unresolved reference 'GL_TRUE'.
+        if (glGetShaderi(s, GL_COMPILE_STATUS) != GL_TRUE) {
+                                                  ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:265:23: error: unresolved reference 'glGetShaderInfoLog'.
+            val log = glGetShaderInfoLog(s)
+                      ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:266:13: error: unresolved reference 'glDeleteShader'.
+            glDeleteShader(s)
+            ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:272:24: error: unresolved reference 'GL_VERTEX_SHADER'.
+    val vsId = compile(GL_VERTEX_SHADER, vs)
+                       ^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:273:24: error: unresolved reference 'GL_FRAGMENT_SHADER'.
+    val fsId = compile(GL_FRAGMENT_SHADER, fs)
+                       ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:274:16: error: unresolved reference 'glCreateProgram'.
+    val prog = glCreateProgram()
+               ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:275:5: error: unresolved reference 'glAttachShader'.
+    glAttachShader(prog, vsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:276:5: error: unresolved reference 'glAttachShader'.
+    glAttachShader(prog, fsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:277:5: error: unresolved reference 'glLinkProgram'.
+    glLinkProgram(prog)
+    ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:278:9: error: unresolved reference 'glGetProgrami'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+        ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:278:29: error: unresolved reference 'GL_LINK_STATUS'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+                            ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:278:48: error: unresolved reference 'GL_TRUE'.
+    if (glGetProgrami(prog, GL_LINK_STATUS) != GL_TRUE) {
+                                               ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:279:19: error: unresolved reference 'glGetProgramInfoLog'.
+        val log = glGetProgramInfoLog(prog)
+                  ^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:280:9: error: unresolved reference 'glDeleteProgram'.
+        glDeleteProgram(prog)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:281:9: error: unresolved reference 'glDeleteShader'.
+        glDeleteShader(vsId)
+        ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:282:9: error: unresolved reference 'glDeleteShader'.
+        glDeleteShader(fsId)
+        ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:285:5: error: unresolved reference 'glDetachShader'.
+    glDetachShader(prog, vsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:286:5: error: unresolved reference 'glDetachShader'.
+    glDetachShader(prog, fsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:287:5: error: unresolved reference 'glDeleteShader'.
+    glDeleteShader(vsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:288:5: error: unresolved reference 'glDeleteShader'.
+    glDeleteShader(fsId)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:303:24: error: unresolved reference 'glGenBuffers'.
+    private val ssbo = glGenBuffers()
+                       ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:304:23: error: unresolved reference 'glGenVertexArrays'.
+    private val vao = glGenVertexArrays()
+                      ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:309:28: error: unresolved reference 'glGetUniformLocation'.
+    private val uDt      = glGetUniformLocation(computeProg, "uDt")
+                           ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:310:28: error: unresolved reference 'glGetUniformLocation'.
+    private val uSoft    = glGetUniformLocation(computeProg, "uSoftening")
+                           ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:311:28: error: unresolved reference 'glGetUniformLocation'.
+    private val uG       = glGetUniformLocation(computeProg, "uG")
+                           ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:312:28: error: unresolved reference 'glGetUniformLocation'.
+    private val uCountC  = glGetUniformLocation(computeProg, "uCount")
+                           ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:314:30: error: unresolved reference 'glGetUniformLocation'.
+    private val uViewport  = glGetUniformLocation(renderProg, "uViewport")
+                             ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:315:30: error: unresolved reference 'glGetUniformLocation'.
+    private val uPointBase = glGetUniformLocation(renderProg, "uPointBase")
+                             ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:316:30: error: unresolved reference 'glGetUniformLocation'.
+    private val uMassScale = glGetUniformLocation(renderProg, "uMassScale")
+                             ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:317:30: error: unresolved reference 'glGetUniformLocation'.
+    private val uCamAngle  = glGetUniformLocation(renderProg, "uCamAngle")
+                             ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:318:30: error: unresolved reference 'glGetUniformLocation'.
+    private val uCenter    = glGetUniformLocation(renderProg, "uCenter")
+                             ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:319:29: error: unresolved reference 'glGetUniformLocation'.
+    private val uCamPitch = glGetUniformLocation(renderProg, "uCamPitch")
+                            ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:320:31: error: unresolved reference 'glGetUniformLocation'.
+    private val uSpeedScale = glGetUniformLocation(renderProg, "uSpeedScale")
+                              ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:328:9: error: unresolved reference 'glBindVertexArray'.
+        glBindVertexArray(vao)
+        ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:329:9: error: unresolved reference 'glBindBuffer'.
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:329:22: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:330:9: error: unresolved reference 'glBufferData'.
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 0L, GL_DYNAMIC_DRAW)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:330:22: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 0L, GL_DYNAMIC_DRAW)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:330:52: error: unresolved reference 'GL_DYNAMIC_DRAW'.
+        glBufferData(GL_SHADER_STORAGE_BUFFER, 0L, GL_DYNAMIC_DRAW)
+                                                   ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:331:9: error: unresolved reference 'glBindBuffer'.
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:331:22: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:356:13: error: unresolved reference 'glBindBuffer'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:356:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:357:13: error: unresolved reference 'glBufferData'.
+            glBufferData(GL_SHADER_STORAGE_BUFFER, bytes, GL_DYNAMIC_DRAW)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:357:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBufferData(GL_SHADER_STORAGE_BUFFER, bytes, GL_DYNAMIC_DRAW)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:357:59: error: unresolved reference 'GL_DYNAMIC_DRAW'.
+            glBufferData(GL_SHADER_STORAGE_BUFFER, bytes, GL_DYNAMIC_DRAW)
+                                                          ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:358:13: error: unresolved reference 'glBindBuffer'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:358:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:372:19: error: unresolved reference 'memAllocFloat'.
+        val buf = memAllocFloat(n * floatsPerBody)
+                  ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:379:13: error: unresolved reference 'glBindBuffer'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:379:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:380:13: error: unresolved reference 'glBufferSubData'.
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf)
+            ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:380:29: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buf)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:381:13: error: unresolved reference 'glBindBuffer'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:381:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:382:21: error: unresolved reference 'memFree'.
+        } finally { memFree(buf) }
+                    ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:392:9: error: unresolved reference 'glMemoryBarrier'.
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:392:25: error: unresolved reference 'GL_SHADER_STORAGE_BARRIER_BIT'.
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:395:19: error: unresolved reference 'memAllocFloat'.
+        val buf = memAllocFloat(totalFloats)
+                  ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:397:13: error: unresolved reference 'glBindBuffer'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:397:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:398:13: error: unresolved reference 'glGetBufferSubData'.
+            glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0L, buf)
+            ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:398:32: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+            glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0L, buf)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:402:29: error: cannot infer type for this parameter. Please specify it explicitly.
+                val x = buf.get(base + 0).toDouble()
+                            ^^^
+/input/src/main/kotlin/gpu/GPU.kt:403:29: error: cannot infer type for this parameter. Please specify it explicitly.
+                val y = buf.get(base + 1).toDouble()
+                            ^^^
+/input/src/main/kotlin/gpu/GPU.kt:404:29: error: cannot infer type for this parameter. Please specify it explicitly.
+                val z = buf.get(base + 2).toDouble()
+                            ^^^
+/input/src/main/kotlin/gpu/GPU.kt:405:29: error: cannot infer type for this parameter. Please specify it explicitly.
+                val m = buf.get(base + 3).toDouble()
+                            ^^^
+/input/src/main/kotlin/gpu/GPU.kt:410:21: error: unresolved reference 'memFree'.
+        } finally { memFree(buf) }
+                    ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:422:9: error: unresolved reference 'glUseProgram'.
+        glUseProgram(computeProg)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:423:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uDt, dt)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:424:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uSoft, softening * softening)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:425:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uG, g)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:426:9: error: unresolved reference 'glUniform1ui'.
+        glUniform1ui(uCountC, count)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:427:9: error: unresolved reference 'glBindBufferBase'.
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
+        ^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:427:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:429:9: error: unresolved reference 'glDispatchCompute'.
+        glDispatchCompute(groups, 1, 1)
+        ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:430:9: error: unresolved reference 'glMemoryBarrier'.
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:430:25: error: unresolved reference 'GL_SHADER_STORAGE_BARRIER_BIT'.
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:431:9: error: unresolved reference 'glUseProgram'.
+        glUseProgram(0)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:444:9: error: unresolved reference 'glUseProgram'.
+        glUseProgram(renderProg)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:445:9: error: unresolved reference 'glBindVertexArray'.
+        glBindVertexArray(vao)
+        ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:446:9: error: unresolved reference 'glBindBufferBase'.
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
+        ^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:446:26: error: unresolved reference 'GL_SHADER_STORAGE_BUFFER'.
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:447:9: error: unresolved reference 'glUniform2f'.
+        glUniform2f(uViewport, viewportW.toFloat(), viewportH.toFloat())
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:448:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uPointBase, Config.POINT_SIZE)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:449:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uMassScale, Config.MASS_POINT_SCALE)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:450:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uCamAngle, camAngle)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:451:9: error: unresolved reference 'glUniform3f'.
+        glUniform3f(uCenter, center[0], center[1], center[2])
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:452:9: error: unresolved reference 'glEnable'.
+        glEnable(GL_PROGRAM_POINT_SIZE)
+        ^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:452:18: error: unresolved reference 'GL_PROGRAM_POINT_SIZE'.
+        glEnable(GL_PROGRAM_POINT_SIZE)
+                 ^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:453:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uCamPitch, 0.2617994f)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:454:9: error: unresolved reference 'glUniform1f'.
+        glUniform1f(uSpeedScale, 1f / 10_000f)
+        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:455:9: error: unresolved reference 'glDrawArrays'.
+        glDrawArrays(GL_POINTS, 0, count)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:455:22: error: unresolved reference 'GL_POINTS'.
+        glDrawArrays(GL_POINTS, 0, count)
+                     ^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:456:9: error: unresolved reference 'glBindVertexArray'.
+        glBindVertexArray(0)
+        ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:457:9: error: unresolved reference 'glUseProgram'.
+        glUseProgram(0)
+        ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:464:9: error: unresolved reference 'glDeleteProgram'.
+        glDeleteProgram(renderProg)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:465:9: error: unresolved reference 'glDeleteProgram'.
+        glDeleteProgram(computeProg)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:466:9: error: unresolved reference 'glDeleteVertexArrays'.
+        glDeleteVertexArrays(vao)
+        ^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:467:9: error: unresolved reference 'glDeleteBuffers'.
+        glDeleteBuffers(ssbo)
+        ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:658:5: error: unresolved reference 'GLFWErrorCallback'.
+    GLFWErrorCallback.createPrint(System.err).set()
+    ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:659:10: error: unresolved reference 'glfwInit'.
+    if (!glfwInit()) error("GLFW init failed")
+         ^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:660:5: error: unresolved reference 'glfwDefaultWindowHints'.
+    glfwDefaultWindowHints()
+    ^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:661:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:661:20: error: unresolved reference 'GLFW_VISIBLE'.
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE)
+                   ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:661:34: error: unresolved reference 'GLFW_TRUE'.
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE)
+                                 ^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:662:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:662:20: error: unresolved reference 'GLFW_CONTEXT_VERSION_MAJOR'.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:663:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:663:20: error: unresolved reference 'GLFW_CONTEXT_VERSION_MINOR'.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:664:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:664:20: error: unresolved reference 'GLFW_OPENGL_PROFILE'.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+                   ^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:664:41: error: unresolved reference 'GLFW_OPENGL_CORE_PROFILE'.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:665:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:665:20: error: unresolved reference 'GLFW_OPENGL_FORWARD_COMPAT'.
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:665:48: error: unresolved reference 'GLFW_TRUE'.
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
+                                               ^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:666:5: error: unresolved reference 'glfwWindowHint'.
+    glfwWindowHint(GLFW_SAMPLES, 0)
+    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:666:20: error: unresolved reference 'GLFW_SAMPLES'.
+    glfwWindowHint(GLFW_SAMPLES, 0)
+                   ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:668:18: error: unresolved reference 'glfwCreateWindow'.
+    val window = glfwCreateWindow(Config.WIDTH, Config.HEIGHT, "GPU N-Body (SSBO render)", 0, 0)
+                 ^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:670:9: error: unresolved reference 'glfwTerminate'.
+        glfwTerminate()
+        ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:673:5: error: unresolved reference 'glfwMakeContextCurrent'.
+    glfwMakeContextCurrent(window)
+    ^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:674:5: error: unresolved reference 'glfwSwapInterval'.
+    glfwSwapInterval(0)
+    ^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:675:5: error: unresolved reference 'GL'.
+    GL.createCapabilities()
+    ^^
+/input/src/main/kotlin/gpu/GPU.kt:686:9: error: unresolved reference 'glfwSetKeyCallback'.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+        ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:686:38: error: cannot infer type for this parameter. Please specify it explicitly.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+                                     ^
+/input/src/main/kotlin/gpu/GPU.kt:686:41: error: cannot infer type for this parameter. Please specify it explicitly.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+                                        ^^^
+/input/src/main/kotlin/gpu/GPU.kt:686:46: error: cannot infer type for this parameter. Please specify it explicitly.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+                                             ^
+/input/src/main/kotlin/gpu/GPU.kt:686:49: error: cannot infer type for this parameter. Please specify it explicitly.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+                                                ^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:686:57: error: cannot infer type for this parameter. Please specify it explicitly.
+        glfwSetKeyCallback(window) { _, key, _, action, _ ->
+                                                        ^
+/input/src/main/kotlin/gpu/GPU.kt:687:27: error: unresolved reference 'GLFW_PRESS'.
+            if (action == GLFW_PRESS) {
+                          ^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:689:21: error: unresolved reference 'GLFW_KEY_ESCAPE'.
+                    GLFW_KEY_ESCAPE -> glfwSetWindowShouldClose(window, true)
+                    ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:689:40: error: unresolved reference 'glfwSetWindowShouldClose'.
+                    GLFW_KEY_ESCAPE -> glfwSetWindowShouldClose(window, true)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:690:21: error: unresolved reference 'GLFW_KEY_SPACE'.
+                    GLFW_KEY_SPACE  -> paused = !paused
+                    ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:695:24: error: unresolved reference 'glfwGetTime'.
+        var lastTime = glfwGetTime()
+                       ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:698:17: error: unresolved reference 'glfwWindowShouldClose'.
+        while (!glfwWindowShouldClose(window)) {
+                ^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:699:13: error: unresolved reference 'glfwPollEvents'.
+            glfwPollEvents()
+            ^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:701:23: error: unresolved reference 'glfwGetTime'.
+            val now = glfwGetTime()
+                      ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:713:13: error: unresolved reference 'glViewport'.
+            glViewport(0, 0, Config.WIDTH, Config.HEIGHT)
+            ^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:714:13: error: unresolved reference 'glClearColor'.
+            glClearColor(bg, bg, bg, 1f)
+            ^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:715:13: error: unresolved reference 'glClear'.
+            glClear(GL_COLOR_BUFFER_BIT)
+            ^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:715:21: error: unresolved reference 'GL_COLOR_BUFFER_BIT'.
+            glClear(GL_COLOR_BUFFER_BIT)
+                    ^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:719:13: error: unresolved reference 'glfwSwapBuffers'.
+            glfwSwapBuffers(window)
+            ^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:722:25: error: unresolved reference 'glfwGetTime'.
+            accTime += (glfwGetTime() - now)
+                        ^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:724:17: error: unresolved reference 'glfwSetWindowTitle'.
+                glfwSetWindowTitle(window, "GPU N-Body (SSBO render)  |  ${frames} FPS  |  N=$N")
+                ^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:731:5: error: unresolved reference 'glfwMakeContextCurrent'.
+    glfwMakeContextCurrent(0)
+    ^^^^^^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:732:5: error: unresolved reference 'glfwDestroyWindow'.
+    glfwDestroyWindow(window)
+    ^^^^^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:733:5: error: unresolved reference 'glfwTerminate'.
+    glfwTerminate()
+    ^^^^^^^^^^^^^
+/input/src/main/kotlin/gpu/GPU.kt:734:5: error: unresolved reference 'glfwSetErrorCallback'.
+    glfwSetErrorCallback(null)?.free()
+    ^^^^^^^^^^^^^^^^^^^^

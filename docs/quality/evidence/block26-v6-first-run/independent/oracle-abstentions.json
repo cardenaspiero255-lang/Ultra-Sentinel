@@ -1,0 +1,18 @@
+[
+  {
+    "cohortId": 1,
+    "reason": "NO_INDEPENDENT_ORACLE_COMMITTED"
+  },
+  {
+    "cohortId": 2,
+    "reason": "NO_INDEPENDENT_ORACLE_COMMITTED"
+  },
+  {
+    "cohortId": 5,
+    "reason": "NO_INDEPENDENT_ORACLE_COMMITTED"
+  },
+  {
+    "cohortId": 6,
+    "reason": "NO_INDEPENDENT_ORACLE_COMMITTED"
+  }
+]
