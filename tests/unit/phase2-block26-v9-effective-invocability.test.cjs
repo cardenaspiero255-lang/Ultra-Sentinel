@@ -77,6 +77,7 @@ test('reject duplicate repo/blob, reordering and incorrect report hashes',()=>{
 test('compilation or sandbox abstention remains zero evidence without inventing probes',()=>{
  const absent=row(1,'fresh/not-built','6',0,0);
  absent.report.probeExecutionSucceeded=false;
+ absent.report.classesInspected=0;
  const detected=row(2,'fresh/supported','7',3,3);
  const report=admitFrozenHunterInvocability(input([absent,detected]));
  assert.equal(report.eligible,false);
