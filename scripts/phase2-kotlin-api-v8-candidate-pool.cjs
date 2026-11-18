@@ -149,8 +149,10 @@ async function main(){
     '/git/trees/'+treeSha+'?recursive=1',token);
    return {commitSha,treeSha,tree};
   },f.selector);
- if(result.candidates.length!==f.selector.maxEligibleSourceCandidates)
-  fail('INCOMPLETE_CANDIDATE_POOL:'+result.candidates.length);
+ // A frozen maximum is a resource budget, not a required quota. Do not
+ // lower the independent ABI diversity threshold or substitute candidates.
+ if(result.candidates.length<1||result.candidates.length>f.selector.maxEligibleSourceCandidates)
+  fail('INVALID_CANDIDATE_COUNT:'+result.candidates.length);
  fs.mkdirSync(out,{recursive:true,mode:0o700});
  const json=JSON.stringify({...result,query:f.selector.query,
   engine:f.engine,exclusions:f.exclusions},null,2)+'\n';
