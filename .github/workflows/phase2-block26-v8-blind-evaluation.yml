@@ -1,0 +1,265 @@
+name: Ultra Sentinel — Block 2.6 v8 three-stage blind original discovery
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v8-blind-evaluation.yml
+      - scripts/phase2-block26-v8-experiment.cjs
+      - scripts/phase2-block26-v8-judge.cjs
+      - tests/unit/phase2-block26-v8-judge.test.cjs
+      - tests/fixtures/phase2-block26-v8/oracle/**
+      - docs/quality/PHASE2-BLOCK26-V8-ORACLE-COMMITMENT.json
+permissions:
+  contents: read
+jobs:
+  compile-independent-oracles-first:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact host head without credential persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable v7 Hunter and networkless launchers
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Checkout immutable original cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: elevenetc/utils-kotlin-math
+          ref: 4587446018dc2893ef8a5a08551e01c0fba0b3bd
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout immutable original cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: kory33/bigmath
+          ref: 45f85b44aa9491323b0eab214e652722c664e180
+          path: originals/source-2
+          persist-credentials: false
+      - name: Require actual AppArmor Bubblewrap and bounded cgroup
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch verified Kotlin 2.0.21 SHA256 before original compilation
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d ' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v8-original"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v8-original"
+      - name: Run full regression tests and authenticate precommitted oracle source
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node --test tests/unit/phase2-block26-v8-judge.test.cjs
+      - name: Compile immutable originals with independent oracle, but DO NOT EXECUTE oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-block26-v8-experiment.cjs preflight "$GITHUB_WORKSPACE/frozen-v7-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v8-original/kotlinc" \
+            "$RUNNER_TEMP/v8-oracle-preflight-work" "$RUNNER_TEMP/v8-oracle-preflight"
+      - name: Upload compile-only proof with no oracle observations
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v8-precommitted-oracle-compile-only
+          path: ${{ runner.temp }}/v8-oracle-preflight/
+          retention-days: 90
+          if-no-files-found: error
+  frozen-hunter-predictions:
+    needs: compile-independent-oracles-first
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact host head without credential persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable v7 Hunter and networkless launchers
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Checkout immutable original cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: elevenetc/utils-kotlin-math
+          ref: 4587446018dc2893ef8a5a08551e01c0fba0b3bd
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout immutable original cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: kory33/bigmath
+          ref: 45f85b44aa9491323b0eab214e652722c664e180
+          path: originals/source-2
+          persist-credentials: false
+      - name: Require actual AppArmor Bubblewrap and bounded cgroup
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch verified Kotlin 2.0.21 SHA256 before original compilation
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d ' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v8-original"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v8-original"
+      - name: Capture original frozen Hunter without mounting oracle source or outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-block26-v8-experiment.cjs capture "$GITHUB_WORKSPACE/frozen-v7-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v8-original/kotlinc" \
+            "$RUNNER_TEMP/v8-capture-work" "$RUNNER_TEMP/v8-predictions"
+          test -s "$RUNNER_TEMP/v8-predictions/prediction-seal.json"
+      - name: Publish sealed predictions before independent oracle job can start
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v8-frozen-predictions
+          path: ${{ runner.temp }}/v8-predictions/
+          retention-days: 90
+          if-no-files-found: error
+  independent-oracles-after-predictions:
+    needs: frozen-hunter-predictions
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact host head without credential persistence
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout immutable v7 Hunter and networkless launchers
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Checkout immutable original cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: elevenetc/utils-kotlin-math
+          ref: 4587446018dc2893ef8a5a08551e01c0fba0b3bd
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout immutable original cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: kory33/bigmath
+          ref: 45f85b44aa9491323b0eab214e652722c664e180
+          path: originals/source-2
+          persist-credentials: false
+      - name: Require actual AppArmor Bubblewrap and bounded cgroup
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch verified Kotlin 2.0.21 SHA256 before original compilation
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d ' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v8-original"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v8-original"
+      - name: Download preceding job's already-published prediction artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-v8-frozen-predictions
+          path: ${{ runner.temp }}/v8-predictions
+      - name: Reauthenticate original prediction seal then run independent oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-block26-v8-experiment.cjs independent "$GITHUB_WORKSPACE/frozen-v7-engine" "$GITHUB_WORKSPACE/originals" "$RUNNER_TEMP/kotlin-v8-original/kotlinc" \
+            "$RUNNER_TEMP/v8-independent-work" "$RUNNER_TEMP/v8-independent" \
+            "$RUNNER_TEMP/v8-predictions"
+          test -s "$RUNNER_TEMP/v8-independent/independent-truth.json"
+          test -s "$RUNNER_TEMP/v8-independent/independent-verdict.json"
+      - name: Publish immutable independent verdict with all abstentions
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v8-independent-verdict
+          path: ${{ runner.temp }}/v8-independent/
+          retention-days: 90
+          if-no-files-found: warn
