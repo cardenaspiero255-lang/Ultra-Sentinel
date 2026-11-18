@@ -324,7 +324,11 @@ test('scalar membership lookup over a fixed collection abstains instead of claim
  ].join('\n'));
  const compile=run('javac',['-d',dest,source]);assert.equal(compile.status,0,compile.stderr);
  const archived=run('jar',['cf',archive,'-C',dest,'.']);assert.equal(archived.status,0,archived.stderr);
- const result=probe(archive,'sample.membership');assert.equal(result.status,0,result.stderr);
+ const v7bin=path.join(temp,'v7-probe-classes');fs.mkdirSync(v7bin);
+ const v7build=run('javac',['-d',v7bin,path.join(root,'packages/family-hunter/v7/GenericJvmMetamorphicProbe.java')]);
+ assert.equal(v7build.status,0,v7build.stderr);
+ const result=run('java',['-Xmx128m','-cp',v7bin,'GenericJvmMetamorphicProbe',archive,'sample.membership']);
+ assert.equal(result.status,0,result.stderr);
  const report=JSON.parse(result.stdout);
  assert.ok(report.methodsProbed>=4,'must still exercise original collection APIs');
  assert.ok(report.completedTriples>=1,'other finite domains remain measurable');
