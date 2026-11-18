@@ -1,0 +1,19 @@
+{
+  "schema": "ultra-sentinel-v10-empty-prospective-metadata-result/v1",
+  "metadataRunId": 44315133684,
+  "metadataRunUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44315133684",
+  "frozenProtocol": "docs/quality/PHASE2-BLOCK26-V10-FREEZE.json",
+  "query": "math language:Kotlin fork:false archived:false stars:2..20",
+  "inspectedMetadataRanksAtMost": 250,
+  "candidateRepositories": 0,
+  "originalBodiesRead": false,
+  "hunterExecuted": false,
+  "oracleExecuted": false,
+  "originalSourceQuarantineUnchanged": true,
+  "priorExcludedRepositories": 176,
+  "priorExcludedOriginalKotlinBlobs": 690,
+  "eligibilityThresholdRetuned": false,
+  "secondIndependentDiscoveryConfirmed": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}
