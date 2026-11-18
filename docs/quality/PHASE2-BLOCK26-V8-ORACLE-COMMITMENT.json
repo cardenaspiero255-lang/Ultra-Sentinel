@@ -1,0 +1,115 @@
+{
+  "schema": "ultra-sentinel-block26-v8-independent-oracle-commitment/v1",
+  "frozenEngine": {
+    "commitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06"
+  },
+  "cohort": {
+    "path": "docs/quality/PHASE2-BLOCK26-V8-COHORT.json",
+    "blobSha": "3de5d2ca9dfb43aaa4b2b243b645bbc5420ad5f3",
+    "originalSources": 13,
+    "originalCohorts": 2
+  },
+  "oracle": {
+    "path": "tests/fixtures/phase2-block26-v8/oracle/IndependentArithmeticOracle.kt",
+    "blobSha": "beda94b8db159a9ba686a4f6ac29e997910aad65",
+    "entrypoint": "oracle.IndependentArithmeticOracleKt",
+    "compileBeforePrediction": true,
+    "executeOnlyAfterPredictionSeal": true,
+    "isolatedRunner": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+    "oracleHasNoAccessToPredictionArtifacts": true
+  },
+  "methodContracts": [
+    {
+      "cohortId": 1,
+      "class": "com.elevenetc.utils.kotlin.math.ElevenMathImpl",
+      "method": "toRadians(float;)float",
+      "defectEligible": true,
+      "inputDegrees": [
+        -100,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        100
+      ],
+      "independentReference": "java.lang.Math.toRadians(degrees.toDouble()).toFloat()",
+      "absTolerance": 0.0001,
+      "nonfinite": "ABSTAIN"
+    },
+    {
+      "cohortId": 1,
+      "class": "com.elevenetc.utils.kotlin.math.ElevenMathImpl",
+      "method": "round(float;int;)float",
+      "defectEligible": true,
+      "values": [
+        -2.23,
+        -1.12,
+        -1,
+        0,
+        1,
+        1.23,
+        2.34,
+        100
+      ],
+      "precision": [
+        0,
+        1,
+        2
+      ],
+      "independentReference": "BigDecimal(decimalFloatString).setScale(precision,HALF_UP).toFloat()",
+      "absTolerance": 0.0001,
+      "excludedInputs": "halfway ties and unsupported precision overflow",
+      "nonfinite": "ABSTAIN"
+    },
+    {
+      "cohortId": 2,
+      "class": "com.github.kory33.bigmath.integer.BigUIntFactoryKt",
+      "method": "access$intFromUHex(java.lang.String;)int",
+      "defectEligible": false,
+      "hexInputs": [
+        "0",
+        "1",
+        "a",
+        "aa",
+        "aaa",
+        "f",
+        "7fffffff",
+        "ffffffff"
+      ],
+      "independentReference": "java.math.BigInteger(hex,16).toInt()",
+      "absTolerance": 0,
+      "reason": "synthetic bridge to private function; no public behavioral defect contract"
+    }
+  ],
+  "hunterScopes": [
+    {
+      "cohortId": 1,
+      "scope": "com.elevenetc.utils.kotlin.math"
+    },
+    {
+      "cohortId": 2,
+      "scope": "com.github.kory33.bigmath.integer"
+    }
+  ],
+  "protocol": {
+    "oracleSourceCommittedBeforeHunter": true,
+    "compiledOracleMustNotExecuteBeforeHunter": true,
+    "captureCannotReadOracleOrSourceContract": true,
+    "predictionArtifactSha256Required": true,
+    "independentRunMustFollowPredictionSeal": true,
+    "predictionsCannotBeRetuned": true,
+    "confirmationRequiresExactMethodClassAndWitnessAndIndependentContract": true,
+    "contractToleranceMustNotBeChangedAfterPrediction": true,
+    "originalSourceBodiesUnmodified": true
+  },
+  "state": {
+    "oracleExecuted": false,
+    "hunterExecuted": false,
+    "predictionsSealed": false,
+    "confirmedDistinctOriginalDefects": null,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}
