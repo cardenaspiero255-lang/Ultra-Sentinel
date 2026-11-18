@@ -32,12 +32,13 @@ function validateRecord(r){
  }
  if(total>196608||r.source.totalBytes!==total)fail('SOURCE_INTEGRITY');
  const c=r.report;
- if(!c||c.probeExecutionSucceeded!==true||c.originalSourceAuthenticated!==true||
+ if(!c||typeof c.probeExecutionSucceeded!=='boolean'||c.originalSourceAuthenticated!==true||
   c.oracleExecuted!==false||c.hunterRetuned!==false)fail('COUNTER_INTEGRITY');
  const fields=['classesInspected','methodCandidates','methodsProbed','completedTriples','successfulInvocations'];
  for(const field of fields)if(!Number.isSafeInteger(c[field])||c[field]<0||c[field]>250000)
   fail('COUNTER_INTEGRITY');
- if(c.methodsProbed>c.methodCandidates||c.methodsProbed>c.completedTriples||
+ if((c.probeExecutionSucceeded===false&&fields.some(field=>c[field]!==0))||
+  c.methodsProbed>c.methodCandidates||c.methodsProbed>c.completedTriples||
   c.successfulInvocations<c.completedTriples*6||
   (c.methodsProbed>0&&c.successfulInvocations<6)||c.completedTriples>80000)
   fail('COUNTER_INTEGRITY');
