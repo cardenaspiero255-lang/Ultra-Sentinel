@@ -1,0 +1,178 @@
+{
+  "schema": "ultra-sentinel-v11-effective-invocability-admission/v1",
+  "engineSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+  "originalMetadataPoolSha256": "6f894f51f2b657d3be139abca683878deeb2bbf3620d6cfa8b76f846f6b15f24",
+  "sealedCounterSha256": "6da1ab63bc33f5c770bdc71b526ddf3157b7d53255152d144e53338fa985bb13",
+  "allFullHunterPredictionsUploadedBeforeAdmission": true,
+  "resultsMadeWithoutOracleOrFunctionalLabel": true,
+  "originalKotlinFilesExposed": 39,
+  "eligible": true,
+  "reason": null,
+  "frozenEngineCommit": "689583c23277807345edb715d8c2d277a3d4bda7",
+  "frozenEngineBlob": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+  "frozenThreshold": {
+    "minimumProbedMethods": 3,
+    "minimumIndependentRepositories": 2,
+    "minimumCompletedTriplesPerRepository": 1,
+    "minimumSuccessfulInvocationsPerRepository": 6
+  },
+  "probedMethods": 4,
+  "successfulInvocations": 192,
+  "independentProbedRepositories": 2,
+  "selected": [
+    {
+      "rank": 276,
+      "source": {
+        "repository": "runetopic/cryptography",
+        "commitSha": "26094b76f87acb7692eeaaa10df51f1c6f3542ac",
+        "treeSha": "6aa9727306c703e98cbaa8dd6000d30e31115022",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/Algorithm.kt",
+            "blobSha": "d11a6456c1a0757887e6ec1714601f0411d7a279",
+            "sizeBytes": 158
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/Extension.kt",
+            "blobSha": "9219f86d5d160a3093bf89d73f32541c9850bff4",
+            "sizeBytes": 2226
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/huffman/Huffman.kt",
+            "blobSha": "ec0531f6fc6ea100edc4d771851e1765ca31a551",
+            "sizeBytes": 7569
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/huffman/HuffmanAlgorithm.kt",
+            "blobSha": "a7ca08d45c2da20888ebb5f0f1cdd00e7c13f230",
+            "sizeBytes": 207
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/huffman/HuffmanInput.kt",
+            "blobSha": "65a7b13a038c3711cfb6f84da7aec77509334e3f",
+            "sizeBytes": 606
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/isaac/ISAAC.kt",
+            "blobSha": "58cdd1b07c6f738ea303d92376fb63351f94094f",
+            "sizeBytes": 3291
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/isaac/ISAACAlgorithm.kt",
+            "blobSha": "ab732a0ba1081d62ff0314c8f6989adb1e11a82c",
+            "sizeBytes": 236
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/whirlpool/Whirlpool.kt",
+            "blobSha": "fa8235045da3576e47981afa7a0d1c5b8faf9339",
+            "sizeBytes": 4563
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/whirlpool/WhirlpoolAlgorithm.kt",
+            "blobSha": "bf65a1afc051be3d266adbf5daa0b498434f3381",
+            "sizeBytes": 5018
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/xtea/XTEA.kt",
+            "blobSha": "576e6ce12f0656d1acb16eb407e45a142ac480cc",
+            "sizeBytes": 2648
+          },
+          {
+            "path": "src/main/kotlin/com/runetopic/cryptography/xtea/XTEAAlgorithm.kt",
+            "blobSha": "101f8825ca0fc8cdadfabae2e40ed97d8f359c8f",
+            "sizeBytes": 284
+          }
+        ],
+        "totalBytes": 26806
+      },
+      "probedMethods": 1,
+      "completedTriples": 8,
+      "successfulInvocations": 48,
+      "frozenReportSha256": "931c5cd73eb2d7e63a6ffee709add8208a71ab83d2f0bc4c214598aee284a78e"
+    },
+    {
+      "rank": 280,
+      "source": {
+        "repository": "SebastianAigner/dhash-kotlin",
+        "commitSha": "fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da",
+        "treeSha": "0f6834a083ecef1df6aaa371c67cbd0e728c53fb",
+        "files": [
+          {
+            "path": "src/main/kotlin/App.kt",
+            "blobSha": "137cb3780b5351e26a5003a9f9fa8491eb4b498b",
+            "sizeBytes": 310
+          },
+          {
+            "path": "src/main/kotlin/DHash.kt",
+            "blobSha": "72e2752b37f6e5df38271b24d18e4c2d81b13d9a",
+            "sizeBytes": 973
+          }
+        ],
+        "totalBytes": 1283
+      },
+      "probedMethods": 3,
+      "completedTriples": 24,
+      "successfulInvocations": 144,
+      "frozenReportSha256": "f7a75b1ed6cee5a423c5e2b48d1a3d3b079fa8a445bda02bf1915dab30588720"
+    }
+  ],
+  "allScoutedRepositories": [
+    "hajin-kim/algorithm-leetcode",
+    "hopskipnfall/netcode-lag-simulator",
+    "IanRogers/datomic-kotlin",
+    "innovaTony/algorithms",
+    "pgrzel/Seam-Carving",
+    "runetopic/cryptography",
+    "sabbir044/algorithms-data-structure-kotlin",
+    "SebastianAigner/dhash-kotlin",
+    "shmatozz/Algorithms-Lab-2"
+  ],
+  "allScoutedBlobs": [
+    "f215374a2d10b0a6e04d4e5bc382d334cd81a97c",
+    "6776efe2ca8d9e5f100e8fc3533f0c19a2e437a9",
+    "5fc69d5bb134151078d35730944cee0e7f9403b0",
+    "46fc9b12adcce3cb254a6356dc1c5224975cf088",
+    "b4d3286bdafdd8f61d40f3c59f8138c2f11ff53d",
+    "d4644bcd891d4fcce8f4db7380a4945383af6a16",
+    "666521e648032981024bcee701b7c7dceda681bc",
+    "44e6f3b703d29df4acac28d0cc49f978eb2d6b9a",
+    "969b00b640fd17ad042ac68bc7ce371b5f6e98a3",
+    "171a52fa5a0298d49c3d87bb14d802316d7b7d26",
+    "5142297e10372319cfddb7894398668825a5c89a",
+    "a7aefae57774928c25d99b6f1a2d4552ef378aad",
+    "fb59e664a0682618708da936c5da300c9570c412",
+    "70e5d46b33db1394611baaa331d9e350252b4560",
+    "754886f9a687f01403c0f1a8836201d765dfc3a8",
+    "3adbfb27bb58a485d028b3ddf6207a9b7e341e48",
+    "8bda8c50969d36cd433f71a5453cf8adf674f9c1",
+    "d11a6456c1a0757887e6ec1714601f0411d7a279",
+    "9219f86d5d160a3093bf89d73f32541c9850bff4",
+    "ec0531f6fc6ea100edc4d771851e1765ca31a551",
+    "a7ca08d45c2da20888ebb5f0f1cdd00e7c13f230",
+    "65a7b13a038c3711cfb6f84da7aec77509334e3f",
+    "58cdd1b07c6f738ea303d92376fb63351f94094f",
+    "ab732a0ba1081d62ff0314c8f6989adb1e11a82c",
+    "fa8235045da3576e47981afa7a0d1c5b8faf9339",
+    "bf65a1afc051be3d266adbf5daa0b498434f3381",
+    "576e6ce12f0656d1acb16eb407e45a142ac480cc",
+    "101f8825ca0fc8cdadfabae2e40ed97d8f359c8f",
+    "ab89e75a3015f8d277f2fde82c0e072c87246eaf",
+    "dba84627dfd948b85b561a703903c7f89069a34a",
+    "578bf975e2a0f1dfaf1633567c94dc8727ca10f8",
+    "137cb3780b5351e26a5003a9f9fa8491eb4b498b",
+    "72e2752b37f6e5df38271b24d18e4c2d81b13d9a",
+    "01345b719b865888a504581b21302c39d8eb1796",
+    "923818b6d92b6dbb4fc57251384e4123c40062d9",
+    "43c098490e3f40477fc3954b99244ace681b2d7e",
+    "bb8f4bfc64b92dc76ddebc2865a330e7cc7b1f10",
+    "c48ba39eb3244539165c52ee0d09637f77aef7ee",
+    "e7b06c37cfb1e331b9aefbaf8384c2d227621c48"
+  ],
+  "fullPredictionsMustRemainSealed": true,
+  "originalSourcesNowExposed": true,
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block26Closed": false,
+  "block27Allowed": false,
+  "confirmedNewDefects": null
+}

@@ -1,0 +1,100 @@
+{
+  "schema": "ultra-sentinel-block26-v11-prospective-invocability-freeze/v1",
+  "engine": {
+    "sourceCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "modulePath": "packages/family-hunter/v7/GenericJvmMetamorphicProbe.java",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "mutable": false
+  },
+  "gate": {
+    "path": "packages/quality-gates/v11-effective-invocability.cjs",
+    "blobSha": "da0b5f67524389065ef094970c3735418f6fb5a9"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V11-EXCLUSIONS.json",
+    "blobSha": "3c0554065eb41c70c3e697a940eb2156189b5663",
+    "repositories": 176,
+    "blobs": 690
+  },
+  "reusedModules": [
+    {
+      "path": "scripts/phase2-kotlin-api-v11-metadata.cjs",
+      "blobSha": "89474c8a0ab87545e2ab95309bb62b3e57c74d91"
+    },
+    {
+      "path": "scripts/phase2-kotlin-api-v11-scout.cjs",
+      "blobSha": "ecf38173c3dfd368da96cdda517eb362ad678a35"
+    },
+    {
+      "path": "scripts/phase2-kotlin-api-v8-candidate-pool.cjs",
+      "blobSha": "45a7d53420172c337fcac42766a145125eb85ef3"
+    },
+    {
+      "path": "scripts/phase2-kotlin-api-v7-select.cjs",
+      "blobSha": "c8c2ab0bafe865804394e017297fa462cdbe664a"
+    },
+    {
+      "path": "scripts/phase2-block26-object-eval.cjs",
+      "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+    },
+    {
+      "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+      "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+    },
+    {
+      "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+      "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+    },
+    {
+      "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+      "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+    }
+  ],
+  "selector": {
+    "query": "algorithm language:Kotlin fork:false archived:false stars:2..50",
+    "searchPages": 3,
+    "searchPageSize": 100,
+    "ranking": "stars-desc,case-insensitive-repository-asc",
+    "maxEligibleSourceCandidates": 12,
+    "maxExaminedMetadataRepositories": 300,
+    "maxRepoSizeKb": 8192,
+    "maxMainKotlinFiles": 12,
+    "maxMainKotlinBytes": 196608,
+    "threshold": {
+      "minimumProbedMethods": 3,
+      "minimumIndependentRepositories": 2,
+      "minimumCompletedTriplesPerRepository": 1,
+      "minimumSuccessfulInvocationsPerRepository": 6
+    },
+    "candidateSourceOnlyGitMetadata": true,
+    "immutableCandidatePoolBeforeCompilation": true,
+    "allCandidateOutputsSealedBeforeSelection": true,
+    "selectorSeesOnlyAuthenticatedCounters": true,
+    "allInspectedOriginalsExposedEvenIfRejected": true,
+    "noRetuneOrSubstitutionAfterResults": true,
+    "oracleInputsOrExpectedTruthForbidden": true,
+    "exactFrozenHunterRequired": true,
+    "realNetworklessBubblewrapAppArmorCgroupRequired": true,
+    "fixedKotlinCompiler": "2.0.21",
+    "fixedJDK": "21"
+  },
+  "historical": {
+    "v9RunId": 44313414266,
+    "v9Outcome": "INCOMPLETE_ORIGINAL_PROVENANCE",
+    "v10RunId": 44315133684,
+    "v10Outcome": "EMPTY_METADATA_POOL_NO_SOURCE_READ",
+    "excludedRepositories": 176,
+    "excludedOriginalKotlinBlobs": 690,
+    "frozenHistoricalReportsUnmodified": true
+  },
+  "current": {
+    "newSourceMetadataQueried": false,
+    "newSourceBodiesRead": false,
+    "frozenHunterExecuted": false,
+    "newPredictionsSealed": false,
+    "oracleExecuted": false,
+    "confirmedNewDefects": null,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}
