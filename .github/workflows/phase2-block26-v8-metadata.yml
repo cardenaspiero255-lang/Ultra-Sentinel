@@ -40,7 +40,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          node scripts/phase2-kotlin-api-v8-candidate-pool.cjs "$RUNNER_TEMP/v8-metadata-only"
+          if test -f docs/quality/PHASE2-BLOCK26-V8-POOL-SEAL.json; then
+            # First prospective selection is already SHA-sealed. Never rerank.
+            node --test tests/unit/phase2-block26-v8-pool-seal.test.cjs
+            mkdir -p "$RUNNER_TEMP/v8-metadata-only"
+            cp docs/quality/PHASE2-BLOCK26-V8-POOL.json "$RUNNER_TEMP/v8-metadata-only/v8-metadata-candidates.json"
+            echo "V8_METADATA_SEALED_POOL_REPLAY_ONLY"
+          else
+            node scripts/phase2-kotlin-api-v8-candidate-pool.cjs "$RUNNER_TEMP/v8-metadata-only"
+          fi
           test -s "$RUNNER_TEMP/v8-metadata-only/v8-metadata-candidates.json"
       - name: Preserve raw prospective metadata candidate pool for integrity and independent reproducibility
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
