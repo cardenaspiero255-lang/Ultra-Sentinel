@@ -39,7 +39,15 @@ jobs:
         run: |
           set -euo pipefail
           mkdir "$RUNNER_TEMP/v7-metadata-only"
-          node scripts/phase2-kotlin-api-v7-select.cjs "$RUNNER_TEMP/v7-metadata-only"
+          # Once committed, use the exact sealed reservation; never search
+          # for a replacement cohort or rerank known source identities.
+          if test -f docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json; then
+            test "$(sha256sum docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json | cut -d' ' -f1)" = 11e53fe012cff24a594db6c47412495e5de43b587b598a93c6c7c6c86b56411c
+            cp docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json "$RUNNER_TEMP/v7-metadata-only/metadata-reservation.json"
+            echo "V7_PROSPECTIVE_RESERVATION_REPLAY_ONLY"
+          else
+            node scripts/phase2-kotlin-api-v7-select.cjs "$RUNNER_TEMP/v7-metadata-only"
+          fi
           test -s "$RUNNER_TEMP/v7-metadata-only/metadata-reservation.json"
       - name: Retain exact metadata-only reservation output without changing original sources
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
