@@ -1,0 +1,179 @@
+name: Ultra Sentinel — Block 2.6 v9 frozen Hunter effective invocability admission
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v9-scout.yml
+      - docs/quality/PHASE2-BLOCK26-V9-POOL.json
+      - docs/quality/PHASE2-BLOCK26-V9-POOL-SEAL.json
+      - docs/quality/PHASE2-BLOCK26-V9-FREEZE.json
+      - tests/unit/phase2-block26-v9-pool-seal.test.cjs
+      - packages/quality-gates/v9-effective-invocability.cjs
+permissions:
+  contents: read
+jobs:
+  frozen-hunter-original-probes:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Checkout prospective frozen protocol without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout original immutable Hunter engine and launchers
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Verify frozen new admission gate and all original identity reservations
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node --test tests/unit/phase2-block26-v9-pool-seal.test.cjs tests/unit/phase2-block26-v9-prospective-freeze.test.cjs tests/unit/phase2-block26-v9-effective-invocability.test.cjs
+          node --check scripts/phase2-kotlin-api-v9-scout.cjs
+      - name: Establish real kernel isolation and validate adversarial isolation gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Download authenticated Kotlin 2.0.21 compiler without exposing token to original code
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v9"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v9"
+      - name: Execute unchanged Hunter on ALL pinned originals in networkless sandbox, do not read oracles
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${GH_TOKEN:-}"
+          test -z "${GITHUB_TOKEN:-}"
+          node scripts/phase2-kotlin-api-v9-scout.cjs \
+            "$GITHUB_WORKSPACE/frozen-v7-engine" "$RUNNER_TEMP/kotlin-v9/kotlinc" \
+            "$RUNNER_TEMP/v9-executor" "$RUNNER_TEMP/v9-predictions"
+          test -s "$RUNNER_TEMP/v9-predictions/full-prediction-seal.json"
+          test -s "$RUNNER_TEMP/v9-predictions/sealed-counters.json"
+      - name: Upload full immutable original blind predictions BEFORE deciding cohort
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v9-full-frozen-hunter-predictions
+          path: |
+            ${{ runner.temp }}/v9-predictions/full-prediction-seal.json
+            ${{ runner.temp }}/v9-predictions/candidate-*/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Publish only safe invocation COUNTERS for downstream admission, with no findings or functional labels
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v9-sealed-invocation-counters
+          path: ${{ runner.temp }}/v9-predictions/sealed-counters.json
+          if-no-files-found: error
+          retention-days: 90
+  counter-only-admission:
+    needs: frozen-hunter-original-probes
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact frozen protocol without secrets or original repositories
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Download ONLY counters already sealed by earlier Hunter job
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
+        with:
+          name: block26-v9-sealed-invocation-counters
+          path: ${{ runner.temp }}/v9-counters
+      - name: Admit only successfully PROBED methods from at least two independent originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/phase2-block26-v9-effective-invocability.test.cjs
+          mkdir -p "$RUNNER_TEMP/v9-admitted"
+          node - "$RUNNER_TEMP/v9-counters/sealed-counters.json" "$RUNNER_TEMP/v9-admitted" <<'JS'
+          const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+          const {validatePool}=require('./scripts/phase2-kotlin-api-v9-scout.cjs');
+          const {admitFrozenHunterInvocability}=require('./packages/quality-gates/v9-effective-invocability.cjs');
+          const [input,destination]=process.argv.slice(2);
+          const bytes=fs.readFileSync(input);
+          if(bytes.length>1048576)throw Error('V9_COUNTERS_OVERSIZE');
+          const evidence=JSON.parse(bytes);
+          const {f,pool,seal}=validatePool();
+          if(evidence.poolSha256!==seal.poolSha256||
+            evidence.rows.length!==pool.candidates.length)
+            throw Error('V9_SEALED_COUNTERS_SOURCE_MISMATCH');
+          for(let i=0;i<pool.candidates.length;i++){
+            if(JSON.stringify(evidence.rows[i].source)!==JSON.stringify(pool.candidates[i].source)||
+              evidence.rows[i].rank!==pool.candidates[i].rank)
+              throw Error('V9_SOURCE_REPLACEMENT_FORBIDDEN');
+          }
+          const result=admitFrozenHunterInvocability(evidence);
+          if(result.frozenThreshold.minimumProbedMethods!==f.selector.threshold.minimumProbedMethods||
+             result.frozenThreshold.minimumIndependentRepositories!==f.selector.threshold.minimumIndependentRepositories)
+            throw Error('V9_THRESHOLD_CHANGED');
+          const sha=buffer=>crypto.createHash('sha256').update(buffer).digest('hex');
+          const receipt={schema:'ultra-sentinel-v9-prospective-invocation-quorum-result/v1',
+            engineSha:f.engine.sourceCommitSha,
+            originalMetadataPoolSha256:seal.poolSha256,
+            sealedCounterSha256:sha(bytes),
+            allFullHunterPredictionsUploadedBeforeAdmission:true,
+            resultsMadeWithoutOracleOrFunctionalLabel:true,
+            originalKotlinFilesExposed:pool.candidates.reduce((n,x)=>n+x.source.files.length,0),
+            ...result};
+          const doc=JSON.stringify(receipt,null,2)+'\n';
+          fs.writeFileSync(path.join(destination,'admission.json'),doc,{flag:'wx',mode:0o600});
+          fs.writeFileSync(path.join(destination,'admission-seal.json'),
+            JSON.stringify({schema:'ultra-sentinel-v9-admission-seal/v1',
+              receiptSha256:sha(Buffer.from(doc)),counterSha256:sha(bytes),
+              oracleExecuted:false},null,2)+'\n',{flag:'wx',mode:0o600});
+          console.log('V9_EFFECTIVE_ADMISSION_ELIGIBLE='+result.eligible);
+          console.log('V9_EFFECTIVE_METHODS_PROBED='+result.probedMethods);
+          console.log('V9_EFFECTIVE_INDEPENDENT_REPOSITORIES='+result.independentProbedRepositories);
+          console.log('V9_EFFECTIVE_SUCCESSFUL_INVOCATIONS='+result.successfulInvocations);
+          console.log('V9_EFFECTIVE_RECEIPT_SHA256='+sha(Buffer.from(doc)));
+          const base64=Buffer.from(doc).toString('base64');
+          for(let i=0;i<base64.length;i+=3000)
+            console.log('V9_EFFECTIVE_B64_PART_'+Math.floor(i/3000)+'='+base64.slice(i,i+3000));
+          JS
+      - name: Preserve admitted or negative result; never retune using observed output
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v9-effective-method-admission
+          path: ${{ runner.temp }}/v9-admitted/
+          if-no-files-found: error
+          retention-days: 90

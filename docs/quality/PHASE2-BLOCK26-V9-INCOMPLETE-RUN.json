@@ -1,0 +1,58 @@
+{
+  "schema": "ultra-sentinel-v9-original-invocability-blocked-evaluation/v1",
+  "prospectiveFreeze": "docs/quality/PHASE2-BLOCK26-V9-FREEZE.json",
+  "metadataPool": "docs/quality/PHASE2-BLOCK26-V9-POOL.json",
+  "metadataPoolSha256": "fc9660c797de570a3596fb7c80d0cca96f72523bb7317fde5c62b194035faa07",
+  "metadataRunId": 44312166294,
+  "blindScoutingRunId": 44313414266,
+  "failureCode": "BLOCK26_OBJECT_EVIDENCE_REFUSED",
+  "firstThreeOriginals": [
+    {
+      "rank": 115,
+      "repository": "parniyan7/InsertionSortAlgorithmWithKotlin",
+      "compiled": true,
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "successfulInvocations": 0
+    },
+    {
+      "rank": 121,
+      "repository": "SVENTRIPIKAL/Encryption-Decryption",
+      "compiled": true,
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "successfulInvocations": 0
+    },
+    {
+      "rank": 123,
+      "repository": "TimerErTim/Knevo",
+      "compiled": false,
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "successfulInvocations": 0
+    }
+  ],
+  "failureAt": {
+    "rank": 127,
+    "repository": "wolfbeacon/wolfbeacon-hackalist-api",
+    "stage": "original authenticated source preparation",
+    "provenanceGuardRejected": true,
+    "diagnosis": "Suspected mismatch between source tree filtered by metadata and exact Git ls-tree audit; not confirmed",
+    "noAssumedCauseWithoutReproducedGitTree": true
+  },
+  "independentOracleExecuted": false,
+  "validSealedCompletePredictionArtifact": false,
+  "newOriginalDefectsConfirmed": null,
+  "validEffectiveInvocabilityVerdict": false,
+  "thresholdsChanged": false,
+  "frozenHunterChanged": false,
+  "originalCohortReusedForUnknownEvaluation": false,
+  "historicalCohortConsideredExposed": true,
+  "excludedForNextVersion": {
+    "repositories": 176,
+    "originalKotlinBlobs": 690,
+    "path": "docs/quality/PHASE2-BLOCK26-V9-POSTSCOUT-EXCLUSIONS.json"
+  },
+  "block26Closed": false,
+  "block27Allowed": false
+}

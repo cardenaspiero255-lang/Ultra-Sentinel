@@ -1,0 +1,1641 @@
+{
+  "schema": "ultra-sentinel-v9-original-metadata-only-pool/v1",
+  "freezeSchema": "ultra-sentinel-block26-v9-prospective-invocability-freeze/v1",
+  "engine": {
+    "sourceCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "modulePath": "packages/family-hunter/v7/GenericJvmMetamorphicProbe.java",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "mutable": false
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V9-EXCLUSIONS.json",
+    "blobSha": "b87bf627bbb5992e02399b00505ffc24912de9cc",
+    "repositories": 164,
+    "blobs": 615
+  },
+  "query": "algorithm language:Kotlin fork:false archived:false stars:2..20",
+  "candidateCount": 12,
+  "candidates": [
+    {
+      "rank": 115,
+      "source": {
+        "repository": "parniyan7/InsertionSortAlgorithmWithKotlin",
+        "commitSha": "b2dbc4351f7cf954f00fd91c1cb8e95ee61c71b5",
+        "treeSha": "8ab70a35e7fc89b3d413cd0bcf7f0b18d9db040d",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "3b27d81ffd566e3ce67bc70bcd71c27f21844e9b",
+            "sizeBytes": 590
+          }
+        ],
+        "totalBytes": 590
+      }
+    },
+    {
+      "rank": 121,
+      "source": {
+        "repository": "SVENTRIPIKAL/Encryption-Decryption",
+        "commitSha": "e2cee3cd754be1997716cf9c813c382b6f678e8f",
+        "treeSha": "6ba1e05eb0d5a4a523621be6acde46f59ced189c",
+        "files": [
+          {
+            "path": "src/main/kotlin/CONSTANTS.kt",
+            "blobSha": "28dd76abe5562de777346352a95f551f2919a053",
+            "sizeBytes": 795
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "e31e3f9ac292129ec9a7722c94983541118c6e7e",
+            "sizeBytes": 7879
+          }
+        ],
+        "totalBytes": 8674
+      }
+    },
+    {
+      "rank": 123,
+      "source": {
+        "repository": "TimerErTim/Knevo",
+        "commitSha": "f9a9b7f9f8dec95f08f04ca8c852db1871f16ad0",
+        "treeSha": "95f0d30709a634b843d77fc54ec437aa44bccd46",
+        "files": [
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/Environment.kt",
+            "blobSha": "75ec9de87b2a2467510450a0f83cdadfc8108d06",
+            "sizeBytes": 418
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/FitnessFunction.kt",
+            "blobSha": "9f5f718de6594c2fb3cebfb97c08c3d91ba294d7",
+            "sizeBytes": 736
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/Genome.kt",
+            "blobSha": "cf89ed3420b8fb6d0a9e75ccaf8aae11aed9ecd2",
+            "sizeBytes": 1346
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/Population.kt",
+            "blobSha": "19c10ecb2152b84c7a83784315f57a9a82ec7b02",
+            "sizeBytes": 1635
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/activation/Activation.kt",
+            "blobSha": "bb0eaad34074ce0bb4a4ccc4b2067a36eb38ef5c",
+            "sizeBytes": 5920
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/instinct/Instance.kt",
+            "blobSha": "274e6112097da551b39c03ad9e3801fe357ea241",
+            "sizeBytes": 14731
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/instinct/Network.kt",
+            "blobSha": "0a07476bf06f5ca901bb7732929f88ebf480a8d1",
+            "sizeBytes": 23711
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/instinct/Pool.kt",
+            "blobSha": "dc927860619018b93f9285b8c2fd246341a02a3d",
+            "sizeBytes": 14652
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/selection/Selection.kt",
+            "blobSha": "de596c51864c3dbf4ce72cb277fc29db6859d7c3",
+            "sizeBytes": 5160
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/serialization/CheckpointManager.kt",
+            "blobSha": "d440cf76ffca091cb5fcf5ed5338870620d3af5d",
+            "sizeBytes": 3878
+          },
+          {
+            "path": "src/main/kotlin/eu/timerertim/knevo/serialization/Serialization.kt",
+            "blobSha": "71a4f12c7d7daabc5d6b439b2b10dbccc002d7bb",
+            "sizeBytes": 2704
+          }
+        ],
+        "totalBytes": 74891
+      }
+    },
+    {
+      "rank": 127,
+      "source": {
+        "repository": "wolfbeacon/wolfbeacon-hackalist-api",
+        "commitSha": "5b02cb650f5248278c25dd9f2d42f26c857452a3",
+        "treeSha": "c7bea5ceb9afba73ed75945cf20d2ee8e3b3429a",
+        "files": [
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/Application.kt",
+            "blobSha": "0370919e8dcad708c9e5d41fb6183ceccba38d44",
+            "sizeBytes": 346
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/DataMiner.kt",
+            "blobSha": "d95ed9b63f93700602fc53150927874fb8db385c",
+            "sizeBytes": 13874
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/HackalistHackathonController.kt",
+            "blobSha": "c1b6f6480e662f6285e6a3d3a88329d09f2761a9",
+            "sizeBytes": 3444
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/HackalistHackathonService.kt",
+            "blobSha": "426d1e7b70c7d8cea5da39522cb81e824c934b91",
+            "sizeBytes": 343
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/HackalistHackathonServiceImpl.kt",
+            "blobSha": "28b3d300a5e10b9571e084e50ed55db321ba0dbf",
+            "sizeBytes": 1690
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/util/CoordinateComparator.kt",
+            "blobSha": "7b9c599af41e88f4321b187622663de652063798",
+            "sizeBytes": 1480
+          },
+          {
+            "path": "src/main/kotlin/wolfbeacon/hackalist/util/MonthUtils.kt",
+            "blobSha": "c7a03d45451b2cffcb2d75daf2b1046d19a60215",
+            "sizeBytes": 3105
+          }
+        ],
+        "totalBytes": 24282
+      }
+    },
+    {
+      "rank": 135,
+      "source": {
+        "repository": "andre-j3sus/sort-algorithm-visualizer",
+        "commitSha": "51bb0e79435119ea53ab31e8f5cce87a6f7c7222",
+        "treeSha": "dc19000470023f0fc8059f8ff0022d941e3ff031",
+        "files": [
+          {
+            "path": "src/main/kotlin/Array.kt",
+            "blobSha": "a7970a474509ae4a3337ea81a782f67256528b8a",
+            "sizeBytes": 516
+          },
+          {
+            "path": "src/main/kotlin/ArrayPanel.kt",
+            "blobSha": "7b17fc1a93098e432bccdb29ba0e876a443b6930",
+            "sizeBytes": 1098
+          },
+          {
+            "path": "src/main/kotlin/Frame.kt",
+            "blobSha": "1df6d38f69607fad4f10d3b6130ad3e2e46df9d5",
+            "sizeBytes": 3188
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "089e6c47d192468e629c2da87b0221409bb0446f",
+            "sizeBytes": 142
+          },
+          {
+            "path": "src/main/kotlin/Sorting.kt",
+            "blobSha": "907247f8c2d85995fab3ec2ea54419090c08879c",
+            "sizeBytes": 1706
+          },
+          {
+            "path": "src/main/kotlin/Utils.kt",
+            "blobSha": "10b0130641e0085169ca08ed219d91a05d2c92ee",
+            "sizeBytes": 286
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/BubbleSort.kt",
+            "blobSha": "577427b64d14f15d4fbae59f1bc050ba09712681",
+            "sizeBytes": 696
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/HeapSort.kt",
+            "blobSha": "e3f90854a4ac143330ba4d0a962e048ddf70bdd8",
+            "sizeBytes": 1358
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/InsertionSort.kt",
+            "blobSha": "ca59acdcdb8163a2fc604c6d4eddc2234f0875a3",
+            "sizeBytes": 639
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/MergeSort.kt",
+            "blobSha": "4c89e038e365960a681bf532376c60c90fbee08a",
+            "sizeBytes": 1648
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/QuickSort.kt",
+            "blobSha": "a73341e26f70da30f5f8a5fa480734f9d9cebf9c",
+            "sizeBytes": 1151
+          },
+          {
+            "path": "src/main/kotlin/sortingAlgorithms/SelectionSort.kt",
+            "blobSha": "dfe1310556372dafe3082f1afae2d352927f360c",
+            "sizeBytes": 902
+          }
+        ],
+        "totalBytes": 13330
+      }
+    },
+    {
+      "rank": 149,
+      "source": {
+        "repository": "devxzero/phonetic-algorithm-benchmark",
+        "commitSha": "2ac9c2e32fbb91df7f6e9bb633ad21b437372fe5",
+        "treeSha": "f80090b87b6907969f475fe0b0b5e7d1ce0330e0",
+        "files": [
+          {
+            "path": "src/main/kotlin/main.kt",
+            "blobSha": "30fcb88d74cad0279888005744ac2b2af5db9d4e",
+            "sizeBytes": 1903
+          }
+        ],
+        "totalBytes": 1903
+      }
+    },
+    {
+      "rank": 153,
+      "source": {
+        "repository": "e5LA/kotlin-code-collection",
+        "commitSha": "214bc040c52847e9861b2345ccfcdcb356db7b32",
+        "treeSha": "6679781d92834871e03f6e7cf8037796785dc734",
+        "files": [
+          {
+            "path": "src/main/kotlin/codecollection/algorithms/BubbleSort.kt",
+            "blobSha": "ca071b6a4b163c32a56e7a531929812ddf90d0cb",
+            "sizeBytes": 563
+          },
+          {
+            "path": "src/main/kotlin/codecollection/algorithms/InsertionSort.kt",
+            "blobSha": "91d843198a8a69d3de091cbd13aa120604d41c25",
+            "sizeBytes": 411
+          },
+          {
+            "path": "src/main/kotlin/codecollection/algorithms/MergeSort.kt",
+            "blobSha": "277343d8cb9f9a500b6ba73de567b8edeba6b928",
+            "sizeBytes": 726
+          },
+          {
+            "path": "src/main/kotlin/codecollection/algorithms/SelectionSort.kt",
+            "blobSha": "42727fa2d9d64a671f10890f75f05d1b215d9ab5",
+            "sizeBytes": 457
+          },
+          {
+            "path": "src/main/kotlin/codecollection/kotlinfeatures/DataClass.kt",
+            "blobSha": "25730727f30393ca0ff40b607fc641dd3ad8280a",
+            "sizeBytes": 5619
+          },
+          {
+            "path": "src/main/kotlin/codecollection/snippets/numbers/DigitCount.kt",
+            "blobSha": "9e4fb608e7246e488ec1e08f9f35e7330c313d1a",
+            "sizeBytes": 200
+          },
+          {
+            "path": "src/main/kotlin/codecollection/snippets/numbers/IsEven.kt",
+            "blobSha": "5caf5dcbf69a0a33a914a55acb8125232149e0e7",
+            "sizeBytes": 82
+          },
+          {
+            "path": "src/main/kotlin/codecollection/snippets/strings/ConvertToCamelCase.kt",
+            "blobSha": "0535880c4edf264cf17456170b7de6f8fd79b7d2",
+            "sizeBytes": 327
+          },
+          {
+            "path": "src/main/kotlin/codecollection/snippets/strings/ReplaceMultipleSpaces.kt",
+            "blobSha": "8d0828f3b00ea6726164a9192d8977089d869043",
+            "sizeBytes": 130
+          }
+        ],
+        "totalBytes": 8515
+      }
+    },
+    {
+      "rank": 167,
+      "source": {
+        "repository": "Louiixx-h/algorithms",
+        "commitSha": "7e47538900e7d1feebc38975470308584c47ef2a",
+        "treeSha": "898610521b59a1296d1e3af527f49766ac08e2ed",
+        "files": [
+          {
+            "path": "src/main/kotlin/BinarySearch.kt",
+            "blobSha": "0d13f9ae9b023305a186f937fa128863958a9094",
+            "sizeBytes": 723
+          },
+          {
+            "path": "src/main/kotlin/BubbleSort.kt",
+            "blobSha": "f5872231ac5f7202d57429f9c2cf034ed6c8ba13",
+            "sizeBytes": 463
+          },
+          {
+            "path": "src/main/kotlin/Dijkstra.kt",
+            "blobSha": "b7d847c271854bfe7e2c51e10cb09facae4d9d69",
+            "sizeBytes": 1713
+          },
+          {
+            "path": "src/main/kotlin/InsertionSort.kt",
+            "blobSha": "4079164d61ca433accfbca29f2438cd323ca8a3f",
+            "sizeBytes": 447
+          },
+          {
+            "path": "src/main/kotlin/QuickSort.kt",
+            "blobSha": "d6546afd1e917686b9353310594fc09ec40256f7",
+            "sizeBytes": 651
+          },
+          {
+            "path": "src/main/kotlin/SelectionSort.kt",
+            "blobSha": "80b28ce3edb9b212f430965cbcae25a47eb8fd9d",
+            "sizeBytes": 715
+          }
+        ],
+        "totalBytes": 4712
+      }
+    },
+    {
+      "rank": 176,
+      "source": {
+        "repository": "ryanbateman/openrndr-boids",
+        "commitSha": "71eafbfe6d34eac9e14d39111733315170ff7630",
+        "treeSha": "084d4df7dccc7f119b0e8f499cc98dea5d7e441e",
+        "files": [
+          {
+            "path": "src/main/kotlin/boids/Boid.kt",
+            "blobSha": "f914ebc3ddc89b760e6bbb4934f4729f9d73851f",
+            "sizeBytes": 4963
+          },
+          {
+            "path": "src/main/kotlin/boids/Flock.kt",
+            "blobSha": "56afaf21935dfad6d301ae71275ae72e04034f1f",
+            "sizeBytes": 973
+          },
+          {
+            "path": "src/main/kotlin/boids/Floor.kt",
+            "blobSha": "79f8d781445c38b58165ca4ee1a157c3587aaf9b",
+            "sizeBytes": 823
+          },
+          {
+            "path": "src/main/kotlin/boids/Perlin.kt",
+            "blobSha": "15c195e7aa85c6cb8985118de7d0b0a5de263cf3",
+            "sizeBytes": 3084
+          },
+          {
+            "path": "src/main/kotlin/boids/main.kt",
+            "blobSha": "129ebedb9f9914e25e1cad30310e04f4e7b65fc7",
+            "sizeBytes": 544
+          }
+        ],
+        "totalBytes": 10387
+      }
+    },
+    {
+      "rank": 179,
+      "source": {
+        "repository": "ShonenAsh/SortVisualizer",
+        "commitSha": "d230ad60ec3061c13cb559580141b902a1f0a698",
+        "treeSha": "2ce551541a021d2de273cbc51f2c9801ba90f585",
+        "files": [
+          {
+            "path": "src/main/kotlin/sortVisualizer/app/MyApp.kt",
+            "blobSha": "f30cf3b6c81e8e514af385b1639a736663dd5649",
+            "sizeBytes": 828
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/bar/Bar.kt",
+            "blobSha": "42cfea51bf35b0f23a31d7b9900eef07b6d0ade8",
+            "sizeBytes": 506
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/BubbleSort.kt",
+            "blobSha": "a9c53d2ccd61a95fdbb24139ea45c6ec1153a011",
+            "sizeBytes": 1172
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/InsertionSort.kt",
+            "blobSha": "2ac2278fda18e9d37eebbcb764252188404af022",
+            "sizeBytes": 986
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/MergeSort.kt",
+            "blobSha": "dc626f3b3ac145075c28c0eb40b59733beeac28a",
+            "sizeBytes": 2104
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/QuickSort.kt",
+            "blobSha": "b0fef7eb36b945a4e220716edd7e4629230120fe",
+            "sizeBytes": 1346
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/RandomBar.kt",
+            "blobSha": "709fc6eea535a216bbeea5ba73bf155b0487e677",
+            "sizeBytes": 1340
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/utils/SortAbstract.kt",
+            "blobSha": "aff49c199edf4b86af76264db54375b9840b8f72",
+            "sizeBytes": 1767
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/view/MainView.kt",
+            "blobSha": "725871502d8366d6e938da32826841388374e643",
+            "sizeBytes": 3945
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/view/SecondView.kt",
+            "blobSha": "09b1115ebeb11708a53b4302c7f522f33d008bab",
+            "sizeBytes": 2212
+          },
+          {
+            "path": "src/main/kotlin/sortVisualizer/view/WindowDim.kt",
+            "blobSha": "a610cb7717e3101e022cbed93c063fb64cde38d8",
+            "sizeBytes": 184
+          }
+        ],
+        "totalBytes": 16390
+      }
+    },
+    {
+      "rank": 216,
+      "source": {
+        "repository": "E3FxGaming/ExtendedCYK-Algorithm",
+        "commitSha": "292026d34ab9392d662730c4de26b08a93752d53",
+        "treeSha": "826f18ffde5e71acff99efa8d0ac39f535e2da21",
+        "files": [
+          {
+            "path": "src/main/kotlin/org/example/e3fxgaming/wortproblem/ExtendedCYKAlgorithm.kt",
+            "blobSha": "248c0b949c35407ef35ac14c7425af9d03959deb",
+            "sizeBytes": 6400
+          }
+        ],
+        "totalBytes": 6400
+      }
+    },
+    {
+      "rank": 221,
+      "source": {
+        "repository": "FischerAbruzese/Graphs-Algorithms-Visualization",
+        "commitSha": "025547d2c24dff69d1fc9f6c6d79d648fe6deb86",
+        "treeSha": "9a0790f80e39a7f58649fa45a95ea087548dd325",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graph/AMGraph.kt",
+            "blobSha": "fa5902366942fcdfa00bb28f7be160fea6db0880",
+            "sizeBytes": 41667
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graph/FibonacciHeap.kt",
+            "blobSha": "597a0e1a0f760436e3b7c0ceae7e61cf9acb4e4f",
+            "sizeBytes": 6610
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graph/Graph.kt",
+            "blobSha": "dd5555ed05d07751e3097ff643acacf2305175ce",
+            "sizeBytes": 28495
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/CharAdjacencyGraphCreator.kt",
+            "blobSha": "5e22f20662f522c72e38a535f7f002f318f6dbad",
+            "sizeBytes": 1610
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/Controller.kt",
+            "blobSha": "aed183ecb05aa2f7fbc5cd218cc063f2c88c5669",
+            "sizeBytes": 30593
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/GraphApp.kt",
+            "blobSha": "cbd8e2acee91f88c550974240bfbef9508a4f4c4",
+            "sizeBytes": 4300
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/GraphicComponents.kt",
+            "blobSha": "005d9e90ca4c1d309e6a1e9b6ae0a4d78b5a4015",
+            "sizeBytes": 42088
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/Position.kt",
+            "blobSha": "15c3e9d622ba6e914aefd6d226ca99a64b69c1ce",
+            "sizeBytes": 2076
+          },
+          {
+            "path": "src/main/kotlin/com/fischerabruzese/graphsFX/SwitchButton.kt",
+            "blobSha": "25e5cd20c695bc3cb5dc9d1d4bce40203d865ced",
+            "sizeBytes": 2574
+          }
+        ],
+        "totalBytes": 160013
+      }
+    }
+  ],
+  "audit": [
+    {
+      "rank": 1,
+      "repository": "DmitryNekrasov/kodvent",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 2,
+      "repository": "mAlaliSy/AlgoLizer-algorithms-visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 3,
+      "repository": "occidere/leetcode",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 4,
+      "repository": "alexandrepiveteau/kotlin-graphs",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 5,
+      "repository": "ensody/Kompressor",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 6,
+      "repository": "khnychenkoav/KotlinEducational",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 7,
+      "repository": "MartinHaeusler/LSM4K",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 8,
+      "repository": "penemue/keap",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 9,
+      "repository": "esoxjem/Algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 10,
+      "repository": "pranamphd/digipin-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 11,
+      "repository": "aallam/string-similarity-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 12,
+      "repository": "mohammednawas8/Android-Algorithms-Visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 13,
+      "repository": "faniabdullah/dsa-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 14,
+      "repository": "funfunStudy/algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 15,
+      "repository": "palasjir/ct-volumetric-rendering",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 16,
+      "repository": "sumeyraozugur/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 17,
+      "repository": "V9vek/Sorting-Visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 18,
+      "repository": "IbrahimEzzatSaad/MindfulData",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 19,
+      "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 20,
+      "repository": "dlew/wordle-solver",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 21,
+      "repository": "fiskurgit/DitherKt",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 22,
+      "repository": "galangriarulhaq/Kotlin-data-structures-and-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 23,
+      "repository": "MortezaNedaei/Compose-BlurHash",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 24,
+      "repository": "Ankursehrawat15/Realtime-chat-app-based-on-Cryptographic-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 25,
+      "repository": "huodianyan/rokid-imu-motion-recorder",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 26,
+      "repository": "karimelbahi/DataStructure-Algorithms-Kotlin",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 27,
+      "repository": "kodeflap/Algo_Guide",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 28,
+      "repository": "Morfly/kotlin-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 29,
+      "repository": "Tetraquark/MyersDiffKt",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 30,
+      "repository": "abhishek-yadav-random/Pathfinding-visualiser",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 31,
+      "repository": "amirreza-lotfi/GraphAlgorithmApplication",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 32,
+      "repository": "jens-muenker/fuzzywuzzy-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 33,
+      "repository": "JetBrains-Research/hldiff",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 34,
+      "repository": "jumaallan/kotlin-data-structures-algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 35,
+      "repository": "karloti/concurrent-priority-queue",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 36,
+      "repository": "kieubaduong/Boka",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 37,
+      "repository": "amitozs999/Kotlin-Chatting-App",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 38,
+      "repository": "andriiginting/algorithm-practice",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 39,
+      "repository": "elizarov/LogicDerivation",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 40,
+      "repository": "FunkyMuse/Data-structures-and-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 41,
+      "repository": "Lira-tron/KotlinAlgorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 42,
+      "repository": "niiad/hashkt",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 43,
+      "repository": "qwertukg/Barnes-Hut-N-Body",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 44,
+      "repository": "2hyungjin/Algorithm-DataStructure",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 45,
+      "repository": "arpanpathak/AdvancedAlgorithmPatterns",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 46,
+      "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 47,
+      "repository": "GustavoHGAraujo/kotlin-a-star-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 48,
+      "repository": "Hemant-Jain-Author/Data-Structures-and-Algorithms-using-Kotlin",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 49,
+      "repository": "KonstantinLukaschenko/genetic-algorithm-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 50,
+      "repository": "qiaoyuang/Algorithm",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 51,
+      "repository": "ShawxingKwok/Kwok-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 52,
+      "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 53,
+      "repository": "wilder/redwood",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 54,
+      "repository": "ArtanBerisha1/SortingPath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 55,
+      "repository": "BerattCelikk/Odev5",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 56,
+      "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 57,
+      "repository": "dzikoysk/khangul",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 58,
+      "repository": "elye/demo_android_blur_image",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 59,
+      "repository": "jayasuryat/FlockingSimulation",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 60,
+      "repository": "mwshubham/DataStructureAndAlgorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 61,
+      "repository": "PeopleAndService/AlgorithmStudy",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 62,
+      "repository": "wp529/SkuAlgorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 63,
+      "repository": "Ahmed-Saber-25/grokking_algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 64,
+      "repository": "anandwana001/Kotlin-DSA-Projects",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 65,
+      "repository": "andremion/SlidingPuzzle",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 66,
+      "repository": "evaou/kotlin-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 67,
+      "repository": "guttedgarden/Kuznechik",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 68,
+      "repository": "Kotlin-Polytech/Algorithms-2019",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 69,
+      "repository": "Prasanna79/parentapproved",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 70,
+      "repository": "professorDeveloper/Kotlin-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 71,
+      "repository": "qveex/k-means_clustering_image",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 72,
+      "repository": "SmartToolFactory/DataStructuresAndAlgorithmsPlayground",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 73,
+      "repository": "v-pan/rltest",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 74,
+      "repository": "vladmelnyk/coinselection",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 75,
+      "repository": "YAPP-Github/21st-Study-Algorithm-2",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 76,
+      "repository": "Alims-Repo/Prayer-Times-KMM",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 77,
+      "repository": "amindadgar/knapSack-Problem",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 78,
+      "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 79,
+      "repository": "damlacim/HackerRankSolutions",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 80,
+      "repository": "fahime-ghasemi/kotlin-algorithms-interview",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 81,
+      "repository": "GregHib/game-playground",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 82,
+      "repository": "h0tk3y/geometry",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 83,
+      "repository": "hartwigmedical/actin",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 84,
+      "repository": "hasanelfalakiy/lib-ephemeris-jeanmeeus",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 85,
+      "repository": "IronSentinel1/Pong-Remake",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 86,
+      "repository": "juliaschatz/kt_path_controllers",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 87,
+      "repository": "KhaledSherifSayed/Algorithms",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 88,
+      "repository": "Louiixx-h/algorithms-and-data-structure",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 89,
+      "repository": "milos85vasic/Fundamental-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 90,
+      "repository": "Nexters/Algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 91,
+      "repository": "overfullstack/ds-algo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 92,
+      "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 93,
+      "repository": "RustamKZ/recfi_ap",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 94,
+      "repository": "saechimdaeki/Solving-ALGORITHM",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 95,
+      "repository": "sagar-viradiya/DS-Algo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 96,
+      "repository": "samagra14/aima-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 97,
+      "repository": "StudyFork/AlgorithmStudy",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 98,
+      "repository": "umangjpatel/KotlinDSA",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 99,
+      "repository": "vivalerievich/kotgll",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 100,
+      "repository": "w4v3/hypercampus",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 101,
+      "repository": "XingZhe-Li/AntiBrainRot",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 102,
+      "repository": "abhishek-yadav-random/Markov-Chain-Visualiser",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 103,
+      "repository": "Anass001/GraphSimulatorCompose",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 104,
+      "repository": "andre-j3sus/algorithms-and-data-structures",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 105,
+      "repository": "ayushvatsal/NewsVert",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 106,
+      "repository": "daylee28/leetcode-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 107,
+      "repository": "DicioTeam/dicio-evaluation",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 108,
+      "repository": "giuseppe16180/kotlin-coding-theory",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 109,
+      "repository": "iampawan/KotlinSamples",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 110,
+      "repository": "IdeoG/android-floodfill-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 111,
+      "repository": "Judas/Glickotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 112,
+      "repository": "Kotlin-Polytech/Algorithms-2020",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 113,
+      "repository": "masse/collage-solver",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 114,
+      "repository": "mehditeymorian/Othello-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 115,
+      "repository": "parniyan7/InsertionSortAlgorithmWithKotlin",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 116,
+      "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 117,
+      "repository": "phase/f2",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 118,
+      "repository": "piashcse/Love-calculator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 119,
+      "repository": "ProArun/AlgorithmVisualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 120,
+      "repository": "sibelyiildz/AlgorithmProblems",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 121,
+      "repository": "SVENTRIPIKAL/Encryption-Decryption",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 122,
+      "repository": "takahirom/jetbrains-academy-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 123,
+      "repository": "TimerErTim/Knevo",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 124,
+      "repository": "tocttou/Algorithms-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 125,
+      "repository": "umair13adil/KotlinAlgorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 126,
+      "repository": "VirgilSecurity/virgil-ratchet-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 127,
+      "repository": "wolfbeacon/wolfbeacon-hackalist-api",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 128,
+      "repository": "yunshuipiao/rice-noodles",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 129,
+      "repository": "1cucer/android-kotlin-basics-merge-sort-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 130,
+      "repository": "abdulvvahid/HackerRankAlgorithmsKotlinSolutions",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 131,
+      "repository": "ahmmedrejowan/HowBlurWorks",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 132,
+      "repository": "AliAzaz/InterviewAlgorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 133,
+      "repository": "Alienstemple/Yandex_Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 134,
+      "repository": "ambco-iscte/witter",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 135,
+      "repository": "andre-j3sus/sort-algorithm-visualizer",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 136,
+      "repository": "andredasilvapinto/kt-raft",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 137,
+      "repository": "arpitmx/Boids",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 138,
+      "repository": "bananasmoothii/WFC",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 139,
+      "repository": "bohonghuang/VisPID",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 140,
+      "repository": "callmelovevsick/Algorithm-Client",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 141,
+      "repository": "Carrieukie/TictacToe-Minimax-MCTS",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 142,
+      "repository": "cosmin-oros/Kotlin-Java-Projects",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 143,
+      "repository": "CRUDMehra/XTEA-Kotlin-Algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 144,
+      "repository": "cybulskii-vladimir/huffman-archiver",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 145,
+      "repository": "daniel-rusu/tax-calculator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 146,
+      "repository": "Davide-DD/tspva",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 147,
+      "repository": "DavidRFerreira/RelevanceFeedback",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 148,
+      "repository": "dev-ali-mansour/Data-Structures-And-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 149,
+      "repository": "devxzero/phonetic-algorithm-benchmark",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 150,
+      "repository": "divyanshuanand02/Noughts-Crosses",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 151,
+      "repository": "dj258255/codingtestkit",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 152,
+      "repository": "dudwls901/kotlin-java-cpp_algorithm_practice",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 153,
+      "repository": "e5LA/kotlin-code-collection",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 154,
+      "repository": "ericmok/reinforcement-learning-toys-kt",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 155,
+      "repository": "fariha-tas/cpu_scheduling_android_game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 156,
+      "repository": "fayaz07/SortingVisualizer",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 157,
+      "repository": "goodkillerchen/DS-for-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 158,
+      "repository": "hamidbir/BellmanFord-Algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 159,
+      "repository": "HariAgus/DataStructuresAndAlgorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 160,
+      "repository": "himanshu-1608/Sort_Visualization_App",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 161,
+      "repository": "huhx0015/AlgorithmTester",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 162,
+      "repository": "jhonatademuner/localif",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 163,
+      "repository": "jrenner/kotlin-algorithms-ds",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 164,
+      "repository": "Kavinrajan/Kotlin-DataStructure-Alogorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 165,
+      "repository": "Khusinov/SortAlgorithmsKotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 166,
+      "repository": "LeeSeungYun1020/Algorithm",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 167,
+      "repository": "Louiixx-h/algorithms",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 168,
+      "repository": "merttoptas/AlgorithmSolutionsInKotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 169,
+      "repository": "Mramington/ATRS",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 170,
+      "repository": "MustafaKoceerr/Compose-Dynamic-Photo-Grid",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 171,
+      "repository": "nadezhdagub/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 172,
+      "repository": "nimazareian/raft-consensus",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 173,
+      "repository": "olivia-soy/algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 174,
+      "repository": "persian-calendar/equinox",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 175,
+      "repository": "peterslight/Sort-Comparison",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 176,
+      "repository": "ryanbateman/openrndr-boids",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 177,
+      "repository": "saldisobi/kotlinAlgo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 178,
+      "repository": "savasanamaster/algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 179,
+      "repository": "ShonenAsh/SortVisualizer",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 180,
+      "repository": "simplesoft-duongdt3/Kotlin_Algorithms_and_DataStructures",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 181,
+      "repository": "sipura/Sipura",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 182,
+      "repository": "Suraj-Tiwari/ShamirSecretSharing",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 183,
+      "repository": "thestbar/tunify",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 184,
+      "repository": "WeiLianYang/AlgorithmAnalysis",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 185,
+      "repository": "WonSteps/cpu-scheduling-simulator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 186,
+      "repository": "Xicks/d-FuzzStream",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 187,
+      "repository": "yangsooplus/Algorithm-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 188,
+      "repository": "zitmen/thunderstorm-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 189,
+      "repository": "1cucer/bioinformatics-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 190,
+      "repository": "1cucer/euclidean-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 191,
+      "repository": "AkhilrajNambiar/DSADude-2.0",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 192,
+      "repository": "aliaygor/AlgoKids",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 193,
+      "repository": "alishari/Kotlin-Examples",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 194,
+      "repository": "amykv/dsa-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 195,
+      "repository": "AndreuZaitsev/algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 196,
+      "repository": "ashfaq1701/problem-solving-in-kotlin",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 197,
+      "repository": "atorrico09/Data-Structures-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 198,
+      "repository": "babangsund/sorting-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 199,
+      "repository": "Bzahov98/ImageFilter-FloydSteinberg",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 200,
+      "repository": "Caliverx2/raycasting-lewapnoob",
+      "reason": "SOURCE_SIZE_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 201,
+      "repository": "ChanSek/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 202,
+      "repository": "cheonjoosung/Algorithm-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 203,
+      "repository": "chicorasia/kotlin-data-structures",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 204,
+      "repository": "chjaeggi/airports-graph",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 205,
+      "repository": "dan-zx/genetic-algorithms-kt",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 206,
+      "repository": "danpgomez/algorithms-and-data-structures-in-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 207,
+      "repository": "danylovolokh/AlgorithmsAnalysis",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 208,
+      "repository": "DerYeger/cyk-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 209,
+      "repository": "dev-ali-mansour/Data-Structures-And-Algorithms-Using-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 210,
+      "repository": "dev-loggi/algorithm-kotlin",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 211,
+      "repository": "developerlee79/ps-leetcode-java",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 212,
+      "repository": "dogukankeskinoglu/HackerRankKotlinAlgorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 213,
+      "repository": "Doha26/Citybase",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 214,
+      "repository": "DrunkenWhale/RollCallAlgorithm",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 215,
+      "repository": "DuoLa512/AlgorithmDemo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 216,
+      "repository": "E3FxGaming/ExtendedCYK-Algorithm",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 217,
+      "repository": "edgardobarriam/algo-kasts",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 218,
+      "repository": "Ellzo/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 219,
+      "repository": "fahim-choudhury/grokking-dsa",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 220,
+      "repository": "felipecastilhos/algorithm-challenges",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 221,
+      "repository": "FischerAbruzese/Graphs-Algorithms-Visualization",
+      "reason": "METADATA_CANDIDATE"
+    }
+  ],
+  "rankedRepositoryCount": 300,
+  "sourceContentsRead": false,
+  "hunterExecuted": false,
+  "oracleExecuted": false,
+  "fullPredictionReportsRead": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}
