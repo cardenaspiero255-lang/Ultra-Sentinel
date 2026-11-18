@@ -5,7 +5,7 @@ const {descriptor}=require('./jvm-abi-admission.cjs');
 const SHA=/^[0-9a-f]{40}$/;
 const REPO=/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
 const SOURCE=/^src\/main\/(?:[^/]+\/)*[^/]+\.kt$/;
-const FORBIDDEN=/(?:oracle(?!Executed$)|expected|actual|observ|prediction(?!s$)|finding|sourceBody|functionalTruth|repair|verdict|groundTruth)/i;
+const FORBIDDEN=/(?:oracle(?!Executed$)|expected|actual|observ|prediction|finding|sourceBody|functionalTruth|repair|verdict|groundTruth)/i;
 const NUMERIC=new Set(['B','S','I','J','F','D',
  'Ljava/lang/Byte;','Ljava/lang/Short;','Ljava/lang/Integer;',
  'Ljava/lang/Long;','Ljava/lang/Float;','Ljava/lang/Double;']);
