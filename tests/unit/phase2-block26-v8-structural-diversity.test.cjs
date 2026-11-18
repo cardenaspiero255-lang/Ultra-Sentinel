@@ -62,7 +62,9 @@ test('unsafe source identity, duplicate originals, uncompiled method and rank re
  assert.throws(()=>selectStructuralCohorts([b,a]),/RANK_ORDER/);
  assert.throws(()=>selectStructuralCohorts([a,candidate(3,'FRESH/alpha','b',['y'])]),/DUPLICATE_REPOSITORY/);
  assert.throws(()=>selectStructuralCohorts([a,candidate(3,'fresh/gamma','a',['y'])]),/DUPLICATE_BLOB/);
- assert.throws(()=>selectStructuralCohorts([candidate(2,'fresh/uncompiled','c',['x'],false)]),/UNCOMPILED_ABI/);
+ const bad=candidate(2,'fresh/uncompiled','c',[],false);
+ bad.abi.callables=[method('invented')];
+ assert.throws(()=>selectStructuralCohorts([bad]),/UNCOMPILED_ABI/);
  assert.throws(()=>validateStructuralRecord({...a,source:{...a.source,files:[
   {...a.source.files[0],path:'src/main/kotlin/../../outside.kt'}]}}),/INVALID_SOURCE/);
 });
