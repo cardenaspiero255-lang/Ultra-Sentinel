@@ -52,7 +52,7 @@ function validateProspectiveFreeze(){
 async function planMetadataCandidates(repositories,excludedRepos,excludedBlobs,loadTree,limits){
  if(typeof loadTree!=='function')fail('NO_TREE_LOADER');
  const ordered=rankRepositoryMetadata(repositories);
- const audit=[],candidates=[];
+ const audit=[],candidates=[],reservedBlobs=new Set();
  const max=limits.maxEligibleSourceCandidates,maxExamined=limits.maxExaminedMetadataRepositories;
  if(!Number.isSafeInteger(max)||max<1||max>48||
   !Number.isSafeInteger(maxExamined)||maxExamined<max||maxExamined>300||
@@ -72,6 +72,8 @@ async function planMetadataCandidates(repositories,excludedRepos,excludedBlobs,l
     admitted=admitMetadataTree(candidate,info.commitSha,info.treeSha,info.tree,
      excludedRepos,excludedBlobs);
     reason=admitted.eligible?'METADATA_CANDIDATE':admitted.reason;
+    if(reason==='METADATA_CANDIDATE'&&admitted.files.some(f=>reservedBlobs.has(f.blobSha)))
+     reason='DUPLICATE_CANDIDATE_BLOB';
    }catch(e){
     // An incomplete Git tree is not evidence that the source is clean.
     reason='TREE_METADATA_UNAVAILABLE';
@@ -82,6 +84,7 @@ async function planMetadataCandidates(repositories,excludedRepos,excludedBlobs,l
    const source={repository:admitted.repository,commitSha:admitted.commitSha,
     treeSha:admitted.treeSha,files:admitted.files,totalBytes:admitted.totalBytes};
    candidates.push({rank:i+1,source});
+   for(const file of source.files)reservedBlobs.add(file.blobSha);
   }
  }
  return {schema:'ultra-sentinel-v8-prospective-metadata-candidates/v1',
