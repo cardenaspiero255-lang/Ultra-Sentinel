@@ -17,7 +17,8 @@ test('v8 metadata-only pool is immutable and excludes all 153 previous repositor
  assert.deepEqual(pool.exclusions,f.exclusions);
  assert.equal(pool.candidates.length,11);
  assert.equal(pool.candidates.reduce((n,c)=>n+c.source.files.length,0),60);
- assert.equal(pool.candidates.at(-1).rank,154);
+ assert.equal(pool.audit.at(-1).rank,154);
+ assert.equal(pool.candidates.at(-1).rank,153);
  const repos=new Set(ex.repositories.map(x=>x.toLowerCase())),blobs=new Set(ex.blobShas),
   currentRepos=new Set(),currentBlobs=new Set();
  for(const c of pool.candidates){
