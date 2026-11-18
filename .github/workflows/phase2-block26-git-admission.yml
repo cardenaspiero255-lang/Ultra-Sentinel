@@ -1,0 +1,47 @@
+name: Ultra Sentinel — Block 2.6 Git provenance fixtures
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-git-admission.yml
+      - scripts/phase2-block26-git-admission.cjs
+      - tests/unit/phase2-block26-git-admission.test.cjs
+permissions:
+  contents: read
+jobs:
+  git-provenance-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require 90 percent line and branch coverage
+        run: >-
+          node --experimental-test-coverage
+          --test-coverage-include=scripts/phase2-block26-git-admission.cjs
+          --test-coverage-lines=90 --test-coverage-branches=90
+          --test tests/unit/phase2-block26-git-admission.test.cjs
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Load the existing restricted Bubblewrap profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+      - name: Require the existing adversarial isolation fixtures
+        env:
+          SENTINEL_JVM_V2_RUNNER: '1'
+          SENTINEL_REQUIRE_BLIND_BWRAP: '1'
+        run: node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
