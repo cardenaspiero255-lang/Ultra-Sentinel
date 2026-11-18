@@ -157,6 +157,9 @@ async function main(){
  console.log('V8_METADATA_REPOSITORIES='+repos.length);
  console.log('V8_METADATA_CANDIDATES='+result.candidates.length);
  console.log('V8_METADATA_FINAL_RANK='+result.audit.at(-1).rank);
+ const encoded=Buffer.from(json).toString('base64');
+ for(let i=0;i<encoded.length;i+=3000)
+  console.log('V8_METADATA_B64_PART_'+Math.floor(i/3000)+'='+encoded.slice(i,i+3000));
 }
 if(require.main===module)main().catch(e=>{console.error(e.message);process.exitCode=1;});
 module.exports=Object.freeze({planMetadataCandidates,validateProspectiveFreeze});
