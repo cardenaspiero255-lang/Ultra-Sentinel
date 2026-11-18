@@ -1,0 +1,131 @@
+name: Ultra Sentinel — v7 original Kotlin compile-only and JVM ABI admission
+on:
+  pull_request:
+    paths:
+      - scripts/phase2-kotlin-api-v7-preflight.cjs
+      - tests/unit/phase2-block26-v7-admission.test.cjs
+      - docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json
+      - tests/unit/phase2-block26-v7-reservation.test.cjs
+      - .github/workflows/phase2-block26-v7-admission.yml
+permissions:
+  contents: read
+jobs:
+  blind-v7-abi:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact trusted v7 host without persistent credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Pin JDK 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Checkout unchanged frozen v7 Hunter engine
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: niiad/hashkt
+          ref: 59f06eb4389a3886f37ab771fc837509e6e6dc1c
+          path: originals/source-1
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: guttedgarden/Kuznechik
+          ref: dcfe8e6eb5091684afe45f9f600b931254a73adb
+          path: originals/source-2
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: v-pan/rltest
+          ref: 288b9394c9e3016891cfd43ad046f37ded306acd
+          path: originals/source-3
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: amindadgar/knapSack-Problem
+          ref: f0640454335c0b353ecd3af40cbf77b66dc020fc
+          path: originals/source-4
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: umangjpatel/KotlinDSA
+          ref: 202c8ff8ede8fe91b13995821b3629fdba331cf1
+          path: originals/source-5
+          persist-credentials: false
+      - name: Checkout pinned original Kotlin cohort 6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: Judas/Glickotlin
+          ref: e58fb4d30aa59c4166e0b15c3e553dc015d34e1a
+          path: originals/source-6
+          persist-credentials: false
+      - name: Verify complete regression suite and versioned admission tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          node --test tests/unit/phase2-block26-v7-admission.test.cjs tests/unit/phase2-block26-v7-reservation.test.cjs
+      - name: Require Bubblewrap, AppArmor and actual cgroup isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Fetch SHA256-pinned Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          mkdir "$RUNNER_TEMP/kotlin-v7"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v7"
+      - name: Authenticated compilation and public JVM ABI only on 32 originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-kotlin-api-v7-preflight.cjs \
+            "$GITHUB_WORKSPACE/docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json" \
+            "$GITHUB_WORKSPACE/frozen-v7-engine" \
+            "$GITHUB_WORKSPACE/originals" \
+            "$RUNNER_TEMP/kotlin-v7/kotlinc" \
+            "$RUNNER_TEMP/v7-abi-work" "$RUNNER_TEMP/v7-abi-admission"
+          test -s "$RUNNER_TEMP/v7-abi-admission/admission.json"
+          test -s "$RUNNER_TEMP/v7-abi-admission/admission-seal.json"
+      - name: Preserve compilation abstentions and sealed ABI result
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v7-blind-abi-admission
+          path: ${{ runner.temp }}/v7-abi-admission/
+          retention-days: 90
+          if-no-files-found: warn
