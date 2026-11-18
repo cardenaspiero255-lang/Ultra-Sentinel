@@ -1,0 +1,120 @@
+{
+  "schema": "ultra-sentinel-v8-immutable-original-blind-evaluation-receipt/v1",
+  "experiment": {
+    "workflowRunId": 44251627135,
+    "workflowUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44251627135",
+    "protocolCommitBeforeRun": "6a093ea33e0e3bbb169580e94ca638dbb646ea70",
+    "hunterCommit": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "hunterModuleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "independentOracleBlobSha": "beda94b8db159a9ba686a4f6ac29e997910aad65",
+    "selectedOriginalRepositories": [
+      "elevenetc/utils-kotlin-math",
+      "kory33/bigmath"
+    ],
+    "selectedOriginalKotlinFiles": 13,
+    "order": [
+      {
+        "jobId": 134623453196,
+        "stage": "oracle compile-only",
+        "outcome": "success",
+        "oracleExecuted": false
+      },
+      {
+        "jobId": 134624412884,
+        "stage": "frozen Hunter and sealed predictions",
+        "outcome": "success",
+        "oracleExecuted": false
+      },
+      {
+        "jobId": 134625064724,
+        "stage": "independent original oracles and adjudication",
+        "outcome": "success",
+        "oracleExecuted": true
+      }
+    ]
+  },
+  "frozenPredictions": {
+    "artifactId": 14404795601,
+    "artifactName": "block26-v8-frozen-predictions",
+    "archiveSha256": "2ff3a6b28e6f3fd0d0348852c0a3439b12273fd2a42b03266bd621a247f4a5a3",
+    "sealSha256": "f613feac9c03c770bb7141b3c98948a20bf231477346ac3d01bebac7a3f873be",
+    "sourceReports": [
+      {
+        "cohortId": 1,
+        "reportSha256": "926f5eeabd2006d515bb35f793572d7ea06e43d46fb19253dc026d8b9947feb6",
+        "classesInspected": 15,
+        "methodCandidates": 4,
+        "methodsProbed": 2,
+        "completedTriples": 18,
+        "successfulInvocations": 108,
+        "detectedHypotheses": 0
+      },
+      {
+        "cohortId": 2,
+        "reportSha256": "64f4cb31cd57fcbf4dd8983da58587c1990c376559b689d11f226778848761d8",
+        "classesInspected": 5,
+        "methodCandidates": 0,
+        "methodsProbed": 0,
+        "completedTriples": 0,
+        "successfulInvocations": 0,
+        "detectedHypotheses": 0
+      }
+    ],
+    "hypotheses": 0,
+    "probeExecutionAbstentions": 0,
+    "predictionsSealedBeforeOracleExecution": true
+  },
+  "independentOracles": {
+    "preflightArtifactId": 14404297231,
+    "preflightArchiveSha256": "c2ec83eb767fe4c154b2af6e0256b15648092aade9d09dd5b5d2680868c20cd3",
+    "artifactId": 14404068099,
+    "archiveSha256": "241e41acb6803d1e3937ce2f6758696f9e9ecf59129434c2de5292292d68c151",
+    "originalTruthSha256": "bc42b876da41765f4cac3841103a76ac0c772e6d5cbb5ea5e030113dcb40692b",
+    "independentVerdictSha256": "5d67490043a9dd64ce968854debf065ebad28ce372add1e3d7bfd9f69fe7a67b",
+    "witnessRows": 39,
+    "witnessDistribution": [
+      {
+        "cohortId": 1,
+        "method": "toRadians(float;)float",
+        "rows": 7,
+        "publicContract": true
+      },
+      {
+        "cohortId": 1,
+        "method": "round(float;int;)float",
+        "rows": 24,
+        "publicContract": true
+      },
+      {
+        "cohortId": 2,
+        "method": "access$intFromUHex(java.lang.String;)int",
+        "rows": 8,
+        "publicContract": false
+      }
+    ],
+    "mismatchesOutsideCommittedTolerance": 0,
+    "executionAbstentions": 0
+  },
+  "result": {
+    "hypotheses": 0,
+    "confirmedDistinctNewOriginalDefects": 0,
+    "scopedFalsePositiveHypotheses": 0,
+    "unadjudicatedHypotheses": 0,
+    "secondIndependentDiscoveryDemonstrated": false,
+    "effectiveHunterMethodCoverageAcrossIndependentRepositories": false,
+    "methodCoverageLimitation": "the one JVM method admitted from kory33/bigmath is a private synthetic bridge and was not probed by frozen Hunter",
+    "globalPrecision": null,
+    "globalRecall": null,
+    "falseNegativeRate": null,
+    "block26Closed": false,
+    "block27Allowed": false,
+    "phase2Closed": false
+  },
+  "noninterference": {
+    "frozenHunterUnmodified": true,
+    "historicalV6V7V8EvidenceUnmodified": true,
+    "noPostVerdictRetuning": true,
+    "noReplacementCohortAfterRevealedResults": true,
+    "futureUnknownCohortsMustExcludeAll164ExposedRepositoriesAnd615SourceBlobs": true
+  }
+}
