@@ -1,0 +1,15 @@
+{
+  "schema": "ultra-sentinel-v9-prospective-metadata-seal/v1",
+  "poolSha256": "fc9660c797de570a3596fb7c80d0cca96f72523bb7317fde5c62b194035faa07",
+  "poolBlobSha": "ca457a56abf806f40b3e9aea5f8b7cab39f22cc2",
+  "metadataBeforeScoutRunId": 44312166294,
+  "originalMetadataArtifactId": 14430552959,
+  "metadataArtifactSha256": "sha256:423b4e2844ae219cba1926ffa431bc55144d0569718c3095b5173acd0b302e70",
+  "originalCandidateRepositories": 12,
+  "originalCandidateKotlinFiles": 75,
+  "allOriginalSourcesUnexposedAtMetadataTime": true,
+  "sourceBodiesRead": false,
+  "frozenHunterExecuted": false,
+  "oracleExecuted": false,
+  "noRerankAfterCommit": true
+}
