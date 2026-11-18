@@ -17,7 +17,7 @@ test('v8 metadata pool freezes the first eligible unexposed candidates by rankin
  const calls=[];
  const result=await planMetadataCandidates(repos,old,blocked,async r=>{
   calls.push(r.full_name);
-  return snapshot(r.full_name==='fresh/C'?'e':'a');
+  return snapshot(r.full_name==='fresh/C'?'e':r.full_name==='fresh/A'?'a':'b');
  },{maxEligibleSourceCandidates:2,maxExaminedMetadataRepositories:4,maxRepoSizeKb:8192});
  assert.deepEqual(calls,['fresh/A','fresh/B']);
  assert.deepEqual(result.candidates.map(x=>x.source.repository),['fresh/A','fresh/B']);
