@@ -1,0 +1,61 @@
+{
+  "schema": "ultra-sentinel-block26-v8-prospective-structural-freeze/v1",
+  "engine": {
+    "sourceCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "modulePath": "packages/family-hunter/v7/GenericJvmMetamorphicProbe.java",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "mutable": false
+  },
+  "gate": {
+    "path": "packages/quality-gates/v8-structural-diversity.cjs",
+    "blobSha": "ba78ee47994ae2fedcf2aa2ed049f852ee5e3691"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V8-EXCLUSIONS.json",
+    "blobSha": "b51d65e28d2223facbeea9f4c858b90ead754cf9",
+    "repositories": 153,
+    "blobs": 555
+  },
+  "selector": {
+    "query": "math language:Kotlin fork:false archived:false stars:2..20",
+    "searchPages": 2,
+    "searchPageSize": 100,
+    "rank": "stars-desc/name-case-insensitive-asc",
+    "maxExaminedMetadataRepositories": 200,
+    "maxEligibleSourceCandidates": 18,
+    "maxRepoSizeKb": 8192,
+    "maxMainKotlinFiles": 12,
+    "maxMainKotlinBytes": 196608,
+    "compilation": "Kotlin 2.0.21 Java21, verified SHA256, Bubblewrap/AppArmor/cgroup isolated, no network in compiler",
+    "structuralAdmission": "javap -public -s and existing JVM ABI classifier; declarations only, no target method or class initializers",
+    "firstMinimalQualifiedPrefix": true,
+    "threshold": {
+      "minimumNumericMethods": 3,
+      "minimumCandidateCohorts": 2
+    },
+    "preserveEveryRejection": true,
+    "noResamplingAfterABIOutcome": true,
+    "neverExamineSourceBodiesForSemanticSelection": true,
+    "noOriginalMethodInvocations": true,
+    "noOracleOrExpectedOutputBeforePredictionSeal": true
+  },
+  "historical": {
+    "v6FalsePositiveHypotheses": 2,
+    "v7AbiNumericCandidates": 5,
+    "v7AbiCandidateCohorts": 1,
+    "v7AbiTechnicallyAdmissible": false,
+    "artifactsImmutable": true,
+    "previousCohort32BlobsExcluded": true
+  },
+  "current": {
+    "sourceMetadataSearched": false,
+    "sourceBodiesRead": false,
+    "abiScoutExecuted": false,
+    "finalCohortCommitted": false,
+    "hunterExecuted": false,
+    "oracleExecuted": false,
+    "confirmedNewDefects": null,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}

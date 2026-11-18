@@ -1,0 +1,133 @@
+{
+  "schema": "ultra-sentinel-block26-v8-structural-admitted-cohort/v1",
+  "frozenHunter": {
+    "commitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06"
+  },
+  "precommittedThreshold": {
+    "minimumNumericMethods": 3,
+    "minimumCandidateCohorts": 2
+  },
+  "metadataPool": {
+    "sha256": "8ca0152333c074151ee939ccf4332fc991df59ee818da3f83db8af4f5c684f48",
+    "gitBlobSha": "adda01a8d857c0d519626961f53325ba45bc076c",
+    "metadataOnlyRunId": 44247260145
+  },
+  "abiEvidence": {
+    "runId": 44248441714,
+    "runUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44248441714",
+    "reportSha256": "e8ab2bdc9b3d1070fe94aedc46b04f4baca54ca984e3d2c3bdb0f1d399214c69",
+    "originalArtifactId": 14402263627,
+    "originalArtifactDigestSha256": "ed661d403cabe96e83898d4c5c5d190c77c560959c7d8da161cd6cfd173787f6",
+    "originalCohortsInspected": 11,
+    "originalFilesInspected": 60,
+    "admittedMethods": 3,
+    "independentCandidateCohorts": 2,
+    "coverageLinesPercent": 95.77,
+    "coverageBranchesPercent": 100
+  },
+  "selectedCohorts": [
+    {
+      "id": 1,
+      "rank": 68,
+      "source": {
+        "repository": "elevenetc/utils-kotlin-math",
+        "commitSha": "4587446018dc2893ef8a5a08551e01c0fba0b3bd",
+        "treeSha": "d286ea1ba096e63f88a325dfe87c7d71227c4239",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Edge.kt",
+            "blobSha": "6df2fa9c3b817702c49941c52663257101bf14c5",
+            "sizeBytes": 3040
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/ElevenMath.kt",
+            "blobSha": "47794a217e833cc8008eb2f11343e40c96d47ff2",
+            "sizeBytes": 2175
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/ElevenMathImpl.kt",
+            "blobSha": "2aa040d3e4c4724f4c03686a99fab8b86669af8e",
+            "sizeBytes": 9777
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Intersection.kt",
+            "blobSha": "8deaf61478dd5037c074a190ea74a6953936f7d2",
+            "sizeBytes": 263
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Normal.kt",
+            "blobSha": "48e8775aa1fff5e7c0c7ded11e401fa4227b2730",
+            "sizeBytes": 64
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Point.kt",
+            "blobSha": "4c6a8544e887c40527cb0ea6f34ad076968bd4c4",
+            "sizeBytes": 153
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/RayVector.kt",
+            "blobSha": "9d337f81f6e1c899f061c73de7fb45937ec67e2d",
+            "sizeBytes": 1021
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Scene.kt",
+            "blobSha": "a9dc840f00f6a87a536bc104a3e883216e182acb",
+            "sizeBytes": 254
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Shape.kt",
+            "blobSha": "753438b338ac4234089f0a343621cfa901d4269f",
+            "sizeBytes": 225
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Vector.kt",
+            "blobSha": "150a370ab0211abeebb1e6303f79577dd6e6e3a5",
+            "sizeBytes": 2627
+          }
+        ],
+        "totalBytes": 19599
+      },
+      "abiCandidateMethods": 2
+    },
+    {
+      "id": 2,
+      "rank": 76,
+      "source": {
+        "repository": "kory33/bigmath",
+        "commitSha": "45f85b44aa9491323b0eab214e652722c664e180",
+        "treeSha": "24d4206fd6fe4c3e6bff828b2dc00428f62f1e78",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUIntFactory.kt",
+            "blobSha": "990195dc0c66d2faacb4d4672ac35384a0d30a23",
+            "sizeBytes": 945
+          },
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUIntOperators.kt",
+            "blobSha": "574c47d6ba9b869552e00ba82f47dde1cace780d",
+            "sizeBytes": 5866
+          },
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUnsignedInteger.kt",
+            "blobSha": "514c1ab3e3e9cc5f14aa52d794a429909b9cea36",
+            "sizeBytes": 2484
+          }
+        ],
+        "totalBytes": 9295
+      },
+      "abiCandidateMethods": 1
+    }
+  ],
+  "originalFilesSelected": 13,
+  "sourceContentsUsedForSelection": false,
+  "sourceCompiledInIsolatedKotlinCompiler": true,
+  "targetMethodsExecuted": false,
+  "methodBodiesInspectedBySelector": false,
+  "originalFunctionalOracleCommitted": false,
+  "hunterPredictionsSealed": false,
+  "oracleExecuted": false,
+  "confirmedDistinctNewDefects": null,
+  "block26Closed": false,
+  "block27Allowed": false
+}
