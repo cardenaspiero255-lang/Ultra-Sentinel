@@ -68,3 +68,23 @@ test('unsafe source identity, duplicate originals, uncompiled method and rank re
  assert.throws(()=>validateStructuralRecord({...a,source:{...a.source,files:[
   {...a.source.files[0],path:'src/main/kotlin/../../outside.kt'}]}}),/INVALID_SOURCE/);
 });
+
+test('ABI unsupported declarations are observable but do not create numeric method coverage',()=>{
+ const row=candidate(1,'fresh/with-unsupported','b',['supported']);
+ row.abi.callables.push({...method('unsupported'),descriptor:'()V',reason:'API_UNSUPPORTED'});
+ row.source.totalBytes=110;
+ assert.doesNotThrow(()=>validateStructuralRecord(row));
+ const r=selectStructuralCohorts([row,candidate(2,'fresh/empty','c',[])]);
+ assert.equal(r.eligible,false);
+ assert.equal(r.numericMethods,1);
+ assert.equal(r.candidateCohorts,1);
+});
+test('incorrect source total and ambiguous rejected ABI fields fail closed',()=>{
+ const row=candidate(1,'fresh/with-total','b',['x']);
+ row.source.totalBytes=999;
+ assert.throws(()=>validateStructuralRecord(row),/INVALID_SOURCE/);
+ const bad=candidate(1,'fresh/with-void','c',['void']);
+ bad.abi.callables[0].descriptor='()V';
+ assert.throws(()=>validateStructuralRecord(bad),/INVALID_ABI/);
+ assert.throws(()=>validateStructuralRecord([]),/INVALID_RECORD/);
+});
