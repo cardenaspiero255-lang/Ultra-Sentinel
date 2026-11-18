@@ -1,0 +1,13 @@
+{
+  "schema": "ultra-sentinel-v8-abi-candidate-pool-seal/v1",
+  "poolPath": "docs/quality/PHASE2-BLOCK26-V8-POOL.json",
+  "poolSha256": "8ca0152333c074151ee939ccf4332fc991df59ee818da3f83db8af4f5c684f48",
+  "poolBlobSha": "adda01a8d857c0d519626961f53325ba45bc076c",
+  "metadataOnlyRunId": 44247260145,
+  "metadataOnlyArtifactId": 14402436708,
+  "createdBeforeAbiScout": true,
+  "originalFiles": 60,
+  "candidateRepositories": 11,
+  "hunterExecuted": false,
+  "oracleExecuted": false
+}
