@@ -479,6 +479,25 @@ public final class GenericJvmMetamorphicProbe {
         Class<?>[] params = method.getParameterTypes();
         Type[] generic = method.getGenericParameterTypes();
         for (int position = 0; position < params.length; position++) {
+            // V7: a numeric target tested against a fixed structured input is
+            // not subject to a monotonicity law. Index/membership APIs may
+            // legitimately yield [-1, index, -1] as the target crosses a
+            // member. Abstain for this probe dimension without inferring a
+            // name, source contract, or independent oracle result.
+            // Keep the structured-input dimension and scalar-only probes.
+            boolean ambiguousScalarMembership = false;
+            if (numeric(params[position])) {
+                for (int other = 0; other < params.length; other++) {
+                    if (other != position && element(params[other], generic[other]) != null) {
+                        ambiguousScalarMembership = true;
+                        break;
+                    }
+                }
+            }
+            if (ambiguousScalarMembership) {
+                result.abstained++;
+                continue;
+            }
             int bands = numeric(params[position]) ? 4 :
                 (params[position] == String.class ? 2 : COLLECTION_SHAPES.length);
             for (int band = 0; band < bands; band++) {
