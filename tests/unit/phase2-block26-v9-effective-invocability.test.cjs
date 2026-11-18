@@ -73,3 +73,26 @@ test('reject duplicate repo/blob, reordering and incorrect report hashes',()=>{
  assert.throws(()=>admitFrozenHunterInvocability(input([a,row(2,'new/other','2',1)])),/DUPLICATE_BLOB/);
  assert.throws(()=>admitFrozenHunterInvocability(input([{...a,frozenReportSha256:'invalid'},b])),/REPORT_INTEGRITY/);
 });
+
+test('compilation or sandbox abstention remains zero evidence without inventing probes',()=>{
+ const absent=row(1,'fresh/not-built','6',0,0);
+ absent.report.probeExecutionSucceeded=false;
+ const detected=row(2,'fresh/supported','7',3,3);
+ const report=admitFrozenHunterInvocability(input([absent,detected]));
+ assert.equal(report.eligible,false);
+ assert.equal(report.independentProbedRepositories,1);
+ const falseWitness=row(1,'fresh/inconsistent','8',0,0);
+ falseWitness.report.probeExecutionSucceeded=false;
+ falseWitness.report.classesInspected=1;
+ assert.throws(()=>admitFrozenHunterInvocability(input([falseWitness])),/COUNTER_INTEGRITY/);
+});
+test('insufficient triples, source-size drift and duplicate pool metadata fail closed',()=>{
+ const method=row(1,'fresh/incomplete','9',1,0);
+ assert.throws(()=>admitFrozenHunterInvocability(input([method])),/COUNTER_INTEGRITY/);
+ const sourceDrift=row(1,'fresh/drift','a',1);
+ sourceDrift.source.totalBytes=15;
+ assert.throws(()=>admitFrozenHunterInvocability(input([sourceDrift])),/SOURCE_INTEGRITY/);
+ const target=row(1,'fresh/target','b',1);
+ target.report.methodCandidates=0;
+ assert.throws(()=>admitFrozenHunterInvocability(input([target])),/COUNTER_INTEGRITY/);
+});
