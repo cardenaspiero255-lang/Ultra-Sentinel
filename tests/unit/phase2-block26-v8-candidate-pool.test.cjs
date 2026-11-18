@@ -42,3 +42,12 @@ test('freeze prerequisites authenticate engine, exposures and source selection l
  assert.equal(f.exclusions.blobs,555);
  assert.deepEqual(f.selector.threshold,{minimumNumericMethods:3,minimumCandidateCohorts:2});
 });
+
+test('maximum metadata candidate budget does not invent a minimum source count',async()=>{
+ const repos=[repo('fresh/only-one',4)];
+ const result=await planMetadataCandidates(repos,new Set(),new Set(),
+  async()=>snapshot('f'),{maxEligibleSourceCandidates:18,maxExaminedMetadataRepositories:200,maxRepoSizeKb:8192});
+ assert.equal(result.candidates.length,1);
+ assert.equal(result.audit.length,1);
+ assert.equal(result.sourceBodiesRead,false);
+});
