@@ -9,6 +9,7 @@ function inspect(filename){
  const pending=data.pendingAlerts;
  return Object.freeze({status:pending.length?'PENDING_ALERT_DELIVERY_REQUIRED':'NO_PENDING_ALERTS',
   pendingAlerts:pending,pendingDigest:pending.length?pendingDigest(pending):null,
+  batchSequence:data.batchSequence??0,
   deliveryVerified:false,monitor24x7Deployed:false});
 }
 if(require.main===module){
@@ -17,8 +18,10 @@ if(require.main===module){
   const action=process.argv[2]||'inspect';
   if(action==='inspect')process.stdout.write(JSON.stringify(inspect(stateFile))+'\n');
   else if(action==='ack'){
-   const digest=process.argv[3];
-   const receipt=acknowledgeDelivery(stateFile,digest);
+   const [digest,sequence]=process.argv.slice(3);
+   if(process.argv.length!==5||!/^(0|[1-9][0-9]*)$/.test(sequence))
+    throw Error('INVALID_DELIVERY_RECEIPT');
+   const receipt=acknowledgeDelivery(stateFile,digest,Number(sequence));
    process.stdout.write(JSON.stringify(receipt)+'\n');
   }else throw Error('INVALID_WATCHDOG_ACTION');
  }catch(e){

@@ -68,6 +68,7 @@ async function runGithubOnlyCycle({stateFile,githubToken,bootstrap=false,
  if(previous?.pendingAlerts.length)return Object.freeze({
   schema:'ultra-sentinel-github-only-cycle/v1',
   status:'REPLAY_PERSISTED_ALERTS',alerts:previous.pendingAlerts,
+  batchSequence:previous.batchSequence,
   publicArtifactOnly:true,sentryConnected:false,githubWrites:false,
   deploy24x7:false,source:'github-actions-readonly'
  });
@@ -81,6 +82,7 @@ async function runGithubOnlyCycle({stateFile,githubToken,bootstrap=false,
  assertPublicOnly(checkedState(stateFile));
  return Object.freeze({schema:'ultra-sentinel-github-only-cycle/v1',
   status:result.status,alerts:result.alerts,
+  batchSequence:result.batchSequence,
   publicArtifactOnly:true,sentryConnected:false,githubWrites:false,
   deploy24x7:false,source:'github-actions-readonly'});
 }
@@ -98,11 +100,8 @@ if(require.main===module){
     process.stdout.write('::warning title=Ultra Sentinel GitHub alert::'+
      alert.type.replace(/[^A-Z_]/g,'')+'\n');
    }
-   const state=checkedState(process.env.ULTRA_SENTINEL_WATCHDOG_STATE_FILE);
-   if(!state||pendingDigest(state.pendingAlerts)!==pendingDigest(r.alerts))
-    throw Error('STATE_CHANGED_DURING_ALERT_REPORTING');
    acknowledgeDelivery(process.env.ULTRA_SENTINEL_WATCHDOG_STATE_FILE,
-    pendingDigest(r.alerts));
+    pendingDigest(r.alerts),r.batchSequence);
    // GitHub Actions warnings and durable logs report changes. A genuine
    // alert is not a failed monitor execution; checkpoint is acknowledged.
    // Nonzero exits remain reserved for evidence or infrastructure failures.
