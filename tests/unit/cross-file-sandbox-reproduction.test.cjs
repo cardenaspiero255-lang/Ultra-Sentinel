@@ -1,10 +1,12 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const fs=require('node:fs'),os=require('node:os');
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {execFileSync}=require('node:child_process');
 const {analyze}=require('../../packages/core/ultra_sentinel_core.cjs');
 const {planCrossFileInterventions}=require('../../packages/family-hunter/cross-file-interventions.cjs');
 const {reproduceCrossFileInterventions}=require('../../packages/recovery/cross-file-sandbox-reproduction.cjs');
 const {interpretFactorialOracleEvidence}=require('../../packages/family-hunter/factorial-oracle-evidence.cjs');
+const {classifyOracleVectorFactorial}=require('../../packages/family-hunter/original-oracle-vector-factorial.cjs');
 const A='a'.repeat(40),B='b'.repeat(40);
 const first='app/src/main/java/voice/First.kt';
 const second='app/src/main/java/voice/Second.kt';
@@ -82,9 +84,36 @@ test('invalid or non-boolean oracle results cannot be certified as passing tests
   versions,independentOracle:()=>({success:true})}),/ORACLE_EVALUATION_FAILED/);
 });
 
-test('three admitted Gradle Kotlin modules run every counterfactual and restore their Git baseline',()=>{
+function runIsolatedArithmeticOracle(kotlin,sources){
+ const work=fs.mkdtempSync(path.join(os.tmpdir(),'factorial-kotlin-'));
+ try{
+  const fixture=path.resolve(__dirname,'../fixtures');
+  const runner=path.join(fixture,'phase2-block26-object-contracts/run-isolated.sh');
+  const input=path.join(work,'input'),oracle=path.join(input,'oracle');
+  const compiled=path.join(work,'compiled'),results=path.join(work,'results');
+  for(const dir of [oracle,compiled,results])fs.mkdirSync(dir,{recursive:true});
+  for(const [file,source] of Object.entries(sources)){
+   const destination=path.join(input,'src/main',file);
+   fs.mkdirSync(path.dirname(destination),{recursive:true});
+   fs.writeFileSync(destination,source);
+  }
+  fs.copyFileSync(path.join(fixture,'phase2-kotlin-module-factorial/IndependentArithmeticOracle.kt'),
+   path.join(oracle,'IndependentArithmeticOracle.kt'));
+  execFileSync('bash',[runner,'compile',kotlin,input,compiled],{stdio:'inherit'});
+  execFileSync('bash',[runner,'oracle',kotlin,compiled,results],{stdio:'inherit'});
+  const output=fs.readFileSync(path.join(results,'execution.log'),'utf8');
+  const passed=output==='BENIGN_PASS\nCONTRACT_PASS\n';
+  assert.ok(passed||output==='BENIGN_PASS\nCONTRACT_FAIL\n','Unexpected Kotlin oracle output');
+  return passed;
+ }finally{
+  fs.rmSync(work,{recursive:true,force:true});
+ }
+}
+
+test('three admitted Gradle Kotlin modules run every counterfactual and restore their Git baseline',t=>{
  const suffix='src/main/kotlin/demo/performance/framepacing/FramePacingIntelligenceEngine.kt';
- const files=['alpha','beta','gamma'].map(module=>module+'/'+suffix);
+ const modules=['alpha','beta','gamma'];
+ const files=modules.map(module=>module+'/'+suffix);
  const lines=[
   'fun ready(orderedFast: List<Sample>, policy: Policy): Boolean {',
   '  val slowNow = 10L',
@@ -102,9 +131,15 @@ test('three admitted Gradle Kotlin modules run every counterfactual and restore 
  const candidateRule='STALE_FRAME_TIMING_ACCEPTED';
  assert.equal(plan.candidates.find(candidate=>candidate.rule===candidateRule).experiments.length,8);
 
- // A caller-owned data predicate exercises rollback for this fixture.
- const versions=files.map(path=>({path,before:'const val version = 1\n',after:'const val version = 2\n'}));
- const independentOracle=sources=>files.every(path=>sources[path]==='const val version = 2\n');
+ const versions=files.map((path,i)=>{
+  const prefix=`package ${modules[i]}\nfun convert(ticks: Int): Int = ticks * `;
+  return {path,before:prefix+'1\n',after:prefix+'2\n'};
+ });
+ // The hosted JVM regression uses the same snapshots and Git rollback checks.
+ const kotlin=process.env.SENTINEL_PHASE2_FACTORIAL_KOTLIN;
+ const independentOracle=kotlin
+  ? sources=>runIsolatedArithmeticOracle(kotlin,sources)
+  : sources=>versions.every(({path,after})=>sources[path]===after);
  const reproduction=reproduceCrossFileInterventions({plan,candidateRule,versions,independentOracle});
  assert.deepEqual(reproduction.scenarios.map(row=>row.oracleVerdict),
   ['FAIL','FAIL','FAIL','FAIL','FAIL','FAIL','FAIL','PASS']);
@@ -115,6 +150,15 @@ test('three admitted Gradle Kotlin modules run every counterfactual and restore 
  assert.equal(result.causalityVerified,false);
  assert.equal(result.commitAllowed,false);
 
+ const vector=classifyOracleVectorFactorial({files,oracleIds:['PUBLIC_CONTRACT'],
+  scenarios:reproduction.scenarios.map(({selectedFiles,oracleVerdict})=>({
+   selectedFiles,verdicts:{PUBLIC_CONTRACT:oracleVerdict}
+  }))});
+ assert.equal(vector.status,'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS');
+ assert.deepEqual(vector.minimalPassingSubsetsByOracle.PUBLIC_CONTRACT,[files]);
+ assert.equal(vector.jvmReceiptsAuthenticatedByThisFunction,false);
+ assert.equal(vector.commitAllowed,false);
+
  const rootFiles=[suffix,...files.slice(1)].sort();
  const advisoryPlan=planCrossFileInterventions(analyzeModules(A,rootFiles.slice(0,1)),
   analyzeModules(B,rootFiles));
@@ -122,4 +166,5 @@ test('three admitted Gradle Kotlin modules run every counterfactual and restore 
  assert.throws(()=>reproduceCrossFileInterventions({
   plan:advisoryPlan,candidateRule,versions:advisoryVersions,independentOracle
  }),/INVALID_CROSS_FILE_REPRODUCTION/);
+ if(kotlin)t.diagnostic(`Isolated Kotlin fixture: ${reproduction.scenarios.map(row=>row.oracleVerdict).join(', ')}; Git tree restored in all eight scenarios`);
 });
