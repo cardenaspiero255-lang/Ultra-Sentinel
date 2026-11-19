@@ -36,6 +36,7 @@ test('checks the staged snapshot and never runs source code', t => {
   stage(directory, 'control.cjs', 'throw new Error("this source must stay inert");\n');
   stage(directory, 'module with spaces.mjs', 'export const count = 3;\n');
   stage(directory, 'configuration.json', '{"enabled":true}\n');
+  stage(directory, 'notes.md', 'Fixture notes\n');
   fs.writeFileSync(path.join(directory, 'control.cjs'), 'module.exports = (\n');
   const result = run(directory);
   assert.equal(result.status, 0, result.stderr);
@@ -100,4 +101,28 @@ test('fails clearly outside a Git repository', t => {
   const result = run(directory);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Could not read staged Git files/);
+});
+
+test('refuses to approve a different index snapshot', t => {
+  const directory = checkout(t);
+  stage(directory, 'update.cjs', 'module.exports = 1;\n');
+  const realGit = spawnSync('sh', ['-c', 'command -v git'], { encoding: 'utf8' }).stdout.trim();
+  const bin = path.join(directory, 'bin');
+  fs.mkdirSync(bin);
+  fs.writeFileSync(path.join(bin, 'git'), `#!/usr/bin/env node
+const { execFileSync } = require('node:child_process');
+const { writeFileSync } = require('node:fs');
+const args = process.argv.slice(2);
+const git = ${JSON.stringify(realGit)};
+execFileSync(git, args, { stdio: 'inherit' });
+if (args.includes('--check')) {
+  writeFileSync('update.cjs', 'module.exports = 2;\\n');
+  execFileSync(git, ['add', '--', 'update.cjs']);
+}
+`, { mode: 0o755 });
+  const result = spawnSync(process.execPath, [command], {
+    cwd: directory, encoding: 'utf8', env: { ...process.env, PATH: bin + path.delimiter + process.env.PATH },
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Git index changed during staged validation/);
 });
