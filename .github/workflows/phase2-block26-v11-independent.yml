@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/phase2-block26-v11-independent.yml
       - docs/quality/PHASE2-BLOCK26-V11-ORACLE-COMMITMENT.json
+      - docs/quality/PHASE2-BLOCK26-V11-INDEPENDENT-ADJUDICATION-RECEIPT.json
       - tests/fixtures/phase2-block26-v11/oracle/**
       - scripts/phase2-block26-v11-independent-judge.cjs
       - scripts/phase2-block26-v11-independent-run.cjs
