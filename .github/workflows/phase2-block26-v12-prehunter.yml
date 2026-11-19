@@ -56,6 +56,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          if test -f docs/quality/PHASE2-BLOCK26-V12-NEGATIVE-METADATA-RECEIPT.json; then
+            node - <<'JS'
+          const fs=require('node:fs');
+          const receipt=JSON.parse(fs.readFileSync('docs/quality/PHASE2-BLOCK26-V12-NEGATIVE-METADATA-RECEIPT.json'));
+          const freeze=JSON.parse(fs.readFileSync(receipt.protocolFreeze));
+          if(receipt.schema!=='ultra-sentinel-block26-v12-prospective-metadata-negative/v1'||
+             receipt.githubActionsRunId!==44524988397||
+             receipt.candidateMetadataResult?.outcome!=='NO_UNEXPOSED_SOURCE_METADATA'||
+             receipt.candidateMetadataResult?.sourceCandidateCount!==0||
+             receipt.candidateMetadataResult?.sourceBodiesRead!==false||
+             receipt.noQueryRerunForV12!==true||
+             receipt.frozenHunterExecuted!==false||
+             receipt.independentOracleExecuted!==false||
+             receipt.block26Closed!==false||
+             receipt.frozenQuery!==freeze.metadataSelector.frozenQuery||
+             receipt.historicalExcludedRepositories!==freeze.exclusions.repositories||
+             receipt.historicalExcludedKotlinBlobs!==freeze.exclusions.blobs)
+            throw Error('V12_NEGATIVE_RECEIPT_INVALID');
+          console.log('V12_NEGATIVE_METADATA_PRESERVED_NO_REQUERY');
+          JS
+            exit 0
+          fi
           if test -f docs/quality/PHASE2-BLOCK26-V12-POOL-SEAL.json; then
             echo V12_SOURCE_POOL_ALREADY_SEALED_NO_REQUERY
             exit 0
