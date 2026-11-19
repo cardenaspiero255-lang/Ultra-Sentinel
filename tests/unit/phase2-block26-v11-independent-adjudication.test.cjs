@@ -65,3 +65,36 @@ test('V11 refuses reports missing, altered, substituted or with findings not in 
  assert.throws(()=>verifyPredictionSeal(original,{}),/REPORTS/);
  assert.throws(()=>verifyPredictionSeal({...original,oracleExecuted:true},{}),/MANIFEST/);
 });
+
+test('V11 explicitly handles numeric float witness comparison, invalid values and nonmatching method signatures',()=>{
+ const readings=['0.5','1.5','2.5'];
+ const finding={...f(readings),method:'numericProbe(double;long;)double',inputs:readings};
+ const rows=readings.map(x=>({...row(x,x,x),method:finding.method,actual:x,expected:x,
+  tolerance:'0.01'}));
+ const result=adjudicateV11(seal([finding]),truth(rows));
+ assert.equal(result.falsePositiveHypotheses,1);
+ assert.equal(result.confirmedOriginalDefects,0);
+ assert.equal(result.unadjudicatedHypotheses,0);
+ const unsupported={...finding,method:'numericProbe(java.lang.String;long;)double'};
+ assert.equal(adjudicateV11(seal([unsupported]),truth(rows)).unadjudicatedHypotheses,1);
+ const wrongPosition={...finding,argument:4};
+ assert.equal(adjudicateV11(seal([wrongPosition]),truth(rows)).unadjudicatedHypotheses,1);
+ const missing={...finding,inputs:['0.5']};
+ assert.equal(adjudicateV11(seal([missing]),truth(rows)).unadjudicatedHypotheses,1);
+});
+test('V11 refuses to promote malformed independent oracle data into a confirmed software defect',()=>{
+ const finding=f(['1','0','1']);
+ for(const rogue of [
+  {...row(1,0,'not-a-number'),tolerance:'0'},
+  {...row(1,0,1),tolerance:'NaN'},
+  {...row(1,0,1),tolerance:'-1'},
+  {...row(1,0,1),actual:'NaN'},
+  {...row(1,0,1),expected:'Infinity'}
+ ]){
+  const verdict=adjudicateV11(seal([finding]),truth([
+   row(0,1,1),rogue,row(2,1,1)
+  ]));
+  assert.equal(verdict.confirmedOriginalDefects,0);
+  assert.equal(verdict.unadjudicatedHypotheses,1);
+ }
+});
