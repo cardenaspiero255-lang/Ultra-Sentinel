@@ -1,0 +1,91 @@
+{
+  "schema": "ultra-sentinel-v12-independent-oracle-before-hunter-freeze/v1",
+  "hunter": {
+    "commitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "blobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "mutable": false
+  },
+  "gate": {
+    "path": "packages/quality-gates/v12-prehunter-oracle-gate.cjs",
+    "blobSha": "e41001d61a8c5d70783e7fd9a58b1660f9071f8f"
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V11-POSTSCOUT-EXCLUSIONS.json",
+    "blobSha": "847da06e63940499d5036e7dab7854cc298e063d",
+    "repositories": 185,
+    "blobs": 729
+  },
+  "metadataSelector": {
+    "reusedModulePath": "scripts/phase2-kotlin-api-v11-metadata.cjs",
+    "reusedModuleBlobSha": "89474c8a0ab87545e2ab95309bb62b3e57c74d91",
+    "frozenQuery": "math language:Kotlin fork:false archived:false stars:2..50",
+    "maxRepositoriesRanked": 300,
+    "maxFreshCandidates": 12,
+    "maxOriginalKotlinFilesPerRepo": 12,
+    "maxOriginalBytesPerRepo": 196608,
+    "avoidHistoricalSources": true,
+    "preHunterStaticApiScanOnly": true,
+    "wrapperPath": "scripts/phase2-kotlin-api-v12-metadata.cjs",
+    "wrapperBlobSha": "e9861c49bb52609e5a7374b5607d00272dd72c56"
+  },
+  "host": {
+    "path": "scripts/phase2-block26-v12-prehunter.cjs",
+    "blobSha": "00355b0c8466ba37cb5adb4af4c6a284e72843c7"
+  },
+  "policy": {
+    "schema": "ultra-sentinel-block26-v12-oracle-before-hunter/v1",
+    "engineCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "engineBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "historicalExcludedRepositories": 185,
+    "historicalExcludedBlobs": 729,
+    "oracleBeforeHunterRequired": true,
+    "oracleCannotSeeHunterPredictions": true,
+    "noHunterRetune": true,
+    "minIndependentRepositories": 2,
+    "minExpectedProbeableMethods": 3,
+    "historicalCohortsNeverReused": true,
+    "initialMetadataQueried": false,
+    "initialHunterExecuted": false,
+    "initialOracleExecuted": false,
+    "block26Closed": false
+  },
+  "plan": {
+    "phases": [
+      "PROTOCOL_AND_EXCLUSIONS_COMMITTED",
+      "SOURCE_METADATA_SEALED",
+      "STATIC_ABI_ONLY",
+      "ORIGINAL_SOURCE_ORACLE_COMMITTED",
+      "REAL_FROZEN_HUNTER_EXECUTION",
+      "PREDICTIONS_SHA256_SEALED",
+      "INDEPENDENT_ORACLE_RUN",
+      "ADJUDICATION"
+    ],
+    "oracleSourceMustPrecedeHunter": true,
+    "noTargetExecutionBeforeOracleCommit": true,
+    "fullPredictionsOnlyAfterOracleCommit": true,
+    "noReuseOfExposedSources": true,
+    "noOracleTruthInHunterMount": true,
+    "noRetuneOfFrozenHunter": true,
+    "initialHunterRunRequiresNativeGitCommitAncestry": true,
+    "originalOraclesCannotReadPredictionReports": true,
+    "failureMeansIncompleteNotSuccess": true
+  },
+  "state": {
+    "newSourceMetadataSearched": false,
+    "oracleCommitted": false,
+    "hunterExecuted": false,
+    "oracleExecuted": false,
+    "novelSecondDefectConfirmed": null,
+    "block26Closed": false,
+    "block27Allowed": false,
+    "originalSourcesCommitted": null
+  },
+  "historical": {
+    "v11OriginalHypotheses": 9,
+    "v11FalsePositives": 8,
+    "v11Unadjudicated": 1,
+    "v11ConfirmedNewDefects": 0,
+    "lastV11PredictionRunId": 44317152922,
+    "v11ReferenceOracleAfterHunter": true
+  }
+}

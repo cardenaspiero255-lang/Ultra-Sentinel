@@ -1,0 +1,94 @@
+name: Ultra Sentinel — V12 oracle-before-Hunter freeze and fresh metadata
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v12-prehunter.yml
+      - packages/quality-gates/v12-prehunter-oracle-gate.cjs
+      - scripts/phase2-block26-v12-prehunter.cjs
+      - scripts/phase2-kotlin-api-v12-metadata.cjs
+      - tests/unit/phase2-block26-v12-prehunter-oracle-gate.test.cjs
+      - docs/quality/PHASE2-BLOCK26-V12-PROSPECTIVE-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V12-POOL.json
+      - docs/quality/PHASE2-BLOCK26-V12-POOL-SEAL.json
+permissions:
+  contents: read
+jobs:
+  frozen-prehunter-protocol:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Prove old source exclusion and exact frozen pre-Hunter code
+        run: node scripts/phase2-block26-v12-prehunter.cjs freeze-only
+      - name: Complete full repository regressions
+        run: npm run check
+      - name: TDD for oracle-before-Hunter source and Git ancestry policy
+        run: >-
+          node --experimental-test-coverage
+          --test-coverage-include=packages/quality-gates/v12-prehunter-oracle-gate.cjs
+          --test-coverage-lines=90 --test-coverage-branches=90
+          --test tests/unit/phase2-block26-v12-prehunter-oracle-gate.test.cjs
+  metadata-only-before-oracle-commit:
+    needs: frozen-prehunter-protocol
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Read public Git metadata only or refuse to select again after pool seal
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if test -f docs/quality/PHASE2-BLOCK26-V12-NEGATIVE-METADATA-RECEIPT.json; then
+            node - <<'JS'
+          const fs=require('node:fs');
+          const receipt=JSON.parse(fs.readFileSync('docs/quality/PHASE2-BLOCK26-V12-NEGATIVE-METADATA-RECEIPT.json'));
+          const freeze=JSON.parse(fs.readFileSync(receipt.protocolFreeze));
+          if(receipt.schema!=='ultra-sentinel-block26-v12-prospective-metadata-negative/v1'||
+             receipt.githubActionsRunId!==44524988397||
+             receipt.candidateMetadataResult?.outcome!=='NO_UNEXPOSED_SOURCE_METADATA'||
+             receipt.candidateMetadataResult?.sourceCandidateCount!==0||
+             receipt.candidateMetadataResult?.sourceBodiesRead!==false||
+             receipt.noQueryRerunForV12!==true||
+             receipt.frozenHunterExecuted!==false||
+             receipt.independentOracleExecuted!==false||
+             receipt.block26Closed!==false||
+             receipt.frozenQuery!==freeze.metadataSelector.frozenQuery||
+             receipt.historicalExcludedRepositories!==freeze.exclusions.repositories||
+             receipt.historicalExcludedKotlinBlobs!==freeze.exclusions.blobs)
+            throw Error('V12_NEGATIVE_RECEIPT_INVALID');
+          console.log('V12_NEGATIVE_METADATA_PRESERVED_NO_REQUERY');
+          JS
+            exit 0
+          fi
+          if test -f docs/quality/PHASE2-BLOCK26-V12-POOL-SEAL.json; then
+            echo V12_SOURCE_POOL_ALREADY_SEALED_NO_REQUERY
+            exit 0
+          fi
+          node scripts/phase2-block26-v12-prehunter.cjs freeze-only
+          node scripts/phase2-kotlin-api-v12-metadata.cjs "$RUNNER_TEMP/v12-metadata"
+          test -s "$RUNNER_TEMP/v12-metadata/metadata.json"
+      - name: Retain metadata identities for separate SHA commitment before target execution
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v12-prospective-original-metadata-before-oracle
+          path: ${{ runner.temp }}/v12-metadata/metadata.json
+          if-no-files-found: ignore
+          retention-days: 90

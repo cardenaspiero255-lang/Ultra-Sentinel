@@ -1,0 +1,38 @@
+{
+  "schema": "ultra-sentinel-block26-v12-prospective-metadata-negative/v1",
+  "protocolFreeze": "docs/quality/PHASE2-BLOCK26-V12-PROSPECTIVE-FREEZE.json",
+  "protocolFrozenCommitBeforeMetadata": "85cba24ea8906816691f067c61e1288be2b20104",
+  "policyCommitAndOriginalHunter": "689583c23277807345edb715d8c2d277a3d4bda7",
+  "githubActionsRunId": 44524988397,
+  "githubActionsUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44524988397",
+  "exactEvaluatedHead": "3ba0a0ae0af40fe57686a9d3db574f54163b4fa1",
+  "frozenQuery": "math language:Kotlin fork:false archived:false stars:2..50",
+  "maxExaminedRepositoryMetadata": 300,
+  "historicalExcludedRepositories": 185,
+  "historicalExcludedKotlinBlobs": 729,
+  "protocolChecks": {
+    "fullSuitePassed": 2137,
+    "fullSuiteFailed": 0,
+    "conditionalSkipped": 4,
+    "prehunterGateTestsPassed": 9,
+    "preHunterGateTestsFailed": 0,
+    "coverageMinimumBranchesAndLines": 90,
+    "gateCoveragePassed": true
+  },
+  "candidateMetadataResult": {
+    "outcome": "NO_UNEXPOSED_SOURCE_METADATA",
+    "sourceCandidateCount": 0,
+    "selectionError": "V12_METADATA_NO_UNEXPOSED_SOURCE_METADATA",
+    "sourceBodiesRead": false,
+    "sourceCodeExecuted": false
+  },
+  "noQueryRerunForV12": true,
+  "sourcePoolCommitted": false,
+  "oracleCommittedBeforeHunter": false,
+  "frozenHunterExecuted": false,
+  "independentOracleExecuted": false,
+  "confirmedSecondOriginalDefect": null,
+  "block26Closed": false,
+  "block27Allowed": false,
+  "policy": "Negative result is closed for this frozen V12 query. No threshold weakening, hidden requery, reused original or retrospective oracle can convert it to success. Another experiment requires another prospective freeze."
+}
