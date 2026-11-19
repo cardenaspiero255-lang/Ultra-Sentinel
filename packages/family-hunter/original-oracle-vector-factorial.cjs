@@ -6,6 +6,7 @@
  * Caller-supplied verdicts are hypotheses, never authenticated JVM evidence.
  */
 const {types}=require('node:util');
+const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const PATH=/^(?:(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+|apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt)$/;
 const ID=/^[A-Z][A-Z0-9_]{2,40}$/;
 const reject=()=>{throw Error('INVALID_ORACLE_MATRIX');};
@@ -47,7 +48,7 @@ function classifyOracleVectorFactorial(input){
   const raw=record(input,['files','oracleIds','scenarios']);
   const files=array(raw.files,2,12),oracleIds=array(raw.oracleIds,1,8);
   if(files.some((p,i)=>typeof p!=='string'||p.length>240||
-    !PATH.test(p)||p.includes('//')||
+    !(PATH.test(p)||isSafeNovelKotlinPath(p))||p.includes('//')||
     p.split('/').some(s=>s===''||s==='.'||s==='..')||
     (i>0&&p<=files[i-1]))||
    oracleIds.some((p,i)=>typeof p!=='string'||!ID.test(p)||(i>0&&p<=oracleIds[i-1])))reject();
