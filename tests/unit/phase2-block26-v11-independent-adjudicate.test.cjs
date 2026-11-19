@@ -9,6 +9,8 @@ const cohorts=[{id:1,rank:276,source:{repository:'runetopic/cryptography'},effec
 function evidence(){
  const prediction={schema:'ultra-sentinel-generic-jvm-metamorphic/v1',
   artifactSha256:'a'.repeat(64),methodsProbed:3,completedTriples:24,
+  oracleVerified:false,novelFamilyVerified:false,repairAuthorized:false,
+  remoteWrites:false,mergeAllowed:false,
   successfulInvocations:144,findings:[
    {class:'DHash',method:'distanceTo-FO9zg7A(long;long;)int',argument:0,
     otherArguments:1,inputs:['0','1','9223372036854775807'],
@@ -18,6 +20,8 @@ function evidence(){
     observed:['0','1','-2147483648'],status:'HYPOTHESIS_REQUIRES_INDEPENDENT_ORACLE'}]};
  const zero={schema:'ultra-sentinel-generic-jvm-metamorphic/v1',
   artifactSha256:'b'.repeat(64),methodsProbed:1,completedTriples:8,
+  oracleVerified:false,novelFamilyVerified:false,repairAuthorized:false,
+  remoteWrites:false,mergeAllowed:false,
   successfulInvocations:48,findings:[]};
  const p1=Buffer.from(JSON.stringify(zero)+'\n'),p2=Buffer.from(JSON.stringify(prediction)+'\n');
  const manifest={schema:'ultra-sentinel-v11-full-predictions-first/v1',
