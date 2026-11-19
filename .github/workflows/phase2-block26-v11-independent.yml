@@ -63,6 +63,11 @@ jobs:
           node --test tests/unit/phase2-block26-v11-independent-adjudication.test.cjs
           node --check scripts/phase2-block26-v11-independent-run.cjs
           node --check scripts/phase2-block26-v11-independent-judge.cjs
+      - name: Enforce 90 percent independent-judge line and branch coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --experimental-test-coverage --test-coverage-include=scripts/phase2-block26-v11-independent-judge.cjs --test-coverage-lines=90 --test-coverage-branches=90 --test tests/unit/phase2-block26-v11-independent-adjudication.test.cjs
       - name: Demand actual AppArmor, Bubblewrap and bounded cgroups
         shell: bash
         run: |
