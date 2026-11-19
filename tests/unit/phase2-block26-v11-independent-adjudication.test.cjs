@@ -21,7 +21,7 @@ function truth(rows){return {schema:'ultra-sentinel-v11-independent-original-tru
  oracleExecuted:true,oracleSourceAuthenticated:true,
  observations:rows,abstentions:[],wholeCohortTruth:false};}
 test('V11 independently rejects a legitimate nonmonotone XOR/popcount turning-point false positive',()=>{
- const r=adjudicateV11(seal([f()]),truth([row(0,1,1),row(1,0,0),row(2,2,2)]));
+ const r=adjudicateV11(seal([f(['1','0','2'])]),truth([row(0,1,1),row(1,0,0),row(2,2,2)]));
  assert.equal(r.falsePositiveHypotheses,1);
  assert.equal(r.confirmedOriginalDefects,0);
  assert.equal(r.unadjudicatedHypotheses,0);
