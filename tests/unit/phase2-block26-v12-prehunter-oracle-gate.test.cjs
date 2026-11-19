@@ -81,3 +81,78 @@ test('oracle or source label leakage, inconsistent count, or unknown frozen engi
  const i=fixture();i.cohort.selected[0].predictions=[];
  assert.throws(()=>validateOracleBeforeHunter(i),/FUNCTIONAL_LEAKAGE/);
 });
+
+test('V12 rejects any weakening of protocol, engine, replay or historical cohort restrictions',()=>{
+ const changes=[
+  x=>{x.freeze.schema='wrong';},
+  x=>{x.freeze.historicalExcludedRepositories=0;},
+  x=>{x.freeze.historicalExcludedBlobs=0;},
+  x=>{x.freeze.oracleBeforeHunterRequired=false;},
+  x=>{x.freeze.oracleCannotSeeHunterPredictions=false;},
+  x=>{x.freeze.noHunterRetune=false;},
+  x=>{x.freeze.historicalCohortsNeverReused=false;},
+  x=>{x.freeze.minIndependentRepositories=1;},
+  x=>{x.freeze.minExpectedProbeableMethods=2;},
+  x=>{x.freeze.initialMetadataQueried=true;},
+  x=>{x.freeze.initialHunterExecuted=true;},
+  x=>{x.freeze.initialOracleExecuted=true;},
+  x=>{x.freeze.block26Closed=true;}
+ ];
+ for(const change of changes){const x=fixture();change(x);assert.throws(()=>validateOracleBeforeHunter(x),/V12_PREHUNTER_/);}
+});
+test('V12 rejects incomplete oracle commitments, untrusted paths and withheld truth seals',()=>{
+ const cases=[
+  x=>{x.oracle.schema='wrong';},
+  x=>{x.oracle.path='../oracle.kt';},
+  x=>{x.oracle.blobSha='bad';},
+  x=>{x.oracle.sourceReadOnly=false;},
+  x=>{x.oracle.contractAuthenticated=false;},
+  x=>{x.oracle.hunterExecutedBeforeCommit=true;},
+  x=>{x.oracle.oracleExecutedBeforeCommit=true;},
+  x=>{x.oracle.oracleIndependentOfHunter=false;},
+  x=>{x.oracle.noPredictionsMounted=false;},
+  x=>{x.oracle.defectTruthUnrevealed=false;}
+ ];
+ for(const change of cases){const x=fixture();change(x);assert.throws(()=>validateOracleBeforeHunter(x),/V12_PREHUNTER_/);}
+});
+test('V12 refuses malformed source metadata, duplicates, unsafe paths and impossible static evidence',()=>{
+ const changes=[
+  x=>{x.cohort.schema='wrong';},
+  x=>{x.cohort.hunterExecuted=true;},
+  x=>{x.cohort.oracleExecuted=true;},
+  x=>{x.cohort.allSourceBodiesNew=false;},
+  x=>{x.cohort.selected=[];},
+  x=>{x.cohort.selected[0].rank=2;},
+  x=>{x.cohort.selected[0].source.commitSha='bad';},
+  x=>{x.cohort.selected[0].source.treeSha='bad';},
+  x=>{x.cohort.selected[0].source.repository='bad';},
+  x=>{x.cohort.selected[0].source.files=[];},
+  x=>{x.cohort.selected[0].source.files[0].path='../bad.kt';},
+  x=>{x.cohort.selected[0].source.files[0].blobSha='bad';},
+  x=>{x.cohort.selected[0].source.files[0].sizeBytes=-1;},
+  x=>{x.cohort.selected[0].source.totalBytes=0;},
+  x=>{x.cohort.selected[0].staticProbeableMethods=-1;},
+  x=>{x.cohort.selected[0].source.files[0].blobSha=x.cohort.selected[1].source.files[0].blobSha;}
+ ];
+ for(const change of changes){
+  const x=fixture();change(x);
+  assert.throws(()=>validateOracleBeforeHunter(x),/V12_PREHUNTER_/);
+ }
+});
+test('V12 refuses duplicate historical evidence and invalid trusted Git witness',()=>{
+ const edits=[
+  x=>{x.exclusions.repositories[1]=x.exclusions.repositories[0];},
+  x=>{x.exclusions.blobShas[1]=x.exclusions.blobShas[0];},
+  x=>{x.exclusions.blobShas[0]='garbled';},
+  x=>{x.start.protocolCommitSha='bad';},
+  x=>{x.start.hunterHeadCommitSha='bad';},
+  x=>{x.git.committedOracleBlob='bad';},
+  x=>{x.git.workingOracleBlob='bad';},
+  x=>{x.git.isAncestor=null;},
+  x=>{x.oracle.commitSha=x.cohort.metadataCommitSha;}
+ ];
+ for(const edit of edits){
+  const x=fixture();edit(x);
+  assert.throws(()=>validateOracleBeforeHunter(x),/V12_PREHUNTER_/);
+ }
+});
