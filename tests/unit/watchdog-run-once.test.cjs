@@ -25,7 +25,7 @@ test('durable checkpoint survives iterations; no synthetic alert on first run',(
   assert.equal(fs.existsSync(stateFile+'.lock'),false);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
-test('outbox blocks new observation until explicitly acknowledged by matching digest',()=>{
+test('outbox blocks new observation until explicitly acknowledged by digest and sequence',()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'sentinel-watchdog-outbox-'));
  try{
   const file=path.join(root,'checkpoint');
@@ -35,9 +35,9 @@ test('outbox blocks new observation until explicitly acknowledged by matching di
   assert.equal(changed.alerts.length,2);
   assert.throws(()=>storeObservation(file,null,sentry(['100','200']),jarvis('b'.repeat(40))),
    /PENDING_ALERT_DELIVERY_REQUIRED/);
-  assert.throws(()=>acknowledgeDelivery(file,'0'.repeat(64)),/DELIVERY_RECEIPT_MISMATCH/);
+  assert.throws(()=>acknowledgeDelivery(file,'0'.repeat(64),changed.batchSequence),/DELIVERY_RECEIPT_MISMATCH/);
   const receipt=pendingDigest(changed.alerts);
-  assert.equal(acknowledgeDelivery(file,receipt).status,'DELIVERY_ACKNOWLEDGED');
+  assert.equal(acknowledgeDelivery(file,receipt,changed.batchSequence).status,'DELIVERY_ACKNOWLEDGED');
   assert.equal(checkedState(file).pendingAlerts.length,0);
   assert.equal(storeObservation(file,null,sentry(['100','200']),jarvis('b'.repeat(40))).status,'NO_CHANGES');
  }finally{fs.rmSync(root,{recursive:true,force:true});}
@@ -81,7 +81,7 @@ test('operator can inspect sanitized pending events and must explicitly confirm 
   assert.equal(pending.pendingAlerts.length,1);
   assert.equal(pending.deliveryVerified,false);
   assert.match(pending.pendingDigest,/^[a-f0-9]{64}$/);
-  assert.equal(acknowledgeDelivery(file,pending.pendingDigest).status,'DELIVERY_ACKNOWLEDGED');
+  assert.equal(acknowledgeDelivery(file,pending.pendingDigest,pending.batchSequence).status,'DELIVERY_ACKNOWLEDGED');
   assert.equal(inspect(file).status,'NO_PENDING_ALERTS');
  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
