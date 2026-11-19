@@ -1,0 +1,52 @@
+{
+  "schema": "ultra-sentinel-block26-v11-independent-source-oracle-precommit/v1",
+  "timeOrder": {
+    "originalHunterRunId": 44317152922,
+    "originalFullPredictionsArtifactId": 14432658115,
+    "originalFullPredictionsArchiveSha256": "4d3986e87836c3c1255d6a6ee8425cb90231960384a68aa538d48e5d742cfd79",
+    "originalFullPredictionManifestSha256": "0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d",
+    "truthContractCommittedBeforeReadingHistoricalPredictions": true,
+    "truthContractNotCommittedBeforeOriginalHunterRun": true,
+    "truthContractNotCommittedBeforeOriginalMethodInvocations": true,
+    "noClaimOfFullyProspectivePreHunterOracle": true
+  },
+  "originals": {
+    "cohortPath": "docs/quality/PHASE2-BLOCK26-V11-COHORT.json",
+    "cohortBlobSha": "264097237ff43b107232abc1fe0a6ce53c409a29",
+    "admissionReceiptPath": "docs/quality/PHASE2-BLOCK26-V11-INVOCABILITY-RECEIPT.json",
+    "admissionReceiptBlobSha": "20250de08cc3a15cb164f1fc6a1763157355b1e2",
+    "originalSelectedRepositories": [
+      "runetopic/cryptography",
+      "SebastianAigner/dhash-kotlin"
+    ],
+    "sourceCommits": [
+      "26094b76f87acb7692eeaaa10df51f1c6f3542ac",
+      "fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da"
+    ],
+    "directOriginalBlobs": {
+      "whirlpoolAlgorithm": "bf65a1afc051be3d266adbf5daa0b498434f3381",
+      "dHash": "72e2752b37f6e5df38271b24d18e4c2d81b13d9a"
+    }
+  },
+  "frozenOracle": {
+    "path": "packages/quality-gates/v11-independent-source-oracle.cjs",
+    "gitBlobSha": "ade2a4ccc4b7adad4cc7d4001acf85e419165581",
+    "testsPath": "tests/unit/phase2-block26-v11-independent-source-oracle.test.cjs",
+    "testsGitBlobSha": "f0235b29b14e026633ba9d6bffda17e122853a0a",
+    "scopeOnly": [
+      "DHash.distanceTo-<Kotlin ABI mangle>(long,long) -> bitCount(a xor b), 64 bits, user-visible contract",
+      "Whirlpool.maskWithReductionPolynomial(long) -> single GF2 reduction x xor 0x11D only for x in 0..511, non-public method, coverage-only"
+    ],
+    "noAlternateMethodSemanticsAfterPredictionRead": true
+  },
+  "independentAssessment": {
+    "calculationsIndependentOfHunterSourceCode": true,
+    "originalTargetExecutionAfterFreezeRequiredForConfirmation": true,
+    "targetWasAlreadyExecutedBeforeTruthContractCommit": true,
+    "discrepancyMustRemainUnconfirmedWithoutIndependentReplay": true,
+    "absenceOfHypothesesDoesNotEstablishGlobalRecall": true,
+    "noRetune": true,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}

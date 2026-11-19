@@ -1,0 +1,51 @@
+{
+  "schema": "ultra-sentinel-v11-retrospective-independent-dhash-replay-freeze/v1",
+  "independentReplayOracle": {
+    "path": "tests/fixtures/phase2-block26-v11-independent/oracle/IndependentArithmeticOracle.kt",
+    "gitBlobSha": "38e23b58a5c1b2de006c452994093a124fc8afb1"
+  },
+  "originalInputs": {
+    "repo": "SebastianAigner/dhash-kotlin",
+    "commitSha": "fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da",
+    "treeSha": "0f6834a083ecef1df6aaa371c67cbd0e728c53fb",
+    "sourceBlobShas": [
+      "137cb3780b5351e26a5003a9f9fa8491eb4b498b",
+      "72e2752b37f6e5df38271b24d18e4c2d81b13d9a"
+    ]
+  },
+  "metadata": {
+    "historicalHunterRunId": 44317152922,
+    "historicalPredictionsSealSha256": "0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d",
+    "sourceReferenceOriginallyCommittedBeforeReadingPredictions": true,
+    "thisKotlinReplayWasSpecifiedAfterHistoricalHunterRun": true,
+    "originalTargetNotExecutedWithThisKotlinReplayYet": true
+  },
+  "contract": {
+    "reference": "java.lang.Long.bitCount(first xor second)",
+    "allFixedValues": [
+      1,
+      100
+    ],
+    "allVaryingValues": [
+      0,
+      1,
+      2,
+      3,
+      -1,
+      "Long.MAX_VALUE"
+    ],
+    "varyEachArgument": true,
+    "expectedSampleCount": 24,
+    "expectedZeroReferenceMismatches": true
+  },
+  "restrictions": {
+    "noHunterPredictionFilesMountedIntoTargetNamespace": true,
+    "realNetworklessBwrapAppArmorCgroup": true,
+    "noClaimPreHunterOracle": true,
+    "noClaimFullCohortTruth": true,
+    "noAutomaticDefectConfirmation": true,
+    "noRetuneHistoricalHunter": true,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}

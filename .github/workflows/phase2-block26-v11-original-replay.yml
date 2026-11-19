@@ -1,0 +1,138 @@
+name: Ultra Sentinel — V11 retrospective independent original DHash target replay
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v11-original-replay.yml
+      - tests/fixtures/phase2-block26-v11-independent/oracle/IndependentArithmeticOracle.kt
+      - docs/quality/PHASE2-BLOCK26-V11-RETROSPECTIVE-REPLAY-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V11-INDEPENDENT-ORACLE-COMMITMENT.json
+permissions:
+  contents: read
+jobs:
+  original-dhash-replay:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout committed independent oracle, not Hunter reports
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Checkout original immutable Hunter source-attestation runner
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 689583c23277807345edb715d8c2d277a3d4bda7
+          path: frozen-v7-engine
+          persist-credentials: false
+      - name: Checkout original public DHash at its exact frozen commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: SebastianAigner/dhash-kotlin
+          ref: fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da
+          path: original-dhash
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Java 21
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Hash-pin Kotlin 2.0.21 compiler
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/kotlin-compiler-2.0.21.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          echo '0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a  '"$archive" | sha256sum --check --status
+          mkdir "$RUNNER_TEMP/kotlin-v11"
+          unzip -q "$archive" -d "$RUNNER_TEMP/kotlin-v11"
+      - name: Require AppArmor, Bubblewrap and real kernel cgroup limits
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l apt-get install -y -qq bubblewrap apparmor apparmor-utils apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile" && test ! -L "$profile"
+          sudo install -o root -g root -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
+          SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Bind exact frozen retrospective oracle bytes and source SHA before loading JVM
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const data=JSON.parse(fs.readFileSync('docs/quality/PHASE2-BLOCK26-V11-RETROSPECTIVE-REPLAY-FREEZE.json'));
+          const {path,gitBlobSha}=data.independentReplayOracle;
+          const bytes=fs.readFileSync(path);
+          const actual=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
+          if(actual!==gitBlobSha||data.contract.expectedSampleCount!==24||
+            data.restrictions.noHunterPredictionFilesMountedIntoTargetNamespace!==true||
+            data.restrictions.noClaimPreHunterOracle!==true||
+            data.metadata.originalTargetNotExecutedWithThisKotlinReplayYet!==true)
+             throw Error('V11_ORIGINAL_REPLAY_PRECOMMIT_DRIFT');
+          JS
+      - name: Authenticate unchanged original Kotlin files and source-bound replay oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "${GH_TOKEN:-}" && test -z "${GITHUB_TOKEN:-}"
+          node - "$GITHUB_WORKSPACE" "$RUNNER_TEMP/v11-original-input" <<'JS'
+          const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');
+          const [root,dest]=process.argv.slice(2);
+          const engine=path.join(root,'frozen-v7-engine'),original=path.join(root,'original-dhash');
+          const c=JSON.parse(fs.readFileSync(path.join(root,'docs/quality/PHASE2-BLOCK26-V11-COHORT.json')));
+          const selected=c.selectedCohorts[1];
+          const git=(dir,...args)=>cp.execFileSync('git',['-C',dir,...args],{encoding:'utf8'}).trim();
+          if(selected.source.repository!=='SebastianAigner/dhash-kotlin'||
+            selected.source.files.length!==2||
+            git(original,'rev-parse','HEAD')!==selected.source.commitSha||
+            git(original,'rev-parse','HEAD^{tree}')!==selected.source.treeSha||
+            git(engine,'rev-parse','HEAD')!==c.frozenHunter.commitSha||
+            git(original,'status','--porcelain')!==''||
+            git(engine,'status','--porcelain')!=='')throw Error('V11_REPLAY_ORIGINAL_GIT_CHANGED');
+          const {prepareCohort}=require('./scripts/phase2-block26-object-eval.cjs');
+          prepareCohort(engine,original,dest,{engine:{commitSha:c.frozenHunter.commitSha,treeSha:git(engine,'rev-parse','HEAD^{tree}')},source:selected.source},{extendedKotlinPaths:true});
+          const oraclePath=path.join(root,'tests/fixtures/phase2-block26-v11-independent/oracle/IndependentArithmeticOracle.kt');
+          const bytes=fs.readFileSync(oraclePath);
+          const oracleBlob=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
+          fs.mkdirSync(path.join(dest,'oracle'),{recursive:true});
+          fs.writeFileSync(path.join(dest,'oracle/IndependentArithmeticOracle.kt'),bytes,{flag:'wx',mode:0o600});
+          console.log('V11_REPLAY_ORACLE_BLOB='+oracleBlob);
+          JS
+      - name: Independently re-execute DHash with no Hunter predictions or credentials mounted
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RUNNER_TEMP/v11-original-compiled" "$RUNNER_TEMP/v11-original-replayed"
+          bash frozen-v7-engine/tests/fixtures/phase2-block26-object-contracts/run-isolated.sh compile-v2 "$RUNNER_TEMP/kotlin-v11/kotlinc" "$RUNNER_TEMP/v11-original-input" "$RUNNER_TEMP/v11-original-compiled"
+          bash frozen-v7-engine/tests/fixtures/phase2-block26-object-contracts/run-isolated.sh oracle "$RUNNER_TEMP/kotlin-v11/kotlinc" "$RUNNER_TEMP/v11-original-compiled" "$RUNNER_TEMP/v11-original-replayed"
+          node - "$RUNNER_TEMP/v11-original-replayed/execution.log" <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const raw=fs.readFileSync(process.argv[2]);const d=JSON.parse(raw);
+          if(d.schema!=='ultra-sentinel-v11-independent-dhash-replay/v1'||
+            d.originalSourceExecuted!==true||d.hunterPredictionsAccessible!==false||
+            d.wholeCohortTruth!==false||d.observationsCount!==24||
+            d.referenceMismatches!==0||!Array.isArray(d.observations)||
+            d.observations.length!==24||d.observations.some(o=>o.actual!==o.expected))
+            throw Error('V11_INDEPENDENT_ORIGINAL_REPLAY_FAILED');
+          console.log('V11_INDEPENDENT_REPLAY_SHA256='+crypto.createHash('sha256').update(raw).digest('hex'));
+          JS
+      - name: Retain retrospective evidence, never certify full novel discovery
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v11-retrospective-independent-target-replay
+          path: ${{ runner.temp }}/v11-original-replayed/execution.log
+          if-no-files-found: error
+          retention-days: 90
