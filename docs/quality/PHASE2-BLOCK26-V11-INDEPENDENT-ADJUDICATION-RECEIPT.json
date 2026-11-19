@@ -1,0 +1,62 @@
+{
+  "schema": "ultra-sentinel-block26-v11-independent-adjudication-evidence/v1",
+  "originalFrozenHunter": {
+    "commitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "runId": 44317152922,
+    "predictionManifestSha256": "0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d",
+    "originalPredictionArtifactId": 14432658115
+  },
+  "committedBeforePredictionInspection": {
+    "source": "tests/fixtures/phase2-block26-v11/oracle/IndependentArithmeticOracle.kt",
+    "originalOracleBlobSha": "7aa78ef04295fec0cb0716c19e3555dec742cc2b",
+    "commitmentPath": "docs/quality/PHASE2-BLOCK26-V11-ORACLE-COMMITMENT.json",
+    "sourceCommitSha": "31e9168f59fe940d62decf404ef2f49defb53853",
+    "freezeCommitSha": "4f8354accb81101a71397e0b2c9c839291e1b3da"
+  },
+  "independent": {
+    "workflowRunId": 44445844297,
+    "workflowUrl": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44445844297",
+    "experimentHeadSha": "d3eb9dd003e5b0337299e0722e0df333932548a2",
+    "artifactId": 14492574981,
+    "artifactDigest": "sha256:e87e9e712e6bdb27e6ca67904f121a9aefdd7fba2753994905d0ee41e39a1bf8",
+    "independentTruthSha256": "51b864a70d3fbcf2447c3a3ef8622bb556094d19518f1678d6949f17d7e765f3",
+    "independentVerdictSha256": "fffaebd80adbffb42dd1927c9179a69ffa49444f08e3ad4c2985232d9c7352e8",
+    "independentObservations": 71,
+    "originalHypotheses": 9,
+    "falsePositiveHypotheses": 8,
+    "unadjudicatedHypotheses": 1,
+    "confirmedDistinctOriginalDefects": 0,
+    "oracleExecutionAbstentions": 0,
+    "unadjudicatedReason": "DHash.hashCode-impl(long;)int is compiler-generated with no independent public semantic defect contract",
+    "scopedFalsePositiveMethod": "DHash.distanceTo-FO9zg7A(long;long;)int",
+    "originalRepositories": [
+      "runetopic/cryptography@26094b76f87acb7692eeaaa10df51f1c6f3542ac",
+      "SebastianAigner/dhash-kotlin@fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da"
+    ],
+    "authenticationVerified": true,
+    "originalHunterRetuned": false,
+    "oraclePredictionsNotAvailableDuringAuthoredContract": true,
+    "originalProbedMethods": 4,
+    "completedTriples": 32,
+    "successfulInvocations": 192,
+    "sourceBodiesUnmodified": true,
+    "wholeCohortTruth": false
+  },
+  "ci": {
+    "originalWorkflowChecks": "SUCCESS",
+    "fullSuiteTestsPassed": 2123,
+    "fullSuiteFailed": 0,
+    "generalConditionalSkips": 4,
+    "independentJudgeUnitTestsPassed": 6,
+    "isolationChecksPassed": 5
+  },
+  "outcome": {
+    "novelSecondDefectProven": false,
+    "block26Closed": false,
+    "block27Allowed": false,
+    "phase2Closed": false,
+    "canaryEnabled": false,
+    "remoteWritesAuthorized": false
+  },
+  "nextAllowedStep": "In a separately preregistered and previously unexposed cohort, test a novel defect family under the original-source oracle separation without adapting Hunter to V11 observed answers."
+}
