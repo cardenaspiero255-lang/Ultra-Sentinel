@@ -1,11 +1,14 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { spawnSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 const { planMetadataCandidates } = require('../../scripts/phase2-block26-git-admission.cjs');
 const pool = require('../../docs/quality/PHASE2-BLOCK26-V9-POOL.json');
+const command = path.resolve(__dirname, '../../scripts/phase2-block26-git-admission.cjs');
 
 const rank127 = pool.candidates.find(candidate => candidate.rank === 127).source;
 const limits = { maxEligibleSourceCandidates: 2, maxExaminedMetadataRepositories: 4, maxRepoSizeKb: 8192 };
@@ -77,7 +80,6 @@ test('admission refuses unbound, incomplete, or malformed tree metadata', async 
 });
 
 test('the offline command uses current exclusions and rejects invalid provenance', () => {
-  const command = path.resolve(__dirname, '../../scripts/phase2-block26-git-admission.cjs');
   const run = input => spawnSync(process.execPath, [command], { input, encoding: 'utf8', timeout: 10000 });
   const control = repository('fixture/canonical', 1);
   const refused = repository('fixture/executable', 2);
@@ -96,4 +98,99 @@ test('the offline command uses current exclusions and rejects invalid provenance
   assert.equal(invalid.status, 1);
   assert.equal(invalid.stdout, '');
   assert.match(invalid.stderr, /INVALID_PINNED_TREE/);
+});
+
+function git(directory, ...args) {
+  return execFileSync('git', ['-C', directory, '-c', 'core.hooksPath=/dev/null', ...args], {
+    encoding: 'utf8',
+  }).trim();
+}
+
+function fixtureCheckout(directory, files) {
+  fs.mkdirSync(directory);
+  git(directory, 'init', '-q');
+  for (const { name, text, mode } of files) {
+    const file = path.join(directory, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, text, { mode });
+  }
+  git(directory, 'add', '.');
+  git(directory, '-c', 'user.name=Fixtures', '-c', 'user.email=fixtures@example.invalid',
+    '-c', 'commit.gpgsign=false', 'commit', '-q', '--allow-empty', '-m', 'Local fixture');
+  return {
+    commitSha: git(directory, 'rev-parse', 'HEAD'),
+    treeSha: git(directory, 'rev-parse', 'HEAD^{tree}'),
+  };
+}
+
+function stagingFixture(t, extraFiles = []) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'block26-git-admission-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const engineDir = path.join(directory, 'engine');
+  const sourceDir = path.join(directory, 'source');
+  const sourcePath = 'src/main/kotlin/Example.kt';
+  const sourceText = 'package example\nfun sum(a: Int, b: Int) = a + b\n';
+  const engine = fixtureCheckout(engineDir, []);
+  const source = fixtureCheckout(sourceDir, [
+    { name: sourcePath, text: sourceText, mode: 0o644 },
+    ...extraFiles,
+  ]);
+  const manifest = {
+    engine,
+    source: {
+      ...source,
+      repository: 'fixture/controlled',
+      files: [{
+        path: sourcePath,
+        blobSha: git(sourceDir, 'rev-parse', 'HEAD:' + sourcePath),
+        sizeBytes: Buffer.byteLength(sourceText),
+      }],
+    },
+  };
+  const destination = path.join(directory, 'staged');
+  const run = (request, args = ['stage', engineDir, sourceDir, destination]) =>
+    spawnSync(process.execPath, [command, ...args], {
+      input: JSON.stringify(request), encoding: 'utf8', timeout: 12000,
+    });
+  return { directory, sourceDir, sourceText, sourcePath, manifest, destination, run };
+}
+
+test('stage authenticates local Git metadata before copying the exact Kotlin blob', t => {
+  const fixture = stagingFixture(t, [{ name: 'README.md', text: 'fixture\n', mode: 0o644 }]);
+  const result = fixture.run(fixture.manifest);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.readFileSync(path.join(fixture.destination, fixture.sourcePath), 'utf8'), fixture.sourceText);
+  assert.equal(fs.existsSync(path.join(fixture.destination, 'README.md')), false);
+});
+
+test('stage rejects a Kotlin Git entry absent from the reservation before creating compiler input', t => {
+  const fixture = stagingFixture(t, [
+    { name: 'src/main/kotlin/Executable.kt', text: 'package example\n', mode: 0o755 },
+  ]);
+  const result = fixture.run(fixture.manifest);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /NONCANONICAL_ORIGINAL_KOTLIN_TREE/);
+  assert.equal(fs.existsSync(fixture.destination), false);
+});
+
+test('stage retains the existing commit, tree, blob and clean-checkout requirements', t => {
+  const fixture = stagingFixture(t);
+  for (const [change, expected] of [
+    [{ treeSha: 'bad-tree' }, /TREE_METADATA_UNAVAILABLE/],
+    [{ treeSha: 'f'.repeat(40) }, /TREE_METADATA_UNAVAILABLE/],
+    [{ commitSha: 'f'.repeat(40) }, /BLOCK26_OBJECT_EVIDENCE_REFUSED/],
+    [{ files: [{ ...fixture.manifest.source.files[0], blobSha: 'f'.repeat(40) }] },
+      /BLOCK26_OBJECT_EVIDENCE_REFUSED/],
+  ]) {
+    const result = fixture.run({ ...fixture.manifest, source: { ...fixture.manifest.source, ...change } });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, expected);
+    assert.equal(fs.existsSync(fixture.destination), false);
+  }
+  fs.writeFileSync(path.join(fixture.sourceDir, fixture.sourcePath), 'changed');
+  const dirty = fixture.run(fixture.manifest);
+  assert.equal(dirty.status, 1);
+  assert.match(dirty.stderr, /BLOCK26_OBJECT_EVIDENCE_REFUSED/);
+  assert.equal(fs.existsSync(fixture.destination), false);
+  assert.match(fixture.run({}, ['stage']).stderr, /GIT_ADMISSION_ARGUMENTS/);
 });
