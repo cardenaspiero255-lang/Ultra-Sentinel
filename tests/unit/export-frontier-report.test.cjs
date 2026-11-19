@@ -69,16 +69,20 @@ test('rejects bad reports and invalid input paths without emitting a report', t 
   const source = analysis();
   source.findings[0].path = 'C:/private/Fixture.kt';
   const badPath = input(t, source);
+  const badJson = input(t, {});
+  fs.writeFileSync(badJson, '{ "fixture-private-value": malformed }');
   for (const [file, error] of [
     [noVersion, /Invalid Core version/],
     [noSha, /INVALID_CORE_ANALYSIS/],
     [badPath, /Invalid report path/],
     [path.dirname(badPath), /Invalid input file/],
+    [badJson, /Invalid Core JSON input/],
   ]) {
     const result = run('json', file);
     assert.equal(result.status, 1);
     assert.equal(result.stdout, '');
     assert.match(result.stderr, error);
+    assert.doesNotMatch(result.stderr, /fixture-private-value/);
   }
   const unknown = run('csv', badPath);
   assert.equal(unknown.status, 1);
