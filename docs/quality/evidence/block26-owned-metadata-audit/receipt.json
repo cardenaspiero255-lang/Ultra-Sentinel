@@ -1,0 +1,265 @@
+{
+  "schema": "ultra-sentinel-block26-owned-metadata-admission/v1",
+  "scope": {
+    "owner": "cardenaspiero255-lang",
+    "repositoriesVisibleThroughOwnerAffiliation": 6,
+    "nonExcludedGitBranchesExamined": 18
+  },
+  "admission": {
+    "commitSha": "6fd38ee4ccddd290e2b2e17f8f62844c7027ed0a",
+    "script": "scripts/phase2-block26-git-admission.cjs",
+    "scriptBlobSha": "425dcd96479ff9b7087033c6b339d1d9dc0047d1",
+    "exclusions": "docs/quality/PHASE2-BLOCK26-V11-POSTSCOUT-EXCLUSIONS.json",
+    "exclusionsBlobSha": "847da06e63940499d5036e7dab7854cc298e063d",
+    "excludedRepositories": 185,
+    "excludedKotlinBlobs": 729
+  },
+  "repositories": [
+    {
+      "full_name": "cardenaspiero255-lang/JARVIS",
+      "default_branch": "main",
+      "stargazers_count": 0,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 2302
+    },
+    {
+      "full_name": "cardenaspiero255-lang/Jarvis-Windows-",
+      "default_branch": "main",
+      "stargazers_count": 0,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 2174
+    },
+    {
+      "full_name": "cardenaspiero255-lang/Ultra-Sentinel",
+      "default_branch": "main",
+      "stargazers_count": 0,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 4843
+    },
+    {
+      "full_name": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "default_branch": "main",
+      "stargazers_count": 1,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 1271
+    },
+    {
+      "full_name": "cardenaspiero255-lang/gamehub-ultra",
+      "default_branch": "main",
+      "stargazers_count": 1,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 6642
+    },
+    {
+      "full_name": "cardenaspiero255-lang/ritual-barberia",
+      "default_branch": "main",
+      "stargazers_count": 0,
+      "private": false,
+      "archived": false,
+      "fork": false,
+      "size": 26
+    }
+  ],
+  "branchTrees": [
+    {
+      "repository": "cardenaspiero255-lang/Jarvis-Windows-",
+      "branch": "feat/upstream-base-and-github-agent",
+      "commitSha": "30948596b2af0b9b32a617a8eeeac8b12599efd1",
+      "treeSha": "30948596b2af0b9b32a617a8eeeac8b12599efd1",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Jarvis-Windows-",
+      "branch": "main",
+      "commitSha": "9d46e9d12effb52635ee56267f90c44f73a89b59",
+      "treeSha": "9d46e9d12effb52635ee56267f90c44f73a89b59",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/ritual-barberia",
+      "branch": "main",
+      "commitSha": "15ae31576b72f6e818cdf0d962ee5a104dcc891b",
+      "treeSha": "15ae31576b72f6e818cdf0d962ee5a104dcc891b",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "audit/v7-causal-commercial-validation",
+      "commitSha": "8db2b92dceb9605135b40cd4e0233a46d9d56164",
+      "treeSha": "8db2b92dceb9605135b40cd4e0233a46d9d56164",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "audit/v7-evidence-gates",
+      "commitSha": "71dc3e4295516318a80ceb37833fb063b883cc42",
+      "treeSha": "71dc3e4295516318a80ceb37833fb063b883cc42",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "audit/v7-lexical-novelty-gate",
+      "commitSha": "7d97e93945bb03a737276ef43139780888e8e475",
+      "treeSha": "7d97e93945bb03a737276ef43139780888e8e475",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "audit/v7-private-corpus-attestation",
+      "commitSha": "ab8a7e314b8c65d066eec2ef8467e9909eb423b5",
+      "treeSha": "ab8a7e314b8c65d066eec2ef8467e9909eb423b5",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "feat/behavioral-evidence-20261026",
+      "commitSha": "e65a7e538c6ad00485ba30371cdee55f06740b14",
+      "treeSha": "e65a7e538c6ad00485ba30371cdee55f06740b14",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "feat/v7-commercial-evidence-gate-20261020",
+      "commitSha": "b3b10e8e054f8e2f776fbd84634bb510ff33baa0",
+      "treeSha": "b3b10e8e054f8e2f776fbd84634bb510ff33baa0",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "feat/v7-enterprise-causal-evidence-gates",
+      "commitSha": "60e682eb3ba4e7dcfb83be5549de3cce499564f1",
+      "treeSha": "60e682eb3ba4e7dcfb83be5549de3cce499564f1",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "feat/v7-enterprise-quality-screening",
+      "commitSha": "ded47c96a4b91a320cdb9014ca63f856c46c40ea",
+      "treeSha": "ded47c96a4b91a320cdb9014ca63f856c46c40ea",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "feat/v7-rea-optional-analysis-20261020",
+      "commitSha": "013679bc849beee9c0f857c839fb2a4fbcb08afd",
+      "treeSha": "013679bc849beee9c0f857c839fb2a4fbcb08afd",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "fix/ultrasec-v7-ci-security-hardening",
+      "commitSha": "0c499bdf0dd9762bfb8d5c86427ae4e31de6ece9",
+      "treeSha": "0c499bdf0dd9762bfb8d5c86427ae4e31de6ece9",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "main",
+      "commitSha": "643a8ecb1a4b1d5f426d632989ad49555d756bb7",
+      "treeSha": "643a8ecb1a4b1d5f426d632989ad49555d756bb7",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "research/cve-63-candidate-inventory-20261017",
+      "commitSha": "2ad37ae664c1467fcfe5a75f53a01d1b9f9fbf59",
+      "treeSha": "2ad37ae664c1467fcfe5a75f53a01d1b9f9fbf59",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "research/v76-pymdown-koa-native-20261027",
+      "commitSha": "0903d3e81a241a177fe8883a49326f72dc59ba5f",
+      "treeSha": "0903d3e81a241a177fe8883a49326f72dc59ba5f",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "research/v80-external-native-20261103",
+      "commitSha": "31c21aa7d2ca29bd7a90bbea0f4b189834a8512d",
+      "treeSha": "31c21aa7d2ca29bd7a90bbea0f4b189834a8512d",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    },
+    {
+      "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+      "branch": "research/v81-prospective-prereg-20261103",
+      "commitSha": "4cb88e827c639785ad2c7d9a845c9cdde61d8779",
+      "treeSha": "4cb88e827c639785ad2c7d9a845c9cdde61d8779",
+      "treeTruncated": false,
+      "kotlinBlobCount": 0
+    }
+  ],
+  "outcome": "NO_ELIGIBLE_OWNED_KOTLIN_REPOSITORY",
+  "result": {
+    "schema": "ultra-sentinel-v8-prospective-metadata-candidates/v1",
+    "candidates": [],
+    "audit": [
+      {
+        "rank": 1,
+        "repository": "cardenaspiero255-lang/gamehub-ultra",
+        "reason": "EXPOSED_REPOSITORY"
+      },
+      {
+        "rank": 2,
+        "repository": "cardenaspiero255-lang/Ultrasec-Dataset-",
+        "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+      },
+      {
+        "rank": 3,
+        "repository": "cardenaspiero255-lang/JARVIS",
+        "reason": "EXPOSED_REPOSITORY"
+      },
+      {
+        "rank": 4,
+        "repository": "cardenaspiero255-lang/Jarvis-Windows-",
+        "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+      },
+      {
+        "rank": 5,
+        "repository": "cardenaspiero255-lang/ritual-barberia",
+        "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+      },
+      {
+        "rank": 6,
+        "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+        "reason": "EXPOSED_REPOSITORY"
+      }
+    ],
+    "rankedRepositoryCount": 6,
+    "examinedCount": 6,
+    "sourceBodiesRead": false,
+    "targetInvoked": false,
+    "oracleExecuted": false,
+    "hunterExecuted": false,
+    "frozenCohortCommitted": false,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}
