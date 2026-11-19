@@ -63,11 +63,6 @@ jobs:
           node --test tests/unit/phase2-block26-v11-independent-adjudication.test.cjs
           node --check scripts/phase2-block26-v11-independent-run.cjs
           node --check scripts/phase2-block26-v11-independent-judge.cjs
-      - name: Enforce 90 percent independent-judge line and branch coverage
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --experimental-test-coverage --test-coverage-include=scripts/phase2-block26-v11-independent-judge.cjs --test-coverage-lines=90 --test-coverage-branches=90 --test tests/unit/phase2-block26-v11-independent-adjudication.test.cjs
       - name: Demand actual AppArmor, Bubblewrap and bounded cgroups
         shell: bash
         run: |
@@ -101,6 +96,13 @@ jobs:
           gh run download 44317152922 --repo cardenaspiero255-lang/Ultra-Sentinel --name block26-v11-full-frozen-hunter-predictions --dir "$RUNNER_TEMP/v11-previous-sealed-predictions"
           test -s "$RUNNER_TEMP/v11-previous-sealed-predictions/full-prediction-seal.json"
           test "$(sha256sum "$RUNNER_TEMP/v11-previous-sealed-predictions/full-prediction-seal.json" | cut -d' ' -f1)" = 0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d
+      - name: Enforce 90 percent judge coverage including authentic sealed artifact positive and tampered cases
+        shell: bash
+        env:
+          SENTINEL_V11_EVIDENCE_DIR: ${{ runner.temp }}/v11-previous-sealed-predictions
+        run: |
+          set -euo pipefail
+          node --experimental-test-coverage --test-coverage-include=scripts/phase2-block26-v11-independent-judge.cjs --test-coverage-lines=90 --test-coverage-branches=90 --test tests/unit/phase2-block26-v11-independent-adjudication.test.cjs tests/integration/phase2-block26-v11-sealed-artifact.test.cjs
       - name: Reauthenticate original SHA-sealed reports and run ONLY independent isolated oracle
         shell: bash
         run: |
