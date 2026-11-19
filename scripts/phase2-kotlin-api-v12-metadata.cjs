@@ -23,6 +23,9 @@ async function main(){
  if(process.argv.length!==3||process.env.GITHUB_EVENT_NAME!=='pull_request'||
   !process.env.GH_TOKEN)fail('UNAUTHORIZED');
  const {p,ex}=freeze(),selector=p.metadataSelector,out=process.argv[2],token=process.env.GH_TOKEN;
+ const moduleBlob=crypto.createHash('sha1').update(Buffer.from('blob '+fs.readFileSync(__filename).length+'\0')).update(fs.readFileSync(__filename)).digest('hex');
+ if(selector.wrapperPath!=='scripts/phase2-kotlin-api-v12-metadata.cjs'||
+  selector.wrapperBlobSha!==moduleBlob)fail('WRAPPER_NOT_PRECOMMITTED');
  if(selector.frozenQuery!=='math language:Kotlin fork:false archived:false stars:2..50'||
   selector.maxRepositoriesRanked!==300||selector.maxFreshCandidates!==12||
   selector.maxOriginalKotlinFilesPerRepo!==12||
