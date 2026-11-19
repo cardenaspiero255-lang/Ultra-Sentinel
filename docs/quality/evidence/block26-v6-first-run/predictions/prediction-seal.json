@@ -1,0 +1,176 @@
+{
+  "schema": "ultra-sentinel-kotlin-api-v2-prediction-seal/v1",
+  "engineSha": "0aba994cd371651d605985b659c4b32e5c3f2b15",
+  "manifestSha256": "f20d6d3d663697b83eef12fa1da7f4608fbbf53855ad371d0b4ace4b0b49a7de",
+  "reports": [
+    {
+      "cohortId": 1,
+      "scope": "conditional",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "f4a63ae3fa3d3763e18154e0f56dca1c9ab049c115ffaf6dc0a6921b4edcc10f",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "functions",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "87cc6c4ede9b41729928300c61708723e6b2d804f0c8aec9fbfcaf2c1c07b6b6",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "generics",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "a6c527ea49c6942c561a2e926ab6c7815d546c03d170052717863af06a35c804",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "loops",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "f4a63ae3fa3d3763e18154e0f56dca1c9ab049c115ffaf6dc0a6921b4edcc10f",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "nullability",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "13e93133ab36d92af149333bfa7d9481e9bd749b117b580444789ba8b7ed8e1d",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 1,
+      "scope": "stdlib",
+      "artifactSha256": "389f2272e53d048d2ea3661de257cec22f908fa793e2a313b0b611e85509a65b",
+      "reportSha256": "f4a63ae3fa3d3763e18154e0f56dca1c9ab049c115ffaf6dc0a6921b4edcc10f",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_1",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "016d4b3f63aa3798dca5cdeaf399339a60bce78e512b826a795e9bd87b6a7eb3",
+      "methodsProbed": 1,
+      "completedTriples": 14,
+      "hypotheses": 2
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_2",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "eb15167bf35d4528cdfbd03f357b393dda7b596f094192a1ef51caf854045c18",
+      "methodsProbed": 1,
+      "completedTriples": 2,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_3",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "0c98f41446b03ff19b96840f3803ca1c105a80b89701fc7f10944a14aee5ce1c",
+      "methodsProbed": 1,
+      "completedTriples": 1,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_4",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "8ffacaa27ba808b7b2fe59edf0795c632fcd688084b6ecc9b95430010747f349",
+      "methodsProbed": 3,
+      "completedTriples": 7,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_5",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "3d0812f9b2194bc21f5b9bdc0143374a582ad1449199a2037e5f3a455de41d7b",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_6",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "bb910bf16ab01fb12052cb3459294395fcff2e132c8ffb689c856f2bcb1d2c0e",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_7",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "bb910bf16ab01fb12052cb3459294395fcff2e132c8ffb689c856f2bcb1d2c0e",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_8",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "bb910bf16ab01fb12052cb3459294395fcff2e132c8ffb689c856f2bcb1d2c0e",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 3,
+      "scope": "chapter_9",
+      "artifactSha256": "b972acc272c36347133fe402f3a1540a77777a1d85da2bf9ad3022d45594ecbd",
+      "reportSha256": "bb910bf16ab01fb12052cb3459294395fcff2e132c8ffb689c856f2bcb1d2c0e",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 5,
+      "scope": ".",
+      "artifactSha256": "7902d13e885f66ddde0b297aaa213ac964248c36ba20c9544c501c1042cadfde",
+      "reportSha256": "67ffdbe1e2db699f9fb6b3c97b1269e160e597ff8c4533f7f16f494c3c94edc7",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    },
+    {
+      "cohortId": 6,
+      "scope": ".",
+      "artifactSha256": "90b6f0a73610bc268b3901aaeea5c24907ffb6dcd0b4b945a37ca3ebf5cbd6e6",
+      "reportSha256": "b6a7f88dd4d5dce270754740b6838b929b12d347d6791b887f6188ace5720e83",
+      "methodsProbed": 0,
+      "completedTriples": 0,
+      "hypotheses": 0
+    }
+  ],
+  "executionAbstentions": [
+    {
+      "cohortId": 2,
+      "reason": "COMPILATION_ABSTENTION",
+      "exitStatus": 1
+    },
+    {
+      "cohortId": 4,
+      "scope": "br",
+      "reason": "PROBE_EXECUTION_ABSTENTION",
+      "exitStatus": 1
+    }
+  ],
+  "oracleExecuted": false,
+  "engineRetuned": false,
+  "block27Allowed": false
+}

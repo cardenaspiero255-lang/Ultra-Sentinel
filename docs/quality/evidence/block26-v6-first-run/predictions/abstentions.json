@@ -1,0 +1,13 @@
+[
+  {
+    "cohortId": 2,
+    "reason": "COMPILATION_ABSTENTION",
+    "exitStatus": 1
+  },
+  {
+    "cohortId": 4,
+    "scope": "br",
+    "reason": "PROBE_EXECUTION_ABSTENTION",
+    "exitStatus": 1
+  }
+]
