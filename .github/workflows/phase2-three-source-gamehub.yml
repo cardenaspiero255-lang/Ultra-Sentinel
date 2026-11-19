@@ -28,6 +28,8 @@ on:
       - packages/quality-gates/phase2-causal-factorial.cjs
       - packages/family-hunter/original-oracle-vector-factorial.cjs
       - tests/unit/original-oracle-vector-factorial.test.cjs
+      - tests/unit/cross-file-sandbox-reproduction.test.cjs
+      - tests/fixtures/phase2-kotlin-module-factorial/**
       - packages/recovery/phase2-executed-jvm-triplet.cjs
       - packages/recovery/phase2-generic-jvm-judge.cjs
       - packages/recovery/repair-judge.cjs
@@ -166,6 +168,13 @@ jobs:
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
       - name: Require the adversarial Bubblewrap namespace probe
         run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-isolation-boundary.test.cjs
+      - name: Execute all eight Kotlin module counterfactuals and verify Git rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SENTINEL_PHASE2_FACTORIAL_KOTLIN="$RUNNER_TEMP/kotlin-telemetry/kotlinc"
+          test -x "$SENTINEL_PHASE2_FACTORIAL_KOTLIN/bin/kotlinc"
+          node --test tests/unit/cross-file-sandbox-reproduction.test.cjs
       - name: Require numeric blind namespace adversarial probe
         run: SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/phase2-blind-numeric-isolation.test.cjs
       - name: Build authenticated source-only GameHub Kotlin inventory
