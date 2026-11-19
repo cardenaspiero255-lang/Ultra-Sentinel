@@ -73,11 +73,13 @@ test('serverless emitted alerts replay after restart until durable Actions outpu
    githubToken:token,fetchImpl:gh.fetchImpl});
   assert.deepEqual(changed.alerts.map(x=>x.type),
    ['JARVIS_PR_HEAD_CHANGED','GAMEHUB_PR_HEAD_CHANGED']);
+  assert.equal(changed.batchSequence,checkedState(f.stateFile).batchSequence);
   const replay=await runGithubOnlyCycle({stateFile:f.stateFile,
    githubToken:token,fetchImpl:async()=>{throw Error('NO_POLL_WHEN_PENDING')}});
   assert.equal(replay.status,'REPLAY_PERSISTED_ALERTS');
   assert.deepEqual(replay.alerts,changed.alerts);
-  acknowledgeDelivery(f.stateFile,pendingDigest(changed.alerts));
+  assert.equal(replay.batchSequence,changed.batchSequence);
+  acknowledgeDelivery(f.stateFile,pendingDigest(changed.alerts),changed.batchSequence);
   assert.equal((await runGithubOnlyCycle({stateFile:f.stateFile,
    githubToken:token,fetchImpl:gh.fetchImpl})).status,'NO_CHANGES');
  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
