@@ -1,0 +1,58 @@
+name: Ultra Sentinel — v7 prospective Kotlin metadata-only cohort reservation
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v7-selection.yml
+      - scripts/phase2-kotlin-api-v7-select.cjs
+      - tests/unit/phase2-block26-v7-selector.test.cjs
+      - docs/quality/PHASE2-BLOCK26-V7-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V7-EXCLUSIONS.json
+permissions:
+  contents: read
+jobs:
+  metadata-only:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact v7 protocol with no persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Require full offline unit suite and exact v6/v7 freezes before contacting GitHub API
+        run: |
+          set -euo pipefail
+          npm run check
+          node --test tests/unit/phase2-block26-v7-selector.test.cjs tests/unit/phase2-block26-v7-freeze.test.cjs
+      - name: Select fresh Kotlin sources using GitHub trees only, not source content
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/v7-metadata-only"
+          # Once committed, use the exact sealed reservation; never search
+          # for a replacement cohort or rerank known source identities.
+          if test -f docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json; then
+            test "$(sha256sum docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json | cut -d' ' -f1)" = 11e53fe012cff24a594db6c47412495e5de43b587b598a93c6c7c6c86b56411c
+            cp docs/quality/PHASE2-BLOCK26-V7-RESERVATION.json "$RUNNER_TEMP/v7-metadata-only/metadata-reservation.json"
+            echo "V7_PROSPECTIVE_RESERVATION_REPLAY_ONLY"
+          else
+            node scripts/phase2-kotlin-api-v7-select.cjs "$RUNNER_TEMP/v7-metadata-only"
+          fi
+          test -s "$RUNNER_TEMP/v7-metadata-only/metadata-reservation.json"
+      - name: Retain exact metadata-only reservation output without changing original sources
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v7-metadata-reservation
+          path: ${{ runner.temp }}/v7-metadata-only/metadata-reservation.json
+          if-no-files-found: error
+          retention-days: 14

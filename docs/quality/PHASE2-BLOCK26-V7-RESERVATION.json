@@ -1,0 +1,2048 @@
+{
+  "schema": "ultra-sentinel-block26-v7-metadata-reservation/v1",
+  "engine": {
+    "repository": "cardenaspiero255-lang/Ultra-Sentinel",
+    "sourceCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "modules": [
+      {
+        "path": "packages/family-hunter/v7/GenericJvmMetamorphicProbe.java",
+        "blobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/run-probe-v2.sh",
+        "blobSha": "294df7eb23629ff95e82b573d5f01c1f13bcea54"
+      },
+      {
+        "path": "tests/fixtures/jvm-metamorphic/assert-cgroup-and-exec.sh",
+        "blobSha": "46a5c2c056bfb4ab4cddfb1b2907a0c35c3a6eb0"
+      },
+      {
+        "path": "tests/fixtures/phase2-block26-object-contracts/run-isolated.sh",
+        "blobSha": "11866df8a48c2567b5f4dfcd7e7cae7cb68caad8"
+      },
+      {
+        "path": "scripts/phase2-block26-object-eval.cjs",
+        "blobSha": "9524564e24f66ac32db3530988f630e25c140580"
+      },
+      {
+        "path": "scripts/phase2-kotlin-api-v2-eval.cjs",
+        "blobSha": "3a3c6cc1e05d501107a3c4d2f504fafde8f81b27"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/capture.cjs",
+        "blobSha": "77610104992b446de457bea59d8faeb679d5bd7a"
+      },
+      {
+        "path": "tests/fixtures/phase2-kotlin-api-v2/run-independent.cjs",
+        "blobSha": "ef26ca3897ec2f08b5a03e889101876d07b897d4"
+      }
+    ]
+  },
+  "previousExclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V7-EXCLUSIONS.json",
+    "blobSha": "bcbb3a97af3a3f8bf722f9e07a19985699ff1a12",
+    "repositories": 147,
+    "originalBlobs": 523
+  },
+  "selectionQuery": "algorithm language:Kotlin fork:false archived:false stars:2..20",
+  "poolCount": 300,
+  "rankedRepositories": [
+    {
+      "repository": "DmitryNekrasov/kodvent",
+      "stars": 18
+    },
+    {
+      "repository": "mAlaliSy/AlgoLizer-algorithms-visualizer",
+      "stars": 18
+    },
+    {
+      "repository": "occidere/leetcode",
+      "stars": 18
+    },
+    {
+      "repository": "alexandrepiveteau/kotlin-graphs",
+      "stars": 17
+    },
+    {
+      "repository": "ensody/Kompressor",
+      "stars": 17
+    },
+    {
+      "repository": "khnychenkoav/KotlinEducational",
+      "stars": 17
+    },
+    {
+      "repository": "MartinHaeusler/LSM4K",
+      "stars": 17
+    },
+    {
+      "repository": "penemue/keap",
+      "stars": 17
+    },
+    {
+      "repository": "esoxjem/Algorithms",
+      "stars": 16
+    },
+    {
+      "repository": "pranamphd/digipin-kotlin",
+      "stars": 16
+    },
+    {
+      "repository": "aallam/string-similarity-kotlin",
+      "stars": 15
+    },
+    {
+      "repository": "mohammednawas8/Android-Algorithms-Visualizer",
+      "stars": 15
+    },
+    {
+      "repository": "faniabdullah/dsa-kotlin",
+      "stars": 14
+    },
+    {
+      "repository": "funfunStudy/algorithm",
+      "stars": 14
+    },
+    {
+      "repository": "palasjir/ct-volumetric-rendering",
+      "stars": 14
+    },
+    {
+      "repository": "sumeyraozugur/Algorithms",
+      "stars": 14
+    },
+    {
+      "repository": "V9vek/Sorting-Visualizer",
+      "stars": 14
+    },
+    {
+      "repository": "IbrahimEzzatSaad/MindfulData",
+      "stars": 13
+    },
+    {
+      "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
+      "stars": 12
+    },
+    {
+      "repository": "dlew/wordle-solver",
+      "stars": 12
+    },
+    {
+      "repository": "fiskurgit/DitherKt",
+      "stars": 12
+    },
+    {
+      "repository": "galangriarulhaq/Kotlin-data-structures-and-algorithms",
+      "stars": 12
+    },
+    {
+      "repository": "MortezaNedaei/Compose-BlurHash",
+      "stars": 12
+    },
+    {
+      "repository": "Ankursehrawat15/Realtime-chat-app-based-on-Cryptographic-algorithms",
+      "stars": 11
+    },
+    {
+      "repository": "huodianyan/rokid-imu-motion-recorder",
+      "stars": 11
+    },
+    {
+      "repository": "karimelbahi/DataStructure-Algorithms-Kotlin",
+      "stars": 11
+    },
+    {
+      "repository": "kodeflap/Algo_Guide",
+      "stars": 11
+    },
+    {
+      "repository": "Morfly/kotlin-algorithms",
+      "stars": 11
+    },
+    {
+      "repository": "Tetraquark/MyersDiffKt",
+      "stars": 11
+    },
+    {
+      "repository": "abhishek-yadav-random/Pathfinding-visualiser",
+      "stars": 10
+    },
+    {
+      "repository": "amirreza-lotfi/GraphAlgorithmApplication",
+      "stars": 10
+    },
+    {
+      "repository": "jens-muenker/fuzzywuzzy-kotlin",
+      "stars": 10
+    },
+    {
+      "repository": "JetBrains-Research/hldiff",
+      "stars": 10
+    },
+    {
+      "repository": "jumaallan/kotlin-data-structures-algorithms",
+      "stars": 10
+    },
+    {
+      "repository": "karloti/concurrent-priority-queue",
+      "stars": 10
+    },
+    {
+      "repository": "kieubaduong/Boka",
+      "stars": 10
+    },
+    {
+      "repository": "amitozs999/Kotlin-Chatting-App",
+      "stars": 9
+    },
+    {
+      "repository": "andriiginting/algorithm-practice",
+      "stars": 9
+    },
+    {
+      "repository": "elizarov/LogicDerivation",
+      "stars": 9
+    },
+    {
+      "repository": "FunkyMuse/Data-structures-and-algorithms",
+      "stars": 9
+    },
+    {
+      "repository": "Lira-tron/KotlinAlgorithms",
+      "stars": 9
+    },
+    {
+      "repository": "niiad/hashkt",
+      "stars": 9
+    },
+    {
+      "repository": "qwertukg/Barnes-Hut-N-Body",
+      "stars": 9
+    },
+    {
+      "repository": "2hyungjin/Algorithm-DataStructure",
+      "stars": 8
+    },
+    {
+      "repository": "arpanpathak/AdvancedAlgorithmPatterns",
+      "stars": 8
+    },
+    {
+      "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "stars": 8
+    },
+    {
+      "repository": "GustavoHGAraujo/kotlin-a-star-algorithm",
+      "stars": 8
+    },
+    {
+      "repository": "Hemant-Jain-Author/Data-Structures-and-Algorithms-using-Kotlin",
+      "stars": 8
+    },
+    {
+      "repository": "KonstantinLukaschenko/genetic-algorithm-kotlin",
+      "stars": 8
+    },
+    {
+      "repository": "qiaoyuang/Algorithm",
+      "stars": 8
+    },
+    {
+      "repository": "ShawxingKwok/Kwok-algorithm",
+      "stars": 8
+    },
+    {
+      "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
+      "stars": 8
+    },
+    {
+      "repository": "wilder/redwood",
+      "stars": 8
+    },
+    {
+      "repository": "ArtanBerisha1/SortingPath",
+      "stars": 7
+    },
+    {
+      "repository": "BerattCelikk/Odev5",
+      "stars": 7
+    },
+    {
+      "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
+      "stars": 7
+    },
+    {
+      "repository": "dzikoysk/khangul",
+      "stars": 7
+    },
+    {
+      "repository": "elye/demo_android_blur_image",
+      "stars": 7
+    },
+    {
+      "repository": "jayasuryat/FlockingSimulation",
+      "stars": 7
+    },
+    {
+      "repository": "mwshubham/DataStructureAndAlgorithm",
+      "stars": 7
+    },
+    {
+      "repository": "PeopleAndService/AlgorithmStudy",
+      "stars": 7
+    },
+    {
+      "repository": "wp529/SkuAlgorithm",
+      "stars": 7
+    },
+    {
+      "repository": "Ahmed-Saber-25/grokking_algorithms",
+      "stars": 6
+    },
+    {
+      "repository": "anandwana001/Kotlin-DSA-Projects",
+      "stars": 6
+    },
+    {
+      "repository": "andremion/SlidingPuzzle",
+      "stars": 6
+    },
+    {
+      "repository": "evaou/kotlin-algorithm",
+      "stars": 6
+    },
+    {
+      "repository": "guttedgarden/Kuznechik",
+      "stars": 6
+    },
+    {
+      "repository": "Kotlin-Polytech/Algorithms-2019",
+      "stars": 6
+    },
+    {
+      "repository": "Prasanna79/parentapproved",
+      "stars": 6
+    },
+    {
+      "repository": "professorDeveloper/Kotlin-Algorithms",
+      "stars": 6
+    },
+    {
+      "repository": "qveex/k-means_clustering_image",
+      "stars": 6
+    },
+    {
+      "repository": "SmartToolFactory/DataStructuresAndAlgorithmsPlayground",
+      "stars": 6
+    },
+    {
+      "repository": "v-pan/rltest",
+      "stars": 6
+    },
+    {
+      "repository": "vladmelnyk/coinselection",
+      "stars": 6
+    },
+    {
+      "repository": "YAPP-Github/21st-Study-Algorithm-2",
+      "stars": 6
+    },
+    {
+      "repository": "Alims-Repo/Prayer-Times-KMM",
+      "stars": 5
+    },
+    {
+      "repository": "amindadgar/knapSack-Problem",
+      "stars": 5
+    },
+    {
+      "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
+      "stars": 5
+    },
+    {
+      "repository": "damlacim/HackerRankSolutions",
+      "stars": 5
+    },
+    {
+      "repository": "fahime-ghasemi/kotlin-algorithms-interview",
+      "stars": 5
+    },
+    {
+      "repository": "GregHib/game-playground",
+      "stars": 5
+    },
+    {
+      "repository": "h0tk3y/geometry",
+      "stars": 5
+    },
+    {
+      "repository": "hartwigmedical/actin",
+      "stars": 5
+    },
+    {
+      "repository": "hasanelfalakiy/lib-ephemeris-jeanmeeus",
+      "stars": 5
+    },
+    {
+      "repository": "IronSentinel1/Pong-Remake",
+      "stars": 5
+    },
+    {
+      "repository": "juliaschatz/kt_path_controllers",
+      "stars": 5
+    },
+    {
+      "repository": "KhaledSherifSayed/Algorithms",
+      "stars": 5
+    },
+    {
+      "repository": "Louiixx-h/algorithms-and-data-structure",
+      "stars": 5
+    },
+    {
+      "repository": "milos85vasic/Fundamental-Algorithms",
+      "stars": 5
+    },
+    {
+      "repository": "Nexters/Algorithm",
+      "stars": 5
+    },
+    {
+      "repository": "overfullstack/ds-algo",
+      "stars": 5
+    },
+    {
+      "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+      "stars": 5
+    },
+    {
+      "repository": "RustamKZ/recfi_ap",
+      "stars": 5
+    },
+    {
+      "repository": "saechimdaeki/Solving-ALGORITHM",
+      "stars": 5
+    },
+    {
+      "repository": "sagar-viradiya/DS-Algo",
+      "stars": 5
+    },
+    {
+      "repository": "samagra14/aima-kotlin",
+      "stars": 5
+    },
+    {
+      "repository": "StudyFork/AlgorithmStudy",
+      "stars": 5
+    },
+    {
+      "repository": "umangjpatel/KotlinDSA",
+      "stars": 5
+    },
+    {
+      "repository": "vivalerievich/kotgll",
+      "stars": 5
+    },
+    {
+      "repository": "w4v3/hypercampus",
+      "stars": 5
+    },
+    {
+      "repository": "XingZhe-Li/AntiBrainRot",
+      "stars": 5
+    },
+    {
+      "repository": "abhishek-yadav-random/Markov-Chain-Visualiser",
+      "stars": 4
+    },
+    {
+      "repository": "Anass001/GraphSimulatorCompose",
+      "stars": 4
+    },
+    {
+      "repository": "andre-j3sus/algorithms-and-data-structures",
+      "stars": 4
+    },
+    {
+      "repository": "ayushvatsal/NewsVert",
+      "stars": 4
+    },
+    {
+      "repository": "daylee28/leetcode-kotlin",
+      "stars": 4
+    },
+    {
+      "repository": "DicioTeam/dicio-evaluation",
+      "stars": 4
+    },
+    {
+      "repository": "giuseppe16180/kotlin-coding-theory",
+      "stars": 4
+    },
+    {
+      "repository": "iampawan/KotlinSamples",
+      "stars": 4
+    },
+    {
+      "repository": "IdeoG/android-floodfill-algorithms",
+      "stars": 4
+    },
+    {
+      "repository": "Judas/Glickotlin",
+      "stars": 4
+    },
+    {
+      "repository": "Kotlin-Polytech/Algorithms-2020",
+      "stars": 4
+    },
+    {
+      "repository": "masse/collage-solver",
+      "stars": 4
+    },
+    {
+      "repository": "mehditeymorian/Othello-Game",
+      "stars": 4
+    },
+    {
+      "repository": "parniyan7/InsertionSortAlgorithmWithKotlin",
+      "stars": 4
+    },
+    {
+      "repository": "parniyan7/QuickSortAlgorithmWithKotlin",
+      "stars": 4
+    },
+    {
+      "repository": "phase/f2",
+      "stars": 4
+    },
+    {
+      "repository": "piashcse/Love-calculator",
+      "stars": 4
+    },
+    {
+      "repository": "ProArun/AlgorithmVisualizer",
+      "stars": 4
+    },
+    {
+      "repository": "sibelyiildz/AlgorithmProblems",
+      "stars": 4
+    },
+    {
+      "repository": "SVENTRIPIKAL/Encryption-Decryption",
+      "stars": 4
+    },
+    {
+      "repository": "takahirom/jetbrains-academy-algorithms",
+      "stars": 4
+    },
+    {
+      "repository": "TimerErTim/Knevo",
+      "stars": 4
+    },
+    {
+      "repository": "tocttou/Algorithms-Kotlin",
+      "stars": 4
+    },
+    {
+      "repository": "umair13adil/KotlinAlgorithms",
+      "stars": 4
+    },
+    {
+      "repository": "VirgilSecurity/virgil-ratchet-kotlin",
+      "stars": 4
+    },
+    {
+      "repository": "wolfbeacon/wolfbeacon-hackalist-api",
+      "stars": 4
+    },
+    {
+      "repository": "yunshuipiao/rice-noodles",
+      "stars": 4
+    },
+    {
+      "repository": "1cucer/android-kotlin-basics-merge-sort-algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "abdulvvahid/HackerRankAlgorithmsKotlinSolutions",
+      "stars": 3
+    },
+    {
+      "repository": "ahmmedrejowan/HowBlurWorks",
+      "stars": 3
+    },
+    {
+      "repository": "AliAzaz/InterviewAlgorithms",
+      "stars": 3
+    },
+    {
+      "repository": "Alienstemple/Yandex_Algorithms",
+      "stars": 3
+    },
+    {
+      "repository": "ambco-iscte/witter",
+      "stars": 3
+    },
+    {
+      "repository": "andre-j3sus/sort-algorithm-visualizer",
+      "stars": 3
+    },
+    {
+      "repository": "andredasilvapinto/kt-raft",
+      "stars": 3
+    },
+    {
+      "repository": "arpitmx/Boids",
+      "stars": 3
+    },
+    {
+      "repository": "bananasmoothii/WFC",
+      "stars": 3
+    },
+    {
+      "repository": "bohonghuang/VisPID",
+      "stars": 3
+    },
+    {
+      "repository": "callmelovevsick/Algorithm-Client",
+      "stars": 3
+    },
+    {
+      "repository": "Carrieukie/TictacToe-Minimax-MCTS",
+      "stars": 3
+    },
+    {
+      "repository": "cosmin-oros/Kotlin-Java-Projects",
+      "stars": 3
+    },
+    {
+      "repository": "CRUDMehra/XTEA-Kotlin-Algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "cybulskii-vladimir/huffman-archiver",
+      "stars": 3
+    },
+    {
+      "repository": "daniel-rusu/tax-calculator",
+      "stars": 3
+    },
+    {
+      "repository": "Davide-DD/tspva",
+      "stars": 3
+    },
+    {
+      "repository": "DavidRFerreira/RelevanceFeedback",
+      "stars": 3
+    },
+    {
+      "repository": "dev-ali-mansour/Data-Structures-And-Algorithms",
+      "stars": 3
+    },
+    {
+      "repository": "devxzero/phonetic-algorithm-benchmark",
+      "stars": 3
+    },
+    {
+      "repository": "divyanshuanand02/Noughts-Crosses",
+      "stars": 3
+    },
+    {
+      "repository": "dj258255/codingtestkit",
+      "stars": 3
+    },
+    {
+      "repository": "dudwls901/kotlin-java-cpp_algorithm_practice",
+      "stars": 3
+    },
+    {
+      "repository": "e5LA/kotlin-code-collection",
+      "stars": 3
+    },
+    {
+      "repository": "ericmok/reinforcement-learning-toys-kt",
+      "stars": 3
+    },
+    {
+      "repository": "fariha-tas/cpu_scheduling_android_game",
+      "stars": 3
+    },
+    {
+      "repository": "fayaz07/SortingVisualizer",
+      "stars": 3
+    },
+    {
+      "repository": "goodkillerchen/DS-for-Kotlin",
+      "stars": 3
+    },
+    {
+      "repository": "hamidbir/BellmanFord-Algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "HariAgus/DataStructuresAndAlgorithms",
+      "stars": 3
+    },
+    {
+      "repository": "himanshu-1608/Sort_Visualization_App",
+      "stars": 3
+    },
+    {
+      "repository": "huhx0015/AlgorithmTester",
+      "stars": 3
+    },
+    {
+      "repository": "jhonatademuner/localif",
+      "stars": 3
+    },
+    {
+      "repository": "jrenner/kotlin-algorithms-ds",
+      "stars": 3
+    },
+    {
+      "repository": "Kavinrajan/Kotlin-DataStructure-Alogorithm",
+      "stars": 3
+    },
+    {
+      "repository": "Khusinov/SortAlgorithmsKotlin",
+      "stars": 3
+    },
+    {
+      "repository": "LeeSeungYun1020/Algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "Louiixx-h/algorithms",
+      "stars": 3
+    },
+    {
+      "repository": "merttoptas/AlgorithmSolutionsInKotlin",
+      "stars": 3
+    },
+    {
+      "repository": "Mramington/ATRS",
+      "stars": 3
+    },
+    {
+      "repository": "MustafaKoceerr/Compose-Dynamic-Photo-Grid",
+      "stars": 3
+    },
+    {
+      "repository": "nadezhdagub/Algorithms",
+      "stars": 3
+    },
+    {
+      "repository": "nimazareian/raft-consensus",
+      "stars": 3
+    },
+    {
+      "repository": "olivia-soy/algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "persian-calendar/equinox",
+      "stars": 3
+    },
+    {
+      "repository": "peterslight/Sort-Comparison",
+      "stars": 3
+    },
+    {
+      "repository": "ryanbateman/openrndr-boids",
+      "stars": 3
+    },
+    {
+      "repository": "saldisobi/kotlinAlgo",
+      "stars": 3
+    },
+    {
+      "repository": "savasanamaster/algorithm",
+      "stars": 3
+    },
+    {
+      "repository": "ShonenAsh/SortVisualizer",
+      "stars": 3
+    },
+    {
+      "repository": "simplesoft-duongdt3/Kotlin_Algorithms_and_DataStructures",
+      "stars": 3
+    },
+    {
+      "repository": "sipura/Sipura",
+      "stars": 3
+    },
+    {
+      "repository": "Suraj-Tiwari/ShamirSecretSharing",
+      "stars": 3
+    },
+    {
+      "repository": "thestbar/tunify",
+      "stars": 3
+    },
+    {
+      "repository": "WeiLianYang/AlgorithmAnalysis",
+      "stars": 3
+    },
+    {
+      "repository": "WonSteps/cpu-scheduling-simulator",
+      "stars": 3
+    },
+    {
+      "repository": "Xicks/d-FuzzStream",
+      "stars": 3
+    },
+    {
+      "repository": "yangsooplus/Algorithm-Kotlin",
+      "stars": 3
+    },
+    {
+      "repository": "zitmen/thunderstorm-algorithms",
+      "stars": 3
+    },
+    {
+      "repository": "1cucer/bioinformatics-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "1cucer/euclidean-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "AkhilrajNambiar/DSADude-2.0",
+      "stars": 2
+    },
+    {
+      "repository": "aliaygor/AlgoKids",
+      "stars": 2
+    },
+    {
+      "repository": "alishari/Kotlin-Examples",
+      "stars": 2
+    },
+    {
+      "repository": "amykv/dsa-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "AndreuZaitsev/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "ashfaq1701/problem-solving-in-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "atorrico09/Data-Structures-Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "babangsund/sorting-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "Bzahov98/ImageFilter-FloydSteinberg",
+      "stars": 2
+    },
+    {
+      "repository": "Caliverx2/raycasting-lewapnoob",
+      "stars": 2
+    },
+    {
+      "repository": "ChanSek/Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "cheonjoosung/Algorithm-Kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "chicorasia/kotlin-data-structures",
+      "stars": 2
+    },
+    {
+      "repository": "chjaeggi/airports-graph",
+      "stars": 2
+    },
+    {
+      "repository": "dan-zx/genetic-algorithms-kt",
+      "stars": 2
+    },
+    {
+      "repository": "danpgomez/algorithms-and-data-structures-in-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "danylovolokh/AlgorithmsAnalysis",
+      "stars": 2
+    },
+    {
+      "repository": "DerYeger/cyk-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "dev-ali-mansour/Data-Structures-And-Algorithms-Using-Kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "dev-loggi/algorithm-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "developerlee79/ps-leetcode-java",
+      "stars": 2
+    },
+    {
+      "repository": "dogukankeskinoglu/HackerRankKotlinAlgorithm",
+      "stars": 2
+    },
+    {
+      "repository": "Doha26/Citybase",
+      "stars": 2
+    },
+    {
+      "repository": "DrunkenWhale/RollCallAlgorithm",
+      "stars": 2
+    },
+    {
+      "repository": "DuoLa512/AlgorithmDemo",
+      "stars": 2
+    },
+    {
+      "repository": "E3FxGaming/ExtendedCYK-Algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "edgardobarriam/algo-kasts",
+      "stars": 2
+    },
+    {
+      "repository": "Ellzo/Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "fahim-choudhury/grokking-dsa",
+      "stars": 2
+    },
+    {
+      "repository": "felipecastilhos/algorithm-challenges",
+      "stars": 2
+    },
+    {
+      "repository": "FischerAbruzese/Graphs-Algorithms-Visualization",
+      "stars": 2
+    },
+    {
+      "repository": "gaborkukucska/NoSlop",
+      "stars": 2
+    },
+    {
+      "repository": "gamalragab21/AES_RSA_Algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "garam918/Algorithm_Kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "gb-alves03/biometric-recognition-tool",
+      "stars": 2
+    },
+    {
+      "repository": "gedeagas/AlgoKt",
+      "stars": 2
+    },
+    {
+      "repository": "genctasbasi/data-structures-and-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "ghonix/Problems",
+      "stars": 2
+    },
+    {
+      "repository": "GreimuL/SimpleFileCompressor",
+      "stars": 2
+    },
+    {
+      "repository": "GuilhermeDeconto/Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "guilhermocc/seam-carving",
+      "stars": 2
+    },
+    {
+      "repository": "hajin-kim/algorithm-leetcode",
+      "stars": 2
+    },
+    {
+      "repository": "hakiobo/Kotlinaughts",
+      "stars": 2
+    },
+    {
+      "repository": "Halqq/RCZEncryptationKT",
+      "stars": 2
+    },
+    {
+      "repository": "HanYeop/Algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "hardiksachan/dsa-playground",
+      "stars": 2
+    },
+    {
+      "repository": "hopskipnfall/netcode-lag-simulator",
+      "stars": 2
+    },
+    {
+      "repository": "hudsonb/turf.kt",
+      "stars": 2
+    },
+    {
+      "repository": "HunSeongPark/algorithm-base",
+      "stars": 2
+    },
+    {
+      "repository": "Huthayfa0/MyAlgorithms",
+      "stars": 2
+    },
+    {
+      "repository": "IanRogers/datomic-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "ILIYANGERMANOV/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "illarionov/strstr",
+      "stars": 2
+    },
+    {
+      "repository": "innovaTony/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "ivan-magda/introduction-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "ixiDev/AdvancedCalculator",
+      "stars": 2
+    },
+    {
+      "repository": "jairrab/KotlinSortingAlgorithmsExercise",
+      "stars": 2
+    },
+    {
+      "repository": "jBosak98/ai-game-playing-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "JyCheng12/Kotlin-Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "kylecorry31/luna",
+      "stars": 2
+    },
+    {
+      "repository": "lene-huang/kotlin-is-awesome",
+      "stars": 2
+    },
+    {
+      "repository": "Luminoid/PropositionalCST",
+      "stars": 2
+    },
+    {
+      "repository": "maximot/android-kotlin-floodfill",
+      "stars": 2
+    },
+    {
+      "repository": "melikabarzegaran/tavanyar-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "michalkr52/kbbench",
+      "stars": 2
+    },
+    {
+      "repository": "MohamedElattar22/Algorithm_Visual-app",
+      "stars": 2
+    },
+    {
+      "repository": "mrinmoyxb/BreastSpectra",
+      "stars": 2
+    },
+    {
+      "repository": "mspoeri/table-optimizer",
+      "stars": 2
+    },
+    {
+      "repository": "nick-ivanov/kotlin-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "OlaoreFouad/hackerrank-challenges",
+      "stars": 2
+    },
+    {
+      "repository": "OrifjonOlimjonov/AlgoHelper",
+      "stars": 2
+    },
+    {
+      "repository": "Orthodoxal/kgal",
+      "stars": 2
+    },
+    {
+      "repository": "pankaj89/FrequentlyUsedAlgorithm",
+      "stars": 2
+    },
+    {
+      "repository": "pedromassango/algorithms-data-structures-with-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "petretiandrea/meal-planner",
+      "stars": 2
+    },
+    {
+      "repository": "pgrzel/Seam-Carving",
+      "stars": 2
+    },
+    {
+      "repository": "PizzaMarinara/MaximumWeightedMatching",
+      "stars": 2
+    },
+    {
+      "repository": "promoscow/rosbank-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "ptyagicodecamp/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "qveex/Genetic-Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "raheemadamboev/keystore-cipher",
+      "stars": 2
+    },
+    {
+      "repository": "ramdhanjr11/Sea-Kidul-App",
+      "stars": 2
+    },
+    {
+      "repository": "reeve567/MazeLib",
+      "stars": 2
+    },
+    {
+      "repository": "rezaromiani/TicTacToe",
+      "stars": 2
+    },
+    {
+      "repository": "runetopic/cryptography",
+      "stars": 2
+    },
+    {
+      "repository": "ryanrvldo/ImageCompression",
+      "stars": 2
+    },
+    {
+      "repository": "sabbir044/algorithms-data-structure-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "samiulanik/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "SebastianAigner/dhash-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "shmatozz/Algorithms-Lab-2",
+      "stars": 2
+    },
+    {
+      "repository": "ShreckYe/coursera-stanford-algorithms-solutions-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "sirasatarato/Algorithm-Study",
+      "stars": 2
+    },
+    {
+      "repository": "sudhirkhanger/Algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "Sukhobrusov/FloodFill",
+      "stars": 2
+    },
+    {
+      "repository": "sungjk/s-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "Sutemi67/algorithms_binarySearch_app",
+      "stars": 2
+    },
+    {
+      "repository": "temofey1989/simplex-kotlin-dsl",
+      "stars": 2
+    },
+    {
+      "repository": "TheRockYT/FsrsKt",
+      "stars": 2
+    },
+    {
+      "repository": "Tmdhoon2/Algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "TooWhiteT/DailyAlgorithms",
+      "stars": 2
+    },
+    {
+      "repository": "ulvij/algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "vottini/kiro",
+      "stars": 2
+    },
+    {
+      "repository": "vzhn/cdcl",
+      "stars": 2
+    },
+    {
+      "repository": "wellFoundedDevelopers/Algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "williamyyu/kotlin-algorithms",
+      "stars": 2
+    },
+    {
+      "repository": "xJoeWoo/xxtea-kotlin",
+      "stars": 2
+    },
+    {
+      "repository": "yang0range/MyAlgorithm",
+      "stars": 2
+    },
+    {
+      "repository": "Yaroslaww-1/abc-algorithm",
+      "stars": 2
+    },
+    {
+      "repository": "Yusufkumandaveren/BasicAlgorithmCodes",
+      "stars": 2
+    },
+    {
+      "repository": "YuYangWoo/Algorithm",
+      "stars": 2
+    }
+  ],
+  "audit": [
+    {
+      "rank": 1,
+      "repository": "DmitryNekrasov/kodvent",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 2,
+      "repository": "mAlaliSy/AlgoLizer-algorithms-visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 3,
+      "repository": "occidere/leetcode",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 4,
+      "repository": "alexandrepiveteau/kotlin-graphs",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 5,
+      "repository": "ensody/Kompressor",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 6,
+      "repository": "khnychenkoav/KotlinEducational",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 7,
+      "repository": "MartinHaeusler/LSM4K",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 8,
+      "repository": "penemue/keap",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 9,
+      "repository": "esoxjem/Algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 10,
+      "repository": "pranamphd/digipin-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 11,
+      "repository": "aallam/string-similarity-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 12,
+      "repository": "mohammednawas8/Android-Algorithms-Visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 13,
+      "repository": "faniabdullah/dsa-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 14,
+      "repository": "funfunStudy/algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 15,
+      "repository": "palasjir/ct-volumetric-rendering",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 16,
+      "repository": "sumeyraozugur/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 17,
+      "repository": "V9vek/Sorting-Visualizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 18,
+      "repository": "IbrahimEzzatSaad/MindfulData",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 19,
+      "repository": "ahmedsamir9/Sorting-and-Searching-Algorithms-in-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 20,
+      "repository": "dlew/wordle-solver",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 21,
+      "repository": "fiskurgit/DitherKt",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 22,
+      "repository": "galangriarulhaq/Kotlin-data-structures-and-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 23,
+      "repository": "MortezaNedaei/Compose-BlurHash",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 24,
+      "repository": "Ankursehrawat15/Realtime-chat-app-based-on-Cryptographic-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 25,
+      "repository": "huodianyan/rokid-imu-motion-recorder",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 26,
+      "repository": "karimelbahi/DataStructure-Algorithms-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 27,
+      "repository": "kodeflap/Algo_Guide",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 28,
+      "repository": "Morfly/kotlin-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 29,
+      "repository": "Tetraquark/MyersDiffKt",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 30,
+      "repository": "abhishek-yadav-random/Pathfinding-visualiser",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 31,
+      "repository": "amirreza-lotfi/GraphAlgorithmApplication",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 32,
+      "repository": "jens-muenker/fuzzywuzzy-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 33,
+      "repository": "JetBrains-Research/hldiff",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 34,
+      "repository": "jumaallan/kotlin-data-structures-algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 35,
+      "repository": "karloti/concurrent-priority-queue",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 36,
+      "repository": "kieubaduong/Boka",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 37,
+      "repository": "amitozs999/Kotlin-Chatting-App",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 38,
+      "repository": "andriiginting/algorithm-practice",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 39,
+      "repository": "elizarov/LogicDerivation",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 40,
+      "repository": "FunkyMuse/Data-structures-and-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 41,
+      "repository": "Lira-tron/KotlinAlgorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 42,
+      "repository": "niiad/hashkt",
+      "reason": "SELECTED"
+    },
+    {
+      "rank": 43,
+      "repository": "qwertukg/Barnes-Hut-N-Body",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 44,
+      "repository": "2hyungjin/Algorithm-DataStructure",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 45,
+      "repository": "arpanpathak/AdvancedAlgorithmPatterns",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 46,
+      "repository": "deeptesh-rout/Hands-On-Data-Structures-and-Algorithms-with-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 47,
+      "repository": "GustavoHGAraujo/kotlin-a-star-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 48,
+      "repository": "Hemant-Jain-Author/Data-Structures-and-Algorithms-using-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 49,
+      "repository": "KonstantinLukaschenko/genetic-algorithm-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 50,
+      "repository": "qiaoyuang/Algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 51,
+      "repository": "ShawxingKwok/Kwok-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 52,
+      "repository": "w1374720640/Algorithms-4th-Edition-in-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 53,
+      "repository": "wilder/redwood",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 54,
+      "repository": "ArtanBerisha1/SortingPath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 55,
+      "repository": "BerattCelikk/Odev5",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 56,
+      "repository": "DanielMichalski/algorithms-and-data-structures-in-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 57,
+      "repository": "dzikoysk/khangul",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 58,
+      "repository": "elye/demo_android_blur_image",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 59,
+      "repository": "jayasuryat/FlockingSimulation",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 60,
+      "repository": "mwshubham/DataStructureAndAlgorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 61,
+      "repository": "PeopleAndService/AlgorithmStudy",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 62,
+      "repository": "wp529/SkuAlgorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 63,
+      "repository": "Ahmed-Saber-25/grokking_algorithms",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 64,
+      "repository": "anandwana001/Kotlin-DSA-Projects",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 65,
+      "repository": "andremion/SlidingPuzzle",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 66,
+      "repository": "evaou/kotlin-algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 67,
+      "repository": "guttedgarden/Kuznechik",
+      "reason": "SELECTED"
+    },
+    {
+      "rank": 68,
+      "repository": "Kotlin-Polytech/Algorithms-2019",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 69,
+      "repository": "Prasanna79/parentapproved",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 70,
+      "repository": "professorDeveloper/Kotlin-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 71,
+      "repository": "qveex/k-means_clustering_image",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 72,
+      "repository": "SmartToolFactory/DataStructuresAndAlgorithmsPlayground",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 73,
+      "repository": "v-pan/rltest",
+      "reason": "SELECTED"
+    },
+    {
+      "rank": 74,
+      "repository": "vladmelnyk/coinselection",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 75,
+      "repository": "YAPP-Github/21st-Study-Algorithm-2",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 76,
+      "repository": "Alims-Repo/Prayer-Times-KMM",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 77,
+      "repository": "amindadgar/knapSack-Problem",
+      "reason": "SELECTED"
+    },
+    {
+      "rank": 78,
+      "repository": "Dad52/algorithms-leetcode-yandex-tinkoff",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 79,
+      "repository": "damlacim/HackerRankSolutions",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 80,
+      "repository": "fahime-ghasemi/kotlin-algorithms-interview",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 81,
+      "repository": "GregHib/game-playground",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 82,
+      "repository": "h0tk3y/geometry",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 83,
+      "repository": "hartwigmedical/actin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 84,
+      "repository": "hasanelfalakiy/lib-ephemeris-jeanmeeus",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 85,
+      "repository": "IronSentinel1/Pong-Remake",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 86,
+      "repository": "juliaschatz/kt_path_controllers",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 87,
+      "repository": "KhaledSherifSayed/Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 88,
+      "repository": "Louiixx-h/algorithms-and-data-structure",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 89,
+      "repository": "milos85vasic/Fundamental-Algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 90,
+      "repository": "Nexters/Algorithm",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 91,
+      "repository": "overfullstack/ds-algo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 92,
+      "repository": "parniyan7/BubbleSortAlgorithmWithKotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 93,
+      "repository": "RustamKZ/recfi_ap",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 94,
+      "repository": "saechimdaeki/Solving-ALGORITHM",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 95,
+      "repository": "sagar-viradiya/DS-Algo",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 96,
+      "repository": "samagra14/aima-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 97,
+      "repository": "StudyFork/AlgorithmStudy",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 98,
+      "repository": "umangjpatel/KotlinDSA",
+      "reason": "SELECTED"
+    },
+    {
+      "rank": 99,
+      "repository": "vivalerievich/kotgll",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 100,
+      "repository": "w4v3/hypercampus",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 101,
+      "repository": "XingZhe-Li/AntiBrainRot",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 102,
+      "repository": "abhishek-yadav-random/Markov-Chain-Visualiser",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 103,
+      "repository": "Anass001/GraphSimulatorCompose",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 104,
+      "repository": "andre-j3sus/algorithms-and-data-structures",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 105,
+      "repository": "ayushvatsal/NewsVert",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 106,
+      "repository": "daylee28/leetcode-kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 107,
+      "repository": "DicioTeam/dicio-evaluation",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 108,
+      "repository": "giuseppe16180/kotlin-coding-theory",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 109,
+      "repository": "iampawan/KotlinSamples",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 110,
+      "repository": "IdeoG/android-floodfill-algorithms",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 111,
+      "repository": "Judas/Glickotlin",
+      "reason": "SELECTED"
+    }
+  ],
+  "cohorts": [
+    {
+      "id": 1,
+      "rank": 42,
+      "source": {
+        "repository": "niiad/hashkt",
+        "commitSha": "59f06eb4389a3886f37ab771fc837509e6e6dc1c",
+        "treeSha": "12989482f8bb26e27d11ea9fe14a473374817d3f",
+        "files": [
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "1b523a039c1ecbc5f4bba41d51b59662a6758d5b",
+            "sizeBytes": 193
+          },
+          {
+            "path": "src/main/kotlin/base/base1.kt",
+            "blobSha": "5d9b99ca57429a34e1a11081fd8bd1ba38e1e19c",
+            "sizeBytes": 2586
+          }
+        ],
+        "totalBytes": 2779
+      }
+    },
+    {
+      "id": 2,
+      "rank": 67,
+      "source": {
+        "repository": "guttedgarden/Kuznechik",
+        "commitSha": "dcfe8e6eb5091684afe45f9f600b931254a73adb",
+        "treeSha": "96c4be4963f4b153883273b5869360ee010eaf0b",
+        "files": [
+          {
+            "path": "src/main/kotlin/Kuznechik/Kuznechik.kt",
+            "blobSha": "db0520a7b4bb2ab1e3eb47db31a68f83ed8f30aa",
+            "sizeBytes": 14149
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "36031ee1f19e618ced7f3938ed3712a9b31f81cb",
+            "sizeBytes": 2424
+          }
+        ],
+        "totalBytes": 16573
+      }
+    },
+    {
+      "id": 3,
+      "rank": 73,
+      "source": {
+        "repository": "v-pan/rltest",
+        "commitSha": "288b9394c9e3016891cfd43ad046f37ded306acd",
+        "treeSha": "3387dad674fdebd562d698a8e6e1a9801792c220",
+        "files": [
+          {
+            "path": "src/main/kotlin/MDPRLA.kt",
+            "blobSha": "98695e6a648b7016297de39ccb661f359fb488e1",
+            "sizeBytes": 3827
+          },
+          {
+            "path": "src/main/kotlin/Main.kt",
+            "blobSha": "55badfbd745c1ccccef920dc4abe112aebba084e",
+            "sizeBytes": 150
+          },
+          {
+            "path": "src/main/kotlin/data/Episode.kt",
+            "blobSha": "5e5fa8200cdad9b7dafe9c1a2f1254b0b5915423",
+            "sizeBytes": 3070
+          },
+          {
+            "path": "src/main/kotlin/data/SAWeightedValue.kt",
+            "blobSha": "18076b01cd9f0a25306d5c798735e43645add0a5",
+            "sizeBytes": 162
+          },
+          {
+            "path": "src/main/kotlin/data/State.kt",
+            "blobSha": "1dbf0c9eea67e4d2a6d017720073fb9584617ccb",
+            "sizeBytes": 436
+          },
+          {
+            "path": "src/main/kotlin/data/Task.kt",
+            "blobSha": "e1d0ea7ba65f97c9b97882f14f0bb1e5c99d930a",
+            "sizeBytes": 67
+          },
+          {
+            "path": "src/main/kotlin/tasks/blackjack/BlackjackState.kt",
+            "blobSha": "e4e147be9dad32fa0688cf48b44aa3a646d7379e",
+            "sizeBytes": 1468
+          },
+          {
+            "path": "src/main/kotlin/tasks/blackjack/BlackjackTask.kt",
+            "blobSha": "1335abf40570098ecaf6f136587fcebfe80cd5ed",
+            "sizeBytes": 4738
+          },
+          {
+            "path": "src/main/kotlin/tasks/recyclingRobot/RecyclerState.kt",
+            "blobSha": "bfaf1489bad1e64410c716ba6cf1145233f1e395",
+            "sizeBytes": 664
+          },
+          {
+            "path": "src/main/kotlin/tasks/recyclingRobot/RecyclerTask.kt",
+            "blobSha": "fde0a3674bef92fc797d8ca17faabc1c9b803ed0",
+            "sizeBytes": 5226
+          }
+        ],
+        "totalBytes": 19808
+      }
+    },
+    {
+      "id": 4,
+      "rank": 77,
+      "source": {
+        "repository": "amindadgar/knapSack-Problem",
+        "commitSha": "f0640454335c0b353ecd3af40cbf77b66dc020fc",
+        "treeSha": "99837015dbec7026551434707645a6ca2590d385",
+        "files": [
+          {
+            "path": "src/main/kotlin/Calculate.kt",
+            "blobSha": "2706a6265c101d0384bbe81e74c5d395914b48f6",
+            "sizeBytes": 651
+          },
+          {
+            "path": "src/main/kotlin/Individual.kt",
+            "blobSha": "e4a16a9b02311c3a75dd7371bab38b2ed7a76340",
+            "sizeBytes": 350
+          },
+          {
+            "path": "src/main/kotlin/InitPopulation.kt",
+            "blobSha": "0a08b275483ffd4fd07d7ded15f535820443b6df",
+            "sizeBytes": 993
+          },
+          {
+            "path": "src/main/kotlin/Item.kt",
+            "blobSha": "45cbe3dc07676c772a324d9090ae9174602d5a20",
+            "sizeBytes": 157
+          },
+          {
+            "path": "src/main/kotlin/ProblemProperties.kt",
+            "blobSha": "5516b20481fdde05f5f2921eacb6b4aea2ae7177",
+            "sizeBytes": 459
+          },
+          {
+            "path": "src/main/kotlin/ProduceChildren.kt",
+            "blobSha": "4ccb9eef90126043af1a9eb8a5d9b8de50baeaf1",
+            "sizeBytes": 3419
+          },
+          {
+            "path": "src/main/kotlin/RouletteWheel.kt",
+            "blobSha": "172698569f427734e4cd39f5f422103df5af2b61",
+            "sizeBytes": 983
+          },
+          {
+            "path": "src/main/kotlin/Start.kt",
+            "blobSha": "ce13c37ce13b93e6f3da0865b8ccf57a7e99701f",
+            "sizeBytes": 2934
+          },
+          {
+            "path": "src/main/kotlin/main.kt",
+            "blobSha": "e32eaab75a5ba900aea0432d8aee48ee6acfdcfc",
+            "sizeBytes": 198
+          }
+        ],
+        "totalBytes": 10144
+      }
+    },
+    {
+      "id": 5,
+      "rank": 98,
+      "source": {
+        "repository": "umangjpatel/KotlinDSA",
+        "commitSha": "202c8ff8ede8fe91b13995821b3629fdba331cf1",
+        "treeSha": "d773344f0c93344880f14476ce1a152db70f64de",
+        "files": [
+          {
+            "path": "src/main/kotlin/linkedlists/DoublyLinkedList.kt",
+            "blobSha": "3460b8d51d8a8b9cd5fbe27710a61924e593d4ff",
+            "sizeBytes": 2335
+          },
+          {
+            "path": "src/main/kotlin/linkedlists/Node.kt",
+            "blobSha": "6b2bdd9cc05f753162f603602ffb60e480c80bc0",
+            "sizeBytes": 456
+          },
+          {
+            "path": "src/main/kotlin/linkedlists/SinglyLinkedList.kt",
+            "blobSha": "557f8870bc580e961c17bd8151efaec093362d45",
+            "sizeBytes": 2358
+          },
+          {
+            "path": "src/main/kotlin/queues/ArrayQueue.kt",
+            "blobSha": "a4287505e87ac40adc64b2ef6a2f4f9c5003793e",
+            "sizeBytes": 481
+          },
+          {
+            "path": "src/main/kotlin/queues/LinkedQueue.kt",
+            "blobSha": "afd4c8ae66af19ce484e87a36e72b8e74b75ed00",
+            "sizeBytes": 524
+          },
+          {
+            "path": "src/main/kotlin/queues/Queue.kt",
+            "blobSha": "0619651f1cae3c3207896531aef0c96389d343db",
+            "sizeBytes": 167
+          },
+          {
+            "path": "src/main/kotlin/queues/StackQueue.kt",
+            "blobSha": "23a83654b21a38e76ad3d66ad8ddd0d42ae3fc5f",
+            "sizeBytes": 1769
+          },
+          {
+            "path": "src/main/kotlin/stack/Stack.kt",
+            "blobSha": "a763cac4ff6a7250d98062899ba229e4b03d7cdf",
+            "sizeBytes": 755
+          }
+        ],
+        "totalBytes": 8845
+      }
+    },
+    {
+      "id": 6,
+      "rank": 111,
+      "source": {
+        "repository": "Judas/Glickotlin",
+        "commitSha": "e58fb4d30aa59c4166e0b15c3e553dc015d34e1a",
+        "treeSha": "2186d736f40033668e4614e4e22daba478c783e0",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/judas/glickotlin/Glickotlin.kt",
+            "blobSha": "889c0b68a80acc733e994f15b3901d7c5fdd1216",
+            "sizeBytes": 5898
+          }
+        ],
+        "totalBytes": 5898
+      }
+    }
+  ],
+  "sourceContentsRead": false,
+  "predictionsExecuted": false,
+  "oracleExecuted": false,
+  "originalSourcesNowExposed": false,
+  "block26Closed": false,
+  "block27Allowed": false
+}

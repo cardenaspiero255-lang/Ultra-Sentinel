@@ -1,0 +1,1220 @@
+{
+  "schema": "ultra-sentinel-v8-prospective-metadata-candidates/v1",
+  "candidates": [
+    {
+      "rank": 58,
+      "source": {
+        "repository": "UnknownJoe796/discrete-math-markdown",
+        "commitSha": "3363d3ca8a3bed32dfe33960af072f4f8dcd8623",
+        "treeSha": "455a276e604ad5041730655921e2fdc446b42699",
+        "files": [
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/DiscreteProcessor.kt",
+            "blobSha": "2d66692b3c780608cd27babe8a4037acd6f5da5a",
+            "sizeBytes": 4675
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/FilesExt.kt",
+            "blobSha": "5172548af1dd588637225a0927503dce78a7bd2d",
+            "sizeBytes": 622
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/HtmlToPdf.kt",
+            "blobSha": "4615fe9801141b21f69b3ee48a1924d27dd458c3",
+            "sizeBytes": 1806
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/Main.kt",
+            "blobSha": "5639f56c5bd296e69af58548ce1b10d342d4c763",
+            "sizeBytes": 1907
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/MarkdownProcessor.kt",
+            "blobSha": "a32b40bb3a351fb63b95e0776bdd7b852a904a17",
+            "sizeBytes": 982
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/Style.kt",
+            "blobSha": "1c15089404cc2620f0c08f7053f8978ad1f1f87f",
+            "sizeBytes": 10474
+          },
+          {
+            "path": "src/main/java/com/ivieleague/discrete_math_markdown/TableMaker.kt",
+            "blobSha": "b3af8d831d74250bd295b87ef7286c3c8a244cb8",
+            "sizeBytes": 2841
+          }
+        ],
+        "totalBytes": 23307
+      }
+    },
+    {
+      "rank": 62,
+      "source": {
+        "repository": "arianm8a/math-time-series",
+        "commitSha": "b7101a87455714d61385f241e3aef9566b86b683",
+        "treeSha": "857f7d98a124437f81c17cc68e3fcea773c14e51",
+        "files": [
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/package.kt",
+            "blobSha": "09585f5757420463cd2155bc173072fc2b79d17c",
+            "sizeBytes": 183
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/LinearLine.kt",
+            "blobSha": "91854abc6871285ea4f0e0a7ea893e8cf96069f8",
+            "sizeBytes": 1116
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/Point.kt",
+            "blobSha": "78e78fd267eaca00e6782a5e9dd94e9cdcfc017e",
+            "sizeBytes": 225
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/Side.kt",
+            "blobSha": "43f9ebc76da8fa52675c6bbbb9ef083736aae90c",
+            "sizeBytes": 491
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/TimeSeries.kt",
+            "blobSha": "4753e0ecd84ad2ab29720bed493a1e9219066b7b",
+            "sizeBytes": 1681
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/trend/LinearTrendLine.kt",
+            "blobSha": "da8f6c2907d8680d32cf88a964311702fa0e6a45",
+            "sizeBytes": 1255
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/trend/LinearTrendLineWeight.kt",
+            "blobSha": "dfefdcdbe143dc5d3b1bb2ca49fb3c8be829a79d",
+            "sizeBytes": 1228
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/trend/LinearTrendLines.kt",
+            "blobSha": "f34fd65b872d5b41093b30b2b0a7b3a41fc3cddd",
+            "sizeBytes": 839
+          },
+          {
+            "path": "src/main/kotlin/ir/ahmadmo/math/timeseries/trend/Trend.kt",
+            "blobSha": "4c5dcfa91754fd0f9c22247bf426be4105f77a75",
+            "sizeBytes": 3500
+          }
+        ],
+        "totalBytes": 10518
+      }
+    },
+    {
+      "rank": 68,
+      "source": {
+        "repository": "elevenetc/utils-kotlin-math",
+        "commitSha": "4587446018dc2893ef8a5a08551e01c0fba0b3bd",
+        "treeSha": "d286ea1ba096e63f88a325dfe87c7d71227c4239",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Edge.kt",
+            "blobSha": "6df2fa9c3b817702c49941c52663257101bf14c5",
+            "sizeBytes": 3040
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/ElevenMath.kt",
+            "blobSha": "47794a217e833cc8008eb2f11343e40c96d47ff2",
+            "sizeBytes": 2175
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/ElevenMathImpl.kt",
+            "blobSha": "2aa040d3e4c4724f4c03686a99fab8b86669af8e",
+            "sizeBytes": 9777
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Intersection.kt",
+            "blobSha": "8deaf61478dd5037c074a190ea74a6953936f7d2",
+            "sizeBytes": 263
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Normal.kt",
+            "blobSha": "48e8775aa1fff5e7c0c7ded11e401fa4227b2730",
+            "sizeBytes": 64
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Point.kt",
+            "blobSha": "4c6a8544e887c40527cb0ea6f34ad076968bd4c4",
+            "sizeBytes": 153
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/RayVector.kt",
+            "blobSha": "9d337f81f6e1c899f061c73de7fb45937ec67e2d",
+            "sizeBytes": 1021
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Scene.kt",
+            "blobSha": "a9dc840f00f6a87a536bc104a3e883216e182acb",
+            "sizeBytes": 254
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Shape.kt",
+            "blobSha": "753438b338ac4234089f0a343621cfa901d4269f",
+            "sizeBytes": 225
+          },
+          {
+            "path": "src/main/kotlin/com/elevenetc/utils/kotlin/math/Vector.kt",
+            "blobSha": "150a370ab0211abeebb1e6303f79577dd6e6e3a5",
+            "sizeBytes": 2627
+          }
+        ],
+        "totalBytes": 19599
+      }
+    },
+    {
+      "rank": 76,
+      "source": {
+        "repository": "kory33/bigmath",
+        "commitSha": "45f85b44aa9491323b0eab214e652722c664e180",
+        "treeSha": "24d4206fd6fe4c3e6bff828b2dc00428f62f1e78",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUIntFactory.kt",
+            "blobSha": "990195dc0c66d2faacb4d4672ac35384a0d30a23",
+            "sizeBytes": 945
+          },
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUIntOperators.kt",
+            "blobSha": "574c47d6ba9b869552e00ba82f47dde1cace780d",
+            "sizeBytes": 5866
+          },
+          {
+            "path": "src/main/kotlin/com/github/kory33/bigmath/integer/BigUnsignedInteger.kt",
+            "blobSha": "514c1ab3e3e9cc5f14aa52d794a429909b9cea36",
+            "sizeBytes": 2484
+          }
+        ],
+        "totalBytes": 9295
+      }
+    },
+    {
+      "rank": 99,
+      "source": {
+        "repository": "burevestnik-png/comp-math-lab1",
+        "commitSha": "989fb29e10341ae7a18057051f1a5ddc6c666f42",
+        "treeSha": "fb582c77887ed91a306c9ced18baa24340abe72c",
+        "files": [
+          {
+            "path": "src/main/kotlin/Controller.kt",
+            "blobSha": "0a65689d399a1dad1483e9635de412f8281e43e3",
+            "sizeBytes": 1440
+          },
+          {
+            "path": "src/main/kotlin/domain/EquationSystem.kt",
+            "blobSha": "12e06e6aa3a21a201dd8dbfbe4170b349eb3b94a",
+            "sizeBytes": 1870
+          },
+          {
+            "path": "src/main/kotlin/domain/EquationSystemSolution.kt",
+            "blobSha": "42700733c306eac880357794496fe783f9a03a2b",
+            "sizeBytes": 841
+          },
+          {
+            "path": "src/main/kotlin/domain/utils/ResourceExamples.kt",
+            "blobSha": "b5a8fbace9c22a5681f6b3b0b050e55b94e5d8e2",
+            "sizeBytes": 235
+          },
+          {
+            "path": "src/main/kotlin/io/DataReader.kt",
+            "blobSha": "e36b93bea991e94c29c029c37b4062fccfae2776",
+            "sizeBytes": 2866
+          },
+          {
+            "path": "src/main/kotlin/io/DataWriter.kt",
+            "blobSha": "2748a31b41d37b6fc81d08f59f535336bc633bbd",
+            "sizeBytes": 372
+          },
+          {
+            "path": "src/main/kotlin/io/Printer.kt",
+            "blobSha": "c497322771e5523ad54654e7c8bc36678a852a00",
+            "sizeBytes": 3066
+          },
+          {
+            "path": "src/main/kotlin/main.kt",
+            "blobSha": "9491befbaed7b99ea90caf705b2f5bb03eda2ac6",
+            "sizeBytes": 895
+          },
+          {
+            "path": "src/main/kotlin/services/ComputationService.kt",
+            "blobSha": "b69119d3cee422f120a0652f13b1fb2884794965",
+            "sizeBytes": 887
+          },
+          {
+            "path": "src/main/kotlin/services/DiagonalDominanceHandler.kt",
+            "blobSha": "c059f2836e21d60f7e39ab740030bebfe691a3c8",
+            "sizeBytes": 2276
+          },
+          {
+            "path": "src/main/kotlin/services/GaussSolver.kt",
+            "blobSha": "d581eae46ae907e4d98523ae4fa243ac7b4b7270",
+            "sizeBytes": 2332
+          },
+          {
+            "path": "src/main/kotlin/services/MatrixTransformer.kt",
+            "blobSha": "d1c2948f4146861cd033a99198884fb7164268e3",
+            "sizeBytes": 1170
+          }
+        ],
+        "totalBytes": 18250
+      }
+    },
+    {
+      "rank": 109,
+      "source": {
+        "repository": "FocalAgency/A-Math-Tutoring-App-for-Children-Built-with-Kotlin",
+        "commitSha": "2b033e8a70436d16bc3863b5bac2735583d544cf",
+        "treeSha": "d9686a7d16755b0b33e7050f44153377a7798375",
+        "files": [
+          {
+            "path": "src/main/java/com/example/mathtutorforchildern/MainActivity.kt",
+            "blobSha": "a3078e3e190ba2ee6ac641b13a67beafdf3a2eee",
+            "sizeBytes": 2029
+          },
+          {
+            "path": "src/main/java/com/example/mathtutorforchildern/MyDBhelper.kt",
+            "blobSha": "c49edb29b57f90cb1b3f59deab9445f8536c0927",
+            "sizeBytes": 710
+          },
+          {
+            "path": "src/main/java/com/example/mathtutorforchildern/QuestionsActivity.kt",
+            "blobSha": "3c67adab1951b986e9d43d3391f6d8cf7b7eda91",
+            "sizeBytes": 9714
+          }
+        ],
+        "totalBytes": 12453
+      }
+    },
+    {
+      "rank": 114,
+      "source": {
+        "repository": "hastebrot/kotlinx.math",
+        "commitSha": "aea1a4d89e469e69568e77173231683687b4895d",
+        "treeSha": "49ff4a5f2dc175a35e99bc1aad09b7ad2b406ed2",
+        "files": [
+          {
+            "path": "src/main/kotlin/MathExtensions.kt",
+            "blobSha": "45d7d4b1d300f5c3c83e811d98befbf0a9a76fcf",
+            "sizeBytes": 6258
+          },
+          {
+            "path": "src/main/kotlin/combinatorics/Permutations.kt",
+            "blobSha": "74ba4ee354f6e726fb57920a38db3481100b5e7b",
+            "sizeBytes": 2406
+          }
+        ],
+        "totalBytes": 8664
+      }
+    },
+    {
+      "rank": 115,
+      "source": {
+        "repository": "hbmartin/intellij-plugin-evaluate-selected-expression",
+        "commitSha": "246f0ee0b90240778797e0e7fa3446bc1f60c2e3",
+        "treeSha": "5838e5f37ef0b39cab6c3198efecf2599abaeac6",
+        "files": [
+          {
+            "path": "src/main/kotlin/me/haroldmartin/intellijpluginevaluateselectedexpression/EvaluateExpression.kt",
+            "blobSha": "2b0790eee0a5528801bc43113ea31ad9aa013496",
+            "sizeBytes": 1971
+          }
+        ],
+        "totalBytes": 1971
+      }
+    },
+    {
+      "rank": 146,
+      "source": {
+        "repository": "thomasnield/mathematical-optimization-examples",
+        "commitSha": "e427d5e245f6c5cdacb677699e0c30a4e2776fac",
+        "treeSha": "a2bdc16a7de10d918477bab9315efef601516ed0",
+        "files": [
+          {
+            "path": "src/main/kotlin/org/nield/ch4_1/OJAlgoSolution.kt",
+            "blobSha": "fa9c04bebd6ef2d6882c3de4bcd66449f65b2936",
+            "sizeBytes": 3474
+          },
+          {
+            "path": "src/main/kotlin/org/nield/ch4_2/OJAlgoSolution.kt",
+            "blobSha": "8ba2bf822c01a9e5bc99ee11513c4d95c9043838",
+            "sizeBytes": 3590
+          },
+          {
+            "path": "src/main/kotlin/org/nield/ch4_3/OJAlgoSolution.kt",
+            "blobSha": "78d5fff73a32aa5bf9894d60b9876729b99e1c69",
+            "sizeBytes": 3590
+          },
+          {
+            "path": "src/main/kotlin/org/nield/optaplannerguide/example1.kt",
+            "blobSha": "d6badea6d0d5fd430bf981a000282c93126e6a48",
+            "sizeBytes": 1766
+          },
+          {
+            "path": "src/main/kotlin/org/nield/problems/12_1.kt",
+            "blobSha": "aa8f9f7ab553667ceacd14f0f7e348d7d9c209d3",
+            "sizeBytes": 2696
+          }
+        ],
+        "totalBytes": 15116
+      }
+    },
+    {
+      "rank": 147,
+      "source": {
+        "repository": "Ucok23/MathLib",
+        "commitSha": "ee0adc077182e248d0eac9d58a39f3363a9a1b7b",
+        "treeSha": "306c35aa2399732a5c866a0e56618e9b3ec0e5b4",
+        "files": [
+          {
+            "path": "src/main/kotlin/com/ucok/mathlib/Main.kt",
+            "blobSha": "f36980738954260afbc56d18b5b34e6f96a3759b",
+            "sizeBytes": 522
+          },
+          {
+            "path": "src/main/kotlin/com/ucok/mathlib/geometric/Bases.kt",
+            "blobSha": "6074146239797a71355e91d31a26df6b0bb4f53c",
+            "sizeBytes": 149
+          },
+          {
+            "path": "src/main/kotlin/com/ucok/mathlib/geometric/solid/Cube.kt",
+            "blobSha": "e1d5499b46c5f76ff8f90bc5a950bf096b340f7b",
+            "sizeBytes": 802
+          },
+          {
+            "path": "src/main/kotlin/com/ucok/mathlib/geometric/solid/RectPrism.kt",
+            "blobSha": "388cef0e8c0809de95969c7c1f69f8cecb26a692",
+            "sizeBytes": 665
+          },
+          {
+            "path": "src/main/kotlin/com/ucok/mathlib/geometric/solid/Shape.kt",
+            "blobSha": "457cd8e71e5b766286f7053d8a3cfa5fc9f4bf91",
+            "sizeBytes": 106
+          }
+        ],
+        "totalBytes": 2244
+      }
+    },
+    {
+      "rank": 153,
+      "source": {
+        "repository": "yunfachi/yunfaLib",
+        "commitSha": "40d7809a8b13fcfc15c9e437fb83e81e9c3fa848",
+        "treeSha": "e9db2783747ee999984c44de54e835a4848085e1",
+        "files": [
+          {
+            "path": "src/main/kotlin/moe/yunfachi/yunfalib/YunfaLib.kt",
+            "blobSha": "638a64e39fe7d4efda9ef4b8bb501743db6cfe45",
+            "sizeBytes": 989
+          },
+          {
+            "path": "src/main/kotlin/moe/yunfachi/yunfalib/api/Update.kt",
+            "blobSha": "1e4f4076f7eec0f4cce46bbc48b5cec4006ddf0b",
+            "sizeBytes": 398
+          },
+          {
+            "path": "src/main/kotlin/moe/yunfachi/yunfalib/config/Config.kt",
+            "blobSha": "d61955537d1e3389e6ea26ce0773a7b8aa1c4536",
+            "sizeBytes": 2196
+          }
+        ],
+        "totalBytes": 3583
+      }
+    }
+  ],
+  "audit": [
+    {
+      "rank": 1,
+      "repository": "DeveloprOfThings/Kapacity",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 2,
+      "repository": "plumsoftware/more-math",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 3,
+      "repository": "XayahSuSuSu/Android-HNUDiscreteMathematicsHelper",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 4,
+      "repository": "OakAcademy/math-game-according-to-three-game-activity-with-kotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 5,
+      "repository": "Coding-Meet/Math-Quiz-App",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 6,
+      "repository": "vkochenkov/EquationDisplayer",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 7,
+      "repository": "OakAcademy/math-game-with-one-game-activity",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 8,
+      "repository": "SJopez/Chaos-Viewer",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 9,
+      "repository": "v1tzor/MathCalculator",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 10,
+      "repository": "kylecorry31/sol",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 11,
+      "repository": "Landfathich/mathQuizForKids",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 12,
+      "repository": "Anypodetos/qonvert",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 13,
+      "repository": "manuelvicnt/MathCoroutines",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 14,
+      "repository": "TabaquiTheMasterOfTime/YellowStar",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 15,
+      "repository": "EtherTyper/MathLibrary",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 16,
+      "repository": "lounres/Kone",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 17,
+      "repository": "riyadmondol2006/WakeNudge",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 18,
+      "repository": "techambient/Ambient-Calculator",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 19,
+      "repository": "Abdo-21/CExpr",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 20,
+      "repository": "dumitrupetrusca-okta/SymbolMath",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 21,
+      "repository": "kotlincook/complex-numbers",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 22,
+      "repository": "SJopez/Hilorama",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 23,
+      "repository": "test27818/rikkahub-math-plus",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 24,
+      "repository": "AbdusamidDev/Simple-MathGame2",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 25,
+      "repository": "elizarov/LogicDerivation",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 26,
+      "repository": "AbdusamidDev/Math-Game",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 27,
+      "repository": "ACM-VIT/AlarmIT",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 28,
+      "repository": "g4l9/symbol-idea-plugin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 29,
+      "repository": "ishantchauhan710/ChatBot",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 30,
+      "repository": "Noxcrew/smp",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 31,
+      "repository": "shahbaz-momi/expression-solver",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 32,
+      "repository": "AxisAngles/KotlinMath3D",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 33,
+      "repository": "FooqX/GoldenRatio",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 34,
+      "repository": "HowXu/FishMath",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 35,
+      "repository": "LefalChizzle/X15Symput",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 36,
+      "repository": "pepperonas/brutus",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 37,
+      "repository": "vincent-pradeilles/euler-kotlin",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 38,
+      "repository": "2piradrian/better-with-maths",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 39,
+      "repository": "gallyamovann/student-s-handbook",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 40,
+      "repository": "GlideTechonology/CAS-Calculator",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 41,
+      "repository": "healthsgood/common-math-kotlin-multiplatform",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 42,
+      "repository": "hobby-projects-lab/simple-calculator",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 43,
+      "repository": "imsbg/Ganita-Bingya-App",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 44,
+      "repository": "quantaDot/MathRenderer",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 45,
+      "repository": "sailab-banik/MathLab",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 46,
+      "repository": "ArsalaBangash/Boltz-Android",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 47,
+      "repository": "Danilo-Araujo-Silva/mathemagika",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 48,
+      "repository": "eriksencosta/math-percentage",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 49,
+      "repository": "KarunarathneRR/Maths-Game-For-Kids",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 50,
+      "repository": "mostafahashim/MathQuestionTask",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 51,
+      "repository": "ParuhParhat/MaxMath",
+      "reason": "EXPOSED_REPOSITORY"
+    },
+    {
+      "rank": 52,
+      "repository": "acuon/MathSolver",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 53,
+      "repository": "anuragJoshi05/CalculatorX",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 54,
+      "repository": "emedinaa/KoMath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 55,
+      "repository": "javafa/AndroidMathView",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 56,
+      "repository": "prasaddhodamani910-cell/Math-Grapher",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 57,
+      "repository": "Purgator/Upupup",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 58,
+      "repository": "UnknownJoe796/discrete-math-markdown",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 59,
+      "repository": "1cucer/Calculator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 60,
+      "repository": "1cucer/Crypto",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 61,
+      "repository": "AchmadHafid/MathScanner",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 62,
+      "repository": "arianm8a/math-time-series",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 63,
+      "repository": "asheragy/SymCalc",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 64,
+      "repository": "Azizaxon/Math-Game_4d",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 65,
+      "repository": "camdenorrb/LegUp",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 66,
+      "repository": "cromat/MathPath",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 67,
+      "repository": "dievsky/kotlin-math-benchmark",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 68,
+      "repository": "elevenetc/utils-kotlin-math",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 69,
+      "repository": "eriksencosta/math-common",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 70,
+      "repository": "faizhussain7/UItrends",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 71,
+      "repository": "gregcockroft/HelloAndroidMath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 72,
+      "repository": "iscohacker/MathGame",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 73,
+      "repository": "johnathaningle/MentalMathApp",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 74,
+      "repository": "JustDeax/CalculatorExpressionParser",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 75,
+      "repository": "karelantonio/Notik",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 76,
+      "repository": "kory33/bigmath",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 77,
+      "repository": "laguiar/dca-optimizer",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 78,
+      "repository": "lunarcadedigital/scientific-calculator",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 79,
+      "repository": "manuelvicnt/MathRxCoroutines",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 80,
+      "repository": "mathcamp/cheatsheet",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 81,
+      "repository": "mathwallet/MathWallet5SDK-Android",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 82,
+      "repository": "MuhammaddiyorSattorjonov/MathGame",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 83,
+      "repository": "nadar71/MathBrainer",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 84,
+      "repository": "patbeagan1/PolyMath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 85,
+      "repository": "poninka/3quickmaths",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 86,
+      "repository": "popovanton0/gia-answers",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 87,
+      "repository": "Shrey1029/Math_Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 88,
+      "repository": "suryanshukla592/HectoClash",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 89,
+      "repository": "1cucer/CalculatorSimple",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 90,
+      "repository": "abdujabborahmadjonov/math_game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 91,
+      "repository": "AbdulazizJamolhonov/Math-Game-App",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 92,
+      "repository": "adityakamble49/math-wizard-android",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 93,
+      "repository": "Adl1coder/MathQuiz",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 94,
+      "repository": "anuj990/GraphSonic",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 95,
+      "repository": "AvtandilMD/MathGame",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 96,
+      "repository": "bek-k/JUnitTestingPractice",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 97,
+      "repository": "bek-k/SimpleMathApp",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 98,
+      "repository": "Beniamino-B/Calculino",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 99,
+      "repository": "burevestnik-png/comp-math-lab1",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 100,
+      "repository": "casperboone/calc",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 101,
+      "repository": "clemenzi/maath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 102,
+      "repository": "Curious-being99/Kas-Unitly",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 103,
+      "repository": "Dalvikk/MathExprCalculator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 104,
+      "repository": "DerYeger/refunk",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 105,
+      "repository": "dominik-deak/android-math-game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 106,
+      "repository": "ErenYeager2004/MathQuiz-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 107,
+      "repository": "felixfelicisdgnr/SimpleCalculator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 108,
+      "repository": "FlamingFlameBlade/Math-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 109,
+      "repository": "FocalAgency/A-Math-Tutoring-App-for-Children-Built-with-Kotlin",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 110,
+      "repository": "frashasantoYT/Kids-Math-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 111,
+      "repository": "gergelydaniel/cgmath",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 112,
+      "repository": "Haid-Faiz/My_MathonGo_Task",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 113,
+      "repository": "harishkrishnan18/Simple-Calculator-App",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 114,
+      "repository": "hastebrot/kotlinx.math",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 115,
+      "repository": "hbmartin/intellij-plugin-evaluate-selected-expression",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 116,
+      "repository": "hypernova-developer/SyntaX_for_Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 117,
+      "repository": "Ilmiddin1701/Math-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 118,
+      "repository": "jainemmaniwar-e/Calculator-Vault",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 119,
+      "repository": "jalexcole/numeric",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 120,
+      "repository": "jelvi00/module-rn-app",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 121,
+      "repository": "joaopedroalbq/android-math-battle",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 122,
+      "repository": "K-M-9/WakeUp",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 123,
+      "repository": "karimzhonovsamandar/MathProblemTest",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 124,
+      "repository": "karimzhonovsamandar/MathRandomGame",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 125,
+      "repository": "khoatran18/Math-Basic-App",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 126,
+      "repository": "khobbi/Maths-Unit-Converter",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 127,
+      "repository": "Kopilov/RCallerService",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 128,
+      "repository": "korlibs/korlibs-math",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 129,
+      "repository": "kormium/decimal",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 130,
+      "repository": "leon-cleaning-services/mathilda",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 131,
+      "repository": "lounres/math-kotlin-experiments",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 132,
+      "repository": "M-LEO-H/DAVE3600-Apputvikling-Mappe1-386100-385564",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 133,
+      "repository": "manuelvicnt/MathRxJava",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 134,
+      "repository": "MrY-Cat/math",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 135,
+      "repository": "OZODBEK1707/MathGame",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 136,
+      "repository": "PlayBody/MathKotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 137,
+      "repository": "Referon/EGE-Math",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 138,
+      "repository": "rinkalpansuriya/math-puzzle-Android",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 139,
+      "repository": "rodomanovt/MathTools",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 140,
+      "repository": "Roggired/easy-comp-math",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 141,
+      "repository": "sarafinmahtab/MathJsWrapper",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 142,
+      "repository": "Shashini09/Math-Quiz-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 143,
+      "repository": "Shibo14/MathGame",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 144,
+      "repository": "sujeet-12/Number-Game-",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 145,
+      "repository": "testpassword/Computational-mathematics",
+      "reason": "REPOSITORY_SIZE_UNSUPPORTED"
+    },
+    {
+      "rank": 146,
+      "repository": "thomasnield/mathematical-optimization-examples",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 147,
+      "repository": "Ucok23/MathLib",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 148,
+      "repository": "vatbub/mathevaluator",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 149,
+      "repository": "xiaomanxing91/math-lock-android",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 150,
+      "repository": "xmf-08/KidsMath-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 151,
+      "repository": "xmf-08/Math-Game",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 152,
+      "repository": "YiTanglily/Quizapp",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    },
+    {
+      "rank": 153,
+      "repository": "yunfachi/yunfaLib",
+      "reason": "METADATA_CANDIDATE"
+    },
+    {
+      "rank": 154,
+      "repository": "zakiburnama/MathGame-Kotlin",
+      "reason": "SOURCE_COUNT_OUTSIDE_BOUNDS"
+    }
+  ],
+  "rankedRepositoryCount": 154,
+  "examinedCount": 154,
+  "sourceBodiesRead": false,
+  "targetInvoked": false,
+  "oracleExecuted": false,
+  "hunterExecuted": false,
+  "frozenCohortCommitted": false,
+  "block26Closed": false,
+  "block27Allowed": false,
+  "query": "math language:Kotlin fork:false archived:false stars:2..20",
+  "engine": {
+    "sourceCommitSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+    "modulePath": "packages/family-hunter/v7/GenericJvmMetamorphicProbe.java",
+    "moduleBlobSha": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+    "mutable": false
+  },
+  "exclusions": {
+    "path": "docs/quality/PHASE2-BLOCK26-V8-EXCLUSIONS.json",
+    "blobSha": "b51d65e28d2223facbeea9f4c858b90ead754cf9",
+    "repositories": 153,
+    "blobs": 555
+  }
+}
