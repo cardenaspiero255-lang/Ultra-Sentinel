@@ -163,7 +163,12 @@ function adjudicateV11(seal,truth){
     agrees(o.actual,f.observed?.[i],0));
    if(match)witnesses.push(match);
   }
-  if(witnesses.length!==3){
+  // Invalid or nonfinite independent references and negative/non-numeric
+  // tolerances are abstentions, NEVER evidence of a new original defect.
+  const invalidReference=witnesses.some(o=>
+   numeric(o.expected)===null||numeric(o.tolerance)===null||
+   Number(o.tolerance)<0);
+  if(witnesses.length!==3||invalidReference){
    unadjudicatedHypotheses++;
    details.push({outcome:'INCOMPLETE_INDEPENDENT_WITNESS',cohortId:f.cohortId,
     class:f.class,method:f.method,matched:witnesses.length});continue;
