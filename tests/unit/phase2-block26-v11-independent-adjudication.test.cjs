@@ -18,7 +18,7 @@ function seal(findings){return {schema:'ultra-sentinel-v11-verified-frozen-predi
  allSelectedReportsAuthenticated:true,predictionsSealedBeforeOracle:true,oracleExecuted:false};}
 function truth(rows){return {schema:'ultra-sentinel-v11-independent-original-truth/v1',
  predictionSealSha256:'0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d',
- oracleExecuted:true,oracleSourceAuthenticated:true,
+ oracleExecuted:true,oracleSourceAuthenticated:true,wholeCohortTruth:false,
  observations:rows,abstentions:[],wholeCohortTruth:false};}
 test('V11 independently rejects a legitimate nonmonotone XOR/popcount turning-point false positive',()=>{
  const r=adjudicateV11(seal([f(['1','0','2'])]),truth([row(0,1,1),row(1,0,0),row(2,2,2)]));
