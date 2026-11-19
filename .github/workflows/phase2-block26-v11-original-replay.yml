@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/phase2-block26-v11-original-replay.yml
       - tests/fixtures/phase2-block26-v11-independent/oracle/IndependentArithmeticOracle.kt
+      - docs/quality/PHASE2-BLOCK26-V11-RETROSPECTIVE-REPLAY-FREEZE.json
       - docs/quality/PHASE2-BLOCK26-V11-INDEPENDENT-ORACLE-COMMITMENT.json
 permissions:
   contents: read
@@ -66,6 +67,22 @@ jobs:
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           test "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" = 1
           SENTINEL_JVM_V2_RUNNER=1 SENTINEL_REQUIRE_BLIND_BWRAP=1 node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Bind exact frozen retrospective oracle bytes and source SHA before loading JVM
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const data=JSON.parse(fs.readFileSync('docs/quality/PHASE2-BLOCK26-V11-RETROSPECTIVE-REPLAY-FREEZE.json'));
+          const {path,gitBlobSha}=data.independentReplayOracle;
+          const bytes=fs.readFileSync(path);
+          const actual=crypto.createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
+          if(actual!==gitBlobSha||data.contract.expectedSampleCount!==24||
+            data.restrictions.noHunterPredictionFilesMountedIntoTargetNamespace!==true||
+            data.restrictions.noClaimPreHunterOracle!==true||
+            data.metadata.originalTargetNotExecutedWithThisKotlinReplayYet!==true)
+             throw Error('V11_ORIGINAL_REPLAY_PRECOMMIT_DRIFT');
+          JS
       - name: Authenticate unchanged original Kotlin files and source-bound replay oracle
         shell: bash
         run: |
