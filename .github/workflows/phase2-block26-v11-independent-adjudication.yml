@@ -54,7 +54,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/v11-archive"
-          gh api -H 'Accept: application/octet-stream' \
+          gh api -H 'Accept: application/vnd.github+json' \
             /repos/cardenaspiero255-lang/Ultra-Sentinel/actions/artifacts/14432658115/zip \
             > "$RUNNER_TEMP/v11-full-original-predictions.zip"
           echo '4d3986e87836c3c1255d6a6ee8425cb90231960384a68aa538d48e5d742cfd79  '"$RUNNER_TEMP/v11-full-original-predictions.zip" | sha256sum --check --status
