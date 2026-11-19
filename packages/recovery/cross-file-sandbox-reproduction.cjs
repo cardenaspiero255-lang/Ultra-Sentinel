@@ -10,12 +10,13 @@ const {spawnSync}=require('node:child_process');
 const {judgeLocalRepair}=require('./repair-judge.cjs');
 const {rollbackSandbox}=require('./sandbox-rollback.cjs');
 const {assertSafeGitCheckout}=require('./git-sandbox-policy.cjs');
+const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const SHA=/^[a-f0-9]{40}$/;
 const RULE=/^[A-Z][A-Z0-9_]{2,80}$/;
 const SAFE=/^(?:(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+|apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt)$/;
 function invalid(){throw Error('INVALID_CROSS_FILE_REPRODUCTION');}
 function validPath(name){
- return typeof name==='string'&&name.length<=240&&SAFE.test(name)&&
+ return typeof name==='string'&&name.length<=240&&(SAFE.test(name)||isSafeNovelKotlinPath(name))&&
   !name.includes('..')&&!name.includes('//')&&
   !name.split('/').some(s=>!s||s==='.');
 }
