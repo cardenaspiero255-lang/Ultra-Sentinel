@@ -1,0 +1,85 @@
+name: Ultra Sentinel — V11 sealed original independent reference adjudication
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase2-block26-v11-independent-adjudication.yml
+      - packages/quality-gates/v11-independent-source-oracle.cjs
+      - scripts/phase2-block26-v11-independent-adjudicate.cjs
+      - tests/unit/phase2-block26-v11-independent-*.test.cjs
+      - docs/quality/PHASE2-BLOCK26-V11-INDEPENDENT-ORACLE-COMMITMENT.json
+permissions:
+  contents: read
+  actions: read
+jobs:
+  independent-v11:
+    if: >-
+      github.event.repository.id == 1418338512 &&
+      github.event.pull_request.head.repo.full_name == 'cardenaspiero255-lang/Ultra-Sentinel' &&
+      github.event.pull_request.user.id == 322222186
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout sealed independent reference after oracle precommit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify exact precommitted contract and untouched V11 cohort
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'JS'
+          const fs=require('node:fs'),crypto=require('node:crypto');
+          const p=JSON.parse(fs.readFileSync('docs/quality/PHASE2-BLOCK26-V11-INDEPENDENT-ORACLE-COMMITMENT.json'));
+          const blob=x=>crypto.createHash('sha1').update(Buffer.from('blob '+x.length+'\0')).update(x).digest('hex');
+          for(const o of [p.frozenOracle,p.originals]){
+            const file=o.path||o.cohortPath,hash=o.gitBlobSha||o.cohortBlobSha;
+            if(file&&blob(fs.readFileSync(file))!==hash)throw Error('CONTRACT_SHA_DRIFT:'+file);
+          }
+          if(p.timeOrder.originalHunterRunId!==44317152922||
+           p.timeOrder.truthContractCommittedBeforeReadingHistoricalPredictions!==true||
+           p.timeOrder.noClaimOfFullyProspectivePreHunterOracle!==true)
+           throw Error('NOT_PROSPECTIVE_PRECOMMIT');
+          JS
+          node --test tests/unit/phase2-block26-v11-independent-source-oracle.test.cjs tests/unit/phase2-block26-v11-independent-adjudicate.test.cjs
+          npm run check
+      - name: Fetch ONLY immutable V11 full Hunter prediction artifact, after precommit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v11-archive"
+          gh api -H 'Accept: application/octet-stream' \
+            /repos/cardenaspiero255-lang/Ultra-Sentinel/actions/artifacts/14432658115/zip \
+            > "$RUNNER_TEMP/v11-full-original-predictions.zip"
+          echo '4d3986e87836c3c1255d6a6ee8425cb90231960384a68aa538d48e5d742cfd79  '"$RUNNER_TEMP/v11-full-original-predictions.zip" | sha256sum --check --status
+          unzip -q "$RUNNER_TEMP/v11-full-original-predictions.zip" -d "$RUNNER_TEMP/v11-archive"
+          test -s "$RUNNER_TEMP/v11-archive/full-prediction-seal.json"
+      - name: Verify signed historical reports and judge within the precommitted source scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/phase2-block26-v11-independent-adjudicate.cjs \
+            "$RUNNER_TEMP/v11-archive" docs/quality/PHASE2-BLOCK26-V11-COHORT.json \
+            "$RUNNER_TEMP/v11-reference-verdict"
+          node - "$RUNNER_TEMP/v11-reference-verdict/independent-reference-verdict.json" <<'JS'
+          const fs=require('node:fs');
+          const r=JSON.parse(fs.readFileSync(process.argv[2]));
+          if(r.hypothesisCount!==9||r.scopedReferenceMatches!==8||
+           r.scopedReferenceMismatches!==0||r.unadjudicated!==1||
+           r.originalDefectsConfirmed!==0||r.block26Closed!==false||
+           r.independentOriginalOracleExecuted!==false||r.fullyAdjudicated!==false)
+           throw Error('V11_UNEXPECTED_INDEPENDENT_SCOPE_RESULT');
+          JS
+      - name: Publish authentic historical adjudication receipt (not certification)
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: block26-v11-independent-source-reference-verdict
+          path: ${{ runner.temp }}/v11-reference-verdict/independent-reference-verdict.json
+          if-no-files-found: error
+          retention-days: 90
