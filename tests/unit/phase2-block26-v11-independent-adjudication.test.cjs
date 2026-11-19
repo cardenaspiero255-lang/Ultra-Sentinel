@@ -98,3 +98,37 @@ test('V11 refuses to promote malformed independent oracle data into a confirmed 
   assert.equal(verdict.unadjudicatedHypotheses,1);
  }
 });
+
+test('V11 rejects inconsistent evidence schemas without promoting a finding',()=>{
+ const p=seal([f()]),o=truth([row(0,1,1),row(1,0,0),row(2,1,1)]);
+ for(const altered of [
+  {...p,oracleExecuted:true},
+  {...p,frozenEngineCommit:'f'.repeat(40)},
+  {...p,hypotheses:null},
+  {...p,predictionsSealedBeforeOracle:false}
+ ])assert.throws(()=>adjudicateV11(altered,o),/SEAL/);
+ for(const altered of [
+  {...o,schema:'untrusted'},
+  {...o,predictionSealSha256:other},
+  {...o,wholeCohortTruth:true},
+  {...o,observations:null},
+  {...o,abstentions:null}
+ ])assert.throws(()=>adjudicateV11(p,altered),/TRUTH/);
+});
+test('V11 unsupported original witness shapes are abstentions, never confirmed findings',()=>{
+ const variants=[
+  {...f(),method:'broken'},
+  {...f(),method:'numericProbe(byte;short;int;long;)int'},
+  {...f(),method:'numericProbe(boolean;)int'},
+  {...f(),method:'numericProbe(long;)int',argument:2},
+  {...f(),method:null},
+  {...f(),inputs:[]},
+  {...f(),otherArguments:9},
+  {...f(),argument:-1}
+ ];
+ for(const item of variants){
+  const v=adjudicateV11(seal([item]),truth([]));
+  assert.equal(v.confirmedOriginalDefects,0);
+  assert.equal(v.unadjudicatedHypotheses,1);
+ }
+});
