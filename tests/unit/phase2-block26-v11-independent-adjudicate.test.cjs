@@ -36,7 +36,7 @@ function evidence(){
     reportSha256:hash(p2),path:'candidate-280/scope-0/discovery.json'}]};
  const raw=Buffer.from(JSON.stringify(manifest)+'\n');
  return {manifestBytes:raw,reports:new Map([[manifest.reportFiles[0].path,p1],
-  [manifest.reportFiles[1].path,p2]]),selected:cohorts,
+  [manifest.reportFiles[1].path,p2]]),selected:cohorts.map(c=>({...c,source:{...c.source}})),
   expectedManifestSha256:hash(raw),
   expectedOriginalReportReferences:cohorts.map(c=>({rank:c.rank,
    sha:hash(Buffer.from(JSON.stringify(manifest.reportFiles.filter(r=>r.rank===c.rank))))}))};
