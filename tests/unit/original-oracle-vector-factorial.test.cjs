@@ -65,6 +65,29 @@ function matrix(files, oracleFunctions){
  }))};
 }
 
+test('Kotlin production source sets coexist with existing non-Kotlin paths',()=>{
+ const files=[
+  'domain/src/commonMain/kotlin/demo/Record.kt',
+  'domain/src/jvmMain/kotlin/demo/Recorder.kt',
+  'supabase/functions/record/index.ts'
+ ];
+ const out=classifyOracleVectorFactorial(matrix(files,{BENIGN:()=>true,CONTRACT:m=>m===7}));
+ assert.equal(out.status,'SHARED_OR_MULTI_FILE_EFFECT_HYPOTHESIS');
+ assert.deepEqual(out.minimalPassingSubsetsByOracle,{BENIGN:[[]],CONTRACT:[files]});
+});
+
+test('advisory, test and noncanonical Kotlin paths remain ineligible',()=>{
+ for(const file of [
+  'src/main/kotlin/demo/Rule.kt',
+  'domain/src/test/kotlin/demo/Rule.kt',
+  'domain/src/commonMain/kotlin/demo//Rule.kt',
+  'domain/src/jvmMain/kotlin/demo/../Rule.kt'
+ ]){
+  const out=classifyOracleVectorFactorial(matrix([file,paths[0]].sort(),{CONTRACT:m=>m===3}));
+  assert.equal(out.status,'BLOCKED_UNTRUSTED_ORACLE_MATRIX',file);
+ }
+});
+
 test('separate oracles expose aggregate AND of three independent repairs',()=>{
  const files=['A','B','C'].map(x=>`app/src/main/java/example/${x}.kt`);
  const x=classifyOracleVectorFactorial(matrix(files,{
