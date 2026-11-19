@@ -134,6 +134,8 @@ function numeric(value){
  return Number(value);
 }
 function agrees(a,b,tol){
+ if(tol===0&&/^-?\d+$/.test(String(a))&&/^-?\d+$/.test(String(b)))
+  return BigInt(String(a))===BigInt(String(b));
  const x=numeric(a),y=numeric(b);
  return x!==null&&y!==null&&Number.isFinite(x)&&Number.isFinite(y)&&
   Number.isFinite(tol)&&tol>=0&&Math.abs(x-y)<=tol;
