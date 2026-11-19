@@ -3,8 +3,12 @@ on:
   pull_request:
     paths:
       - packages/family-hunter/GenericJvmMetamorphicProbe.java
+      - packages/family-hunter/v7/GenericJvmMetamorphicProbe.java
       - tests/unit/generic-jvm-*.test.cjs
       - docs/quality/PHASE2-BLOCK26-V6-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V7-FREEZE.json
+      - docs/quality/PHASE2-BLOCK26-V7-EXCLUSIONS.json
+      - tests/unit/phase2-block26-v7-freeze.test.cjs
       - docs/quality/PHASE2-BLOCK26-V6-EXCLUSIONS.json
       - tests/unit/phase2-block26-v6-freeze.test.cjs
       - docs/quality/PHASE2-BLOCK26-V6-RESERVATION.json
@@ -87,6 +91,39 @@ jobs:
               hit,miss=int(item.get('covered')),int(item.get('missed'))
               if hit+miss==0 or hit/(hit+miss)<.90: raise SystemExit(f'{kind}_COVERAGE_BELOW_90:{hit}/{hit+miss}')
               print(f'{kind}_COVERAGE={hit}/{hit+miss}')
+          PY
+      - name: Require 90 percent independent v7 line and branch coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/hunter-v7-coverage"
+          git worktree add --detach "$work" HEAD
+          # The overlay is confined to an untracked CI worktree. Never change
+          # the frozen v6 module in Git, its SHA, or any historical artifacts.
+          cp "$work/packages/family-hunter/v7/GenericJvmMetamorphicProbe.java" \
+             "$work/packages/family-hunter/GenericJvmMetamorphicProbe.java"
+          (
+            cd "$work"
+            export JAVA_TOOL_OPTIONS="-javaagent:$RUNNER_TEMP/jacoco-agent.jar=destfile=$RUNNER_TEMP/hunter-v7.exec,includes=GenericJvmMetamorphicProbe*,append=true"
+            node --test tests/unit/generic-jvm-metamorphic-probe.test.cjs tests/unit/generic-jvm-metamorphic-compatibility.test.cjs tests/unit/generic-jvm-object-contracts.test.cjs tests/unit/generic-jvm-metamorphic-string.test.cjs tests/unit/generic-jvm-bounded-integral-band.test.cjs tests/unit/generic-jvm-metamorphic-boxed-arrays.test.cjs tests/unit/generic-jvm-constructor-admission.test.cjs tests/unit/generic-jvm-finite-domains.test.cjs tests/unit/generic-jvm-finite-collection-band.test.cjs
+          )
+          mkdir "$RUNNER_TEMP/hunter-v7-classes"
+          javac -d "$RUNNER_TEMP/hunter-v7-classes" "$work/packages/family-hunter/GenericJvmMetamorphicProbe.java"
+          java -jar "$RUNNER_TEMP/jacoco-cli.jar" report "$RUNNER_TEMP/hunter-v7.exec" \
+            --classfiles "$RUNNER_TEMP/hunter-v7-classes" \
+            --sourcefiles "$work/packages/family-hunter" \
+            --xml "$RUNNER_TEMP/hunter-v7-coverage.xml" >/dev/null
+          python3 - "$RUNNER_TEMP/hunter-v7-coverage.xml" <<'PY'
+          import sys,xml.etree.ElementTree as ET
+          node=ET.parse(sys.argv[1]).find('.//sourcefile[@name="GenericJvmMetamorphicProbe.java"]')
+          if node is None: raise SystemExit('V7_COVERAGE_SOURCE_MISSING')
+          for kind in ('LINE','BRANCH'):
+              c=node.find(f"counter[@type='{kind}']")
+              if c is None: raise SystemExit(f'V7_{kind}_COVERAGE_MISSING')
+              hit,miss=int(c.get('covered')),int(c.get('missed'))
+              if hit+miss==0 or hit/(hit+miss)<.90:
+                  raise SystemExit(f'V7_{kind}_COVERAGE_BELOW_90:{hit}/{hit+miss}')
+              print(f'V7_{kind}_COVERAGE={hit}/{hit+miss}')
           PY
       - name: Fetch and authenticate Kotlin 2.0.21
         shell: bash

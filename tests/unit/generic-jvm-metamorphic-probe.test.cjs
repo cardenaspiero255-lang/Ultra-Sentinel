@@ -307,3 +307,36 @@ test('constructor-generated identity cannot manufacture an ordering-law violatio
  const r=JSON.parse(result.stdout);
  assert.ok(r.comparablePairs>0);assert.deepEqual(r.findings,[]);
 });
+
+
+test('scalar membership lookup over a fixed collection abstains instead of claiming a turning point',()=>{
+ const source=path.join(temp,'Membership.java'),dest=path.join(temp,'membership-classes'),archive=path.join(temp,'membership.jar');
+ fs.mkdirSync(dest);
+ fs.writeFileSync(source,[
+  'package sample.membership;',
+  'import java.util.List;',
+  'public final class Membership {',
+  ' public static int locate(List<Integer> values,int target) { return values.indexOf(target); }',
+  ' public static int reverse(int target,List<Integer> values) { return values.indexOf(target); }',
+  ' public static int scalarPeak(int target,int multiplier) { return target==1?multiplier:0; }',
+  ' public static int sizePeak(List<Integer> values) { return values.size()==1?8:0; }',
+  '}'
+ ].join('\n'));
+ const compile=run('javac',['-d',dest,source]);assert.equal(compile.status,0,compile.stderr);
+ const archived=run('jar',['cf',archive,'-C',dest,'.']);assert.equal(archived.status,0,archived.stderr);
+ const v7bin=path.join(temp,'v7-probe-classes');fs.mkdirSync(v7bin);
+ const v7build=run('javac',['-d',v7bin,path.join(root,'packages/family-hunter/v7/GenericJvmMetamorphicProbe.java')]);
+ assert.equal(v7build.status,0,v7build.stderr);
+ const result=run('java',['-Xmx128m','-cp',v7bin,'GenericJvmMetamorphicProbe',archive,'sample.membership']);
+ assert.equal(result.status,0,result.stderr);
+ const report=JSON.parse(result.stdout);
+ assert.ok(report.methodsProbed>=4,'must still exercise original collection APIs');
+ assert.ok(report.completedTriples>=1,'other finite domains remain measurable');
+ const names=report.findings.map(x=>x.method);
+ assert.ok(!names.some(x=>x.startsWith('locate(')||x.startsWith('reverse(')),
+  'target membership in an unchanged collection is not a numeric monotonicity contract');
+ assert.ok(names.some(x=>x.startsWith('scalarPeak(')),'pure scalar turning points remain detectable');
+ assert.ok(names.some(x=>x.startsWith('sizePeak(')),'collection size turning points remain hypotheses');
+ assert.ok(report.abstainedProbes>0,'ambiguous scalar-versus-collection probes explicitly abstain');
+ assert.equal(report.oracleVerified,false);
+});

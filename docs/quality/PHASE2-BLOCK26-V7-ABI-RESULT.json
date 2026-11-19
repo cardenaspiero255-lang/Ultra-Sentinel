@@ -1,0 +1,45 @@
+{
+  "schema": "ultra-sentinel-v7-original-abi-result/v1",
+  "runId": 44239501372,
+  "workflowRun": "https://github.com/cardenaspiero255-lang/Ultra-Sentinel/actions/runs/44239501372",
+  "exactHeadSha": "a3e494e8e503537aecbe22822e9bf7f4ecad4a1d",
+  "frozenEngineSha": "689583c23277807345edb715d8c2d277a3d4bda7",
+  "originalReservationSha256": "11e53fe012cff24a594db6c47412495e5de43b587b598a93c6c7c6c86b56411c",
+  "originalFiles": 32,
+  "selectedRepositories": 6,
+  "compilationSucceededCohorts": 6,
+  "precommittedThreshold": {
+    "minimumCallableCandidates": 3,
+    "minimumCandidateCohorts": 2
+  },
+  "callableCandidates": 5,
+  "candidateCohorts": 1,
+  "technicallyAdmissibleForBlindDiscovery": false,
+  "candidateCohortId": 1,
+  "candidateRepository": "niiad/hashkt",
+  "candidateMethods": [
+    "areaOfCircle",
+    "celsiusToFahrenheit",
+    "iterationFactorial",
+    "recursiveFactorial",
+    "tailRecursiveFactorial"
+  ],
+  "otherFiveCohortsReason": "NO_SUPPORTED_CALLABLE",
+  "originalArchive": {
+    "artifactId": 14399285946,
+    "name": "block26-v7-blind-abi-admission",
+    "expiresAt": "2027-02-16T04:45:19Z",
+    "sha256": "cf02a824a874f3b5964a6779869fb89f9d56a52aa2f4e2a0aea7fb9c188c59bc"
+  },
+  "originalReportSha256": "3fdbc3b57f9f755965f6fe0a744f0cefa596d47ee66e1ce0bb9616884dce1ddf",
+  "originalSealSha256": "5c3a9c67a8735d204c663e31618f8b424847c3e50178772b173fe8fc6b8429ed",
+  "targetMethodsInvoked": false,
+  "hunterExecuted": false,
+  "independentOracleExecuted": false,
+  "confirmedDistinctNewDefects": null,
+  "retrospectiveThresholdChangeAllowed": false,
+  "prospectiveSourceSubstitutionAllowed": false,
+  "originalSourcesNowExposed": true,
+  "block26Closed": false,
+  "block27Allowed": false
+}
