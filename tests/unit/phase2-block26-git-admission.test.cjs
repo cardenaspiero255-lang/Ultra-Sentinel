@@ -161,6 +161,19 @@ test('stage authenticates local Git metadata before copying the exact Kotlin blo
   assert.equal(result.status, 0, result.stderr);
   assert.equal(fs.readFileSync(path.join(fixture.destination, fixture.sourcePath), 'utf8'), fixture.sourceText);
   assert.equal(fs.existsSync(path.join(fixture.destination, 'README.md')), false);
+  const compiler = process.env.SENTINEL_BLOCK26_FIXTURE_COMPILER;
+  if (compiler) {
+    const artifacts = path.join(fixture.directory, 'compiled');
+    fs.mkdirSync(artifacts);
+    const launcher = path.resolve(__dirname, '../fixtures/phase2-block26-object-contracts/run-isolated.sh');
+    const result = spawnSync('bash', [launcher, 'compile-v2', compiler, fixture.destination, artifacts], {
+      encoding: 'utf8', timeout: 150000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const classes = execFileSync('jar', ['tf', path.join(artifacts, 'target.jar')], { encoding: 'utf8' });
+    assert.match(classes, /^example\/ExampleKt\.class$/m);
+    t.diagnostic('The existing isolated Kotlin compiler used the authenticated Git fixture.');
+  }
 });
 
 test('stage rejects a Kotlin Git entry absent from the reservation before creating compiler input', t => {

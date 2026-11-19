@@ -45,3 +45,18 @@ jobs:
           SENTINEL_JVM_V2_RUNNER: '1'
           SENTINEL_REQUIRE_BLIND_BWRAP: '1'
         run: node --test tests/unit/generic-jvm-metamorphic-isolation.test.cjs
+      - name: Authenticate the existing Kotlin 2.0.21 toolchain
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/block26-fixture-kotlin.zip"
+          gh api -H 'Accept: application/octet-stream' /repos/JetBrains/kotlin/releases/assets/198150667 > "$archive"
+          test "$(sha256sum "$archive" | cut -d' ' -f1)" = 0352c0a45bd22f80f6b26e485cd04da8047baa5de54865281fb9f89a4a7bcf2a
+          unzip -q "$archive" -d "$RUNNER_TEMP/block26-fixture-kotlin"
+      - name: Compile the admitted Git fixture in the existing sandbox
+        shell: bash
+        run: |
+          SENTINEL_BLOCK26_FIXTURE_COMPILER="$RUNNER_TEMP/block26-fixture-kotlin/kotlinc" \
+            node --test --test-name-pattern='stage authenticates local Git metadata' tests/unit/phase2-block26-git-admission.test.cjs
