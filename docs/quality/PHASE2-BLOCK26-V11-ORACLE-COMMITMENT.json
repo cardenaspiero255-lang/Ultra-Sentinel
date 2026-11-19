@@ -1,0 +1,93 @@
+{
+  "schema": "ultra-sentinel-v11-independent-original-oracle-commitment/v1",
+  "frozenHunterCommit": "689583c23277807345edb715d8c2d277a3d4bda7",
+  "frozenHunterBlob": "430b4e928527b20fe305d63f3efb85909f1dfa06",
+  "sourceCohortPath": "docs/quality/PHASE2-BLOCK26-V11-COHORT.json",
+  "sourceCohortBlobSha": "264097237ff43b107232abc1fe0a6ce53c409a29",
+  "selectedOriginalFiles": 13,
+  "selectedOriginals": [
+    {
+      "id": 1,
+      "rank": 276,
+      "repository": "runetopic/cryptography",
+      "sourceCommit": "26094b76f87acb7692eeaaa10df51f1c6f3542ac",
+      "sourceTree": "6aa9727306c703e98cbaa8dd6000d30e31115022"
+    },
+    {
+      "id": 2,
+      "rank": 280,
+      "repository": "SebastianAigner/dhash-kotlin",
+      "sourceCommit": "fa6949247ac8bd44c0ad4b750d2af8d72d4fc4da",
+      "sourceTree": "0f6834a083ecef1df6aaa371c67cbd0e728c53fb"
+    }
+  ],
+  "priorPredictionRunId": 44317152922,
+  "priorFullPredictionManifestSha256": "0ccfa2c2cd51536f5a2bbecf624b6054fe05c0db06b4f5e04b598e480853737d",
+  "priorFullPredictionsArtifactId": 14432658115,
+  "priorFullPredictionsArtifactDigest": "sha256:4d3986e87836c3c1255d6a6ee8425cb90231960384a68aa538d48e5d742cfd79",
+  "oracle": {
+    "path": "tests/fixtures/phase2-block26-v11/oracle/IndependentArithmeticOracle.kt",
+    "blobSha": "7aa78ef04295fec0cb0716c19e3555dec742cc2b",
+    "entrypoint": "oracle.IndependentArithmeticOracleKt",
+    "isolatedCompiler": "Kotlin 2.0.21",
+    "java": "21",
+    "compileAndRunOnlyAfterPredictionSeal": true,
+    "oracleHasNoPredictionAccess": true
+  },
+  "contracts": [
+    {
+      "cohortId": 2,
+      "class": "DHash",
+      "methodPattern": "^distanceTo-[A-Za-z0-9]+\\(long;long;\\)int$",
+      "publicKotlinContract": true,
+      "reference": "java.lang.Long.bitCount(left xor right)",
+      "absTolerance": 0,
+      "defectEligible": true
+    },
+    {
+      "cohortId": 2,
+      "class": "DHash",
+      "methodPattern": "^(?:hashCode|constructor)-impl\\(long;\\)(?:int|long)$",
+      "publicKotlinContract": false,
+      "reference": "Long.hashCode and long identity, compiler-generated controls only",
+      "absTolerance": 0,
+      "defectEligible": false
+    },
+    {
+      "cohortId": 1,
+      "class": "com.runetopic.cryptography.CryptoExtensions",
+      "methodPattern": "^g8\\(\\[B;int;\\)long$",
+      "publicKotlinContract": false,
+      "reference": "java.nio.ByteBuffer big-endian long, internal",
+      "absTolerance": 0,
+      "defectEligible": false
+    },
+    {
+      "cohortId": 1,
+      "class": "com.runetopic.cryptography.whirlpool.Whirlpool",
+      "methodPattern": "^maskWithReductionPolynomial\\(long;\\)long$",
+      "publicKotlinContract": false,
+      "reference": "bounded GF(2^8) 0..511 only",
+      "absTolerance": 0,
+      "defectEligible": false
+    }
+  ],
+  "protocol": {
+    "oracleSourceCommittedBeforeReadingFullHunterPredictions": true,
+    "allOriginalPredictionsAlreadySealed": true,
+    "noHunterRetune": true,
+    "noReusingOriginalsAsUnknown": true,
+    "noOracleOnHunterWorker": true,
+    "requireIndependentOfflineExecution": true,
+    "missingMethodWitnessesAreAbstentions": true,
+    "confirmOnlyExactThreeMatchingWitnesses": true,
+    "generatedOrInternalMethodsNeverNewPublicDefect": true
+  },
+  "state": {
+    "oracleExecuted": false,
+    "fullPredictionsOpened": false,
+    "confirmedSecondOriginalDefect": null,
+    "block26Closed": false,
+    "block27Allowed": false
+  }
+}
