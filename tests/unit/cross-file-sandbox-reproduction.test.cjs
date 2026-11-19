@@ -81,3 +81,45 @@ test('invalid or non-boolean oracle results cannot be certified as passing tests
  assert.throws(()=>reproduceCrossFileInterventions({plan,candidateRule:'UNSCOPED_COROUTINE',
   versions,independentOracle:()=>({success:true})}),/ORACLE_EVALUATION_FAILED/);
 });
+
+test('three admitted Gradle Kotlin modules run every counterfactual and restore their Git baseline',()=>{
+ const suffix='src/main/kotlin/demo/performance/framepacing/FramePacingIntelligenceEngine.kt';
+ const files=['alpha','beta','gamma'].map(module=>module+'/'+suffix);
+ const lines=[
+  'fun ready(orderedFast: List<Sample>, policy: Policy): Boolean {',
+  '  val slowNow = 10L',
+  '  val fastNow = orderedFast.lastOrNull()?.timestampMs ?: 0L',
+  '  val recentFast = orderedFast.filter { fastNow - it.timestampMs <= policy.windowFastMs }',
+  '  return recentFast.size >= policy.minSamplesFast',
+  '}'
+ ];
+ const fullSource=lines.join('\n')+'\n';
+ const analyzeModules=(sha,paths)=>analyze(paths.map(filename=>({
+  filename,status:'added',changes:lines.length,additions:lines.length,deletions:0,fullSource,
+  patch:'@@ -0,0 +1,'+lines.length+' @@\n'+lines.map(line=>'+'+line).join('\n')+'\n'
+ })),{sha,sourceScope:'KOTLIN_JVM_V3_EXPERIMENTAL'});
+ const plan=planCrossFileInterventions(analyzeModules(A,files.slice(0,1)),analyzeModules(B,files));
+ const candidateRule='STALE_FRAME_TIMING_ACCEPTED';
+ assert.equal(plan.candidates.find(candidate=>candidate.rule===candidateRule).experiments.length,8);
+
+ // A caller-owned data predicate exercises rollback for this fixture.
+ const versions=files.map(path=>({path,before:'const val version = 1\n',after:'const val version = 2\n'}));
+ const independentOracle=sources=>files.every(path=>sources[path]==='const val version = 2\n');
+ const reproduction=reproduceCrossFileInterventions({plan,candidateRule,versions,independentOracle});
+ assert.deepEqual(reproduction.scenarios.map(row=>row.oracleVerdict),
+  ['FAIL','FAIL','FAIL','FAIL','FAIL','FAIL','FAIL','PASS']);
+ assert.ok(reproduction.scenarios.every(row=>row.rollbackVerified&&row.baselineTree===row.restoredTree));
+ const result=interpretFactorialOracleEvidence({files,reproduction});
+ assert.equal(result.status,'JOINT_INTERACTION_HYPOTHESIS');
+ assert.deepEqual(result.minimalPassingSubsets,[files]);
+ assert.equal(result.causalityVerified,false);
+ assert.equal(result.commitAllowed,false);
+
+ const rootFiles=[suffix,...files.slice(1)].sort();
+ const advisoryPlan=planCrossFileInterventions(analyzeModules(A,rootFiles.slice(0,1)),
+  analyzeModules(B,rootFiles));
+ const advisoryVersions=rootFiles.map(path=>({...versions[0],path}));
+ assert.throws(()=>reproduceCrossFileInterventions({
+  plan:advisoryPlan,candidateRule,versions:advisoryVersions,independentOracle
+ }),/INVALID_CROSS_FILE_REPRODUCTION/);
+});

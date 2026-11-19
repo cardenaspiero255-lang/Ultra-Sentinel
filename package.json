@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "node --test tests/unit/*.test.cjs",
+    "check:staged": "node scripts/check-staged.cjs",
     "check:structure": "node scripts/verify-structure.cjs",
+    "report:frontier": "node scripts/export-frontier-report.cjs",
     "check": "npm run check:structure && npm test"
   }
 }

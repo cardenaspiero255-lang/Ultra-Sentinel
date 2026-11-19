@@ -131,7 +131,7 @@ function storeObservation(filename,previous,sentry,jarvis,gamehub=null){
    checkpoint:result.checkpoint,pendingAlerts:result.alerts,
    batchSequence,deliveryAcknowledged:false};
   writeAtomic(filename,saved);
-  return Object.freeze({status:result.status,alerts:result.alerts,
+  return Object.freeze({status:result.status,alerts:result.alerts,batchSequence,
    monitor24x7Deployed:false,alertDeliveryConfigured:false});
  }finally{
   fs.closeSync(lock);
@@ -191,11 +191,11 @@ function pendingDigest(events){
  return crypto.createHash('sha256').update(JSON.stringify(events)).digest('hex');
 }
 // An external operator must first deliver the alert events. Only then call
-// this acknowledgement with the exact pending digest; no self-acknowledgement.
+// this acknowledgement with the exact pending digest and its batch sequence.
 function acknowledgeDelivery(filename,digest,expectedSequence){
  if(typeof digest!=='string'||!/^[a-f0-9]{64}$/.test(digest))
   fail('INVALID_DELIVERY_RECEIPT');
- if(expectedSequence!==undefined&&(!Number.isSafeInteger(expectedSequence)||expectedSequence<0))
+ if(!Number.isSafeInteger(expectedSequence)||expectedSequence<0)
   fail('INVALID_DELIVERY_RECEIPT');
  privateDirectory(filename);
  let lock;
@@ -206,7 +206,7 @@ function acknowledgeDelivery(filename,digest,expectedSequence){
   const current=checkedState(filename);
   if(!current?.pendingAlerts.length)fail('NO_PENDING_ALERTS');
   if(pendingDigest(current.pendingAlerts)!==digest||
-    (expectedSequence!==undefined&&(current.batchSequence??0)!==expectedSequence))
+    (current.batchSequence??0)!==expectedSequence)
    fail('DELIVERY_RECEIPT_MISMATCH');
   writeAtomic(filename,{...current,pendingAlerts:[],deliveryAcknowledged:false});
   return Object.freeze({status:'DELIVERY_ACKNOWLEDGED',pending:0});

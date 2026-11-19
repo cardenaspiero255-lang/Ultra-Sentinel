@@ -7,6 +7,7 @@
 const SHA=/^[a-f0-9]{40}$/;
 const PATH=/^(?:(?:app\/src\/main\/|supabase\/functions\/)[A-Za-z0-9_./-]+|apps\/android\/app\/src\/main\/java\/com\/cardenaspiero255\/jarvis\/core\/[A-Za-z0-9_.-]+\.kt)$/;
 const {types}=require('node:util');
+const {isSafeNovelKotlinPath}=require('../investigation/novel-kotlin-path-policy.cjs');
 const reject=()=>{throw Error('BAD_FACTORIAL_EVIDENCE');};
 function record(value,required,optional=[]){
  if(!value||typeof value!=='object'||types.isProxy(value)||Array.isArray(value)||
@@ -46,7 +47,7 @@ function outcome(status,minimalPassingSubsets=[]){
 }
 const blocked=()=>outcome('BLOCKED_INCOMPLETE_FACTORIAL_EVIDENCE');
 function validFile(p){
- return typeof p==='string'&&p.length<=250&&PATH.test(p)&&
+ return typeof p==='string'&&p.length<=250&&(PATH.test(p)||isSafeNovelKotlinPath(p))&&
   !p.includes('//')&&!p.split('/').some(s=>s===''||s==='.'||s==='..');
 }
 function interpretFactorialOracleEvidence(input){

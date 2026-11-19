@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+const {spawnSync}=require('node:child_process');
 const {runGithubOnlyCycle}=require('../../apps/watchdog/serverless-github-cycle.cjs');
 const {checkedState,pendingDigest,acknowledgeDelivery}=require('../../apps/watchdog/watchdog-run-once.cjs');
 const GH='https://api.github.com/repos/';
@@ -73,14 +74,47 @@ test('serverless emitted alerts replay after restart until durable Actions outpu
    githubToken:token,fetchImpl:gh.fetchImpl});
   assert.deepEqual(changed.alerts.map(x=>x.type),
    ['JARVIS_PR_HEAD_CHANGED','GAMEHUB_PR_HEAD_CHANGED']);
+  assert.equal(changed.batchSequence,checkedState(f.stateFile).batchSequence);
   const replay=await runGithubOnlyCycle({stateFile:f.stateFile,
    githubToken:token,fetchImpl:async()=>{throw Error('NO_POLL_WHEN_PENDING')}});
   assert.equal(replay.status,'REPLAY_PERSISTED_ALERTS');
   assert.deepEqual(replay.alerts,changed.alerts);
-  acknowledgeDelivery(f.stateFile,pendingDigest(changed.alerts));
+  assert.equal(replay.batchSequence,changed.batchSequence);
+  acknowledgeDelivery(f.stateFile,pendingDigest(changed.alerts),changed.batchSequence);
   assert.equal((await runGithubOnlyCycle({stateFile:f.stateFile,
    githubToken:token,fetchImpl:gh.fetchImpl})).status,'NO_CHANGES');
  }finally{fs.rmSync(f.root,{recursive:true,force:true});}
+});
+
+test('serverless CLI emits the fixture warning before acknowledging its exact batch',t=>{
+ const f=fixture();
+ t.after(()=>fs.rmSync(f.root,{recursive:true,force:true}));
+ const stub=path.join(f.root,'fetch-fixture.cjs');
+ fs.writeFileSync(stub,[
+  "const assert=require('node:assert/strict');",
+  `const GH=${JSON.stringify(GH)},sha=${JSON.stringify(sha)};`,
+  `const fixture=(${github.toString()})();`,
+  'fixture.data.jarvisSha=process.env.FIXTURE_JARVIS_SHA;',
+  'globalThis.fetch=fixture.fetchImpl;',
+  ''
+ ].join('\n'));
+ const cli=path.resolve(__dirname,'../../apps/watchdog/serverless-github-cycle.cjs');
+ const invoke=(head,bootstrap)=>spawnSync(process.execPath,['--require',stub,cli],{
+  encoding:'utf8',timeout:10000,env:{
+   ULTRA_SENTINEL_WATCHDOG_STATE_FILE:f.stateFile,
+   ULTRA_SENTINEL_SERVERLESS_BOOTSTRAP:String(bootstrap),
+   GITHUB_TOKEN:token,FIXTURE_JARVIS_SHA:head
+  }
+ });
+ const initial=invoke(sha,true);
+ assert.equal(initial.status,0,initial.stderr);
+ const changed=invoke('b'.repeat(40),false);
+ assert.equal(changed.status,0,changed.stderr);
+ const [report,...annotations]=changed.stdout.trim().split('\n');
+ const state=checkedState(f.stateFile);
+ assert.equal(JSON.parse(report).batchSequence,state.batchSequence);
+ assert.match(annotations.join('\n'),/::warning title=Ultra Sentinel GitHub alert::JARVIS_PR_HEAD_CHANGED/);
+ assert.deepEqual(state.pendingAlerts,[]);
 });
 test('incompatible private incident checkpoint is rejected before GitHub requests',async()=>{
  const f=fixture(),gh=github();

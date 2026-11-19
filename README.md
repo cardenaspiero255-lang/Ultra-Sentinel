@@ -67,6 +67,8 @@ npm run check
 
 Esta comprobación cubre el verificador de estructura y las pruebas configuradas en `package.json`, **no** certifica por sí misma permisos GitHub, equivalencia con GameHub ni fallos de producción.
 
+`npm run check:staged` verifica espacios en blanco y la sintaxis de los archivos `.cjs`, `.mjs` y `.json` preparados en el índice de Git. Para activar el hook opcional en un checkout confiable, configura `git config --local core.hooksPath .githooks`. Si ya tienes un hook, integra `npm run check:staged` en él.
+
 ## Límites de autorización y fusión
 
 - Modo por defecto: `REVIEW_WITH_SOLUTIONS`. No auto-commit, auto-merge ni despliegue sin consentimiento específico.
