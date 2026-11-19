@@ -24,7 +24,9 @@
     "maxOriginalKotlinFilesPerRepo": 12,
     "maxOriginalBytesPerRepo": 196608,
     "avoidHistoricalSources": true,
-    "preHunterStaticApiScanOnly": true
+    "preHunterStaticApiScanOnly": true,
+    "wrapperPath": "scripts/phase2-kotlin-api-v12-metadata.cjs",
+    "wrapperBlobSha": "e9861c49bb52609e5a7374b5607d00272dd72c56"
   },
   "host": {
     "path": "scripts/phase2-block26-v12-prehunter.cjs",
